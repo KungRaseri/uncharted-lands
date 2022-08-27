@@ -2,6 +2,6 @@
 	import Navbar from './Navbar.svelte';
 </script>
 
-<header>
+<header class="flex-row min-w-full">
 	<Navbar />
 </header>
