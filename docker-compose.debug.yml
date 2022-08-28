@@ -1,0 +1,21 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP .NET Core service.
+
+version: '3.4'
+
+services:
+  api:
+    image: browsergame-api
+    ports:
+      - 5036:5036
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5036
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+  client:
+    image: browsergame-client
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - ENVIRONMENT=Development

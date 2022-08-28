@@ -1,4 +1,31 @@
+<script context="module" lang="ts">
+	export async function load({ fetch }: any) {
+		let response = await fetch(`${process.env.VITE_API_URL}/WeatherForecast`);
+
+		console.log('test', response);
+		if (response.ok) {
+			return response;
+		}
+
+		return {
+			status: response.status,
+			error: new Error()
+		};
+	}
+</script>
+
 <script lang="ts">
+	import { state, connect } from '$lib/state';
+
+	import { onMount } from 'svelte';
+
+	onMount(async () => {
+		let test = await fetch(`${import.meta.env.VITE_API_URL}/WeatherForecast`).then((res) => {
+			return res.json();
+		});
+
+		console.log('mounted', test);
+	});
 </script>
 
 <main class="flex-grow">
