@@ -8,7 +8,9 @@ on:
 
 jobs:
   build:
-
+    defaults:
+      run:
+        working-directory: client-app
     runs-on: ubuntu-latest
 
     strategy:
@@ -17,7 +19,6 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - working-directory: "client-app"
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
