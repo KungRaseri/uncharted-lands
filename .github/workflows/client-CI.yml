@@ -28,9 +28,9 @@ jobs:
       # You may pin to the exact commit or the version.
       # uses: maxmilton/action-setup-playwright@2d6caa385908bbd298c4302685378300a1659e02
       uses: maxmilton/action-setup-playwright@v1
-        with:
-          browsers: chromium, firefox, webkit # optional
-          headless: true # optional
+      with:
+        browsers: chromium, firefox, webkit # optional
+        headless: true # optional
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
