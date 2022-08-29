@@ -21,4 +21,4 @@ jobs:
     - name: Build
       run: dotnet build Main.sln --no-restore
     - name: Test
-      run: dotnet test api.tests\api.tests.csproj --no-build --verbosity normal
+      run: dotnet test api.tests/api.tests.csproj --no-build --verbosity normal
