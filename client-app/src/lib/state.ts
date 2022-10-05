@@ -1,15 +1,37 @@
 // Import the function which initializes a new mutable store.
 import { writable } from 'svelte/store';
 
-type Item = {
+type Profile = {
+    avatar: string;
+    homepage: string;
+    statistics: Statistics;
+}
+
+type Resources = {
+    meat: number;
+    vegetable: number;
+    fruit: number;
+    seeds: number;
+    water: number;
+    goods: number;
+}
+
+type Statistics = {
+    level: number;
+    resources: Resources;
+}
+
+type Account = {
     id: string;
-    content: string;
+    email: string;
+    username: string;
+    profile: Profile;
 };
 
 // Our store will record an object containing an array of
 // items produced by the websocket.
 type State = {
-    items: Array<Item>;
+    account?: Account;
     error?: string;
 };
 
@@ -18,7 +40,7 @@ type State = {
 //
 // Note that this is a singleton.
 export const state = writable<State>({
-    items: []
+    account: undefined
 });
 
 // We also want to connect to websockets.  Svelte does

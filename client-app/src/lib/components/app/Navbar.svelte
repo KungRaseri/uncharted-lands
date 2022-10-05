@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Menu from 'svelte-material-icons/Menu.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
+	import { slide } from 'svelte/transition';
+	import { backInOut } from 'svelte/easing';
 
 	let isSessionAuthorized = false;
 	let isMainMenuOpen = false;
@@ -12,8 +14,8 @@
 			route: '/'
 		},
 		{
-			name: 'Resources',
-			route: 'resources'
+			name: 'Game',
+			route: '/game'
 		}
 	];
 
@@ -199,7 +201,7 @@
 
 	{#if isMainMenuOpen}
 		<!-- Mobile menu, show/hide based on menu state. -->
-		<div class="sm:hidden" id="mobile-menu">
+		<div transition:slide class="sm:hidden" id="mobile-menu">
 			<div class="px-2 pt-2 pb-3 space-y-1">
 				<!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
 				{#each links as link}

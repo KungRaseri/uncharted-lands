@@ -3,11 +3,11 @@
 version: '3.4'
 
 services:
-  api:
-    image: browsergame-api
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:80
+  # api:
+  #   image: browsergame-api
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Production
+  #     - ASPNETCORE_URLS=http://+:80
   client:
     image: browsergame-client
     ports:
@@ -15,3 +15,13 @@ services:
       - 443:443
     environment:
       - ENVIRONMENT=Production
+    depends_on:
+      - db
+  # cache:
+  #   image: redis
+  #   ports:
+  #     - '6379:6379'
+  db:
+    image: mongo
+    ports:
+      - '27018:27017'
