@@ -8,6 +8,7 @@ module.exports = {
     require("@tailwindcss/typography"),
     require("@tailwindcss/aspect-ratio")
   ],
+  important: true,
   theme: {
     extend: {
       fontFamily: {

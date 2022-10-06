@@ -1,10 +1,13 @@
 <script lang="ts">
 	import '../app.css';
+	import { SvelteUIProvider } from '@svelteuidev/core';
+
+	import { AppShell, Box, Container, Seo } from '@svelteuidev/core';
+
 	import Header from '$lib/components/app/Header.svelte';
 	import Footer from '$lib/components/app/Footer.svelte';
 
 	import { onMount } from 'svelte';
-	let pageName: string;
 
 	onMount(async () => {
 		// let test = await fetch(
@@ -17,20 +20,17 @@
 	});
 </script>
 
-<div class="bg-gray-800 flex flex-col">
-	<div class="pb-32">
-		<Header />
-	</div>
+<Seo title="Portal" titleTemplate="%t% | Browser-game" />
+<SvelteUIProvider themeObserver="dark" withNormalizeCSS withGlobalStyles ssr>
+	<AppShell class="bg-gray-800 ">
+		<Header classes="pb-32" />
 
-	<div class="-mt-32 min-h-min mb-64">
-		<div class="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
-			<div class="bg-indigo-50 rounded-lg shadow px-5 py-6 sm:px-6">
+		<Container class="-mt-32 min-h-min mb-64 lg:max-w-7xl md:max-w-md sm:max-w-max mx-auto pb-12">
+			<Box class="bg-indigo-50 rounded-lg shadow px-5 py-6 sm:px-6">
 				<slot />
-			</div>
-		</div>
-	</div>
+			</Box>
+		</Container>
 
-	<div class="bg-gray-700 fixed bottom-0 inset-x-0 h-53">
-		<Footer />
-	</div>
-</div>
+		<Footer classes="bg-gray-700 fixed bottom-0 inset-x-0 lg:h-53 sm:h-30" />
+	</AppShell>
+</SvelteUIProvider>

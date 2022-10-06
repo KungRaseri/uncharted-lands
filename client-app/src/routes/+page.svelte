@@ -5,7 +5,6 @@
 	import { onMount } from 'svelte';
 
 	onMount(async () => {
-		console.log($page.data.account);
 		// let test = await fetch(
 		// 	`${
 		// 		import.meta.env.VITE_API_URL
@@ -40,17 +39,17 @@
 					<div class="mx-auto mt-10 max-w-sm sm:flex sm:max-w-none sm:justify-center">
 						<div class="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-3 sm:gap-5 sm:space-y-0">
 							<a
-								href="#"
+								href="/introduction"
 								class="flex items-center justify-center rounded-md border border-transparent bg-indigo-700 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-500 sm:px-8"
 								>Introduction</a
 							>
 							<a
-								href="#"
+								href="/auth/register"
 								class="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-indigo-700 shadow-sm hover:bg-indigo-100 sm:px-8"
 								>Get started</a
 							>
 							<a
-								href="#"
+								href="/auth/login"
 								class="flex items-center justify-center rounded-md border border-transparent bg-indigo-500 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-opacity-70 sm:px-8"
 								>Login</a
 							>

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Menu from 'svelte-material-icons/Menu.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
+	import { Anchor, Box, Burger, Button, Stack } from '@svelteuidev/core';
 	import { slide } from 'svelte/transition';
 	import { backInOut } from 'svelte/easing';
 
@@ -33,39 +32,7 @@
 	<div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
 		<div class="relative flex items-center justify-between h-16">
 			<div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-				<!-- Mobile menu button-->
-				<button
-					type="button"
-					class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-					aria-controls="mobile-menu"
-					aria-expanded="false"
-					on:click={toggleMainMenu}
-				>
-					<span class="sr-only">Open main menu</span>
-					<!--
-            Icon when menu is closed.
-
-            Heroicon name: outline/menu
-
-            Menu open: "hidden", Menu closed: "block"
-          -->
-					{#if !isMainMenuOpen}
-						<div class="block h-6 w-6 justify-center align-middle">
-							<Menu size="24" />
-						</div>
-					{:else}
-						<div class="block h-6 w-6 justify-center align-middle">
-							<Close size="24" />
-						</div>
-					{/if}
-					<!--
-            Icon when menu is open.
-
-            Heroicon name: outline/x
-
-            Menu open: "block", Menu closed: "hidden"
-          -->
-				</button>
+				<Burger opened={isMainMenuOpen} on:click={toggleMainMenu} />
 			</div>
 			<div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
 				<div class="flex-shrink-0 flex items-center">
@@ -184,34 +151,24 @@
 						{/if}
 					</div>
 				</div>
-			{:else}
-				<div
-					class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
-				>
-					<a
-						href="auth"
-						class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-					>
-						<button> Login / Register</button>
-					</a>
-				</div>
 			{/if}
 		</div>
 	</div>
 
 	{#if isMainMenuOpen}
-		<!-- Mobile menu, show/hide based on menu state. -->
-		<div transition:slide class="sm:hidden" id="mobile-menu">
-			<div class="px-2 pt-2 pb-3 space-y-1">
-				<!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+		<div transition:slide class="sm:hidden">
+			<Stack mx="lg" mb="xs" justify="start">
 				{#each links as link}
-					<a
+					<Button
+						fullSize
+						variant="subtle"
 						href={link.route}
-						class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-						><button>{link.name}</button></a
+						class="text-gray-300 hover:bg-gray-700 hover:text-white text-base font-medium"
 					>
+						{link.name}
+					</Button>
 				{/each}
-			</div>
+			</Stack>
 		</div>
 	{/if}
 </nav>

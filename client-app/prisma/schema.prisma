@@ -10,14 +10,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model ServerData {
+  id   String @id @map("_id")
+  Name String
+}
+
 model Account {
-  id            String @id @map("_id")
-  email         String @unique
-  username      String @unique
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  username      String    @unique
   passwordHash  String
-  userAuthToken String @unique
+  userAuthToken String    @unique
+  Profile       Profile[]
 }
 
 model Profile {
-  id String @id @map("_id")
+  id        String  @id @map("_id")
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String
 }

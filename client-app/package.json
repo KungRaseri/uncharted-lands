@@ -25,6 +25,7 @@
 		"@typescript-eslint/eslint-plugin": "^5.27.0",
 		"@typescript-eslint/parser": "^5.27.0",
 		"autoprefixer": "^10.4.8",
+		"bson": "^4.7.0",
 		"dotenv": "^16.0.3",
 		"eslint": "^8.16.0",
 		"eslint-config-prettier": "^8.3.0",
@@ -49,6 +50,12 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@prisma/client": "^4.4.0"
+		"@prisma/client": "^4.4.0",
+		"@svelteuidev/composables": "^0.7.3",
+		"@svelteuidev/core": "^0.7.3",
+		"@svelteuidev/dates": "^0.7.3",
+		"@svelteuidev/motion": "^0.7.3",
+		"@svelteuidev/preprocessors": "^0.7.3",
+		"dayjs": "^1.11.5"
 	}
 }
