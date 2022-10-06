@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Box } from '@svelteuidev/core';
 
-	export let classes: string;
+	export let classes: string = '';
 </script>
 
 <Box class={classes}>

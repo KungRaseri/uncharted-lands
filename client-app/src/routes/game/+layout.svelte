@@ -1,10 +1,9 @@
 <script>
 	import Navigation from '$lib/components/game/Navigation.svelte';
+	import Overview from '$lib/components/game/Overview.svelte';
+	import { Box, Container, Tabs } from '@svelteuidev/core';
 </script>
 
-<header class="py-0 mx-auto">
-	<div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
-		<Navigation />
-	</div>
-</header>
-<slot />
+<Container>
+	<slot />
+</Container>

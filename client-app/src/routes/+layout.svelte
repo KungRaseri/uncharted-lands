@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import { SvelteUIProvider } from '@svelteuidev/core';
+	import { SvelteUIProvider, Switch } from '@svelteuidev/core';
 
 	import { AppShell, Box, Container, Seo } from '@svelteuidev/core';
 
@@ -8,6 +8,12 @@
 	import Footer from '$lib/components/app/Footer.svelte';
 
 	import { onMount } from 'svelte';
+
+	let isDarkTheme = false;
+
+	function toggleDarkTheme() {
+		isDarkTheme = !isDarkTheme;
+	}
 
 	onMount(async () => {
 		// let test = await fetch(
@@ -21,16 +27,15 @@
 </script>
 
 <Seo title="Portal" titleTemplate="%t% | Browser-game" />
-<SvelteUIProvider themeObserver="dark" withNormalizeCSS withGlobalStyles ssr>
-	<AppShell class="bg-gray-800 ">
-		<Header classes="pb-32" />
-
-		<Container class="-mt-32 min-h-min mb-64 lg:max-w-7xl md:max-w-md sm:max-w-max mx-auto pb-12">
-			<Box class="bg-indigo-50 rounded-lg shadow px-5 py-6 sm:px-6">
-				<slot />
-			</Box>
-		</Container>
-
-		<Footer classes="bg-gray-700 fixed bottom-0 inset-x-0 lg:h-53 sm:h-30" />
+<SvelteUIProvider
+	themeObserver={isDarkTheme ? 'dark' : 'light'}
+	withNormalizeCSS
+	withGlobalStyles
+	ssr
+>
+	<Header {toggleDarkTheme} />
+	<AppShell>
+		<slot />
 	</AppShell>
+	<Footer classes="bg-gray-700 fixed bottom-0 inset-x-0" />
 </SvelteUIProvider>

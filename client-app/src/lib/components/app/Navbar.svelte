@@ -1,16 +1,21 @@
 <script lang="ts">
-	import { Anchor, Box, Burger, Button, Stack } from '@svelteuidev/core';
+	import { Anchor, Box, Burger, Button, Stack, Switch, type Func } from '@svelteuidev/core';
 	import { slide } from 'svelte/transition';
 	import { backInOut } from 'svelte/easing';
 
 	let isSessionAuthorized = false;
 	let isMainMenuOpen = false;
 	let isUserMenuOpen = false;
+	export let toggleDarkTheme: Func;
 
 	export let links = [
 		{
 			name: 'Home',
 			route: '/'
+		},
+		{
+			name: 'Forum',
+			route: '/forum'
 		},
 		{
 			name: 'Game',
@@ -27,7 +32,6 @@
 	}
 </script>
 
-<!-- This example requires Tailwind CSS v2.0+ -->
 <nav class="bg-gray-800">
 	<div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
 		<div class="relative flex items-center justify-between h-16">
@@ -60,6 +64,7 @@
 					</div>
 				</div>
 			</div>
+			<Switch on:change={toggleDarkTheme} />
 			{#if isSessionAuthorized}
 				<div
 					class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"

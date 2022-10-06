@@ -9,11 +9,4 @@ module.exports = {
     require("@tailwindcss/aspect-ratio")
   ],
   important: true,
-  theme: {
-    extend: {
-      fontFamily: {
-        sans: ['Aboreto', 'cursive', ...defaultTheme.fontFamily.sans],
-      },
-    },
-  },
 }
