@@ -7,7 +7,7 @@ RUN npm run build
 
 FROM nginx:stable-alpine as production-stage
 COPY --from=build-stage /app/build /usr/share/nginx/html
-COPY --from=build-stage /app/.env-docker /usr/share/nginx/html/.env
+COPY --from=build-stage /app/.env.docker /usr/share/nginx/html/.env
 EXPOSE 80
 EXPOSE 443
 

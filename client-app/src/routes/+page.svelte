@@ -41,12 +41,12 @@
 						>Introduction</a
 					>
 					<a
-						href="/auth/register"
+						href="/register"
 						class="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-indigo-700 shadow-sm hover:bg-indigo-100 sm:px-8"
 						>Get started</a
 					>
 					<a
-						href="/auth/login"
+						href="/login"
 						class="flex items-center justify-center rounded-md border border-transparent bg-indigo-500 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-opacity-70 sm:px-8"
 						>Login</a
 					>
