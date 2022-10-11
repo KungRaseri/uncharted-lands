@@ -21,9 +21,72 @@ model Account {
   updatedAt DateTime @updatedAt
 
   role Role @default(MEMBER)
+
+  playerProfiles PlayerProfile[]
 }
 
 enum Role {
   MEMBER
   ADMINISTRATOR
+}
+
+model PlayerProfile {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  account          Account        @relation(fields: [accountId], references: [id])
+  serverInstance   ServerInstance @relation(fields: [serverInstanceId], references: [id])
+  accountId        String         @db.ObjectId
+  serverInstanceId String         @db.ObjectId
+
+  settlements Settlement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Settlement {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+
+  structures SettlementStructure[]
+
+  settlementLeader PlayerProfile? @relation(fields: [playerProfileId], references: [id])
+  playerProfileId  String?        @db.ObjectId
+}
+
+model SettlementStructure {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  modifiers   StructureModifier[]
+
+  Settlement   Settlement? @relation(fields: [settlementId], references: [id])
+  settlementId String?     @db.ObjectId
+}
+
+model ServerInstance {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+
+  playerProfiles PlayerProfile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StructureModifier {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  attribute   Attribute
+
+  SettlementStructure   SettlementStructure? @relation(fields: [settlementStructureId], references: [id])
+  settlementStructureId String?              @db.ObjectId
+}
+
+enum Attribute {
+  FOOD
+  WATER
+  WOOD
+  STONE
 }

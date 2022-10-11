@@ -24,8 +24,6 @@ type Statistics = {
 type Account = {
     id: string;
     email: string;
-    username: string;
-    profile: Profile;
 };
 
 // Our store will record an object containing an array of
@@ -61,11 +59,11 @@ export const connect = (socketURL: string) => {
         // TODO: Set up ping/pong, etc.
     });
 
-    ws.addEventListener('message', (message: any) => {
-        const data: Item = JSON.parse(message.data);
-        // Mutate state by prepending the new data to the array.
-        state.update((state) => ({ ...state, items: [data].concat(state.items) }));
-    });
+    // ws.addEventListener('message', (message: any) => {
+    //     const data: Item = JSON.parse(message.data);
+    //     // Mutate state by prepending the new data to the array.
+    //     state.update((state) => ({ ...state, items: [data].concat(state.items) }));
+    // });
 
     ws.addEventListener('close', (_message: any) => {
         // TODO: Handle close

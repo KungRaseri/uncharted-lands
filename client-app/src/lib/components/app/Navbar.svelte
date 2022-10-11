@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Anchor, Box, Burger, Button, Stack, Switch, type Func } from '@svelteuidev/core';
+	import { page } from '$app/stores';
+
 	import { slide } from 'svelte/transition';
 	import { backInOut } from 'svelte/easing';
 
-	let isSessionAuthorized = false;
 	let isMainMenuOpen = false;
 	let isUserMenuOpen = false;
 	export let toggleDarkTheme: Func;
@@ -36,7 +37,7 @@
 	<div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
 		<div class="relative flex items-center justify-between h-16">
 			<div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-				<Burger opened={isMainMenuOpen} on:click={toggleMainMenu} />
+				<Burger opened={isMainMenuOpen} on:click={toggleMainMenu} color="white" />
 			</div>
 			<div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
 				<div class="flex-shrink-0 flex items-center">
@@ -64,8 +65,7 @@
 					</div>
 				</div>
 			</div>
-			<Switch on:change={toggleDarkTheme} />
-			{#if isSessionAuthorized}
+			{#if $page.data.account}
 				<div
 					class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
 				>
@@ -146,7 +146,7 @@
 									id="user-menu-item-1">Settings</a
 								>
 								<a
-									href="#"
+									href="/logout"
 									class="block px-4 py-2 text-sm text-gray-700"
 									role="menuitem"
 									tabindex="-1"
