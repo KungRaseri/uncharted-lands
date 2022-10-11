@@ -27,12 +27,13 @@ const register: Action = async ({ request }) => {
     let accountByEmail = await db.account.findUnique({
         where: { email }
     })
+
     let accountByUsername = await db.account.findUnique({
         where: { username }
     })
 
     if (accountByEmail || accountByUsername) {
-        return invalid(400, { email: accountByEmail, username: accountByUsername })
+        return invalid(400, { exists: "Email or Username already exists." })
     }
 
     await db.account.create({

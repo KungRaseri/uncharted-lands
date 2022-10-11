@@ -2,7 +2,13 @@
 	import Discord from 'svelte-material-icons/Discord.svelte';
 	import Github from 'svelte-material-icons/Github.svelte';
 	import Google from 'svelte-material-icons/Google.svelte';
+	import Information from 'svelte-material-icons/Information.svelte';
 	import house from '$lib/assets/house-foggy-bg.jpg';
+
+	import type { ActionData } from './$types';
+	import { Alert, Anchor, Button } from '@svelteuidev/core';
+
+	export let form: ActionData;
 </script>
 
 <div class="min-h-full flex">
@@ -27,37 +33,40 @@
 						<p class="text-sm text-center font-medium text-gray-700">Sign in with</p>
 						<div class="mt-1 grid grid-cols-3 gap-3">
 							<div>
-								<a
+								<Button
 									href="/api/auth/signin/google"
 									class="w-full inline-flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+									disabled
 								>
 									<span class="sr-only">Sign in with Google</span>
 									<div class="w-6 h-6 block">
 										<Google width="100%" height="100%" />
 									</div>
-								</a>
+								</Button>
 							</div>
 							<div>
-								<a
+								<Button
 									href="/api/auth/signin/discord"
 									class="w-full inline-flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+									disabled
 								>
 									<span class="sr-only">Sign in with Discord</span>
 									<div class="w-6 h-6 block">
 										<Discord width="100%" height="100%" />
 									</div>
-								</a>
+								</Button>
 							</div>
 							<div>
-								<a
+								<Button
 									href="/api/auth/signin/github"
 									class="w-full inline-flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+									disabled
 								>
 									<span class="sr-only">Sign in with Github</span>
 									<div class="w-6 h-6 block">
 										<Github width="100%" height="100%" />
 									</div>
-								</a>
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -73,7 +82,7 @@
 				</div>
 
 				<div class="mt-6">
-					<form action="#" method="POST" class="space-y-6">
+					<form action="?/login" method="POST" class="space-y-6">
 						<div>
 							<label for="email" class="block text-sm font-medium text-gray-700">
 								Email address
@@ -126,13 +135,17 @@
 							</div>
 						</div>
 
-						<div>
-							<button
-								type="submit"
-								class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-								>Sign in</button
-							>
-						</div>
+						{#if form?.invalid}
+							<Alert icon={Information} title="Error">Form information is invalid</Alert>
+						{/if}
+						{#if form?.credentials}
+							<Alert icon={Information} title="Error">Invalid credentials</Alert>
+						{/if}
+
+						<Button
+							class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+							>Login</Button
+						>
 					</form>
 				</div>
 			</div>
