@@ -17,7 +17,7 @@
 	});
 </script>
 
-<Box class="min-h-min mt-3 mb-64 bg-indigo-50 rounded-md shadow px-3 py-5">
+<Box class="min-h-min mt-3 mb-48 bg-indigo-50 rounded-md shadow px-3 py-5">
 	<div class="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
 		<div class="absolute inset-0">
 			<div

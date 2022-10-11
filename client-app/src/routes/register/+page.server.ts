@@ -33,9 +33,12 @@ const register: Action = async ({ request }) => {
     })
 
     if (accountByEmail || accountByUsername) {
-        return invalid(400, { exists: "Email or Username already exists." })
+        return invalid(400, { exists: true })
     }
 
+    if (password.length < 16) {
+        return invalid(400, { length: true })
+    }
     await db.account.create({
         data: {
             email,

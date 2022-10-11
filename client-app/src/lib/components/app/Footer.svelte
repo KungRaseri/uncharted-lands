@@ -5,27 +5,30 @@
 </script>
 
 <Box class={classes}>
-	<footer class="text-3xl text-center border-t-4 border-gray-600">
-		<div class="max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8">
-			<nav class="-mx-5 -my-2 flex flex-wrap justify-center" aria-label="Footer">
-				<div class="px-5 py-2">
+	<footer class="text-center border-t-4 border-gray-600">
+		<div class="max-w-7xl mx-auto py-6 px-4 overflow-hidden sm:px-6 lg:px-8">
+			<nav class="flex flex-wrap justify-center" aria-label="Footer">
+				<div class="px-5">
 					<a href="/game" class="text-base text-gray-50 hover:text-orange-600"> Game </a>
 				</div>
 
-				<div class="px-5 py-2">
+				<div class="px-5">
 					<a href="/forum" class="text-base text-gray-50 hover:text-orange-600"> Forum </a>
 				</div>
 
-				<div class="px-5 py-2">
-					<a href="#" class="text-base text-gray-50 hover:text-orange-600"> Knowledgebase </a>
+				<div class="px-5">
+					<a href="/kb" class="text-base text-gray-50 hover:text-orange-600"> Knowledgebase </a>
 				</div>
 
-				<div class="px-5 py-2">
-					<a href="#" class="text-base text-gray-50 hover:text-orange-600"> Support </a>
+				<div class="px-5">
+					<a href="/support" class="text-base text-gray-50 hover:text-orange-600"> Support </a>
 				</div>
 			</nav>
-			<div class="mt-8 flex justify-center space-x-6">
-				<a href="#" class="text-gray-50 hover:text-orange-600">
+			<div class="mt-4 flex justify-center space-x-6">
+				<a
+					href="https://github.com/redsyndicate/browser-game"
+					class="text-gray-50 hover:text-orange-600"
+				>
 					<span class="sr-only">GitHub</span>
 					<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 						<path
@@ -36,7 +39,7 @@
 					</svg>
 				</a>
 			</div>
-			<p class="mt-8 text-center text-base text-gray-50">
+			<p class="mt-4 text-center text-base text-gray-50">
 				&copy; {new Date().getFullYear()} Red Syndicate. All rights reserved.
 			</p>
 		</div>
