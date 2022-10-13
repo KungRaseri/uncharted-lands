@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Anchor, Box, Burger, Button, Stack, Switch, type Func } from '@svelteuidev/core';
+	import Information from 'svelte-material-icons/AccountArrowRight.svelte';
 	import { page } from '$app/stores';
 
 	import { slide } from 'svelte/transition';
@@ -30,6 +31,10 @@
 
 	function toggleUserMenu() {
 		isUserMenuOpen = !isUserMenuOpen;
+	}
+
+	function closeUserMenu() {
+		isUserMenuOpen = false;
 	}
 </script>
 
@@ -92,11 +97,17 @@
 						</svg>
 					</button>
 
+					<form action="logout" method="POST">
+						<Button size="xs" class="rounded-full">
+							<Information size={16} />
+						</Button>
+					</form>
 					<!-- Profile dropdown -->
 					<div class="ml-3 relative">
 						<div>
 							<button
 								on:click={toggleUserMenu}
+								on:blur={closeUserMenu}
 								type="button"
 								class="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
 								id="user-menu-button"
@@ -124,7 +135,7 @@
 	  -->
 						{#if isUserMenuOpen}
 							<div
-								class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+								class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="user-menu-button"
@@ -132,25 +143,18 @@
 							>
 								<!-- Active: "bg-gray-100", Not Active: "" -->
 								<a
-									href="#"
+									href="/account"
 									class="block px-4 py-2 text-sm text-gray-700"
 									role="menuitem"
 									tabindex="-1"
-									id="user-menu-item-0">Your Profile</a
+									id="user-menu-item-0">Your Account</a
 								>
 								<a
-									href="#"
+									href="/account/settings"
 									class="block px-4 py-2 text-sm text-gray-700"
 									role="menuitem"
 									tabindex="-1"
 									id="user-menu-item-1">Settings</a
-								>
-								<a
-									href="/logout"
-									class="block px-4 py-2 text-sm text-gray-700"
-									role="menuitem"
-									tabindex="-1"
-									id="user-menu-item-2">Sign out</a
 								>
 							</div>
 						{/if}

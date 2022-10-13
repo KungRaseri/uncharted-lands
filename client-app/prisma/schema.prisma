@@ -13,25 +13,25 @@ datasource db {
 model Account {
   id            String @id @default(auto()) @map("_id") @db.ObjectId
   email         String @unique
-  username      String @unique
   passwordHash  String
   userAuthToken String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  role Role @default(MEMBER)
+  role AccountRole @default(MEMBER)
 
   playerProfiles PlayerProfile[]
 }
 
-enum Role {
+enum AccountRole {
   MEMBER
   ADMINISTRATOR
 }
 
 model PlayerProfile {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  username String @unique
 
   account          Account        @relation(fields: [accountId], references: [id])
   serverInstance   ServerInstance @relation(fields: [serverInstanceId], references: [id])
@@ -79,6 +79,7 @@ model StructureModifier {
   name        String
   description String
   attribute   Attribute
+  value       Int
 
   SettlementStructure   SettlementStructure? @relation(fields: [settlementStructureId], references: [id])
   settlementStructureId String?              @db.ObjectId

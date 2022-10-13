@@ -14,6 +14,8 @@
 	import Information from 'svelte-material-icons/Information.svelte';
 	import type { ActionData } from './$types';
 	import house from '$lib/assets/house-foggy-bg.jpg';
+	import { invalidateAll } from '$app/navigation';
+	import { applyAction, enhance } from '$app/forms';
 
 	export let form: ActionData;
 </script>
@@ -36,7 +38,17 @@
 
 					<div class="mt-8">
 						<div class="mt-6">
-							<form action="?/register" method="POST">
+							<form
+								action="?/register"
+								method="POST"
+								use:enhance={() => {
+									return async ({ result }) => {
+										invalidateAll();
+
+										applyAction(result);
+									};
+								}}
+							>
 								<Stack>
 									<InputWrapper label="Email" required>
 										<input

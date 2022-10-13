@@ -3,7 +3,10 @@ import { invalid, redirect } from "@sveltejs/kit";
 import type { Action, Actions, PageServerLoad } from "./$types";
 import bcrypt from 'bcrypt';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+    if (locals.account) {
+        return redirect(302, '/')
+    }
 }
 
 const login: Action = async ({ cookies, request }) => {
@@ -23,13 +26,13 @@ const login: Action = async ({ cookies, request }) => {
     })
 
     if (!account) {
-        return invalid(400, { credentials: true })
+        return invalid(400, { invalid: true, account_info: "Invalid account information" })
     }
 
     const userPassword = await bcrypt.compare(password, account.passwordHash);
 
     if (!userPassword) {
-        return invalid(400, { credentials: true })
+        return invalid(400, { invalid: true, credentials: "Invalid credentials" })
     }
 
     const authenticatedUser = await db.account.update({

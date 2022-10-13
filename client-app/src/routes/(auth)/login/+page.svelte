@@ -1,12 +1,17 @@
 <script lang="ts">
-	import Discord from 'svelte-material-icons/Discord.svelte';
-	import Github from 'svelte-material-icons/Github.svelte';
-	import Google from 'svelte-material-icons/Google.svelte';
-	import Information from 'svelte-material-icons/Information.svelte';
 	import house from '$lib/assets/house-foggy-bg.jpg';
+	import Icon from 'mdi-svelte';
+	import Discord from 'svelte-material-icons/Discord.svelte';
+	import Information from 'svelte-material-icons/Information.svelte';
+	import { mdiGoogle, mdiGithub } from '@mdi/js';
 
 	import type { ActionData } from './$types';
-	import { Alert, Anchor, Button, Card, Container, Grid } from '@svelteuidev/core';
+	import { Alert, Anchor, Box, Button, Card, Container, Grid, Stack } from '@svelteuidev/core';
+	import { applyAction, enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+
+	import { slide } from 'svelte/transition';
+	import { svg_element } from 'svelte/internal';
 
 	export let form: ActionData;
 </script>
@@ -40,7 +45,7 @@
 										>
 											<span class="sr-only">Sign in with Google</span>
 											<div class="w-6 h-6 block">
-												<Google width="100%" height="100%" />
+												<Icon path={mdiGoogle} width="100%" height="100%" />
 											</div>
 										</Button>
 									</div>
@@ -64,7 +69,7 @@
 										>
 											<span class="sr-only">Sign in with Github</span>
 											<div class="w-6 h-6 block">
-												<Github width="100%" height="100%" />
+												<Icon path={mdiGithub} width="100%" height="100%" />
 											</div>
 										</Button>
 									</div>
@@ -82,7 +87,17 @@
 						</div>
 
 						<div class="mt-6">
-							<form action="?/login" method="POST" class="space-y-6">
+							<form
+								action="?/login"
+								method="POST"
+								class="space-y-6"
+								use:enhance={() => {
+									return async ({ result }) => {
+										invalidateAll();
+										await applyAction(result);
+									};
+								}}
+							>
 								<div>
 									<label for="email" class="block text-sm font-medium text-gray-700">
 										Email address
@@ -129,17 +144,24 @@
 									</div>
 
 									<div class="text-sm">
-										<a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
+										<a
+											href="forgot-password"
+											class="font-medium text-indigo-600 hover:text-indigo-500"
+										>
 											Forgot your password?
 										</a>
 									</div>
 								</div>
 
 								{#if form?.invalid}
-									<Alert icon={Information} title="Error">Form information is invalid</Alert>
-								{/if}
-								{#if form?.credentials}
-									<Alert icon={Information} title="Error">Invalid credentials</Alert>
+									<div transition:slide>
+										<Alert icon={Information} title="Error" mx="sm">
+											<Stack>
+												{form?.account_info ?? ''}
+												{form?.credentials ?? ''}
+											</Stack>
+										</Alert>
+									</div>
 								{/if}
 
 								<Button

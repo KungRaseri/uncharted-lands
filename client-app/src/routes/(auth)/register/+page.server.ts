@@ -5,8 +5,10 @@ import bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 
 
-export const load: PageServerLoad = async () => {
-
+export const load: PageServerLoad = async ({locals}) => {
+    if (locals.account) {
+        return redirect(302, '/')
+    }
 }
 
 const register: Action = async ({ request }) => {
