@@ -11,7 +11,6 @@
 	import { invalidateAll } from '$app/navigation';
 
 	import { slide } from 'svelte/transition';
-	import { svg_element } from 'svelte/internal';
 
 	export let form: ActionData;
 </script>
