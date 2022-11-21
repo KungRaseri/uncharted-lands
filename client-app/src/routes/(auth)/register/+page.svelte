@@ -16,6 +16,8 @@
 	import house from '$lib/assets/house-foggy-bg.jpg';
 	import { invalidateAll } from '$app/navigation';
 	import { applyAction, enhance } from '$app/forms';
+	import { slide } from 'svelte/transition';
+	import { elasticInOut } from 'svelte/easing';
 
 	export let form: ActionData;
 </script>
@@ -59,14 +61,6 @@
 											required
 										/>
 									</InputWrapper>
-									<InputWrapper label="Username" required>
-										<input
-											class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-											id="username"
-											type="text"
-											name="username"
-										/>
-									</InputWrapper>
 									<InputWrapper
 										label="Password"
 										description="16+ length, alphanumeric, upper and lower casing, symbols"
@@ -77,6 +71,7 @@
 											id="password"
 											type="password"
 											name="password"
+											autocomplete="current-password"
 										/>
 									</InputWrapper>
 									{#if form?.invalid}

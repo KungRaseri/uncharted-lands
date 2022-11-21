@@ -17,7 +17,7 @@
 	});
 </script>
 
-<Box class="min-h-min mt-3 mb-48 bg-indigo-50 rounded-md shadow px-3 py-5">
+<Box class="min-h-min mx-auto mt-3 mb-48 w-2/3 bg-indigo-50 rounded-md shadow px-3 py-5">
 	<div class="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
 		<div class="absolute inset-0">
 			<div
@@ -43,7 +43,7 @@
 					<a
 						href="/register"
 						class="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-indigo-700 shadow-sm hover:bg-indigo-100 sm:px-8"
-						>Get started</a
+						>Register</a
 					>
 					<a
 						href="/login"

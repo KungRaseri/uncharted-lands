@@ -12,13 +12,12 @@ export const handle: Handle = async function ({ event, resolve }) {
         where: {
             userAuthToken: session
         },
-        select: { email: true, username: true, role: true }
+        select: { email: true, role: true }
     })
 
     if (account) {
         event.locals.account = {
             email: account.email,
-            username: account.username,
             role: account.role
         }
     }

@@ -26,9 +26,9 @@
 							src="https://tailwindui.com/img/logos/workflow-mark.svg?color=indigo&shade=600"
 							alt="Workflow"
 						/>
-						<h2 class="mt-6 text-3xl tracking-tight font-bold text-gray-900">
+						<h1 class="mt-6 text-3xl tracking-tight font-bold text-gray-900">
 							Sign in to your account
-						</h2>
+						</h1>
 					</div>
 
 					<div class="mt-8">
@@ -132,12 +132,12 @@
 								<div class="flex items-center justify-between">
 									<div class="flex items-center">
 										<input
-											id="remember-me"
-											name="remember-me"
+											id="remember_me"
+											name="remember_me"
 											type="checkbox"
 											class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
 										/>
-										<label for="remember-me" class="ml-2 block text-sm text-gray-900">
+										<label for="remember_me" class="ml-2 block text-sm text-gray-900">
 											Remember me
 										</label>
 									</div>

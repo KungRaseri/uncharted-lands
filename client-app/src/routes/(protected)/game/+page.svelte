@@ -4,7 +4,7 @@
 
 	import { onMount } from 'svelte';
 	import { Box, Container, Tabs } from '@svelteuidev/core';
-	import Overview from '$lib/components/game/Overview.svelte';
+	import Navigation from '$lib/components/game/Navigation.svelte';
 
 	onMount(async () => {
 		// let test = await fetch(
@@ -20,22 +20,6 @@
 
 <Container class="min-h-min mb-64 lg:max-w-7xl md:max-w-md sm:max-w-max mx-auto pb-12">
 	<Box class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
-		<Tabs>
-			<Tabs.Tab label="Overview">
-				<Overview />
-			</Tabs.Tab>
-			<Tabs.Tab label="Settlements">
-				<Overview />
-			</Tabs.Tab>
-			<Tabs.Tab label="Overview">
-				<Overview />
-			</Tabs.Tab>
-			<Tabs.Tab label="Overview">
-				<Overview />
-			</Tabs.Tab>
-			<Tabs.Tab label="Overview">
-				<Overview />
-			</Tabs.Tab>
-		</Tabs>
+		<Navigation />
 	</Box>
 </Container>

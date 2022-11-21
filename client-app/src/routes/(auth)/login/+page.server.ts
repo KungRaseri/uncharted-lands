@@ -13,6 +13,7 @@ const login: Action = async ({ cookies, request }) => {
     const data = await request.formData();
     const email = data.get('email');
     const password = data.get('password');
+    const rememberMeIsChecked = data.get('remember_me');
 
     if (typeof email !== 'string' ||
         typeof password !== 'string' ||
@@ -45,7 +46,7 @@ const login: Action = async ({ cookies, request }) => {
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 30
+        maxAge: (rememberMeIsChecked) ? 60 * 60 * 24 * 30 : 60 * 60 * 6 // 30 days if remember me is checked, otherwise it's 6 hours
     })
 
     throw redirect(302, '/');

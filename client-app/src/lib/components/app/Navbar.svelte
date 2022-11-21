@@ -8,6 +8,7 @@
 
 	let isMainMenuOpen = false;
 	let isUserMenuOpen = false;
+
 	export let toggleDarkTheme: Func;
 
 	export let links = [
