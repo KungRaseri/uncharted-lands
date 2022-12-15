@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Box, Grid, Tabs } from '@svelteuidev/core';
+	import { Box, Card, Grid, Tabs } from '@svelteuidev/core';
 	import Region from './Region.svelte';
 
 	const Regions: any = [
@@ -1906,8 +1906,10 @@
 	];
 </script>
 
-<Grid cols={10}>
-	{#each Regions as RegionInfo}
-		<Grid.Col span={1}><Region {RegionInfo} /></Grid.Col>
-	{/each}
-</Grid>
+<Card p="lg" m={0}>
+	<Grid cols={10} align="center" justify="center">
+		{#each Regions as RegionInfo}
+			<Grid.Col span={1}><Region {RegionInfo} /></Grid.Col>
+		{/each}
+	</Grid>
+</Card>

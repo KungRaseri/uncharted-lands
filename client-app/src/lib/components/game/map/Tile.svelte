@@ -4,8 +4,6 @@
 	export let TileInfo: any;
 </script>
 
-<Card p="sm">
-	{TileInfo.Id}
-	{TileInfo.Settlement.Id}
-	{TileInfo.Settlement.OwnedBy}
+<Card p={0} m={0}>
+		<Box m="md">{TileInfo.Id}</Box>
 </Card>
