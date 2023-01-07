@@ -2,7 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 test.describe('Home page', async () => {
 	test.beforeEach(async ({ page }) => {
-		await page.goto('http://localhost:5173/');
+		await page.goto('/');
+		await page.waitForLoadState("networkidle");
 	});
 	test('main feature content exists', async ({ page }) => {
 		expect(await page.textContent('h1')).toContain('Settle in uncharted lands');
