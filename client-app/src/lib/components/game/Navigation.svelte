@@ -12,9 +12,9 @@
 		<Tabs.Tab label="Settlements">
 			<Overview />
 		</Tabs.Tab>
-		<Tabs.Tab label="World">
+		<!-- <Tabs.Tab label="World">
 			<World />
-		</Tabs.Tab>
+		</Tabs.Tab> -->
 		<Tabs.Tab label="Overview">
 			<Overview />
 		</Tabs.Tab>

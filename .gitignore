@@ -275,3 +275,5 @@ __pycache__/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+assets
