@@ -23,13 +23,8 @@ jobs:
       uses: actions/setup-node@v3.6.0
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Setup Playwright
-      # You may pin to the exact commit or the version.
-      # uses: maxmilton/action-setup-playwright@2d6caa385908bbd298c4302685378300a1659e02
-      uses: maxmilton/action-setup-playwright@v1
-      with:
-        browsers: chromium, firefox, webkit # optional
-        headless: true # optional
+    - name: Run Playwright tests
+      uses: microsoft/playwright-github-action@v1.5.4
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
