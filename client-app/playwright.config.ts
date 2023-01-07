@@ -102,7 +102,7 @@ const config: PlaywrightTestConfig = {
     command: 'npm run dev',
     port: 5173,
     reuseExistingServer: true
-  } : undefined,
+  } : undefined
 };
 
 export default config;
