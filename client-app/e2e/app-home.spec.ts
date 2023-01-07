@@ -15,6 +15,7 @@ test.describe('Home page', async () => {
 
 		await page.getByText("Introduction").waitFor();
 		await page.getByText("Introduction").click();
+		await page.waitForLoadState("networkidle");
 
 		await page.getByText(expected).waitFor();
 
@@ -26,6 +27,7 @@ test.describe('Home page', async () => {
 
 		await page.getByText("Register").waitFor();
 		await page.getByText("Register").click();
+		await page.waitForLoadState("networkidle");
 
 		await page.getByText(expected).waitFor();
 		expect(await page.textContent('h1')).toContain(expected);
@@ -36,6 +38,7 @@ test.describe('Home page', async () => {
 
 		await page.getByText("Login").waitFor();
 		await page.getByText("Login").click();
+		await page.waitForLoadState("networkidle");
 
 		await page.getByText(expected).waitFor();
 		expect(await page.textContent('h1')).toContain(expected);
