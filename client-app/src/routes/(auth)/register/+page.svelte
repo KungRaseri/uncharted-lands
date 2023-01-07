@@ -13,7 +13,7 @@
 	} from '@svelteuidev/core';
 	import Information from 'svelte-material-icons/Information.svelte';
 	import type { ActionData } from './$types';
-	import house from '$lib/assets/house-foggy-bg.jpg';
+	import house from '$lib/images/house-foggy-bg.jpg';
 	import { invalidateAll } from '$app/navigation';
 	import { applyAction, enhance } from '$app/forms';
 	import { slide } from 'svelte/transition';

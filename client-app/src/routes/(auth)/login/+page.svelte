@@ -1,5 +1,5 @@
 <script lang="ts">
-	import house from '$lib/assets/house-foggy-bg.jpg';
+	import house from '$lib/images/house-foggy-bg.jpg';
 	import Icon from 'mdi-svelte';
 	import Discord from 'svelte-material-icons/Discord.svelte';
 	import Information from 'svelte-material-icons/Information.svelte';
