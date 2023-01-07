@@ -11,17 +11,17 @@ test.describe('Home page', async () => {
 	});
 
 	test('main feature actions -> Introduction', async ({ page }) => {
-		await page.locator('a', { hasText: 'Introduction' }).click({ button: "left" });
+		await page.getByText("Introduction").click();
 		expect(await page.textContent('.title > .label')).toContain("Area Under Construction");
 	});
 
 	test('main feature actions -> Register', async ({ page }) => {
-		await page.locator('a', { hasText: 'Register' }).click({ button: "left" });
+		await page.getByText("Register").click();
 		expect(await page.textContent('h1')).toContain("Register your account");
 	});
 
 	test('main feature actions -> Login', async ({ page }) => {
-		await page.locator('a', { hasText: 'Login' }).click({ button: "left" });
+		await page.getByText("Login").click();
 		expect(await page.textContent('h1')).toContain("Sign in to your account");
 	});
 });
