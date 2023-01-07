@@ -4,14 +4,10 @@
 	export let arrow: any;
 </script>
 
-<div id={arrow.id} class="arrow text-amber-200 text-xs">--></div>
+<div id={arrow.id} class="arrow relative text-gray-800 text-xs">--></div>
 
 <style>
 	.arrow {
-		float: left;
-		position: relative;
-		width: 32px;
-		height: 32px;
 		top: -16px;
 		left: -16px;
 		animation: flying 0.5s steps(640);

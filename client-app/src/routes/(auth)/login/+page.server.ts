@@ -1,11 +1,11 @@
 import { db } from "$lib/db";
-import { invalid, redirect } from "@sveltejs/kit";
+import { fail, redirect } from "@sveltejs/kit";
 import type { Action, Actions, PageServerLoad } from "./$types";
 import bcrypt from 'bcrypt';
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (locals.account) {
-        return redirect(302, '/')
+        throw redirect(302, '/')
     }
 }
 
@@ -19,7 +19,7 @@ const login: Action = async ({ cookies, request }) => {
         typeof password !== 'string' ||
         !email ||
         !password) {
-        return invalid(400, { invalid: true })
+        return fail(400, { invalid: true })
     }
 
     const account = await db.account.findUnique({
@@ -27,13 +27,13 @@ const login: Action = async ({ cookies, request }) => {
     })
 
     if (!account) {
-        return invalid(400, { invalid: true, account_info: "Invalid account information" })
+        return fail(400, { invalid: true, account_info: "Invalid account information" })
     }
 
     const userPassword = await bcrypt.compare(password, account.passwordHash);
 
     if (!userPassword) {
-        return invalid(400, { invalid: true, credentials: "Invalid credentials" })
+        return fail(400, { invalid: true, credentials: "Invalid credentials" })
     }
 
     const authenticatedUser = await db.account.update({

@@ -1,5 +1,5 @@
 import { db } from '$lib/db';
-import { invalid, redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
 import bcrypt from 'bcrypt';
 import { AccountRole } from '@prisma/client';
@@ -20,7 +20,7 @@ const register: Action = async ({ cookies, request }) => {
         typeof password !== 'string' ||
         !email ||
         !password) {
-        return invalid(400, { invalid: true })
+        return fail(400, { invalid: true })
     }
 
     let account = await db.account.findUnique({
@@ -28,11 +28,11 @@ const register: Action = async ({ cookies, request }) => {
     })
 
     if (account) {
-        return invalid(400, { exists: true })
+        return fail(400, { exists: true })
     }
 
     if (password.length < 16) {
-        return invalid(400, { length: true })
+        return fail(400, { length: true })
     }
 
     let user = await db.account.create({

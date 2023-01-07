@@ -1,13 +1,65 @@
 <script lang="ts">
-	import { Box, Tabs } from '@svelteuidev/core';
+	import { ActionIcon, Box, Button, Card, Group, Tabs } from '@svelteuidev/core';
 
-	export let animState: string;
+	import { arrows, Arrow } from '$lib/stores/game/arrows';
+	import ArrowComponent from '$lib/components/game/entities/Arrow.svelte';
+
+	let animState: string = 'idle';
+
+	let isAttacking = false;
+
+	function handleAttack(type: string) {
+		animState = `attack-${type}`;
+		isAttacking = true;
+
+		setTimeout(() => {
+			if (type === 'ranged') spawnArrow();
+
+			animState = 'idle';
+			isAttacking = false;
+		}, 500);
+	}
+
+	function spawnArrow() {
+		let id = crypto.randomUUID();
+		let name = `arrow-${id}`;
+
+		$arrows = [...$arrows, { id, name }];
+
+		setTimeout(() => {
+			$arrows = $arrows.filter((t) => t.id !== id);
+		}, 500);
+	}
+	$: arrows;
 </script>
 
-<div class="archer">
-	<div class={animState} />
-</div>
-<slot />
+<Card p="md">
+	<Card.Section>
+		<div class="archer">
+			<div class={animState} />
+			{#each $arrows as arrow}
+				<ArrowComponent {arrow} />
+			{/each}
+		</div>
+	</Card.Section>
+	<Group position="left">
+		<Button
+			disabled={isAttacking}
+			class="mb-2"
+			on:click={() => {
+				handleAttack('melee');
+			}}>Melee</Button
+		>
+
+		<Button
+			disabled={isAttacking}
+			class="mb-2"
+			on:click={() => {
+				handleAttack('ranged');
+			}}>Ranged</Button
+		>
+	</Group>
+</Card>
 
 <style>
 	.archer .idle {
