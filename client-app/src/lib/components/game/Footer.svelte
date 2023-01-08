@@ -5,5 +5,5 @@
 </script>
 
 <Box>
-	<p>Settlements | Map | Protectors | Overview</p>
+	<p>Footer</p>
 </Box>
