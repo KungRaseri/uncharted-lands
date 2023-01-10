@@ -1,20 +1,24 @@
 using System.Net.Http.Headers;
+using api;
 using api.Hubs;
+using Microsoft.AspNetCore.WebSockets;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<GameManager>();
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = "redis:6379";
 });
- 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,7 +28,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.UseCors(options =>
     {
-        options.AllowAnyOrigin();
+        options
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 }
 
@@ -33,6 +41,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<ChatHub>("/hub/chat");
+app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<GameHub>("/hubs/game");
 
 app.Run();

@@ -4,6 +4,10 @@ namespace api.Hubs;
 
 public class GameHub : Hub
 {
-    public async Task UpdateGameTime(DateTime gameTime) =>
-        await Clients.All.SendAsync("UpdateGameTime", gameTime);
+    private readonly GameManager _gameManager;
+
+    public GameHub(GameManager gameManager)
+    {
+        _gameManager = gameManager;
+    }
 }
