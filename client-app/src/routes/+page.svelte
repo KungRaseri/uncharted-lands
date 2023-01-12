@@ -17,7 +17,7 @@
 	});
 </script>
 
-<Box class="min-h-min mx-auto mt-3 mb-48 w-2/3 bg-indigo-50 rounded-md shadow px-3 py-5">
+<Box class="mx-auto mt-3 mb-48 w-2/3 rounded-md">
 	<div class="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
 		<div class="absolute inset-0">
 			<div

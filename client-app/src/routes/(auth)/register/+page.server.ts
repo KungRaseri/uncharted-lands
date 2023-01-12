@@ -23,7 +23,7 @@ const register: Action = async ({ cookies, request }) => {
         return fail(400, { invalid: true })
     }
 
-    let account = await db.account.findUnique({
+    const account = await db.account.findUnique({
         where: { email }
     })
 
@@ -35,7 +35,7 @@ const register: Action = async ({ cookies, request }) => {
         return fail(400, { length: true })
     }
 
-    let user = await db.account.create({
+    const newAccount = await db.account.create({
         data: {
             email,
             passwordHash: await bcrypt.hash(password, 10),
@@ -44,7 +44,7 @@ const register: Action = async ({ cookies, request }) => {
         }
     });
 
-    cookies.set('session', user.userAuthToken, {
+    cookies.set('session', newAccount.userAuthToken, {
         path: '/',
         httpOnly: true,
         sameSite: 'strict',

@@ -37,5 +37,5 @@
 	<AppShell>
 		<slot />
 	</AppShell>
-	<Footer classes="bg-gray-700 fixed bottom-0 inset-x-0" />
+	<Footer classes="bg-gray-800 fixed bottom-0 inset-x-0" />
 </SvelteUIProvider>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Box, Container, Tabs } from '@svelteuidev/core';
+	import { page } from '$app/stores';
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
 
@@ -28,8 +29,6 @@
 					${localDate.getHours()}:${localDate.getMinutes()}:${localDate.getSeconds()}`
 				);
 			});
-
-			console.log('SignalR Connected.');
 		} catch (err) {
 			console.log(err);
 			setTimeout(start, 5000);
@@ -52,12 +51,20 @@
 
 	$: serverTime;
 	$: localTime;
+	$: data = $page.data;
 </script>
 
-<div class="mx-auto text-sm text-gray-500 text-center">{serverTime}</div>
-<div class="mx-auto text-sm text-gray-500 text-center">{localTime}</div>
+<Box class="mx-auto mb-4">
+	<div class="text-xs text-neutral-400 text-center">{serverTime}</div>
+	<div class="text-xs text-neutral-400 text-center">{localTime}</div>
+</Box>
 <Container>
-	<GameNavigation />
-	<slot />
-	<GameFooter />
+	{#if data.account.playerProfiles}
+		<GameNavigation />
+		<slot />
+		<GameFooter />
+	{/if}
+	{#if !data.account.playerProfiles}
+		<slot />
+	{/if}
 </Container>
