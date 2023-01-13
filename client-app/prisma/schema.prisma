@@ -16,11 +16,24 @@ enum AccountRole {
   ADMINISTRATOR
 }
 
+enum ServerStatus {
+  OFFLINE
+  ONLINE
+}
+
 enum Resource {
   FOOD
   WATER
   WOOD
   STONE
+}
+
+enum TileType {
+  WATER
+  SAND
+  SOIL
+  STONE
+  ICE
 }
 
 model Account {
@@ -43,93 +56,97 @@ model PlayerProfile {
 
   settlements Settlement[]
 
+  Account   Account @relation(fields: [accountId], references: [id])
+  accountId String
+
+  Server   Server? @relation(fields: [serverId], references: [id])
+  serverId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Account   Account? @relation(fields: [accountId], references: [id])
-  accountId String?
-  Server    Server?  @relation(fields: [serverId], references: [id])
-  serverId  String?
 }
 
 model Server {
-  id     String       @id @default(uuid())
-  name   String       @unique
-  status ServerStatus @default(OFFLINE)
+  id       String       @id @default(uuid())
+  name     String       @unique
+  hostname String       @default("localhost")
+  port     Int          @default(5000)
+  status   ServerStatus @default(OFFLINE)
 
   playerProfiles PlayerProfile[]
   worlds         World[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
 
-enum ServerStatus {
-  OFFLINE
-  ONLINE
+  @@unique([hostname, port])
 }
 
 model World {
-  id       String   @id @default(uuid())
-  index    Int      @default(autoincrement())
-  regions  Region[]
-  Server   Server?  @relation(fields: [serverId], references: [id])
-  serverId String?
+  id      String   @id @default(uuid())
+  regions Region[]
+
+  Server   Server @relation(fields: [serverId], references: [id])
+  serverId String
 }
 
 model Region {
-  id      String  @id @default(uuid())
-  index   Int     @default(autoincrement())
-  tiles   Tile[]
-  World   World?  @relation(fields: [worldId], references: [id])
-  worldId String?
+  id    String @id @default(uuid())
+  tiles Tile[]
+
+  World   World  @relation(fields: [worldId], references: [id])
+  worldId String
 }
 
 model Tile {
   id        String         @id @default(uuid())
-  index     Int            @default(autoincrement())
+  type      TileType
   resources TileResource[]
-  Region    Region?        @relation(fields: [regionId], references: [id])
-  regionId  String?
+
+  settlement   Settlement? @relation(fields: [settlementId], references: [id])
+  settlementId String?
+
+  Region   Region @relation(fields: [regionId], references: [id])
+  regionId String
 }
 
 model TileResource {
   id       String   @id @default(uuid())
   resource Resource
   value    Int
-  Tile     Tile?    @relation(fields: [tileId], references: [id])
-  tileId   String?
+
+  Tile   Tile   @relation(fields: [tileId], references: [id])
+  tileId String
+
+  @@unique([tileId, resource])
 }
 
 model Settlement {
-  id              String                @id @default(uuid())
-  name            String
-  structures      SettlementStructure[]
-  PlayerProfile   PlayerProfile?        @relation(fields: [playerProfileId], references: [id])
-  playerProfileId String?
+  id         String                @id @default(uuid())
+  name       String
+  structures SettlementStructure[]
+  Tile       Tile[]
+
+  PlayerProfile   PlayerProfile @relation(fields: [playerProfileId], references: [id])
+  playerProfileId String
 }
 
 model SettlementStructure {
-  id           String              @id @default(uuid())
-  name         String
-  description  String
-  modifiers    StructureModifier[]
-  actions      StructureAction[]
-  Settlement   Settlement?         @relation(fields: [settlementId], references: [id])
-  settlementId String?
-}
+  id          String              @id @default(uuid())
+  name        String
+  description String
+  modifiers   StructureModifier[]
 
-model StructureAction {
-  id                    String               @id @default(uuid())
-  SettlementStructure   SettlementStructure? @relation(fields: [settlementStructureId], references: [id])
-  settlementStructureId String?
+  Settlement   Settlement @relation(fields: [settlementId], references: [id])
+  settlementId String
 }
 
 model StructureModifier {
-  id                    String               @id @default(uuid())
+  id                    String              @id @default(uuid())
   name                  String
   description           String
   resource              Resource
   value                 Int
-  SettlementStructure   SettlementStructure? @relation(fields: [settlementStructureId], references: [id])
-  settlementStructureId String?
+  SettlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
+  settlementStructureId String
 }

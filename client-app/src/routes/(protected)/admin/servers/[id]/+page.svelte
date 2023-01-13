@@ -5,6 +5,7 @@
 		Box,
 		Button,
 		Card,
+		Container,
 		Divider,
 		Group,
 		InputWrapper,
@@ -80,7 +81,7 @@
 										id="regionMax"
 										type="number"
 										min="1"
-										max="10"
+										max="100"
 										value="1"
 										name="regionMax"
 										required
@@ -98,7 +99,7 @@
 										id="tilesPerRegion"
 										type="number"
 										min="1"
-										max="10"
+										max="100"
 										value="1"
 										name="tilesPerRegion"
 										required
@@ -117,9 +118,15 @@
 				{#if !data.server.worlds.length}
 					<p>None</p>
 				{/if}
-				{#each data.server.worlds as world}
-					<li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white" />
-				{/each}
+				<Container class="w-full flex p-0 m-0">
+					{#each data.server.worlds as world, i}
+						<Button
+							href="/admin/worlds/{world.id}"
+							class="mx-1 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
+							>{i}</Button
+						>
+					{/each}
+				</Container>
 			</Card.Section>
 		</Card>
 		<Card p={0} class="bg-slate-50 rounded-md mx-5 my-5">

@@ -13,22 +13,26 @@ export const load: PageServerLoad = async ({ locals, params }) => {
         throw redirect(302, '/')
     }
 
-    const server = await db.server.findUnique({
+    const world = await db.world.findUnique({
         where: {
             id: params.id
         },
         include: {
-            worlds: true,
-            playerProfiles: true
+            regions: {
+                include: {
+                    tiles: true
+                }
+            },
+            Server: true
         }
     });
 
-    if (!server) {
+    if (!world) {
         throw fail(404, { success: false, id: params.id })
     }
 
     return {
-        server
+        world
     }
 }
 

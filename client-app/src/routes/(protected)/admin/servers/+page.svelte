@@ -6,6 +6,7 @@
 		Box,
 		Button,
 		Card,
+		Container,
 		Divider,
 		Grid,
 		Group,
@@ -24,6 +25,7 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
 	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
+	import World from '$lib/components/game/map/World.svelte';
 
 	let isServerFormActive: Boolean = false;
 
@@ -122,9 +124,13 @@
 						{#if !server.worlds.length}
 							<p>None</p>
 						{/if}
-						{#each server.worlds as world}
-							<li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white" />
-						{/each}
+						<Container class="w-full flex p-0 m-0">
+							{#each server.worlds as world, i}
+								<Box class="mx-1 px-5 py-4 text-xs rounded-full bg-slate-600">
+									<Text class="text-slate-300">{i}</Text>
+								</Box>
+							{/each}
+						</Container>
 					</Card.Section>
 
 					<Card.Section class="px-6 py-1 w-full">
