@@ -142,11 +142,12 @@ model SettlementStructure {
 }
 
 model StructureModifier {
-  id                    String              @id @default(uuid())
-  name                  String
-  description           String
-  resource              Resource
-  value                 Int
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  resource    Resource
+  value       Int
+
   SettlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
   settlementStructureId String
 }

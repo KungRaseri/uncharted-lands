@@ -23,6 +23,7 @@
 	import Edit from 'svelte-material-icons/TooltipEdit.svelte';
 	import Information from 'svelte-material-icons/Information.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
+	import Home from 'svelte-material-icons/Home.svelte';
 
 	import { getCSSFromTile } from '$lib/game/tile-helper';
 
@@ -50,16 +51,26 @@
 			{#each data.world.regions as region, i}
 				<Box class="grid grid-cols-3">
 					{#each region.tiles as tile, j}
-						<a href="/admin/tiles/{tile.id}">
-							<Paper
-								class="m-0 rounded-none text-center align-middle 
-							border-dotted border-spacing-4
-							hover:bg-opacity-50
-							{getCSSFromTile(tile.type)?.bg}"
-							>
-								<Text align="center">[{i}:{j}]</Text>
-							</Paper>
-						</a>
+						<Box class="m-0 p-0">
+							<a href="/admin/tiles/{tile.id}">
+								<Paper
+									class="text-center align-middle rounded-none 
+									border-dotted border-spacing-4
+									hover:bg-opacity-50
+									{getCSSFromTile(tile.type)?.bg}"
+								>
+									{#if tile.settlementId}
+										<Box class="relative -top-1 -left-1 -m-2 -p-1">
+											<Home />
+										</Box>
+									{/if}
+
+									<Text align="center" class={getCSSFromTile(tile.type)?.text}>
+										[{i}:{j}]
+									</Text>
+								</Paper>
+							</a>
+						</Box>
 					{/each}
 				</Box>
 			{/each}

@@ -9,6 +9,7 @@
 		Divider,
 		Group,
 		InputWrapper,
+		Paper,
 		Stack,
 		Text,
 		Title
@@ -21,16 +22,6 @@
 	import Information from 'svelte-material-icons/Information.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 
-	let isWorldFormActive = false;
-
-	function toggleWorldForm() {
-		isWorldFormActive = !isWorldFormActive;
-	}
-
-	function closeWorldForm() {
-		isWorldFormActive = !isWorldFormActive;
-	}
-
 	export let data: PageData;
 </script>
 
@@ -41,13 +32,29 @@
 		</Card.Section>
 		<Card p={0} class="bg-slate-50 rounded-md mx-5 my-5 p-1">
 			<Card.Section class="px-6 py-1 w-full">
-				<Group class="m-1">
-					<Button on:click={toggleWorldForm} compact class="w-fit">
-						<span class="ml-1 mr-2"><Edit /></span>
-						Edit World
-					</Button>
-				</Group>
+				<Divider size="lg" label="Settlement" labelPosition="left" />
+				{#if !data.tile.settlementId}
+					<p>None</p>
+				{/if}
+
+				{#if data.tile.settlementId}
+					<Paper class="w-1/2">
+						<Text class="text-lg">{data.tile.settlement?.name}</Text>
+
+						<Box class="flex">
+							<span class="bg-slate-300 rounded-full py-1 px-2 mx-1 w-fit">
+								<Text class="text-xs text-gray-500">ID: {data.tile.settlementId}</Text>
+							</span>
+							<span class="bg-slate-300 rounded-full py-1 px-2 mx-1 w-fit">
+								<Text class="text-xs text-gray-500">
+									Profile ID: {data.tile.settlement?.playerProfileId}
+								</Text>
+							</span>
+						</Box>
+					</Paper>
+				{/if}
 				<Divider size="lg" label="Resources" labelPosition="left" />
+
 				{#if !data.tile.resources.length}
 					<p>None</p>
 				{/if}

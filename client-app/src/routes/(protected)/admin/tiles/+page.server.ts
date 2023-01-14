@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals }) => {
             include: {
                 Region: true,
                 resources: true,
-                settlement: true,
+                settlement: true
             }
         })
     }

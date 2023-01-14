@@ -123,8 +123,9 @@
 						<Button
 							href="/admin/worlds/{world.id}"
 							class="mx-1 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
-							>{i}</Button
 						>
+							{i}
+						</Button>
 					{/each}
 				</Container>
 			</Card.Section>
@@ -135,9 +136,16 @@
 				{#if !data.server.playerProfiles.length}
 					<p>None</p>
 				{/if}
-				{#each data.server.playerProfiles as playerProfile}
-					<li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white" />
-				{/each}
+				<Container class="w-full flex p-0 m-0">
+					{#each data.server.playerProfiles as playerProfile, i}
+						<Button
+							href="/admin/players/{playerProfile.id}"
+							class="mx-1 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
+						>
+							{i}
+						</Button>
+					{/each}
+				</Container>
 			</Card.Section>
 		</Card>
 	</Card>

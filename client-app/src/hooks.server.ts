@@ -12,11 +12,14 @@ export const handle: Handle = async function ({ event, resolve }) {
         where: {
             userAuthToken: session
         },
-        select: { email: true, role: true }
+        include: {
+            playerProfiles: true
+        }
     })
 
     if (account) {
         event.locals.account = {
+            playerProfiles: account.playerProfiles,
             email: account.email,
             role: account.role
         }

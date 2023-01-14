@@ -8,8 +8,9 @@ import type { Account, Role } from "@prisma/client"
 declare namespace App {
 	interface Locals {
 		account: Account = {
+			id: string,
 			email: string,
-			username: string,
+			userAuthToken: string,
 			role: Role
 		}
 	}
