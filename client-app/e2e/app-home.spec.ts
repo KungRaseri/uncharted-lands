@@ -7,7 +7,7 @@ test.describe('Home page', async () => {
 	});
 	test('main feature content exists', async ({ page }) => {
 		expect(await page.textContent('h1')).toContain('Settle in uncharted lands');
-		expect(await page.title()).toContain('Portal | Browser-game');
+		expect(await page.title()).toContain('Portal | Uncharted Lands');
 	});
 
 	test('main feature actions -> Introduction', async ({ page }) => {
