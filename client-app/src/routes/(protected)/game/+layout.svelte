@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Box, Container, Tabs } from '@svelteuidev/core';
-	import { page } from '$app/stores';
+	import type { PageData } from './$types';
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
 
@@ -10,6 +10,7 @@
 		.withUrl('http://localhost:5036/hubs/game')
 		.build();
 
+	let chosenServer: string;
 	let serverTime: string = '...';
 	let localTime: string = '...';
 
@@ -51,7 +52,9 @@
 
 	$: serverTime;
 	$: localTime;
-	$: data = $page.data;
+	$: data;
+
+	export let data: PageData;
 </script>
 
 <Box class="mx-auto mb-4">
@@ -59,12 +62,7 @@
 	<div class="text-xs text-neutral-400 text-center">{localTime}</div>
 </Box>
 <Container>
-	{#if data.account.playerProfiles}
-		<GameNavigation />
-		<slot />
-		<GameFooter />
-	{/if}
-	{#if !data.account.playerProfiles}
-		<slot />
-	{/if}
+	<GameNavigation />
+	<slot />
+	<GameFooter />
 </Container>

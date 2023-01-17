@@ -2,16 +2,25 @@
 // for information about these interfaces
 /// <reference types="@sveltejs/kit" />
 
-import type { Account, Role } from "@prisma/client"
 
 // and what to do when importing types
 declare namespace App {
+	import type { Account, Role, PlayerProfile } from "@prisma/client"
+
 	interface Locals {
 		account: Account = {
 			id: string,
 			email: string,
 			userAuthToken: string,
-			role: Role
+			role: Role,
+			createdAt: Date,
+			updatedAt: Date
+		}
+		playerProfile: PlayerProfile = {
+			id: string,
+			username: string,
+			accountId: string,
+			serverId: string
 		}
 	}
 	// interface Platform {}

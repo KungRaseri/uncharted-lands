@@ -5,16 +5,22 @@
 
 	import { slide } from 'svelte/transition';
 	import { backInOut } from 'svelte/easing';
+	import type { PageData } from '.svelte-kit/types/src/routes/$types';
 
 	let isMainMenuOpen = false;
 	let isUserMenuOpen = false;
 
-	// export let toggleDarkTheme: Func;
+	export let toggleDarkTheme: Func;
 
 	export let links = [
 		{
 			name: 'Home',
 			route: '/'
+		},
+		{
+			name: 'Admin',
+			route: '/admin',
+			authRequired: true
 		},
 		{
 			name: 'Forum',
@@ -98,11 +104,6 @@
 						</svg>
 					</button>
 
-					<form action="logout" method="POST">
-						<Button size="xs" class="rounded-full">
-							<Information size={16} />
-						</Button>
-					</form>
 					<!-- Profile dropdown -->
 					<div class="ml-3 relative">
 						<div>
@@ -143,20 +144,39 @@
 								tabindex="-1"
 							>
 								<!-- Active: "bg-gray-100", Not Active: "" -->
+								{#if $page.data.account.role === 'ADMINISTRATOR'}
+									<a
+										href="/admin"
+										class="block px-4 py-2 text-sm text-gray-700"
+										role="menuitem"
+										tabindex="-1"
+										id="user-menu-item-99">Administration</a
+									>
+								{/if}
 								<a
 									href="/account"
 									class="block px-4 py-2 text-sm text-gray-700"
 									role="menuitem"
 									tabindex="-1"
-									id="user-menu-item-0">Your Account</a
+									id="user-menu-item-0"
 								>
+									Your Account
+								</a>
 								<a
 									href="/account/settings"
 									class="block px-4 py-2 text-sm text-gray-700"
 									role="menuitem"
 									tabindex="-1"
-									id="user-menu-item-1">Settings</a
+									id="user-menu-item-1"
 								>
+									Settings
+								</a>
+
+								<form action="logout" method="POST">
+									<Button size="xs" class="rounded-full float-right mx-4">
+										<Information size={16} />
+									</Button>
+								</form>
 							</div>
 						{/if}
 					</div>
@@ -169,14 +189,18 @@
 		<div transition:slide class="sm:hidden">
 			<Stack mx="lg" mb="xs" justify="start">
 				{#each links as link}
-					<Button
-						fullSize
-						variant="subtle"
-						href={link.route}
-						class="text-gray-300 hover:bg-gray-700 hover:text-white text-base font-medium"
-					>
-						{link.name}
-					</Button>
+					{#if link.authRequired}
+						{#if $page.data.account.role === 'ADMINIsSTRATOR'}
+							<Button
+								fullSize
+								variant="subtle"
+								href={link.route}
+								class="text-gray-300 hover:bg-gray-700 hover:text-white text-base font-medium"
+							>
+								{link.name}
+							</Button>
+						{/if}
+					{/if}
 				{/each}
 			</Stack>
 		</div>

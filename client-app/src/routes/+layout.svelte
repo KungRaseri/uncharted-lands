@@ -26,7 +26,7 @@
 	});
 </script>
 
-<Seo title="Portal" titleTemplate="%t% | Browser-game" />
+<Seo title="Portal" titleTemplate="%t% | Uncharted Lands" />
 <SvelteUIProvider
 	themeObserver={isDarkTheme ? 'dark' : 'light'}
 	withNormalizeCSS
