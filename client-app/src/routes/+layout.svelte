@@ -8,6 +8,7 @@
 	import Footer from '$lib/components/app/Footer.svelte';
 
 	import { onMount } from 'svelte';
+	import type { PageData } from './$types';
 
 	let isDarkTheme = false;
 
@@ -15,15 +16,7 @@
 		isDarkTheme = !isDarkTheme;
 	}
 
-	onMount(async () => {
-		// let test = await fetch(
-		// 	`${
-		// 		import.meta.env.VITE_API_URL
-		// 	}/weather/getgeolocation?q=Wenatchee&limit=5&apiId=41ce5f680911dcb7b1fe03babaf75ad4`
-		// ).then((res) => {
-		// 	return res.json();
-		// });
-	});
+	export let data: PageData;
 </script>
 
 <Seo title="Portal" titleTemplate="%t% | Uncharted Lands" />
@@ -33,7 +26,7 @@
 	withGlobalStyles
 	ssr
 >
-	<Header {toggleDarkTheme} />
+	<Header {toggleDarkTheme} mainMenuLinks={data.mainMenuLinks} userMenuLinks={data.userMenuLinks}/>
 	<AppShell>
 		<slot />
 	</AppShell>

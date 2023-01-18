@@ -17,7 +17,7 @@
 	});
 </script>
 
-<Box class="mx-auto mt-3 mb-48 w-2/3 rounded-md">
+<Box class="mx-auto mt-3 mb-48 w-full rounded-md sm:w-2/3">
 	<div class="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
 		<div class="absolute inset-0">
 			<div
@@ -25,7 +25,7 @@
 			/>
 		</div>
 		<div class="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-32 lg:px-8">
-			<h1 class="text-center text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+			<h1 class="text-center text-3xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
 				<span class="block text-white">Settle in uncharted lands</span>
 				<span class="block text-indigo-200">and build a community</span>
 			</h1>

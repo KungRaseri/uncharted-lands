@@ -57,7 +57,7 @@
 	export let data: PageData;
 </script>
 
-<Box class="mx-auto mb-4">
+<Box class="absolute top-0 right-1/3 left-1/3">
 	<div class="text-xs text-neutral-400 text-center">{serverTime}</div>
 	<div class="text-xs text-neutral-400 text-center">{localTime}</div>
 </Box>
