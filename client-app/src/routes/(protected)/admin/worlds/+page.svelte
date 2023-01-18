@@ -41,11 +41,11 @@
 							<h3 class="truncate text-sm font-medium text-gray-900">{world.id}</h3>
 							<span
 								class="inline-block flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium {world
-									.Server.status == 'ONLINE'
+									.server.status == 'ONLINE'
 									? 'bg-green-100  text-green-800'
 									: 'bg-red-100  text-red-800'}"
 							>
-								{world.Server.status}
+								{world.server.status}
 							</span>
 						</div>
 						<p class="mt-1 truncate text-xs text-gray-500">{world.serverId}</p>

@@ -19,7 +19,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
         },
         include: {
             worlds: true,
-            playerProfiles: true
+            profileServerData: {
+                include: {
+                    profile: true,
+                    settlements: true
+                }
+            }
         }
     });
 
@@ -49,7 +54,7 @@ const generateWorld: Action = async ({ request, params }) => {
             serverId: params.id
         },
         include: {
-            Server: true
+            server: true
         }
     })
 

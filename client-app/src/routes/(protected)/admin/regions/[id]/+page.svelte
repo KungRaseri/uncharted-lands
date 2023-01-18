@@ -41,11 +41,11 @@
 			<Text class="text-xl">{data.region.id}</Text>
 			<span
 				class="absolute right-0 py-0.5 px-2 mx-2 my-1 rounded-full text-xs font-medium 
-				{data.region.World.Server.status == 'ONLINE'
+				{data.region.world.server.status == 'ONLINE'
 					? 'bg-green-100  text-green-800'
 					: 'bg-red-100  text-red-800'}"
 			>
-				{data.region.World.Server.status}
+				{data.region.world.server.status}
 			</span>
 		</Card.Section>
 		<Card p={0} class="bg-slate-50 rounded-md mx-5 my-5 p-1">

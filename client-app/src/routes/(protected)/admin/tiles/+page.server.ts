@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     return {
         tiles: db.tile.findMany({
             include: {
-                Region: true,
+                region: true,
                 resources: true,
                 settlement: true
             }

@@ -25,7 +25,7 @@ export const handle: Handle = async function ({ event, resolve }) {
             passwordHash: ''
         }
 
-        const profile = await db.playerProfile.findFirst({
+        const profile = await db.profile.findFirst({
             where: {
                 accountId: account?.id
             }

@@ -8,7 +8,7 @@ export const load: PageServerLoad = (async ({ locals }) => {
             id: locals.account.id
         },
         include: {
-            playerProfiles: true
+            profile: true
         }
     })
 

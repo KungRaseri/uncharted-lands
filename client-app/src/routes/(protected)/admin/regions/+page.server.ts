@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     return {
         regions: db.region.findMany({
             include: {
-                World: true,
+                world: true,
                 tiles: true
             }
         })

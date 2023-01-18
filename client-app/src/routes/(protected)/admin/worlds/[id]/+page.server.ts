@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
                     tiles: true
                 }
             },
-            Server: true
+            server: true
         }
     });
 
@@ -53,11 +53,11 @@ const generateWorld: Action = async ({ request, params }) => {
             serverId: params.id
         },
         include: {
-            Server: true
+            server: true
         }
     })
 
-    await generate(world.id, Number.parseInt(regionMax) ?? 1, Number.parseInt(tilesPerRegion) ?? 1)
+    await generate(world.id, { regionMax: Number.parseInt(regionMax) ?? 1, tilesPerRegion: Number.parseInt(tilesPerRegion) ?? 1 })
 }
 
 export const actions: Actions = { generateWorld }

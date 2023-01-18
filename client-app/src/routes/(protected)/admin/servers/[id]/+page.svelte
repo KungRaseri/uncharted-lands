@@ -133,13 +133,13 @@
 		<Card p={0} class="bg-slate-50 rounded-md mx-5 my-5">
 			<Card.Section class="px-6 py-1 w-full">
 				<Divider size="lg" label="Players" labelPosition="left" />
-				{#if !data.server.playerProfiles.length}
+				{#if !data.server.profileServerData.length}
 					<p>None</p>
 				{/if}
 				<Container class="w-full flex p-0 m-0">
-					{#each data.server.playerProfiles as playerProfile, i}
+					{#each data.server.profileServerData as playerProfile, i}
 						<Button
-							href="/admin/players/{playerProfile.id}"
+							href="/admin/players/{playerProfile.profileId}"
 							class="mx-1 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
 						>
 							{i}

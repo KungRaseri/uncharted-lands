@@ -37,33 +37,37 @@ enum TileType {
 }
 
 model Account {
-  id            String @id @default(uuid())
-  email         String @unique
+  id            String      @id @default(uuid())
+  email         String      @unique
   passwordHash  String
-  userAuthToken String @unique
+  userAuthToken String      @unique
+  role          AccountRole @default(MEMBER)
+  profile       Profile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  role AccountRole @default(MEMBER)
-
-  playerProfiles PlayerProfile[]
 }
 
-model PlayerProfile {
+model Profile {
   id       String @id @default(uuid())
   username String @unique
 
+  profileServerData ProfileServerData[]
+
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String  @unique
+}
+
+model ProfileServerData {
+  profileId String @unique
+  serverId  String @unique
+
   settlements Settlement[]
 
-  Account   Account @relation(fields: [accountId], references: [id])
-  accountId String
+  profile Profile @relation(fields: [profileId], references: [id])
+  server  Server  @relation(fields: [serverId], references: [id])
 
-  Server   Server? @relation(fields: [serverId], references: [id])
-  serverId String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@unique([profileId, serverId])
 }
 
 model Server {
@@ -73,8 +77,8 @@ model Server {
   port     Int          @default(5000)
   status   ServerStatus @default(OFFLINE)
 
-  playerProfiles PlayerProfile[]
-  worlds         World[]
+  profileServerData ProfileServerData[]
+  worlds            World[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -86,7 +90,7 @@ model World {
   id      String   @id @default(uuid())
   regions Region[]
 
-  Server   Server @relation(fields: [serverId], references: [id])
+  server   Server @relation(fields: [serverId], references: [id])
   serverId String
 }
 
@@ -94,7 +98,7 @@ model Region {
   id    String @id @default(uuid())
   tiles Tile[]
 
-  World   World  @relation(fields: [worldId], references: [id])
+  world   World  @relation(fields: [worldId], references: [id])
   worldId String
 }
 
@@ -106,7 +110,7 @@ model Tile {
   settlement   Settlement? @relation(fields: [settlementId], references: [id])
   settlementId String?
 
-  Region   Region @relation(fields: [regionId], references: [id])
+  region   Region @relation(fields: [regionId], references: [id])
   regionId String
 }
 
@@ -115,20 +119,21 @@ model TileResource {
   resource Resource
   value    Int
 
-  Tile   Tile   @relation(fields: [tileId], references: [id])
+  tile   Tile   @relation(fields: [tileId], references: [id])
   tileId String
 
   @@unique([tileId, resource])
 }
 
 model Settlement {
-  id         String                @id @default(uuid())
-  name       String
-  structures SettlementStructure[]
-  Tile       Tile[]
+  id   String @id @default(uuid())
+  name String
 
-  PlayerProfile   PlayerProfile @relation(fields: [playerProfileId], references: [id])
-  playerProfileId String
+  structures SettlementStructure[]
+  tile       Tile[]
+
+  profileServerData          ProfileServerData @relation(fields: [profileServerDataProfileId], references: [profileId])
+  profileServerDataProfileId String
 }
 
 model SettlementStructure {
@@ -137,7 +142,7 @@ model SettlementStructure {
   description String
   modifiers   StructureModifier[]
 
-  Settlement   Settlement @relation(fields: [settlementId], references: [id])
+  settlement   Settlement @relation(fields: [settlementId], references: [id])
   settlementId String
 }
 
@@ -148,6 +153,6 @@ model StructureModifier {
   resource    Resource
   value       Int
 
-  SettlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
+  settlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
   settlementStructureId String
 }

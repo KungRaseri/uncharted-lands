@@ -91,7 +91,9 @@
 								class="{link.isActive
 									? 'bg-gray-900 text-white'
 									: 'text-gray-300 hover:bg-gray-700 hover:text-white'} 
-									{link.requiredRole && $page.data.account.role !== link.requiredRole ? 'hidden' : ''}
+									{$page.data.account && link.requiredRole && $page.data.account.role !== link.requiredRole
+									? 'hidden'
+									: ''}
 									px-3 py-2 rounded-md text-sm font-medium"
 								aria-current="page"
 							>

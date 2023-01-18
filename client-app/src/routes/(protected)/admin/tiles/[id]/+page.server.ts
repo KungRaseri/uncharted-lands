@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
             id: params.id
         },
         include: {
-            Region: true,
+            region: true,
             resources: true,
             settlement: true
         }

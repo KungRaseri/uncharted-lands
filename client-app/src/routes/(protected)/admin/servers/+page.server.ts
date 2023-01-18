@@ -13,18 +13,14 @@ export const load: PageServerLoad = async ({ locals }) => {
             include: {
                 worlds: {
                     include: {
-                        regions: {
-                            include: {
-                                tiles: {
-                                    include: {
-                                        resources: true
-                                    },
-                                }
-                            }
-                        }
+                        regions: true
                     }
                 },
-                playerProfiles: true
+                profileServerData: {
+                    include: {
+                        settlements: true
+                    }
+                }
             }
         })
     }
@@ -33,11 +29,19 @@ export const load: PageServerLoad = async ({ locals }) => {
 const create: Action = async ({ request }) => {
     const data = await request.formData();
     const name = data.get('name');
+    const hostname = data.get('hostname');
+    const port = data.get('port');
 
     if (typeof name !== 'string' ||
-        !name) {
+        !name ||
+        typeof hostname !== 'string' ||
+        !hostname ||
+        typeof port !== 'string' ||
+        !port) {
         return fail(400, { invalid: true })
     }
+
+    const portInt = Number.parseInt(port);
 
     const server = await db.server.findUnique({ where: { name } });
     if (server) {
@@ -47,6 +51,8 @@ const create: Action = async ({ request }) => {
     await db.server.create({
         data: {
             name,
+            hostname,
+            port: portInt,
             status: ServerStatus.OFFLINE
         }
     });

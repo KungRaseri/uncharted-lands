@@ -94,6 +94,27 @@
 							required
 						/>
 					</InputWrapper>
+
+					<InputWrapper label="Hostname" required>
+						<input
+							class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+							id="Hostname"
+							type="text"
+							name="hostname"
+							required
+						/>
+					</InputWrapper>
+
+					<InputWrapper label="Port" required>
+						<input
+							class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+							id="port"
+							type="text"
+							name="port"
+							required
+						/>
+					</InputWrapper>
+
 					{#if form?.invalid}
 						<Alert icon={Information} title="Error">Form information is invalid</Alert>
 					{/if}
@@ -135,10 +156,10 @@
 
 					<Card.Section class="px-6 py-1 w-full">
 						<Divider size="lg" label="Players" labelPosition="left" />
-						{#if !server.playerProfiles.length}
+						{#if !server.profileServerData.length}
 							<p>None</p>
 						{/if}
-						{#each server.playerProfiles as playerProfile}
+						{#each server.profileServerData as playerProfile}
 							<li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white" />
 						{/each}
 					</Card.Section>

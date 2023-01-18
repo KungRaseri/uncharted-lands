@@ -17,9 +17,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
             id: params.id
         },
         include: {
-            World: {
+            world: {
                 include: {
-                    Server: true
+                    server: true
                 }
             },
             tiles: true
