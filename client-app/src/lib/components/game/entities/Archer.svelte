@@ -32,14 +32,14 @@
 </script>
 
 <div class="p-2">
-	<div.Section>
+	<div>
 		<div class="archer">
 			<div class={animState} />
 			{#each $arrows as arrow}
 				<ArrowComponent {arrow} />
 			{/each}
 		</div>
-	</div.Section>
+	</div>
 	<div class="items-start">
 		<button
 			disabled={isAttacking}
