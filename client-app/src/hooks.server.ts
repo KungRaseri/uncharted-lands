@@ -11,6 +11,9 @@ export const handle: Handle = async function ({ event, resolve }) {
     const account = await db.account.findUnique({
         where: {
             userAuthToken: session
+        },
+        include: {
+            profile: true
         }
     })
 
@@ -20,19 +23,10 @@ export const handle: Handle = async function ({ event, resolve }) {
             email: account.email,
             role: account.role,
             userAuthToken: account.userAuthToken,
+            profile: account.profile,
             createdAt: account.createdAt,
             updatedAt: account.updatedAt,
             passwordHash: ''
-        }
-
-        const profile = await db.profile.findFirst({
-            where: {
-                accountId: account?.id
-            }
-        })
-
-        if (profile) {
-            event.locals.playerProfile = profile
         }
     }
 

@@ -56,12 +56,16 @@
 	export let data: PageData;
 </script>
 
-<div class="absolute top-0 right-1/3 left-1/3">
+<div class="absolute top-3 z-10 right-1/3 left-1/3">
 	<div class="text-xs text-neutral-400 text-center">{serverTime}</div>
 	<div class="text-xs text-neutral-400 text-center">{localTime}</div>
 </div>
 <div>
-	<GameNavigation />
+	{#if data.account.profile}
+		<GameNavigation />
+	{/if}
 	<slot />
-	<GameFooter />
+	{#if data.account.profile}
+		<GameFooter />
+	{/if}
 </div>

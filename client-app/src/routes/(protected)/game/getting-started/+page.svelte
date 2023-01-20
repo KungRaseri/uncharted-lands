@@ -14,7 +14,7 @@
 	export let form: ActionData;
 </script>
 
-<div class="bg-slate-300 p-5">
+<div class="bg-surface-700 mt-10 p-5 w-1/4 mx-auto">
 	<form
 		action="?/settle"
 		method="POST"
@@ -26,49 +26,41 @@
 			};
 		}}
 	>
-		<div class="space-y-8 divide-y divide-gray-200">
+		<div class="space-y-6">
 			<div>
-				<div>
-					<h3 class="text-lg font-medium leading-6 text-gray-900">Choose Server and World</h3>
-					<p class="mt-1 text-sm text-gray-500">
-						Let's choose the server and world you'd like to start in.
-					</p>
-				</div>
+				<h3 class="text-lg font-medium leading-6">Choose Server and World</h3>
+				<p class="mt-1 text-sm">Let's choose the server and world you'd like to start in.</p>
+			</div>
 
-				<div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-					<div class="sm:col-span-1">
-						<select id="server" name="server" class="rounded-md" bind:value={selectedServer}>
-							{#each data.servers as server}
-								<option value={server.id}>{server.name}</option>
-							{/each}
-						</select>
-					</div>
-					<div class="sm:col-span-1">
-						<select id="world" name="world" class="rounded-md" bind:value={selectedWorld}>
-							{#each data.worlds.filter((w) => w.serverId === selectedServer) as world, i}
-								<option value={world.id}>World {i}</option>
-							{/each}
-						</select>
-					</div>
-					<div class="sm:col-span-1">
-						{selectedServer ?? ''}
-					</div>
-					<div class="sm:col-span-1">
-						{selectedWorld ?? ''}
-					</div>
+			<div class="grid grid-cols-4 text-center">
+				<div class="sm:col-span-1">
+					<select id="server" name="server" class="rounded-md" bind:value={selectedServer}>
+						{#each data.servers as server}
+							<option value={server.id}>{server.name}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="sm:col-span-1">
+					<select id="world" name="world" class="rounded-md" bind:value={selectedWorld}>
+						{#each data.worlds.filter((w) => w.serverId === selectedServer) as world, i}
+							<option value={world.id}>World {i}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="sm:col-span-1 text-xs">
+					{selectedServer ?? ''}
+				</div>
+				<div class="sm:col-span-1 text-xs">
+					{selectedWorld ?? ''}
 				</div>
 			</div>
-		</div>
-		<div class="space-y-8 divide-y divide-gray-200">
 			<div>
-				<div>
-					<h3 class="text-lg font-medium leading-6 text-gray-900">Choose Username</h3>
-				</div>
+				<h3 class="text-lg font-medium leading-6">Choose Username</h3>
+			</div>
 
-				<div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-					<div class="sm:col-span-2">
-						<input id="username" type="text" name="username" bind:value={username} />
-					</div>
+			<div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+				<div class="sm:col-span-2">
+					<input id="username" type="text" name="username" bind:value={username} />
 				</div>
 			</div>
 		</div>
@@ -80,7 +72,9 @@
 					type="submit"
 					class="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
 				>
-					<div class="mx-1 my-0.5"><Campfire /></div>
+					<div class="mx-1 my-0.5">
+						<Campfire />
+					</div>
 					Settle in this World
 				</button>
 			</div>

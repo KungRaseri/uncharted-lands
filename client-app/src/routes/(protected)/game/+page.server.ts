@@ -8,11 +8,11 @@ export const load: PageServerLoad = async ({ locals }) => {
         throw redirect(302, '/login');
     }
 
-    if (!locals.playerProfile) {
+    if (!locals.account.profile) {
         throw redirect(302, '/game/getting-started')
     }
 
     return {
-        playerProfile: locals.playerProfile
+        profile: locals.account.profile
     }
 }

@@ -11,16 +11,11 @@ declare namespace App {
 		account: Account = {
 			id: string,
 			email: string,
-			userAuthToken: string,
 			role: Role,
+			userAuthToken: string,
+			Profile: Profile,
 			createdAt: Date,
 			updatedAt: Date
-		}
-		playerProfile: Profile = {
-			id: string,
-			username: string,
-			accountId: string,
-			serverId: string
 		}
 	}
 	// interface Platform {}
