@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { Box, Card, Divider, Text, Title } from '@svelteuidev/core';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 </script>
 
-<Box class="mt-5 mx-auto w-full sm:w-1/2">
-	<Box class="bg-slate-50 rounded-md px-5 py-3">
+<div class="mt-5 mx-auto w-full sm:w-1/2">
+	<div class="bg-slate-50 rounded-md px-5 py-3">
 		<div class="mb-5 -ml-4 -mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
 			<div class="ml-4 mt-4">
 				<h3 class="text-lg font-medium leading-6 text-gray-900">Account Details</h3>
@@ -36,5 +35,5 @@
 				</div>
 			</dl>
 		</div>
-	</Box>
-</Box>
+	</div>
+</div>

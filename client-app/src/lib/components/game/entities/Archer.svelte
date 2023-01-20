@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { ActionIcon, Box, Button, Card, Group, Tabs } from '@svelteuidev/core';
-
 	import { arrows, Arrow } from '$lib/stores/game/arrows';
 	import ArrowComponent from '$lib/components/game/entities/Arrow.svelte';
 
@@ -33,33 +31,33 @@
 	$: arrows;
 </script>
 
-<Card p="md">
-	<Card.Section>
+<div class="p-2">
+	<div.Section>
 		<div class="archer">
 			<div class={animState} />
 			{#each $arrows as arrow}
 				<ArrowComponent {arrow} />
 			{/each}
 		</div>
-	</Card.Section>
-	<Group position="left">
-		<Button
+	</div.Section>
+	<div class="items-start">
+		<button
 			disabled={isAttacking}
 			class="mb-2"
 			on:click={() => {
 				handleAttack('melee');
-			}}>Melee</Button
+			}}>Melee</button
 		>
 
-		<Button
+		<button
 			disabled={isAttacking}
 			class="mb-2"
 			on:click={() => {
 				handleAttack('ranged');
-			}}>Ranged</Button
+			}}>Ranged</button
 		>
-	</Group>
-</Card>
+	</div>
+</div>
 
 <style>
 	.archer .idle {

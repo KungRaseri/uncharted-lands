@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Box, Tabs } from '@svelteuidev/core';
 	import Tile from './Tile.svelte';
 
 	export let RegionInfo: any;

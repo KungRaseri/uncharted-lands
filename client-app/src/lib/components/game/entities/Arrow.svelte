@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { Box } from '@svelteuidev/core';
-
 	export let arrow: any;
 </script>
 
