@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-600 scroller">
+<html lang="en" class="dark">
 
 <head>
 	<meta charset="utf-8" />
@@ -12,32 +12,10 @@
 	%sveltekit.head%
 </head>
 
-<body class="h-full bg-slate-600">
-	<div class="h-full">
+<body data-theme="crimson">
+	<div style="display: contents" class="h-full overflow-hidden">
 		%sveltekit.body%
 	</div>
 </body>
 
 </html>
-
-<style scoped>
-	.scroller {
-		overflow-y: scroll;
-		scrollbar-color: #3d116e #5c5f66;
-	}
-
-	.scroller::-webkit-scrollbar {
-		width: 10px;
-		height: 10px;
-	}
-
-	.scroller::-webkit-scrollbar-track-piece {
-		background-color: #5c5f66;
-	}
-
-	.scroller::-webkit-scrollbar-thumb:vertical {
-		width: 5px;
-		height: 10px;
-		background-color: #3d116e;
-	}
-</style>

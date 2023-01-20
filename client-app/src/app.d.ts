@@ -5,7 +5,7 @@
 
 // and what to do when importing types
 declare namespace App {
-	import type { Account, Role, PlayerProfile } from "@prisma/client"
+	import type { Account, Role, Profile } from "@prisma/client"
 
 	interface Locals {
 		account: Account = {
@@ -16,7 +16,7 @@ declare namespace App {
 			createdAt: Date,
 			updatedAt: Date
 		}
-		playerProfile: PlayerProfile = {
+		playerProfile: Profile = {
 			id: string,
 			username: string,
 			accountId: string,

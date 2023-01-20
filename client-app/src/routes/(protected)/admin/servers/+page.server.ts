@@ -45,7 +45,7 @@ const create: Action = async ({ request }) => {
 
     const server = await db.server.findUnique({ where: { name } });
     if (server) {
-        return fail(400, { exists: true })
+        return fail(400, { invalid: true, exists: true })
     }
 
     await db.server.create({

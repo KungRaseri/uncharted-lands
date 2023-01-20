@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { Box, Container, Text, Timeline, Title } from '@svelteuidev/core';
 	import type { ActionData, PageData } from './$types';
 
 	import LightningBoltCircle from 'svelte-material-icons/LightningBoltCircle.svelte';
 	import Commit from 'svelte-material-icons/SourceCommit.svelte';
 	import GithubLogo from 'svelte-material-icons/Github.svelte';
 	import Campfire from 'svelte-material-icons/Campfire.svelte';
-	import World from '$lib/components/game/map/World.svelte';
+
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 
@@ -15,7 +14,7 @@
 	export let form: ActionData;
 </script>
 
-<Container class="bg-slate-300 p-5">
+<div class="bg-slate-300 p-5">
 	<form
 		action="?/settle"
 		method="POST"
@@ -81,9 +80,10 @@
 					type="submit"
 					class="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
 				>
-					<Box class="mx-1 my-0.5"><Campfire /></Box> Settle in this World
+					<div class="mx-1 my-0.5"><Campfire /></div>
+					Settle in this World
 				</button>
 			</div>
 		</div>
 	</form>
-</Container>
+</div>

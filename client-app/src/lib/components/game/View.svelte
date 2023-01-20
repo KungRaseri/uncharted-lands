@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Box, Tabs } from '@svelteuidev/core';
 </script>
 
-<Box>
+<div>
 	<p>View</p>
-</Box>
+</div>

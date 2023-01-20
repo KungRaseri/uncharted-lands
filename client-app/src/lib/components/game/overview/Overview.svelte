@@ -1,8 +1,7 @@
 <script>
-	import { Box } from '@svelteuidev/core';
 </script>
 
-<Box>
+<div>
 	<div class="px-4 sm:px-6 lg:px-8">
 		<div class="sm:flex sm:items-center">
 			<div class="sm:flex-auto">
@@ -192,4 +191,4 @@
 			</div>
 		</div>
 	</div>
-</Box>
+</div>

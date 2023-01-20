@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Box, Container, Tabs } from '@svelteuidev/core';
 	import type { PageData } from './$types';
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
@@ -57,12 +56,12 @@
 	export let data: PageData;
 </script>
 
-<Box class="absolute top-0 right-1/3 left-1/3">
+<div class="absolute top-0 right-1/3 left-1/3">
 	<div class="text-xs text-neutral-400 text-center">{serverTime}</div>
 	<div class="text-xs text-neutral-400 text-center">{localTime}</div>
-</Box>
-<Container>
+</div>
+<div>
 	<GameNavigation />
 	<slot />
 	<GameFooter />
-</Container>
+</div>

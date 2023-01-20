@@ -28,11 +28,11 @@ const register: Action = async ({ cookies, request }) => {
     })
 
     if (account) {
-        return fail(400, { exists: true })
+        return fail(400, { invalid: true, exists: true })
     }
 
     if (password.length < 16) {
-        return fail(400, { length: true })
+        return fail(400, { invalid: true, length: true })
     }
 
     const newAccount = await db.account.create({

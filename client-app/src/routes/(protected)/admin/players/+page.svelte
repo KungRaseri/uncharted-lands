@@ -16,7 +16,7 @@
 
 	export let data: PageData;
 
-	let worldsTableStore = createDataTableStore(data.worlds, {
+	let accountsTableStore = createDataTableStore(data.accounts, {
 		search: '',
 		sort: '',
 		pagination: {
@@ -27,7 +27,7 @@
 		}
 	});
 
-	worldsTableStore.subscribe((model) => dataTableHandler(model));
+	accountsTableStore.subscribe((model) => dataTableHandler(model));
 
 	let isWorldFormActive = false;
 
@@ -37,26 +37,32 @@
 </script>
 
 <div class="m-5">
-	<span class="float-left mr-5"><h1>Worlds</h1></span>
+	<span class="float-left mr-5"><h1>Accounts</h1></span>
 	<div class="table-container">
 		<div class="p-1 m-1 max-w-md">
-			<input bind:value={$worldsTableStore.search} type="search" placeholder="Search..." />
+			<input bind:value={$accountsTableStore.search} type="search" placeholder="Search..." />
 		</div>
 		<table class="table table-hover" use:tableInteraction>
 			<thead>
 				<tr>
 					<th>ID</th>
-					<th>Server {`<ID>`}</th>
-					<th>Regions</th>
+					<th>Email</th>
+					<th>Role</th>
+					<th>Profile</th>
+					<th>Created At</th>
+					<th>Updated At</th>
 				</tr>
 			</thead>
 			<tbody>
-				{#if $worldsTableStore}
-					{#each $worldsTableStore.filtered as world, index}
+				{#if $accountsTableStore}
+					{#each $accountsTableStore.filtered as account, index}
 						<tr>
-							<td>{world.id}</td>
-							<td>{`${world.server.name} <${world.serverId}>`}</td>
-							<td>{world.regions.length}</td>
+							<td>{account.id}</td>
+							<td>{account.email}</td>
+							<td>{account.role}</td>
+							<td>{account.profile ?? 'No Profile Found'}</td>
+							<td>{account.createdAt}</td>
+							<td>{account.updatedAt}</td>
 						</tr>
 					{/each}
 				{/if}

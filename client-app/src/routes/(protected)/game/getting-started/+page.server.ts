@@ -1,5 +1,5 @@
 import { db } from '$lib/db';
-import { TileType } from '@prisma/client';
+import { Biome } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
 
@@ -36,7 +36,7 @@ async function getRandomTile(worldId: string) {
             worldId: worldData.id,
             tiles: {
                 some: {
-                    type: TileType.SOIL
+                    biome: Biome.PLAINS
                 },
                 every: {
                     settlement: undefined
@@ -49,7 +49,7 @@ async function getRandomTile(worldId: string) {
     })
 
     const soilTiles = potentialRegions[Math.floor(Math.random() * potentialRegions.length)]
-        .tiles.filter(t => t.type === TileType.SOIL);
+        .tiles.filter(t => t.biome === Biome.PLAINS);
 
     const randomTile = soilTiles[Math.floor(Math.random() * soilTiles.length)]
 
@@ -75,42 +75,72 @@ const settle: Action = async ({ cookies, request, locals }) => {
     const chosenTile = await getRandomTile(world);
 
     // update the player profile and connect it to the server
-    const newPlayerProfile = await db.playerProfile.create({
+    const newPlayerProfile = await db.profile.create({
         data: {
             username,
-            Server: {
+            account: {
                 connect: {
-                    id: server
+                    id: locals.account.id
                 }
             },
-            Account: {
-                connect: {
-                    id: locals.account.id,
-                    email: locals.account.email,
-                    userAuthToken: locals.account.userAuthToken
-                }
-            },
-            // create the settlement
+        }
+    })
+
+    const profileServerData = await db.profileServerData.create({
+        data: {
+            profileId: newPlayerProfile.id,
+            serverId: server,
             settlements: {
                 create: {
                     name: "Home Settlement",
-                    //update the tile and connect the settlement
-                    Tile: {
+                    tile: {
                         connect: {
                             id: chosenTile.id
                         }
                     }
-                }
+                },
             }
-        },
-        include: {
-            Server: true,
-            settlements: true,
-            Account: true
         }
     })
 
-    cookies.get("")
+    await db.profile.update({
+        data: {
+            profileServerData: {
+                connect: {
+                    profileId: newPlayerProfile.id,
+                }
+            }
+        },
+        where: {
+            id: newPlayerProfile.id
+        }
+    })
+
+    await db.server.update({
+        data: {
+            profileServerData: {
+                connect: {
+                    serverId: profileServerData.serverId
+                }
+            }
+        },
+        where: {
+            id: server
+        }
+    })
+
+    await db.account.update({
+        data: {
+            profile: {
+                connect: {
+                    id: newPlayerProfile.id
+                }
+            }
+        },
+        where: {
+            id: locals.account.id
+        }
+    })
 
     throw redirect(302, '/game')
 }

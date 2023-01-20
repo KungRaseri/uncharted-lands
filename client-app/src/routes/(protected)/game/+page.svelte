@@ -3,7 +3,6 @@
 	import { page } from '$app/stores';
 
 	import { onMount } from 'svelte';
-	import { Box, Container, Tabs } from '@svelteuidev/core';
 	import GameView from '$lib/components/game/View.svelte';
 
 	onMount(async () => {
@@ -18,6 +17,6 @@
 	});
 </script>
 
-<Box class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+<div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
 	<GameView />
-</Box>
+</div>

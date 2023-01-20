@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Box, Text, Title } from '@svelteuidev/core';
 </script>
 
-<Box class="my-3">
-	<Title>Admin Dashboard</Title>
-	<Text>Welcome, {$page.data.account.email}</Text>
-</Box>
+<div class="my-3">
+	<h3>Admin Dashboard</h3>
+	<p>Welcome, {$page.data.account.email}</p>
+</div>
