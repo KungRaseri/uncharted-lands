@@ -16,7 +16,7 @@
 	});
 </script>
 
-<div class="mx-auto mt-10 w-11/12 sm:w-1/3">
+<div class="mx-auto mt-10 w-11/12 xs:w-1/3 h-full">
 	<div class="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
 		<div class="absolute inset-0">
 			<div

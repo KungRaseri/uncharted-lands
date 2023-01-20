@@ -43,6 +43,10 @@
 	export let data: PageData;
 </script>
 
+<svelte:head>
+	<title>Portal | Uncharted Lands</title>
+</svelte:head>
+
 <AppShell slotPageContent="w-full h-full">
 	<svelte:fragment slot="header">
 		<AppBar background="bg-surface-700 px-5 py-4">

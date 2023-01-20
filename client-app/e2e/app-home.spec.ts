@@ -19,7 +19,7 @@ test.describe('Home page', async () => {
 
 		await page.getByText(expected).waitFor();
 
-		expect(await page.textContent('.title > .label')).toContain(expected);
+		expect(await page.textContent('.alert-message')).toContain(expected);
 	});
 
 	test('main feature actions -> Register', async ({ page }) => {
@@ -34,7 +34,7 @@ test.describe('Home page', async () => {
 	});
 
 	test('main feature actions -> Login', async ({ page }) => {
-		const expected = "Sign in to your account";
+		const expected = "Sign into your account";
 
 		await page.getByText("Login").waitFor();
 		await page.getByText("Login").click();
