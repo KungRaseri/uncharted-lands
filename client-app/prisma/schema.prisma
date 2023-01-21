@@ -18,6 +18,7 @@ enum AccountRole {
 
 enum ServerStatus {
   OFFLINE
+  MAINTENANCE
   ONLINE
 }
 
@@ -28,15 +29,12 @@ enum Resource {
   STONE
 }
 
-enum Biome {
-  WATER
-  BEACH
-  PLAINS
-  FOREST
-  JUNGLE
-  SAVANNAH
-  DESERT
-  SNOW
+model Biome {
+  id            String  @id @default(uuid())
+  name          String
+  temperature   Decimal
+  precipitation Decimal
+  Tile          Tile[]
 }
 
 model Account {
@@ -106,10 +104,8 @@ model Region {
 }
 
 model Tile {
-  id        String @id @default(uuid())
-  biome     Biome  @default(WATER)
-  elevation Float
-  moisture  Float
+  id    String @id @default(uuid())
+  biome Biome  @relation(fields: [biomeId], references: [id])
 
   resources TileResource[]
 
@@ -118,6 +114,7 @@ model Tile {
 
   region   Region @relation(fields: [regionId], references: [id])
   regionId String
+  biomeId  String
 }
 
 model TileResource {

@@ -12,9 +12,9 @@
 	import Information from 'svelte-material-icons/Information.svelte';
 	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
 	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
-	import { json } from '@sveltejs/kit';
 
 	export let data: PageData;
+	export let form: ActionData;
 
 	let worldsTableStore = createDataTableStore(data.worlds, {
 		search: '',
@@ -28,23 +28,25 @@
 	});
 
 	worldsTableStore.subscribe((model) => dataTableHandler(model));
-
-	let isWorldFormActive = false;
-
-	function handleCreateServer() {
-		isWorldFormActive = true;
-	}
 </script>
 
-<div class="m-5">
-	<span class="float-left mr-5"><h1>Worlds</h1></span>
+<div class="m-1">
+	<h1>Worlds</h1>
 	<div class="table-container">
-		<div class="p-1 m-1 max-w-md">
+		<div class="p-1 m-1 w-11/12 flex">
 			<input bind:value={$worldsTableStore.search} type="search" placeholder="Search..." />
+			<a
+				href="/admin/worlds/create"
+				class="mx-4 px-3 py-0 bg-primary-900 rounded-md flex hover:bg-primary-800"
+			>
+				<span class="mx-1 px-0 py-3 text-primary-50"><WebPlus /></span>
+				<span class="mx-1 px-0 py-2 text-primary-50">Create</span>
+			</a>
 		</div>
 		<table class="table table-hover" use:tableInteraction>
 			<thead>
 				<tr>
+					<th><input type="checkbox" id="select-all" name="select-all" /></th>
 					<th>ID</th>
 					<th>Server {`<ID>`}</th>
 					<th>Regions</th>
@@ -54,6 +56,7 @@
 				{#if $worldsTableStore}
 					{#each $worldsTableStore.filtered as world, index}
 						<tr>
+							<td><input type="checkbox" /></td>
 							<td>{world.id}</td>
 							<td>{`${world.server.name} <${world.serverId}>`}</td>
 							<td>{world.regions.length}</td>

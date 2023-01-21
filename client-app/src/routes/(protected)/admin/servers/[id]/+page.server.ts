@@ -36,29 +36,3 @@ export const load: PageServerLoad = async ({ locals, params }) => {
         server
     }
 }
-
-const generateWorld: Action = async ({ request, params }) => {
-    const data = await request.formData();
-    const regionMax = data.get('regionMax');
-    const tilesPerRegion = data.get('tilesPerRegion');
-
-    if (typeof regionMax !== 'string' ||
-        !regionMax ||
-        typeof tilesPerRegion !== 'string' ||
-        !tilesPerRegion) {
-        return fail(400, { invalid: true })
-    }
-
-    const world = await db.world.create({
-        data: {
-            serverId: params.id
-        },
-        include: {
-            server: true
-        }
-    })
-
-    await generate(world.id, Number.parseInt(regionMax) ?? 1, Number.parseInt(tilesPerRegion) ?? 1)
-}
-
-export const actions: Actions = { generateWorld }

@@ -1,13 +1,8 @@
 import { db } from "$lib/db";
 import { Biome, type World, Resource, type TileResource, type Tile } from "@prisma/client";
-import { createNoise2D } from 'simplex-noise';
+import { createNoise2D, type NoiseFunction2D } from 'simplex-noise';
 import alea from 'alea';
-const eRNG = alea('redsyndicate-elevation');
-const mRNG = alea('redsyndicate-moisture');
-const tRNG = alea('redsyndicate-temperature');
-const elevationNoise = createNoise2D(eRNG)
-const moistureNoise = createNoise2D(mRNG)
-const temperatureNoise = createNoise2D(tRNG)
+import { json } from "@sveltejs/kit";
 
 function determineBiome(elevation: number, moisture: number) {
     if (elevation < 0.0025)
@@ -123,121 +118,63 @@ function determineTileResources(tile: Tile) {
     return resources;
 }
 
-export async function generate(worldId: string, regionMax: number, tilesPerRegion: number) {
-    const regions = [];
+function chunks(array: number[], chunkSize: number) {
+    if (chunkSize === 0)
+        return;
 
-    for (let i = 0; i < regionMax; i++) {
-        const region = await db.region.create({
-            data: {
-                worldId
-            },
-            include: {
-                world: true,
-                tiles: true
-            }
-        })
+    const splitChunks: number[][] = [];
 
-        for (let j = 0; j < tilesPerRegion; j++) {
-            const nx = j
-            const ny = i
-
-            let e = 1 * (elevationNoise(1 * nx, 1 * ny))
-                + 0.5 * (elevationNoise(2 * nx, 2 * ny))
-                + 0.25 * (elevationNoise(4 * nx, 4 * ny))
-            e = e / (1 + 0.5 + 0.25)
-
-            let m = 1 * (moistureNoise(1 * nx, 1 * ny))
-                + 0.75 * (moistureNoise(2 * nx, 2 * ny))
-                + 0.33 * (moistureNoise(4 * nx, 4 * ny))
-            m = m / (1 + 0.75 + 0.33)
-
-            let t = 1 * (temperatureNoise(1 * nx, 1 * ny))
-                + 0.75 * (temperatureNoise(2 * nx, 2 * ny))
-                + 0.33 * (temperatureNoise(4 * nx, 4 * ny))
-            t = t / (1 + 0.75 + 0.33)
-
-            console.log('e/m', { elevation: e, moisture: m, temperature: t })
-
-            const biome = determineBiome(e, m)
-
-            let tile = await db.tile.create({
-                data: {
-                    biome: biome,
-                    elevation: e,
-                    moisture: m,
-                    regionId: region.id,
-                },
-                include: {
-                    region: true,
-                    resources: true,
-                    settlement: true
-                }
-            })
-
-            await db.tileResource.createMany({
-                data: determineTileResources(tile)
-            })
-
-            const tileResources = await db.tileResource.findMany({
-                where: {
-                    tileId: tile.id
-                },
-                select: {
-                    id: true
-                }
-            })
-
-            tile = await db.tile.update({
-                where: {
-                    id: tile.id
-                },
-                data: {
-                    resources: {
-                        connect: tileResources
-                    }
-                },
-                include: {
-                    resources: true,
-                    region: true,
-                    settlement: true
-                }
-            })
-
-            region.tiles[j] = tile
-
-            regions[i] = region;
-        }
-
-        await db.region.update({
-            where: {
-                id: region.id
-            },
-            data: {
-                tiles: {
-                    connect: region.tiles.map(t => {
-                        return {
-                            id: t.id
-                        }
-                    })
-                }
-            }
-        })
+    for (let i = 0; i < array.length; i += chunkSize) {
+        const chunk = array.slice(i, i + chunkSize);
+        splitChunks.push(chunk)
     }
 
-    const generatedWorld = await db.world.update({
-        where: {
-            id: worldId
-        },
-        data: {
-            regions: {
-                connect: regions.map(r => { return { id: r.id } })
-            }
-        },
-        include: {
-            regions: true,
-            server: true
-        }
-    })
+    return splitChunks;
+}
 
-    return generatedWorld;
+function sumOctave(noiseFunc: NoiseFunction2D, iterations: number, x: number, y: number, persistence: number, scale: number, low: number, high: number) {
+    let maxAmp = 0;
+    let amp = 1;
+    let freq = scale;
+    let noise = 0
+
+    for (let i = 0; i < iterations; i++) {
+        noise += noiseFunc(x * freq, y * freq) * amp
+        maxAmp += amp;
+        amp *= persistence
+        freq *= 2
+    }
+
+    noise /= maxAmp
+
+    noise = noise * (high - low) / 2 + (high + low) / 2
+
+    return noise;
+}
+
+export async function generate(width: number, height: number, tiles: number, eSeed: string, mSeed: string, tSeed: string) {
+    const eRNG = alea(`${eSeed}`);
+    const pRNG = alea(`${mSeed}`);
+    const tRNG = alea(`${tSeed}`);
+
+    const elevationNoise = createNoise2D(eRNG)
+    const moistureNoise = createNoise2D(pRNG)
+    const temperatureNoise = createNoise2D(tRNG)
+
+    const scale = 0.0125;
+    const generatedMap: number[] = [];
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const elevation = sumOctave(elevationNoise, 16, x, y, 0.5, scale, -1, 1)
+
+            generatedMap.push(elevation)
+        }
+    }
+
+    return chunks(generatedMap, 100);
+}
+
+export async function save(map) {
+    console.log(map)
 }
