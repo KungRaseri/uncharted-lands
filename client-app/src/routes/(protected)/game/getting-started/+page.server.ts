@@ -36,7 +36,7 @@ async function getRandomTile(worldId: string) {
             worldId: worldData.id,
             tiles: {
                 some: {
-                    biome: Biome.PLAINS
+                    biome: Biome.SHRUBLAND
                 },
                 every: {
                     settlement: undefined
@@ -49,7 +49,7 @@ async function getRandomTile(worldId: string) {
     })
 
     const soilTiles = potentialRegions[Math.floor(Math.random() * potentialRegions.length)]
-        .tiles.filter(t => t.biome === Biome.PLAINS);
+        .tiles.filter(t => t.biome === Biome.SHRUBLAND);
 
     const randomTile = soilTiles[Math.floor(Math.random() * soilTiles.length)]
 
