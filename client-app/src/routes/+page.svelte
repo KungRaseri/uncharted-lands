@@ -16,42 +16,42 @@
 	});
 </script>
 
-<div class="mx-auto mt-10 w-11/12 xs:w-1/3 h-full">
-	<div class="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
+<div class="mt-5 w-full lg:mx-auto lg:w-2/4 h-full">
+	<div class="relative shadow-xl lg:overflow-hidden lg:rounded-2xl">
 		<div class="absolute inset-0">
 			<div
-				class="absolute inset-0 bg-gradient-to-r from-primary-700 to-secondary-700 mix-blend-multiply"
+				class="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-600 mix-blend-multiply"
 			/>
 		</div>
-		<div class="relative py-16 px-8">
-			<h1 class="text-center text-3xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+		<div class="relative p-5">
+			<h1 class="text-center text-3xl font-bold tracking-tight md:text-4xl">
 				<span class="block text-primary-200">Settle in uncharted lands</span>
 				<span class="block text-secondary-200">and build a community</span>
 			</h1>
-			<p class="m-5 text-center text-4xl tracking-tight sm:text-5xl lg:text-6xl">
+			<p class="m-5 text-center text-xl tracking-tight">
 				<span class="text-tertiary-50">
 					Utilize the resources around you to build a strong community and ward against the dangers
-					of wildlife
+					of wildlife and the environment
 				</span>
 			</p>
-			<div class="mx-auto w-1/2 grid">
+			<div class="mx-auto flex">
 				<a
 					href="/introduction"
-					class="w-full px-3 py-2 my-5 mx-5 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
+					class="w-full px-3 py-2 my-2 mx-2 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
 				>
-					<span class="text-secondary-50"> Introduction </span>
+					<span class="text-secondary-50">Introduction</span>
 				</a>
 				<a
 					href="/register"
-					class="w-full px-3 py-2 my-5 mx-5 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
+					class="w-full px-3 py-2 my-2 mx-2 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
 				>
-					<span class="text-secondary-50"> Register </span>
+					<span class="text-secondary-50">Register</span>
 				</a>
 				<a
 					href="/login"
-					class="w-full px-3 py-2 my-5 mx-5 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
+					class="w-full px-3 py-2 my-2 mx-2 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
 				>
-					<span class="text-secondary-50"> Login </span>
+					<span class="text-secondary-50">Login</span>
 				</a>
 			</div>
 		</div>

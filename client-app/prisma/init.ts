@@ -1,8 +1,21 @@
-import { PrismaClient } from "@prisma/client";
+import { Biome, PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
+const biomes: Biome[] = [
+    {
+        name: "OCEAN",
+        id: crypto.randomUUID()
+    },
+    {
+        name: "BEACH",
+        id: crypto.randomUUID()
+    },
+]
+
 async function main() {
-    console.log('')
+    // seed data here
+
+    // biomes, etc.
 }
 
 main()
@@ -13,4 +26,4 @@ main()
         console.error(e)
         await prisma.$disconnect()
         process.exit(1)
-    })
+    });

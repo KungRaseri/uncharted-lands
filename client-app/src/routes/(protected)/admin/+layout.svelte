@@ -14,9 +14,9 @@
 	const storeValue: Writable<number> = writable(1);
 </script>
 
-<AppShell slotSidebarLeft="w-18 h-auto" slotPageContent="h-full">
+<AppShell slotSidebarLeft="h-auto" slotPageContent="h-full">
 	<svelte:fragment slot="sidebarLeft">
-		<AppRail selected={storeValue} class="text-center p-2">
+		<AppRail selected={storeValue} class="w-16 sm:w-min text-center align-middle">
 			<svelte:fragment slot="lead">
 				<AppRailTile
 					label="Dashboard"
@@ -24,9 +24,9 @@
 					tag="a"
 					href="/admin"
 					value={'/admin'}
-					class="text-surface-300 hover:text-primary-100 mb-3"
+					class="mx-auto text-center align-middle text-surface-300 hover:text-primary-100 mt-1"
 				>
-					<ViewDashboard size={56} />
+					<ViewDashboard width="100%" size={36} />
 				</AppRailTile>
 			</svelte:fragment>
 			<AppRailTile
@@ -35,9 +35,9 @@
 				tag="a"
 				href="/admin/servers"
 				value={'/admin/servers'}
-				class="text-surface-300 hover:text-primary-100 mb-3"
+				class="mx-auto text-center align-middle text-surface-300 hover:text-primary-100"
 			>
-				<Server size={56} />
+				<Server width="100%" size={36} />
 			</AppRailTile>
 			<AppRailTile
 				label="Worlds"
@@ -45,9 +45,9 @@
 				tag="a"
 				href="/admin/worlds"
 				value={'/admin/worlds'}
-				class="text-surface-300 hover:text-primary-100 mb-3"
+				class="mx-auto text-center align-middle text-surface-300 hover:text-primary-100"
 			>
-				<Web size={56} />
+				<Web width="100%" size={36} />
 			</AppRailTile>
 			<AppRailTile
 				label="Players"
@@ -55,9 +55,9 @@
 				tag="a"
 				href="/admin/players"
 				value={'/admin/players'}
-				class="text-surface-300 hover:text-primary-100 mb-3"
+				class="mx-auto text-center align-middle text-surface-300 hover:text-primary-100"
 			>
-				<AccountGroup size={56} />
+				<AccountGroup width="100%" size={36} />
 			</AppRailTile>
 			<AppRailTile
 				label="Reports"
@@ -65,17 +65,17 @@
 				tag="a"
 				href="/admin/reports"
 				value={'/admin/reports'}
-				class="text-surface-300 hover:text-primary-100 mb-3"
+				class="mx-auto text-center align-middle text-surface-300 hover:text-primary-100"
 			>
-				<FolderSearchOutline size={56} />
+				<FolderSearchOutline width="100%" size={36} />
 			</AppRailTile>
 			<svelte:fragment slot="trail">
 				<AppRailTile
 					tag="a"
 					href="https://github.com/RedSyndicate/browser-game"
-					class="text-surface-300 hover:text-primary-100 mb-3"
+					class="mx-auto text-center align-middle text-surface-300 hover:text-primary-100"
 				>
-					<Github size={56} />
+					<Github width="100%" size={36} />
 					<span class="text-sm">src</span>
 				</AppRailTile>
 			</svelte:fragment>

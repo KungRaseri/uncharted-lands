@@ -12,6 +12,9 @@
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write ."
   },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/init.ts"
+  },
   "devDependencies": {
     "@mdi/font": "^7.0.96",
     "@mdi/js": "^7.0.96",
@@ -27,6 +30,7 @@
     "@tailwindcss/line-clamp": "^0.4.2",
     "@tailwindcss/typography": "^0.5.4",
     "@types/bcrypt": "^5.0.0",
+    "@types/node": "^18.11.18",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.0",
     "alea": "^1.0.1",

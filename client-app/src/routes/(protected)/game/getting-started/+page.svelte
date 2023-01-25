@@ -14,7 +14,7 @@
 	export let form: ActionData;
 </script>
 
-<div class="bg-surface-700 mt-10 p-5 w-1/4 mx-auto">
+<div class="bg-surface-700 mt-10 p-5 w-full md:w-1/2 mx-auto">
 	<form
 		action="?/settle"
 		method="POST"
@@ -32,25 +32,25 @@
 				<p class="mt-1 text-sm">Let's choose the server and world you'd like to start in.</p>
 			</div>
 
-			<div class="grid grid-cols-4 text-center">
-				<div class="sm:col-span-1">
+			<div class="flex text-center">
+				<div class="flex-row">
 					<select id="server" name="server" class="rounded-md" bind:value={selectedServer}>
 						{#each data.servers as server}
 							<option value={server.id}>{server.name}</option>
 						{/each}
 					</select>
 				</div>
-				<div class="sm:col-span-1">
+				<div class="flex-row">
 					<select id="world" name="world" class="rounded-md" bind:value={selectedWorld}>
 						{#each data.worlds.filter((w) => w.serverId === selectedServer) as world, i}
 							<option value={world.id}>World {i}</option>
 						{/each}
 					</select>
 				</div>
-				<div class="sm:col-span-1 text-xs">
+				<div class="mx-1 py-3 text-xs">
 					{selectedServer ?? ''}
 				</div>
-				<div class="sm:col-span-1 text-xs">
+				<div class="mx-1 py-3 text-xs">
 					{selectedWorld ?? ''}
 				</div>
 			</div>
@@ -58,10 +58,8 @@
 				<h3 class="text-lg font-medium leading-6">Choose Username</h3>
 			</div>
 
-			<div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-				<div class="sm:col-span-2">
-					<input id="username" type="text" name="username" bind:value={username} />
-				</div>
+			<div class="mt-6 gap-y-6 gap-x-4 sm:grid-cols-6">
+				<input id="username" type="text" name="username" bind:value={username} />
 			</div>
 		</div>
 

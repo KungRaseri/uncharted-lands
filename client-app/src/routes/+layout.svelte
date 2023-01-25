@@ -49,7 +49,7 @@
 
 <AppShell slotPageContent="w-full h-full">
 	<svelte:fragment slot="header">
-		<AppBar background="bg-surface-700 px-5 py-4">
+		<AppBar background="bg-surface-700 px-2 py-3">
 			<svelte:fragment slot="lead">
 				<div class="items-center sm:hidden">
 					<button
@@ -70,14 +70,14 @@
 					</button>
 				</div>
 				<div class="flex items-center justify-center sm:items-stretch sm:justify-start">
-					<div class="items-center mx-5 sm:mx-1">
+					<div class="items-center mx-1">
 						<img
-							class="hidden w-8 lg:block"
+							class="hidden w-8 sm:block"
 							src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
 							alt="Your Company"
 						/>
 					</div>
-					<div class="hidden sm:ml-6 sm:block">
+					<div class="hidden sm:block mx-1">
 						<div class="space-y-4">
 							{#each data.mainMenuLinks as link}
 								{#if link.requiredRole}
@@ -119,17 +119,17 @@
 			</svelte:fragment>
 
 			<svelte:fragment slot="trail">
-				<div class="absolute flex items-center right-5 sm:right-11">
+				<div class="absolute flex items-center top-2 right-2">
 					{#if !data.account}
 						<a
 							href="/login"
-							class="mx-1 px-3 py-2 bg-primary-700 text-primary-50 rounded-md text-sm font-medium"
+							class="mx-1 my-0 px-3 py-2 bg-primary-700 text-primary-50 rounded-md text-sm font-medium"
 						>
 							Sign in
 						</a>
 						<a
 							href="/register"
-							class="mx-1 px-3 py-2 bg-secondary-700 text-primary-50 rounded-md text-sm font-medium"
+							class="mx-1 my-0 px-3 py-2 bg-secondary-700 text-primary-50 rounded-md text-sm font-medium"
 						>
 							Sign up
 						</a>
@@ -235,6 +235,6 @@
 	<slot />
 
 	<svelte:fragment slot="footer">
-		<Footer classes="bg-surface-700 fixed bottom-0 inset-x-0 hidden sm:block" />
+		<Footer classes="bg-surface-700 fixed bottom-0 inset-x-0 hidden lg:block" />
 	</svelte:fragment>
 </AppShell>

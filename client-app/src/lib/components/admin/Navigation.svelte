@@ -14,20 +14,20 @@
 <AppRail selected={storeValue}>
 	<svelte:fragment slot="lead">
 		<AppRailTile label="Dashboard" title="Dashboard" value={1}>
-			<ViewDashboard size={48} />
+			<ViewDashboard />
 		</AppRailTile>
 	</svelte:fragment>
 	<AppRailTile label="Servers" title="Servers" value={2}>
-		<Server size={48} />
+		<Server />
 	</AppRailTile>
 	<AppRailTile label="Worlds" title="Worlds" value={3}>
-		<Web size={48} />
+		<Web />
 	</AppRailTile>
 	<AppRailTile label="Players" title="Players" value={4}>
-		<Group size={48} />
+		<Group />
 	</AppRailTile>
 	<AppRailTile label="Reports" title="Reports" value={5}>
-		<FolderSearchOutline size={48} />
+		<FolderSearchOutline />
 	</AppRailTile>
 	<svelte:fragment slot="trail" />
 </AppRail>

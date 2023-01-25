@@ -37,11 +37,18 @@
 			<div>
 				<label for="email" class="block text-md font-medium text-primary-50"> Email address </label>
 				<div class="mt-1">
-					<input id="email" name="email" type="email" autocomplete="email" required />
+					<input
+						id="email"
+						name="email"
+						type="email"
+						autocomplete="email"
+						required
+						class="rounded-sm"
+					/>
 				</div>
 			</div>
 
-			<div>
+			<div class="space-y-1">
 				<label for="password" class="block text-md font-medium text-primary-50"> Password </label>
 				<div class="mt-1">
 					<input
@@ -50,6 +57,7 @@
 						type="password"
 						autocomplete="current-password"
 						required
+						class="rounded-sm"
 					/>
 				</div>
 
@@ -70,7 +78,6 @@
 					</div>
 				{/if}
 			</div>
-
 			<button class="w-full p-2 btn btn-base variant-ghost-primary">Register</button>
 		</form>
 	</div>

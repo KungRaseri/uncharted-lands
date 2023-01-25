@@ -10,6 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//// TYPES
 enum AccountRole {
   MEMBER
   SUPPORT
@@ -29,14 +30,9 @@ enum Resource {
   STONE
 }
 
-model Biome {
-  id            String  @id @default(uuid())
-  name          String
-  temperature   Decimal
-  precipitation Decimal
-  Tile          Tile[]
-}
+//// END TYPES
 
+//// TABLES
 model Account {
   id            String      @id @default(uuid())
   email         String      @unique
@@ -104,9 +100,12 @@ model Region {
 }
 
 model Tile {
-  id    String @id @default(uuid())
-  biome Biome  @relation(fields: [biomeId], references: [id])
+  id            String @id @default(uuid())
+  elevation     Float
+  temperature   Float
+  precipitation Float
 
+  biome     Biome          @relation(fields: [biomeId], references: [id])
   resources TileResource[]
 
   settlement   Settlement? @relation(fields: [settlementId], references: [id])
@@ -126,6 +125,13 @@ model TileResource {
   tileId String
 
   @@unique([tileId, resource])
+}
+
+model Biome {
+  id   String @id @default(uuid())
+  name String
+
+  Tile Tile[]
 }
 
 model Settlement {
