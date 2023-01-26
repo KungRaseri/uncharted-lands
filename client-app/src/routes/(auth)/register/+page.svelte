@@ -18,7 +18,7 @@
 				src="https://tailwindui.com/img/logos/workflow-mark.svg?color=indigo&shade=600"
 				alt="Workflow"
 			/>
-			<h1 class="mt-6 text-xl lg:text-3xl tracking-tight font-bold text-primary-50">
+			<h1 class="mt-6 text-xl lg:text-2xl tracking-tight font-bold text-primary-50">
 				Register your account
 			</h1>
 		</div>
@@ -35,14 +35,14 @@
 			}}
 		>
 			<div>
-				<label for="email" class="block text-md font-medium text-primary-50"> Email address </label>
+				<label for="email" class="block text-md font-medium text-primary-50">Email address</label>
 				<div class="mt-1">
 					<input id="email" name="email" type="email" autocomplete="email" required />
 				</div>
 			</div>
 
 			<div>
-				<label for="password" class="block text-md font-medium text-primary-50"> Password </label>
+				<label for="password" class="block text-md font-medium text-primary-50">Password</label>
 				<div class="mt-1">
 					<input
 						id="password"

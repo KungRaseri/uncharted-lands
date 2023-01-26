@@ -10,7 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//// TYPES
 enum AccountRole {
   MEMBER
   SUPPORT
@@ -30,9 +29,6 @@ enum Resource {
   STONE
 }
 
-//// END TYPES
-
-//// TABLES
 model Account {
   id            String      @id @default(uuid())
   email         String      @unique

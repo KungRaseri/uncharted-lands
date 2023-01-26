@@ -4,8 +4,9 @@
 	import type { ActionData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-
 	import { slide } from 'svelte/transition';
+
+	let isRememberMeChecked = false;
 
 	export let form: ActionData;
 </script>
@@ -18,7 +19,7 @@
 				src="https://tailwindui.com/img/logos/workflow-mark.svg?color=indigo&shade=600"
 				alt="Workflow"
 			/>
-			<h1 class="mt-6 text-xl lg:text-3xl tracking-tight font-bold text-primary-50">
+			<h1 class="mt-6 text-xl lg:text-2xl tracking-tight font-bold text-primary-50">
 				Sign into your account
 			</h1>
 		</div>
@@ -26,7 +27,7 @@
 		<form
 			action="?/login"
 			method="POST"
-			class="space-y-2"
+			class="space-y-1"
 			use:enhance={() => {
 				return async ({ result }) => {
 					invalidateAll();
@@ -34,7 +35,12 @@
 				};
 			}}
 		>
-			<label for="email" class="block text-md font-medium text-primary-50"> Email address </label>
+			<label for="email" class="flex text-md font-medium text-primary-50">
+				Email address
+				{#if form?.invalid}
+					<span class="rounded-full mx-1 p-1 bg-error-800 text-error-50"><Information /></span>
+				{/if}
+			</label>
 			<div class="mt-1">
 				<input
 					id="email"
@@ -46,7 +52,12 @@
 				/>
 			</div>
 
-			<label for="password" class="block text-md font-medium text-primary-50"> Password </label>
+			<label for="password" class="flex text-md font-medium text-primary-50">
+				Password
+				{#if form?.invalid}
+					<span class="rounded-full mx-1 p-1 bg-error-800 text-error-50"><Information /></span>
+				{/if}
+			</label>
 			<div class="mt-1">
 				<input
 					id="password"
@@ -65,6 +76,7 @@
 						name="remember_me"
 						type="checkbox"
 						class="checked:text-surface-900 focus:outline-primary-900 focus:ring-primary-900"
+						bind:value={isRememberMeChecked}
 					/>
 					<label for="remember_me" class="ml-2 block text-sm text-primary-50">Remember me</label>
 				</div>
@@ -88,7 +100,7 @@
 				</div>
 			{/if}
 
-			<button class="w-full p-2 btn btn-base variant-ghost-primary">Login</button>
+			<button class="w-full p-2 btn btn-base variant-ghost-primary"> Login </button>
 		</form>
 	</div>
 </div>

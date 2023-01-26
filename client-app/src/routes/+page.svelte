@@ -34,23 +34,14 @@
 					of wildlife and the environment
 				</span>
 			</p>
-			<div class="mx-auto flex">
-				<a
-					href="/introduction"
-					class="w-full px-3 py-2 my-2 mx-2 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
-				>
+			<div class="mx-auto flex space-x-2">
+				<a href="/introduction" class="btn variant-soft-secondary w-full">
 					<span class="text-secondary-50">Introduction</span>
 				</a>
-				<a
-					href="/register"
-					class="w-full px-3 py-2 my-2 mx-2 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
-				>
+				<a href="/register" class="btn variant-soft-secondary w-full">
 					<span class="text-secondary-50">Register</span>
 				</a>
-				<a
-					href="/login"
-					class="w-full px-3 py-2 my-2 mx-2 rounded-md bg-secondary-900 text-center hover:bg-secondary-800"
-				>
+				<a href="/login" class="btn variant-soft-secondary w-full">
 					<span class="text-secondary-50">Login</span>
 				</a>
 			</div>
