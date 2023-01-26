@@ -43,39 +43,39 @@
 	const storeValue: Writable<number> = writable(1);
 </script>
 
-<AppRail selected={storeValue} class="w-16 sm:w-min text-center align-middle space-y-1">
+<AppRail selected={storeValue} class="w-16 sm:w-min text-center align-middle">
 	<svelte:fragment slot="lead">
 		<AppRailTile
-			label="Dashboard"
 			title="Dashboard"
 			tag="a"
 			href="/admin"
 			value={'/admin'}
-			class="m-0 py-2 px-1 btn variant-soft-surface hover:variant-ghost-primary rounded-none items-center justify-center"
+			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
 		>
 			<ViewDashboard width="100%" size={36} />
+			<span class="text-xs">Dashboard</span>
 		</AppRailTile>
 	</svelte:fragment>
 	{#each railTiles as railTile}
 		<AppRailTile
-			label={railTile.label}
 			title={railTile.title}
 			tag="a"
 			href={railTile.href}
 			value={railTile.value}
-			class="m-0 py-2 px-1 btn variant-soft-surface hover:variant-ghost-primary rounded-none items-center justify-center"
+			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
 		>
-			<div class="mx-auto w-fit"><svelte:component this={railTile.icon} size={24} /></div>
+			<div class="mx-auto w-fit"><svelte:component this={railTile.icon} size={36} /></div>
+			<span class="text-xs">{railTile.label}</span>
 		</AppRailTile>
 	{/each}
 	<svelte:fragment slot="trail">
 		<AppRailTile
 			tag="a"
 			href="https://github.com/RedSyndicate/browser-game"
-			class="m-0 py-2 px-1 btn variant-soft-surface hover:variant-ghost-primary rounded-none items-center justify-center"
+			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
 		>
 			<Github width="100%" size={36} />
-			<span class="text-sm">src</span>
+			<span class="text-xs">src</span>
 		</AppRailTile>
 	</svelte:fragment>
 </AppRail>
