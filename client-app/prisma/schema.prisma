@@ -44,6 +44,7 @@ model Account {
 model Profile {
   id       String @id @default(uuid())
   username String @unique
+  picture  String
 
   profileServerData ProfileServerData[]
 
@@ -124,8 +125,12 @@ model TileResource {
 }
 
 model Biome {
-  id   String @id @default(uuid())
-  name String
+  id               String @id @default(uuid())
+  name             String @unique
+  precipitationMin Float
+  precipitationMax Float
+  temperatureMin   Float
+  temperatureMax   Float
 
   Tile Tile[]
 }

@@ -19,7 +19,6 @@ export const load: PageServerLoad = (async ({ locals }) => {
     accountFullDetails.passwordHash = '';
 
     return {
-        account: accountFullDetails,
-        profile: locals.playerProfile
+        account: accountFullDetails
     };
 }) 

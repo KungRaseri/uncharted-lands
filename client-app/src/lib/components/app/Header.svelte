@@ -2,8 +2,9 @@
 	import { createEventDispatcher } from 'svelte';
 	import { page } from '$app/stores';
 
-	import { AppBar } from '@skeletonlabs/skeleton';
+	import { AppBar, menu } from '@skeletonlabs/skeleton';
 	import Menu from 'svelte-material-icons/Menu.svelte';
+	import Account from 'svelte-material-icons/Account.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import BellOutline from 'svelte-material-icons/BellOutline.svelte';
 	import { slide } from 'svelte/transition';
@@ -11,18 +12,13 @@
 	const dispatch = createEventDispatcher();
 
 	export let isMainMenuOpen = false;
-	export let isUserMenuOpen = false;
 
 	function toggleMainMenu() {
 		dispatch('toggleMainMenu', {});
 	}
-
-	function toggleUserMenu() {
-		dispatch('toggleUserMenu', {});
-	}
 </script>
 
-<AppBar background="bg-surface-700 px-2 py-3" slotTrail="absolute flex items-center top-3 right-3">
+<AppBar background="bg-surface-700" slotTrail="" class="justify-between px-2 py-3">
 	<svelte:fragment slot="lead">
 		<div class="block sm:hidden">
 			<button
@@ -79,7 +75,7 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="trail">
-		<div class="space-x-3">
+		<div class="flex space-x-2">
 			{#if !$page.data.account}
 				<a
 					href="/login"
@@ -97,58 +93,61 @@
 				>
 					Sign up
 				</a>
-			{/if}
-			{#if $page.data.account}
-				<div class="flex">
-					<button type="button" class="px-1.5 py-0 btn-icon variant-ghost-surface">
+			{:else}
+				<div>
+					<button type="button" class="btn-icon variant-ghost-surface m-0 p-0">
 						<BellOutline size={24} />
 					</button>
 
 					<button
 						type="button"
-						class="px-1.5 py-0 rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+						class="btn-icon variant-ghost-surface m-0 p-0"
 						id="user-menu-button"
 						aria-expanded="false"
 						aria-haspopup="true"
-						on:click={toggleUserMenu}
+						use:menu={{ menu: 'userMenu' }}
 					>
-						<span class="sr-only">Open user menu</span>
-						<img
-							class="h-8 w-8 rounded-full"
-							src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-							alt=""
-						/>
+						{#if $page.data.account.profile?.picture}
+							<img
+								class="w-6 rounded-full"
+								src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+								alt=""
+							/>
+						{:else}
+							<div class="w-6 items-center justify-center mx-auto">
+								<Account size={24} />
+							</div>
+						{/if}
 					</button>
 				</div>
+				<span class="relative">
+					<nav
+						class="list-nav card rounded-lg shadow-xl p-2 space-y-1 w-64"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="user-menu-button"
+						tabindex="-1"
+						data-menu="userMenu"
+					>
+						{#each $page.data.userMenuLinks as link}
+							<a
+								href={link.route}
+								class="{link.isActive ? 'btn variant-soft-primary' : 'btn variant-soft-secondary'}
+							{link.requiredRole && $page.data.account.role !== link.requiredRole ? 'hidden' : ''}
+							rounded-none w-full"
+								aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+							>
+								<span class={link.isActive ? 'text-primary-50' : 'text-secondary-50'}>
+									{link.name}
+								</span>
+							</a>
+						{/each}
+					</nav>
+				</span>
 			{/if}
 		</div>
 	</svelte:fragment>
 </AppBar>
-{#if isUserMenuOpen}
-	<div
-		transition:slide
-		class="absolute right-5 z-10"
-		role="menu"
-		aria-orientation="vertical"
-		aria-labelledby="user-menu-button"
-		tabindex="-1"
-	>
-		{#each $page.data.userMenuLinks as link}
-			<a
-				href={link.route}
-				class="{link.isActive ? 'btn variant-ghost-primary' : 'btn variant-ghost-secondary'}
-							{link.requiredRole && $page.data.account.role !== link.requiredRole ? 'hidden' : ''}
-							px-3 py-2 text-base font-medium"
-				aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
-				on:click={toggleUserMenu}
-			>
-				<span class={link.isActive ? 'text-primary-50' : 'text-secondary-50'}>
-					{link.name}
-				</span>
-			</a>
-		{/each}
-	</div>
-{/if}
 <!-- Mobile menu, show/hide based on menu state. -->
 {#if isMainMenuOpen}
 	<div

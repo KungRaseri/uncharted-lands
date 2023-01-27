@@ -15,14 +15,9 @@
 
 	let isDarkTheme = false;
 	let isMainMenuOpen = false;
-	let isUserMenuOpen = false;
 
 	function toggleMainMenu(event) {
 		isMainMenuOpen = !isMainMenuOpen;
-	}
-
-	function toggleUserMenu(event) {
-		isUserMenuOpen = !isUserMenuOpen;
 	}
 
 	function toggleDarkTheme() {
@@ -42,9 +37,7 @@
 	<svelte:fragment slot="header">
 		<Header
 			{isMainMenuOpen}
-			{isUserMenuOpen}
 			on:toggleMainMenu={toggleMainMenu}
-			on:toggleUserMenu={toggleUserMenu}
 		/>
 	</svelte:fragment>
 
