@@ -119,31 +119,31 @@
 							</div>
 						{/if}
 					</button>
-				</div>
-				<span class="relative">
-					<nav
-						class="list-nav card rounded-lg shadow-xl p-2 space-y-1 w-64"
-						role="menu"
-						aria-orientation="vertical"
-						aria-labelledby="user-menu-button"
-						tabindex="-1"
-						data-menu="userMenu"
-					>
-						{#each $page.data.userMenuLinks as link}
-							<a
-								href={link.route}
-								class="{link.isActive ? 'btn variant-soft-primary' : 'btn variant-soft-secondary'}
+					<span class="relative">
+						<nav
+							class="list-nav card rounded-lg shadow-xl p-2 space-y-1 w-32 -mx-10 mt-1"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="user-menu-button"
+							tabindex="-1"
+							data-menu="userMenu"
+						>
+							{#each $page.data.userMenuLinks as link}
+								<a
+									href={link.route}
+									class="{link.isActive ? 'btn variant-soft-primary' : 'btn variant-soft-secondary'}
 							{link.requiredRole && $page.data.account.role !== link.requiredRole ? 'hidden' : ''}
 							rounded-none w-full"
-								aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
-							>
-								<span class={link.isActive ? 'text-primary-50' : 'text-secondary-50'}>
-									{link.name}
-								</span>
-							</a>
-						{/each}
-					</nav>
-				</span>
+									aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+								>
+									<span class={link.isActive ? 'text-primary-50' : 'text-secondary-50'}>
+										{link.name}
+									</span>
+								</a>
+							{/each}
+						</nav>
+					</span>
+				</div>
 			{/if}
 		</div>
 	</svelte:fragment>
