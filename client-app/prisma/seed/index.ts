@@ -128,6 +128,8 @@ async function main() {
             }
         })
 
+        // other seed data
+
         console.log(`Biome ${resultBiome.name} with ID[${resultBiome.id}] created`)
     })
 

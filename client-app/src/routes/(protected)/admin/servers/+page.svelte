@@ -141,8 +141,15 @@
 		</div>
 	{/if}
 	<div class="table-container">
-		<div class="p-1 m-1 max-w-md">
+		<div class="p-0 m-3 w-11/12 flex space-x-3">
 			<input bind:value={$serversTableStore.search} type="search" placeholder="Search..." />
+			<a
+				href="/admin/servers/create"
+				class="btn btn-sm variant-soft-primary"
+			>
+				<span class="mx-1 px-0 py-3 text-primary-50"><ServerPlus /></span>
+				<span class="mx-1 px-0 py-2 text-primary-50">Create</span>
+			</a>
 		</div>
 		<table class="table table-hover" use:tableInteraction>
 			<thead>

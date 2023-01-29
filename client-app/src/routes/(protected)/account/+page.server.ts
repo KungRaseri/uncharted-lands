@@ -3,7 +3,7 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = (async ({ locals }) => {
-    const accountFullDetails = await db.account.findUnique({
+    const account = await db.account.findUnique({
         where: {
             id: locals.account.id
         },
@@ -12,13 +12,13 @@ export const load: PageServerLoad = (async ({ locals }) => {
         }
     })
 
-    if (!accountFullDetails) {
+    if (!account) {
         return fail(404, { notfound: true })
     }
 
-    accountFullDetails.passwordHash = '';
+    account.passwordHash = '';
 
     return {
-        account: accountFullDetails
+        account: account
     };
 }) 

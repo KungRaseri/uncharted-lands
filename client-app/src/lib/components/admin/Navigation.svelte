@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { AppShell, AppRail, AppRailTile } from '@skeletonlabs/skeleton';
 	import { writable, type Writable } from 'svelte/store';
+	import { page } from '$app/stores';
 
 	import ViewDashboard from 'svelte-material-icons/ViewDashboard.svelte';
 	import Server from 'svelte-material-icons/Server.svelte';
@@ -25,10 +26,10 @@
 			icon: Web
 		},
 		{
-			label: 'Players',
-			title: 'Players',
-			href: '/admin/players',
-			value: '/admin/players',
+			label: 'Accounts',
+			title: 'Accounts',
+			href: '/admin/accounts',
+			value: '/admin/accounts',
 			icon: AccountGroup
 		},
 		{
@@ -50,7 +51,10 @@
 			tag="a"
 			href="/admin"
 			value={'/admin'}
-			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
+			class="py-1 px-0 btn btn-sm w-16 
+				{$page.route.id === '/(protected)/admin' ? 'variant-ghost-primary' : 'variant-soft-surface'} 
+				hover:variant-ghost-secondary 
+				rounded-none"
 		>
 			<ViewDashboard width="100%" size={36} />
 			<span class="text-xs">Dashboard</span>
@@ -62,7 +66,10 @@
 			tag="a"
 			href={railTile.href}
 			value={railTile.value}
-			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
+			class="py-1 px-0 btn btn-sm w-16 
+				{$page.route.id?.includes(railTile.value) ? 'variant-ghost-primary' : 'variant-soft-surface'} 
+				hover:variant-ghost-secondary 
+				rounded-none"
 		>
 			<div class="mx-auto w-fit"><svelte:component this={railTile.icon} size={36} /></div>
 			<span class="text-xs">{railTile.label}</span>

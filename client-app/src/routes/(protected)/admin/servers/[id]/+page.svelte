@@ -132,7 +132,7 @@
 				<div class="w-full flex p-0 m-0 overflow-x-scroll">
 					{#each data.server.profileServerData as playerProfile, i}
 						<a
-							href="/admin/players/{playerProfile.profileId}"
+							href="/admin/{playerProfile.profileId}"
 							class="m-1 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
 						>
 							{i}

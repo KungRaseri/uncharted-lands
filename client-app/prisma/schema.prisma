@@ -89,11 +89,26 @@ model World {
 }
 
 model Region {
-  id    String @id @default(uuid())
+  id String @id @default(uuid())
+
   tiles Tile[]
 
   world   World  @relation(fields: [worldId], references: [id])
   worldId String
+
+  biome   Biome  @relation(fields: [biomeId], references: [id])
+  biomeId String
+}
+
+model Biome {
+  id               String @id @default(uuid())
+  name             String @unique
+  precipitationMin Float
+  precipitationMax Float
+  temperatureMin   Float
+  temperatureMax   Float
+
+  Region Region[]
 }
 
 model Tile {
@@ -102,7 +117,6 @@ model Tile {
   temperature   Float
   precipitation Float
 
-  biome     Biome          @relation(fields: [biomeId], references: [id])
   resources TileResource[]
 
   settlement   Settlement? @relation(fields: [settlementId], references: [id])
@@ -110,7 +124,6 @@ model Tile {
 
   region   Region @relation(fields: [regionId], references: [id])
   regionId String
-  biomeId  String
 }
 
 model TileResource {
@@ -122,17 +135,6 @@ model TileResource {
   tileId String
 
   @@unique([tileId, resource])
-}
-
-model Biome {
-  id               String @id @default(uuid())
-  name             String @unique
-  precipitationMin Float
-  precipitationMax Float
-  temperatureMin   Float
-  temperatureMax   Float
-
-  Tile Tile[]
 }
 
 model Settlement {

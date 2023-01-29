@@ -15,19 +15,19 @@
 
 	<nav class="w-fit mx-auto flex" aria-label="Footer">
 		<div class="px-5">
-			<a href="/game" class="text-base text-gray-50 hover:text-orange-600"> Game </a>
+			<a href="/game" class="btn variant-soft-surface"> Game </a>
 		</div>
 
 		<div class="px-5">
-			<a href="/forum" class="text-base text-gray-50 hover:text-orange-600"> Forum </a>
+			<a href="/forum" class="btn variant-soft-surface"> Forum </a>
 		</div>
 
 		<div class="px-5">
-			<a href="/kb" class="text-base text-gray-50 hover:text-orange-600"> Knowledgebase </a>
+			<a href="/kb" class="btn variant-soft-surface"> Knowledgebase </a>
 		</div>
 
 		<div class="px-5">
-			<a href="/support" class="text-base text-gray-50 hover:text-orange-600"> Support </a>
+			<a href="/support" class="btn variant-soft-surface"> Support </a>
 		</div>
 	</nav>
 </footer>
