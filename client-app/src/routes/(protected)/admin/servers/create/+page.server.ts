@@ -1,3 +1,4 @@
+import { goto } from "$app/navigation"
 import { db } from "$lib/db"
 import { AccountRole, Prisma, ServerStatus } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
@@ -27,7 +28,7 @@ const createServer: Action = async ({ request }) => {
         !hostname ||
         typeof port !== 'string' ||
         !port) {
-        return fail(400, { invalid: true })
+        return fail(400, { invalid: true, message: "Invalid form data. Check form and try again" })
     }
 
     try {
@@ -38,19 +39,19 @@ const createServer: Action = async ({ request }) => {
                 port: Number.parseInt(port)
             }
         })
-
-        throw redirect(302, '/admin/servers')
     }
     catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
             if (e.code === "P2002") {
                 return fail(400, { invalid: true, message: e.message })
             }
+        } else {
+            return fail(400, { invalid: true, message: `Unknown error occured: ${e}` })
         }
-
-        console.log(typeof e)
-        return fail(400, { invalid: true, message: "Unknown error occured" })
     }
+
+    throw redirect(302, '/admin/servers')
+
 }
 
 export const actions: Actions = { createServer }

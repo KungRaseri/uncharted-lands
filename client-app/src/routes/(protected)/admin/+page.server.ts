@@ -4,7 +4,7 @@ import { AccountRole } from "@prisma/client"
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (!locals.account) {
-        throw redirect(307, '/login')
+        throw redirect(307, '/')
     }
 
     if (locals.account.role !== AccountRole.ADMINISTRATOR) {

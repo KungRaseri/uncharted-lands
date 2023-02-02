@@ -52,7 +52,7 @@
 			href="/admin"
 			value={'/admin'}
 			class="py-1 px-0 btn btn-sm w-16 
-				{$page.route.id === '/(protected)/admin' ? 'variant-ghost-primary' : 'variant-soft-surface'} 
+				{$page.route.id === '/(protected)/admin' ? 'bg-primary-active-token' : ''} 
 				hover:variant-ghost-secondary 
 				rounded-none"
 		>
@@ -67,7 +67,7 @@
 			href={railTile.href}
 			value={railTile.value}
 			class="py-1 px-0 btn btn-sm w-16 
-				{$page.route.id?.includes(railTile.value) ? 'variant-ghost-primary' : 'variant-soft-surface'} 
+				{$page.route.id?.includes(railTile.value) ? 'bg-primary-active-token' : ''} 
 				hover:variant-ghost-secondary 
 				rounded-none"
 		>

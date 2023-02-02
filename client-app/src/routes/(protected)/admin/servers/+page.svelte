@@ -25,9 +25,9 @@
 		sort: '',
 		pagination: {
 			offset: 0,
-			limit: 5,
+			limit: 15,
 			size: 0,
-			amounts: [1, 2, 5, 10]
+			amounts: [5, 15, 25]
 		}
 	});
 
@@ -46,109 +46,14 @@
 	$: serversTableStore.updateSource(data.servers);
 </script>
 
-<div class="m-5">
-	<div class="my-3 h-8 flex">
-		<span class="mr-5 text-slate-50"><h1>Servers</h1></span>
-		{#if data.servers.length}
-			<div class="p-2">
-				<button class="text-slate-50 hover:text-slate-700" on:click={toggleServerForm}>
-					<ServerPlus size={24} />
-				</button>
-				{#if isServerFormActive}
-					<button class="text-red-500 hover:text-slate-700" on:click={closeServerForm}>
-						<Close size={24} />
-					</button>
-				{/if}
-			</div>
-		{/if}
-	</div>
-	{#if !data.servers.length && !isServerFormActive}
-		<div class="w-1/3">
-			<button
-				on:click={toggleServerForm}
-				class="relative block w-full h-full p-8 rounded-lg border-2 border-dashed border-gray-300 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 hover:bg-transparent"
-			>
-				<div class="mx-auto w-min"><ServerPlus color="silver" size={48} width={48} /></div>
-				<span class="mt-2 block text-sm font-medium text-slate-200">Create a new server</span>
-			</button>
-		</div>
-	{/if}
-
-	{#if isServerFormActive}
-		<div transition:slide>
-			<div class="w-1/2 m-3 p-5">
-				<form
-					action="?/create"
-					method="POST"
-					use:enhance={() => {
-						return async ({ result }) => {
-							invalidateAll();
-
-							applyAction(result);
-						};
-					}}
-				>
-					<div>
-						<label for="name">Name</label>
-						<input
-							class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-							id="name"
-							type="text"
-							name="name"
-							required
-						/>
-
-						<label for="hostname">Hostname</label>
-						<input
-							class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-							id="Hostname"
-							type="text"
-							name="hostname"
-							required
-						/>
-
-						<label for="port">Port</label>
-						<input
-							class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-							id="port"
-							type="text"
-							name="port"
-							required
-						/>
-
-						{#if form?.invalid}
-							<div transition:slide>
-								<div class="alert alert-error mx-5 mt-5">
-									<div class="alert-message text-primary-50">
-										<Information size={24} />
-										<div class="grid grid-cols-1">Form information is invalid</div>
-										{#if form?.length}
-											Password must be 16 or more characters in length
-										{/if}
-										{#if form?.exists}
-											Server with this information already exists
-										{/if}
-									</div>
-								</div>
-							</div>
-						{/if}
-					</div>
-					<button class="w-full my-5 px-3 py-2 bg-primary-900 text-primary-50 rounded-md">
-						Submit
-					</button>
-				</form>
-			</div>
-		</div>
-	{/if}
+<div class="m-1">
+	<h1>Servers</h1>
 	<div class="table-container">
 		<div class="p-0 m-3 w-11/12 flex space-x-3">
 			<input bind:value={$serversTableStore.search} type="search" placeholder="Search..." />
-			<a
-				href="/admin/servers/create"
-				class="btn btn-sm variant-soft-primary"
-			>
-				<span class="mx-1 px-0 py-3 text-primary-50"><ServerPlus /></span>
-				<span class="mx-1 px-0 py-2 text-primary-50">Create</span>
+			<a href="/admin/servers/create" class="btn bg-primary-400-500-token">
+				<span class="mx-1 px-0 py-3 text-token"><ServerPlus /></span>
+				<span class="mx-1 px-0 py-2 text-token">Create</span>
 			</a>
 		</div>
 		<table class="table table-hover" use:tableInteraction>

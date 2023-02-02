@@ -1,32 +1,32 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { page } from '$app/stores';
 
-	import { AppBar, menu } from '@skeletonlabs/skeleton';
+	import { AppBar, LightSwitch, menu } from '@skeletonlabs/skeleton';
 	import Menu from 'svelte-material-icons/Menu.svelte';
 	import Account from 'svelte-material-icons/Account.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import BellOutline from 'svelte-material-icons/BellOutline.svelte';
 	import { slide } from 'svelte/transition';
 
-	const dispatch = createEventDispatcher();
-
 	export let isMainMenuOpen = false;
-
-	function toggleMainMenu() {
-		dispatch('toggleMainMenu', {});
-	}
 </script>
 
-<AppBar background="bg-surface-700" slotTrail="" class="justify-between px-2 py-3">
+<AppBar
+	padding="px-2 py-3"
+	background="bg-surface-100-800-token"
+	shadow="shadow-md"
+	class="justify-between"
+>
 	<svelte:fragment slot="lead">
 		<div class="block sm:hidden">
 			<button
 				type="button"
-				class="px-1.5 py-0 btn-icon variant-ghost-surface justify-center items-center"
+				class="px-1.5 py-0 btn-icon variant-soft-surface justify-center items-center"
 				aria-controls="mobile-menu"
 				aria-expanded="false"
-				on:click={toggleMainMenu}
+				on:click={() => {
+					isMainMenuOpen = !isMainMenuOpen;
+				}}
 			>
 				{#if !isMainMenuOpen}
 					<Menu size={24} />
@@ -41,13 +41,17 @@
 					{#if $page.data.account}
 						<a
 							href={link.route}
-							class="btn btn-base {link.isActive
-								? 'variant-ghost-primary'
-								: 'variant-ghost-secondary'}
-											{$page.data.account.role !== link.requiredRole ? 'hidden' : ''}
-											"
+							class="btn rounded-md
+								{link.isActive ? 'bg-primary-active-token' : ''}
+								{$page.data.account.role !== link.requiredRole ? 'hidden' : ''}
+								bg-primary-hover-token
+								"
 						>
-							<span class={link.isActive ? 'text-primary-50' : 'text-secondary-50'}>
+							<span
+								class="
+									text-token
+									"
+							>
 								{link.name}
 							</span>
 						</a>
@@ -56,16 +60,20 @@
 				{#if !link.requiredRole}
 					<a
 						href={link.route}
-						class="btn btn-base {link.isActive
-							? 'variant-ghost-primary'
-							: 'variant-ghost-secondary'}
-									{$page.data.account && link.requiredRole && $page.data.account.role !== link.requiredRole
+						class="btn rounded-md
+							{link.isActive ? 'bg-primary-active-token' : ''}
+							{$page.data.account && link.requiredRole && $page.data.account.role !== link.requiredRole
 							? 'hidden'
 							: ''}
-									"
+							bg-primary-hover-token
+							"
 						aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
 					>
-						<span class={link.isActive ? 'text-primary-50' : 'text-secondary-50'}>
+						<span
+							class="
+								text-token
+								"
+						>
 							{link.name}
 						</span>
 					</a>
@@ -76,32 +84,49 @@
 
 	<svelte:fragment slot="trail">
 		<div class="flex space-x-2">
+			<div class="p-2.5">
+				<LightSwitch />
+			</div>
 			{#if !$page.data.account}
 				<a
 					href="/login"
-					class="btn btn-base {$page.route.id?.includes('/login')
-						? 'variant-ghost-primary'
-						: 'variant-ghost-secondary'}"
+					class="btn rounded-md text-token
+						bg-primary-hover-token
+						{$page.route.id === '/(auth)/login' ? 'bg-primary-active-token' : ''}
+						"
 				>
-					Sign in
+					<span
+						class="
+							text-token
+							"
+					>
+						Sign in
+					</span>
 				</a>
 				<a
 					href="/register"
-					class="btn btn-base {$page.route.id?.includes('/register')
-						? 'variant-ghost-primary'
-						: 'variant-ghost-secondary'}"
+					class="btn rounded-md 
+						{$page.route.id === '/(auth)/register' ? 'bg-primary-active-token' : ''}
+						bg-primary-hover-token 
+						"
 				>
-					Sign up
+					<span
+						class="
+							text-token
+							"
+					>
+						Sign up
+					</span>
 				</a>
 			{:else}
 				<div>
-					<button type="button" class="btn-icon variant-ghost-surface m-0 p-0">
+					<button type="button" class="btn-icon bg-surface-200-700-token m-0 p-0">
 						<BellOutline size={24} />
 					</button>
 
 					<button
 						type="button"
-						class="btn-icon variant-ghost-surface m-0 p-0"
+						class="btn-icon bg-surface-200-700-token m-0 p-0"
 						id="user-menu-button"
 						aria-expanded="false"
 						aria-haspopup="true"
@@ -119,9 +144,9 @@
 							</div>
 						{/if}
 					</button>
-					<span class="relative">
+					<span class="relative rounded-md">
 						<nav
-							class="list-nav card rounded-lg shadow-xl p-2 space-y-1 w-32 -mx-10 mt-1"
+							class="list-nav card p-3 -ml-5 mt-1 rounded-md"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="user-menu-button"
@@ -131,12 +156,13 @@
 							{#each $page.data.userMenuLinks as link}
 								<a
 									href={link.route}
-									class="{link.isActive ? 'btn variant-soft-primary' : 'btn variant-soft-secondary'}
-							{link.requiredRole && $page.data.account.role !== link.requiredRole ? 'hidden' : ''}
-							rounded-none w-full"
+									class="btn
+										{link.isActive ? 'bg-primary-active-token' : ''}
+										{link.requiredRole && $page.data.account.role !== link.requiredRole ? 'hidden' : ''}
+										"
 									aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
 								>
-									<span class={link.isActive ? 'text-primary-50' : 'text-secondary-50'}>
+									<span class="text-token">
 										{link.name}
 									</span>
 								</a>
@@ -158,21 +184,24 @@
 		aria-orientation="vertical"
 		aria-labelledby="main-menu-button"
 	>
-		<div class="m-0 p-0 space-y-1">
-			<!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+		<div class="m-0 p-0 space-y-0 btn-group-vertical w-full rounded-none">
 			{#each $page.data.mainMenuLinks as link}
 				<a
 					href={link.route}
-					class="{$page.route.id === link.route ||
+					class="btn rounded-none
+						bg-primary-hover-token
+						{$page.route.id === link.route ||
 					$page.route.id === `/(protected)${link.route}` ||
 					$page.route.id === `/(auth)${link.route}`
-						? 'btn variant-soft-primary hover:bg-slate-50'
-						: 'btn variant-soft-secondary'}
-						block text-base font-medium
-						rounded-none"
+						? 'bg-primary-active-token'
+						: ''}
+						"
+					on:click={() => {
+						isMainMenuOpen = false;
+					}}
 					aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
 				>
-					<span class={link.isActive ? 'text-primary-50' : 'text-secondary-50'}>
+					<span class="text-token">
 						{link.name}
 					</span>
 				</a>
