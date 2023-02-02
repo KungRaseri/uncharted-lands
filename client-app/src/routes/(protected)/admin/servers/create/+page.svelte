@@ -48,8 +48,8 @@
 					class={form?.invalid ? 'input-error' : 'variant-ghost-surface'}
 					id="port"
 					name="port"
-					min="5001"
-					max="40000"
+					min="5000"
+					max="9999"
 					type="number"
 				/>
 			</div>

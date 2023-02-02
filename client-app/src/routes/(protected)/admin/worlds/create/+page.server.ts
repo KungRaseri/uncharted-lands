@@ -13,11 +13,11 @@ export const load: PageServerLoad = async ({ locals }) => {
         throw redirect(302, '/')
     }
 
-    const width = 100, height = 100;
+    const width = 10, height = 10;
 
     const iterations = 16;
 
-    const map = await generate(width, height, 100, new Date().getTime(), new Date().getTime(), new Date().getTime(), 100 / 1000, iterations)
+    const map = await generate(width, height, new Date().getTime(), new Date().getTime(), new Date().getTime(), 1, iterations, 0, 0)
 
     return {
         map: map,
@@ -32,17 +32,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 const createWorld: Action = async ({ request }) => {
     const data = await request.formData();
+    const width = data.get("width")
+    const height = data.get("height");
+    const xoffset = data.get("xoffset")
+    const yoffset = data.get("yoffset");
     const iterations = data.get("iterations")
     const scale = data.get("scale");
 
-    if (typeof scale !== 'string' ||
+    if (typeof width !== 'string' ||
+        !width ||
+        typeof height !== 'string' ||
+        !height ||
+        typeof xoffset !== 'string' ||
+        !xoffset ||
+        typeof yoffset !== 'string' ||
+        !yoffset ||
+        typeof scale !== 'string' ||
         !scale ||
         typeof iterations !== 'string' ||
         !iterations) {
         return fail(400, { invalid: true })
     }
 
-    const map = await generate(500, 500, 100, new Date().getTime(), new Date().getTime(), new Date().getTime(), Number.parseFloat(scale) / 1000, Number.parseInt(iterations))
+    const map = await generate(Number.parseInt(width), Number.parseInt(height), new Date().getTime(), new Date().getTime(), new Date().getTime(), Number.parseFloat(scale), Number.parseInt(iterations), Number.parseInt(xoffset), Number.parseInt(yoffset))
 
     return {
         map: map

@@ -4,12 +4,11 @@
 	import Navigation from '$lib/components/admin/Navigation.svelte';
 	import type { LayoutData } from './$types';
 
-
 	// export let data: LayoutData;
 	const storeValue: Writable<number> = writable(1);
 </script>
 
-<AppShell slotSidebarLeft="h-auto" slotPageContent="h-full">
+<AppShell slotSidebarLeft="" slotPageContent="overflow-y-scroll">
 	<svelte:fragment slot="sidebarLeft">
 		<Navigation />
 	</svelte:fragment>

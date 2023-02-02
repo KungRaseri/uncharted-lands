@@ -33,14 +33,11 @@
 <div class="m-1">
 	<h1>Worlds</h1>
 	<div class="table-container">
-		<div class="p-1 m-1 w-11/12 flex">
+		<div class="p-1 m-1 w-11/12 flex space-x-3">
 			<input bind:value={$worldsTableStore.search} type="search" placeholder="Search..." />
-			<a
-				href="/admin/worlds/create"
-				class="mx-4 px-3 py-0 bg-primary-900 rounded-md flex hover:bg-primary-800"
-			>
-				<span class="mx-1 px-0 py-3 text-primary-50"><WebPlus /></span>
-				<span class="mx-1 px-0 py-2 text-primary-50">Create</span>
+			<a href="/admin/worlds/create" class="btn bg-primary-400-500-token">
+				<span class="mx-1 px-0 py-3 text-token"><WebPlus /></span>
+				<span class="mx-1 px-0 py-2 text-token">Create</span>
 			</a>
 		</div>
 		<table class="table table-hover" use:tableInteraction>
