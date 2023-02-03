@@ -37,14 +37,6 @@
 
 	let isTileTooltipActive = false;
 
-	async function showTooltip() {
-		isTileTooltipActive = true;
-	}
-
-	async function closeTooltip() {
-		isTileTooltipActive = false;
-	}
-
 	$: map = data.map;
 	$: console.log(data.map);
 	$: width, height, scale, iterations, xoffset, yoffset;
@@ -207,13 +199,13 @@
 
 	{#if map}
 		<div class="grid grid-cols-10 w-11/12 mx-auto">
-			{#each map[0] as regions}
-				{#each regions as region}
+			{#each map as chunk}
+				{#each chunk as region}
 					<div
 						class="border-token py-10 text-center"
 						style="background: rgb({region * 255}, {region * 255}, {region * 255})"
 					>
-						{region}
+						{region.toPrecision(4)}
 					</div>
 				{/each}
 			{/each}
