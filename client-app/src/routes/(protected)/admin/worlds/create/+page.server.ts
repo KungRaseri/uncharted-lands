@@ -38,6 +38,8 @@ const createWorld: Action = async ({ request }) => {
     const yoffset = data.get("yoffset");
     const iterations = data.get("iterations")
     const scale = data.get("scale");
+    const elevationSeed = data.get("elevationSeed");
+    const precipitationSeed = data.get("precipitationSeed");
 
     if (typeof width !== 'string' ||
         !width ||
@@ -50,11 +52,13 @@ const createWorld: Action = async ({ request }) => {
         typeof scale !== 'string' ||
         !scale ||
         typeof iterations !== 'string' ||
-        !iterations) {
+        !iterations ||
+        typeof elevationSeed !== 'string' ||
+        !elevationSeed) {
         return fail(400, { invalid: true })
     }
 
-    const map = await generate(Number.parseInt(width), Number.parseInt(height), new Date().getTime(), new Date().getTime(), new Date().getTime(), Number.parseFloat(scale), Number.parseInt(iterations), Number.parseInt(xoffset), Number.parseInt(yoffset))
+    const map = await generate(Number.parseInt(width), Number.parseInt(height), Number.parseInt(elevationSeed), new Date().getTime(), new Date().getTime(), Number.parseFloat(scale), Number.parseInt(iterations), Number.parseInt(xoffset), Number.parseInt(yoffset))
 
     return {
         map: map

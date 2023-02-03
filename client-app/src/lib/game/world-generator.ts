@@ -20,12 +20,7 @@ export async function generate(width: number, height: number, eSeed: number, pSe
     const precipitationNoise = makeNoise2D(pSeed)
     const temperatureNoise = makeNoise2D(tSeed)
 
-    const elevationMap = makeRectangle(width, height, elevationNoise, {
-    })
+    const elevationMap = makeRectangle(width, height, elevationNoise, {})
 
     return chunks(elevationMap, width)
-}
-
-export async function save(map) {
-    console.log(map)
 }

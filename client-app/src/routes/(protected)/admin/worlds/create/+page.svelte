@@ -21,7 +21,7 @@
 	let precipitationSeed: number = new Date().getTime();
 	let temperatureSeed: number = new Date().getTime();
 
-	async function handleSettingsChange() {
+	async function generateMap() {
 		map = await generate(
 			width,
 			height,
@@ -65,7 +65,9 @@
 						name="elevation-seed"
 						type="number"
 						bind:value={elevationSeed}
-						on:change={handleSettingsChange}
+						on:change={async () => {
+							await generateMap();
+						}}
 					/>
 				</div>
 				<div class="mx-1">
@@ -75,7 +77,9 @@
 						name="precipitation-seed"
 						type="number"
 						bind:value={precipitationSeed}
-						on:change={handleSettingsChange}
+						on:change={async () => {
+							await generateMap();
+						}}
 					/>
 				</div>
 				<div class="mx-1">
@@ -85,7 +89,9 @@
 						name="temperature-seed"
 						type="number"
 						bind:value={temperatureSeed}
-						on:change={handleSettingsChange}
+						on:change={async () => {
+							await generateMap();
+						}}
 					/>
 				</div>
 			</div>
@@ -101,7 +107,9 @@
 							max={1}
 							ticked
 							bind:value={scale}
-							on:change={handleSettingsChange}
+							on:change={async () => {
+								await generateMap();
+							}}
 						>
 							Scale <span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">{scale}</span>
 						</RangeSlider>
@@ -116,7 +124,9 @@
 							max={16}
 							ticked
 							bind:value={iterations}
-							on:change={handleSettingsChange}
+							on:change={async () => {
+								await generateMap();
+							}}
 						>
 							Iterations <span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 								{iterations}
@@ -133,7 +143,9 @@
 							max={100}
 							ticked
 							bind:value={xoffset}
-							on:change={handleSettingsChange}
+							on:change={async () => {
+								await generateMap();
+							}}
 						>
 							x-offset <span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 								{xoffset}
@@ -150,7 +162,9 @@
 							max={100}
 							ticked
 							bind:value={yoffset}
-							on:change={handleSettingsChange}
+							on:change={async () => {
+								await generateMap();
+							}}
 						>
 							y-offset <span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 								{yoffset}
@@ -171,7 +185,9 @@
 							max={10}
 							ticked
 							bind:value={width}
-							on:change={handleSettingsChange}
+							on:change={async () => {
+								await generateMap();
+							}}
 						>
 							Width <span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">{width}</span>
 						</RangeSlider>
@@ -186,15 +202,25 @@
 							max={10}
 							ticked
 							bind:value={height}
-							on:change={handleSettingsChange}
+							on:change={async () => {
+								await generateMap();
+							}}
 						>
 							Height <span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">{height}</span>
 						</RangeSlider>
 					</div>
 				</div>
 			</div>
-			<button class="btn bg-primary-400-500-token rounded-md"> Generate </button>
+			<button class="btn bg-primary-400-500-token rounded-md"> Save </button>
 		</form>
+		<button
+			class="btn bg-primary-400-500-token rounded-md"
+			on:click={async () => {
+				await generateMap();
+			}}
+		>
+			Generate
+		</button>
 	</div>
 
 	{#if map}
@@ -205,7 +231,7 @@
 						class="border-token py-10 text-center"
 						style="background: rgb({region * 255}, {region * 255}, {region * 255})"
 					>
-						{region.toPrecision(4)}
+						{region.toPrecision(6)}
 					</div>
 				{/each}
 			{/each}
