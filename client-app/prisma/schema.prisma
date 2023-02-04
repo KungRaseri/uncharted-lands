@@ -81,15 +81,24 @@ model Server {
 }
 
 model World {
-  id      String   @id @default(uuid())
+  id   String @id @default(uuid())
+  name String @unique
+
   regions Region[]
 
   server   Server @relation(fields: [serverId], references: [id])
   serverId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Region {
-  id String @id @default(uuid())
+  id               String  @id @default(uuid())
+  name             String  @unique
+  elevationMap     Float[]
+  precipitationMap Float[]
+  temperatureMap   Float[]
 
   tiles Tile[]
 
@@ -117,13 +126,13 @@ model Tile {
   temperature   Float
   precipitation Float
 
-  resources TileResource[]
+  resources      TileResource[]
+  habitablePlots Plot[]
 
-  settlement   Settlement? @relation(fields: [settlementId], references: [id])
+  region       Region      @relation(fields: [regionId], references: [id])
+  regionId     String
+  Settlement   Settlement? @relation(fields: [settlementId], references: [id])
   settlementId String?
-
-  region   Region @relation(fields: [regionId], references: [id])
-  regionId String
 }
 
 model TileResource {
@@ -137,6 +146,16 @@ model TileResource {
   @@unique([tileId, resource])
 }
 
+model Plot {
+  id String @id @default(uuid())
+
+  settlement   Settlement? @relation(fields: [settlementId], references: [id])
+  settlementId String?
+
+  Tile   Tile   @relation(fields: [tileId], references: [id])
+  tileId String
+}
+
 model Settlement {
   id   String @id @default(uuid())
   name String
@@ -146,6 +165,10 @@ model Settlement {
 
   profileServerData          ProfileServerData @relation(fields: [profileServerDataProfileId], references: [profileId])
   profileServerDataProfileId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Plot      Plot[]
 }
 
 model SettlementStructure {

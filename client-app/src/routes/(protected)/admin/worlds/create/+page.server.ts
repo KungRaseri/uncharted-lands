@@ -1,6 +1,6 @@
 import { db } from "$lib/db"
 import { generate } from "$lib/game/world-generator"
-import { AccountRole } from "@prisma/client"
+import { AccountRole, type Region, type World } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 
@@ -13,56 +13,88 @@ export const load: PageServerLoad = async ({ locals }) => {
         throw redirect(302, '/')
     }
 
-    const width = 10, height = 10;
+    const width = 100, height = 100,
+        octaves = 8, scale = 0.75,
+        amplitude = 1, persistence = 0.5,
+        frequency = 0.05,
+        elevationSeed = Date.now(), precipitationSeed = Date.now(), temperatureSeed = Date.now();
 
-    const iterations = 16;
+    const map: Region[][] = []
 
-    const map = await generate(width, height, new Date().getTime(), new Date().getTime(), new Date().getTime(), 1, iterations, 0, 0)
+    const maps = await generate(width, height, elevationSeed, precipitationSeed, temperatureSeed, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency }, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency }, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency })
+
+    // console.log(maps.elevationMap[0])
+    // console.log(maps.elevationMap[0].splice(9 * 10, 9 + 10))
+
+
+
+    for (let i = 0; i < 10; i++) {
+        map[i] = []
+
+        for (let j = 0; j < 10; j++) {
+            map[i][j] = {
+                id: '',
+                biomeId: '',
+                worldId: '',
+                name: `${i}:${j}`,
+                elevationMap: maps.elevationMap[i],
+                precipitationMap: maps.precipitationMap[i],
+                temperatureMap: maps.temperatureMap[i],
+            }
+        };
+    }
+
+    console.log(map)
+
+    // const map = await generate(width, height, elevationSeed, precipitationSeed, temperatureSeed, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency }, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency }, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency })
 
     return {
         map: map,
-        worlds: await db.world.findMany({
-            include: {
-                server: true,
-                regions: true
+        servers: await db.server.findMany({
+            select: {
+                id: true,
+                name: true
             }
         })
     }
 }
 
-const createWorld: Action = async ({ request }) => {
+const saveWorld: Action = async ({ request }) => {
     const data = await request.formData();
-    const width = data.get("width")
-    const height = data.get("height");
-    const xoffset = data.get("xoffset")
-    const yoffset = data.get("yoffset");
-    const iterations = data.get("iterations")
-    const scale = data.get("scale");
-    const elevationSeed = data.get("elevationSeed");
-    const precipitationSeed = data.get("precipitationSeed");
+    const serverId = data.get("server-id")
+    const map = data.get("map")
 
-    if (typeof width !== 'string' ||
-        !width ||
-        typeof height !== 'string' ||
-        !height ||
-        typeof xoffset !== 'string' ||
-        !xoffset ||
-        typeof yoffset !== 'string' ||
-        !yoffset ||
-        typeof scale !== 'string' ||
-        !scale ||
-        typeof iterations !== 'string' ||
-        !iterations ||
-        typeof elevationSeed !== 'string' ||
-        !elevationSeed) {
+    if (typeof serverId !== 'string' ||
+        !serverId ||
+        typeof map !== 'string' ||
+        !map) {
         return fail(400, { invalid: true })
     }
 
-    const map = await generate(Number.parseInt(width), Number.parseInt(height), Number.parseInt(elevationSeed), new Date().getTime(), new Date().getTime(), Number.parseFloat(scale), Number.parseInt(iterations), Number.parseInt(xoffset), Number.parseInt(yoffset))
+    const generatedMap = JSON.parse(map);
 
-    return {
-        map: map
-    }
+    console.log(generatedMap)
+
+    // const newWorld = await db.world.create({
+    //     data: {
+    //         server: {
+    //             connect: {
+    //                 id: serverId
+    //             }
+    //         },
+    //         regions: {
+    //             createMany: {
+    //                 data: {
+
+    //                 }
+    //             },
+
+    //         }
+    //     }
+    // })
+
+
+    // throw redirect(302, '/admin/worlds')
 }
 
-export const actions: Actions = { createWorld }
+export const actions: Actions = { saveWorld }
