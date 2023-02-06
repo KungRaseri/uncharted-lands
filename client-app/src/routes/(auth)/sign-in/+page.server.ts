@@ -2,14 +2,18 @@ import { db } from "$lib/db";
 import { fail, redirect } from "@sveltejs/kit";
 import type { Action, Actions, PageServerLoad } from "./$types";
 import bcrypt from 'bcrypt';
+import { TimeSpan } from "$lib/timespan";
 
-export const load: PageServerLoad = async ({ locals }) => {
-    if (locals.account) {
+export const load: PageServerLoad = async ({ locals, url }) => {
+    if (locals.account)
         throw redirect(302, '/')
+
+    return {
+        redirectTo: url.searchParams.get('redirectTo') ?? '/'
     }
 }
 
-const login: Action = async ({ cookies, request }) => {
+const login: Action = async ({ cookies, request, url, params }) => {
     const data = await request.formData();
     const email = data.get('email');
     const password = data.get('password');
@@ -19,21 +23,15 @@ const login: Action = async ({ cookies, request }) => {
         typeof password !== 'string' ||
         !email ||
         !password) {
-        return fail(400, { invalid: true })
+        return fail(400, { email, invalid: true })
     }
 
     const account = await db.account.findUnique({
         where: { email }
     })
 
-    if (!account) {
-        return fail(400, { invalid: true, account_info: "Invalid account information" })
-    }
-
-    const userPassword = await bcrypt.compare(password, account.passwordHash);
-
-    if (!userPassword) {
-        return fail(400, { invalid: true, credentials: "Invalid credentials" })
+    if (!account || !await bcrypt.compare(password, account.passwordHash)) {
+        return fail(400, { email, incorrect: true })
     }
 
     const authenticatedUser = await db.account.update({
@@ -41,15 +39,24 @@ const login: Action = async ({ cookies, request }) => {
         data: { userAuthToken: crypto.randomUUID() }
     })
 
+    const ts = new TimeSpan();
+    ts.days = 30;
+
+    const age30d = ts.totalSeconds
+    ts.days = 0;
+    ts.hours = 6;
+    const age6h = ts.totalSeconds
+
     cookies.set('session', authenticatedUser.userAuthToken, {
         path: '/',
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
-        maxAge: (rememberMeIsChecked) ? 60 * 60 * 24 * 30 : 60 * 60 * 6 // 30 days if remember me is checked, otherwise it's 6 hours
+        maxAge: (rememberMeIsChecked) ? age30d : age6h // 30 days if remember me is checked, otherwise it's 6 hours
     })
+    console.log(url.searchParams)
 
-    throw redirect(302, '/');
+    throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
 }
 
 export const actions: Actions = { login }

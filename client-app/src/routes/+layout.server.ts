@@ -37,11 +37,6 @@ const userMenuLinks = [
 		route: '/admin',
 		isActive: false,
 		requiredRole: "ADMINISTRATOR"
-	},
-	{
-		name: 'Sign out',
-		route: '/logout',
-		isActive: false
 	}
 ];
 

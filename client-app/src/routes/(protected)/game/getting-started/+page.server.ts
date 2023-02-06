@@ -1,17 +1,11 @@
 import { db } from '$lib/db';
-import { Biome } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-    if (!locals.account) {
-        throw redirect(302, "/login")
-    }
-
-    if (locals.account.playerProfiles) {
+    if (locals.account.profile) {
         throw redirect(302, '/game')
     }
-
     return {
         servers: await db.server.findMany(),
         worlds: await db.world.findMany(),

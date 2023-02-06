@@ -4,14 +4,6 @@ import { AccountRole } from "@prisma/client"
 import { db } from "$lib/db"
 
 export const load: PageServerLoad = async ({ locals }) => {
-    if (!locals.account) {
-        throw redirect(302, '/')
-    }
-
-    if (locals.account.role !== AccountRole.ADMINISTRATOR) {
-        throw redirect(302, '/')
-    }
-
     return {
         servers: db.server.findMany({
             include: {

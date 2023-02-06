@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 
 	import { AppBar, LightSwitch, menu } from '@skeletonlabs/skeleton';
 	import Menu from 'svelte-material-icons/Menu.svelte';
@@ -89,10 +91,10 @@
 			</div>
 			{#if !$page.data.account}
 				<a
-					href="/login"
+					href="/sign-in"
 					class="btn rounded-md text-token
 						bg-primary-hover-token
-						{$page.route.id === '/(auth)/login' ? 'bg-primary-active-token' : ''}
+						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-active-token' : ''}
 						"
 				>
 					<span
@@ -115,7 +117,7 @@
 							text-token
 							"
 					>
-						Sign up
+						Register
 					</span>
 				</a>
 			{:else}
@@ -167,6 +169,11 @@
 									</span>
 								</a>
 							{/each}
+							<form method="POST" action="/auth?/signout">
+								<button class="btn">
+									<span class="text-token"> Sign out </span>
+								</button>
+							</form>
 						</nav>
 					</span>
 				</div>

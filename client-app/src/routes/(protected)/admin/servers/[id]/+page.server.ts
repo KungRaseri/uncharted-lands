@@ -5,14 +5,6 @@ import type { PageServerLoad, Actions, Action } from "./$types"
 import { generate } from "$lib/game/world-generator"
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-    if (!locals.account) {
-        throw redirect(302, '/login')
-    }
-
-    if (locals.account.role !== AccountRole.ADMINISTRATOR) {
-        throw redirect(302, '/')
-    }
-
     const server = await db.server.findUnique({
         where: {
             id: params.id

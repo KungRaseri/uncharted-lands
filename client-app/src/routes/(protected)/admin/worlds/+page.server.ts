@@ -5,14 +5,6 @@ import { db } from "$lib/db"
 import { generate } from '$lib/game/world-generator'
 
 export const load: PageServerLoad = async ({ locals }) => {
-    if (!locals.account) {
-        throw redirect(302, '/login')
-    }
-
-    if (locals.account.role !== AccountRole.ADMINISTRATOR) {
-        throw redirect(302, '/')
-    }
-
     return {
         worlds: await db.world.findMany({
             include: {

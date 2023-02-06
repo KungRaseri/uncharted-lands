@@ -1,18 +1,10 @@
 import { db } from "$lib/db"
 import { generate } from "$lib/game/world-generator"
-import { AccountRole, type Region, type World } from "@prisma/client"
+import type { Region } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async ({ locals }) => {
-    if (!locals.account) {
-        throw redirect(302, '/login')
-    }
-
-    if (locals.account.role !== AccountRole.ADMINISTRATOR) {
-        throw redirect(302, '/')
-    }
-
     const width = 100, height = 100,
         octaves = 8, scale = 0.75,
         amplitude = 1, persistence = 0.5,

@@ -1,13 +1,14 @@
 <script lang="ts">
 	import Information from 'svelte-material-icons/Information.svelte';
 
-	import type { ActionData } from './$types';
+	import type { ActionData, PageData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { slide } from 'svelte/transition';
 
 	let isRememberMeChecked = false;
 
+	export let data: PageData;
 	export let form: ActionData;
 </script>
 
@@ -25,7 +26,7 @@
 		</div>
 
 		<form
-			action="?/login"
+			action="?/login&redirectTo={data.redirectTo}"
 			method="POST"
 			class="space-y-1 md:space-y-3"
 			use:enhance={() => {
@@ -37,7 +38,7 @@
 		>
 			<label for="email" class="flex text-md font-medium text-token">
 				Email address
-				{#if form?.invalid}
+				{#if form?.email}
 					<span class="rounded-full mx-1 p-1 variant-ghost-error">
 						<Information />
 					</span>
@@ -50,13 +51,13 @@
 					type="email"
 					autocomplete="email"
 					required
-					class="variant-ghost-surface {form?.invalid ? 'input-error' : ''}"
+					class="variant-ghost-surface {form?.email ? 'input-error' : ''}"
 				/>
 			</div>
 
 			<label for="password" class="flex text-md font-medium text-token">
 				Password
-				{#if form?.invalid}
+				{#if form?.email}
 					<span class="rounded-full mx-1 p-1 variant-ghost-error">
 						<Information />
 					</span>
@@ -69,7 +70,7 @@
 					type="password"
 					autocomplete="current-password"
 					required
-					class="variant-ghost-surface {form?.invalid ? 'input-error' : ''}"
+					class="variant-ghost-surface {form?.email ? 'input-error' : ''}"
 				/>
 			</div>
 
@@ -90,14 +91,13 @@
 				</div>
 			</div>
 
-			{#if form?.invalid}
+			{#if form?.email}
 				<div transition:slide class="hidden lg:block">
 					<div class="alert variant-ghost-error mx-5 mt-5">
 						<div class="alert-message text-token justify-center items-center">
 							<Information size={24} />
 							<div class="grid grid-cols-1">
-								<span>{form?.account_info ?? ''}</span>
-								<span>{form?.credentials ?? ''}</span>
+								<span>{form?.incorrect ? 'Information is incorrect' : ''}</span>
 							</div>
 						</div>
 					</div>
