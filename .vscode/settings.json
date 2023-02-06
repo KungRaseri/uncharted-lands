@@ -1,2 +1,6 @@
 {
+    "sonarlint.connectedMode.project": {
+        "connectionId": "redsyndicate",
+        "projectKey": "RedSyndicate_browser-game"
+    }
 }

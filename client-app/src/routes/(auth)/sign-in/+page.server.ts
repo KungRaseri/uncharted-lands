@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     }
 }
 
-const login: Action = async ({ cookies, request, url, params }) => {
+const login: Action = async ({ cookies, request, url }) => {
     const data = await request.formData();
     const email = data.get('email');
     const password = data.get('password');
@@ -54,7 +54,6 @@ const login: Action = async ({ cookies, request, url, params }) => {
         secure: process.env.NODE_ENV === 'production',
         maxAge: (rememberMeIsChecked) ? age30d : age6h // 30 days if remember me is checked, otherwise it's 6 hours
     })
-    console.log(url.searchParams)
 
     throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
 }
