@@ -31,7 +31,7 @@
 </script>
 
 <div class="m-1">
-	<h1>Worlds</h1>
+	<h1 id="worlds-header">Worlds</h1>
 	<div class="table-container">
 		<div class="p-0 m-3 w-11/12 flex space-x-3">
 			<input bind:value={$worldsTableStore.search} type="search" placeholder="Search..." />
@@ -40,7 +40,7 @@
 				<span class="mx-1 px-0 py-2 text-token">Create</span>
 			</a>
 		</div>
-		<table class="table table-hover" use:tableInteraction>
+		<table aria-describedby="worlds-header" class="table table-hover" use:tableInteraction>
 			<thead>
 				<tr>
 					<th><input type="checkbox" id="select-all" name="select-all" /></th>

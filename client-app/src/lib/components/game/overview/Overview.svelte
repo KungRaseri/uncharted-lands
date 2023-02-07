@@ -5,14 +5,14 @@
 	<div class="px-4 sm:px-6 lg:px-8">
 		<div class="sm:flex sm:items-center">
 			<div class="sm:flex-auto">
-				<h1 class="text-xl font-semibold">OVERVIEW</h1>
+				<h1 id="overview-header" class="text-xl font-semibold">OVERVIEW</h1>
 			</div>
 		</div>
 		<div class="mt-2 flex flex-col">
 			<div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
 				<div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
 					<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-						<table class="min-w-full divide-y divide-gray-300">
+						<table aria-describedby="overview-header" class="min-w-full divide-y divide-gray-300">
 							<thead class="bg-gray-50">
 								<tr>
 									<th scope="col" class="text-left text-sm font-semibold text-gray-900 sm:pl-6">

@@ -11,7 +11,7 @@
 
 	import Information from 'svelte-material-icons/Information.svelte';
 	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
-	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
+	import AccountEdit from 'svelte-material-icons/AccountEdit.svelte';
 	import { json } from '@sveltejs/kit';
 
 	export let data: PageData;
@@ -36,13 +36,17 @@
 	}
 </script>
 
-<div class="m-5">
-	<span class="float-left mr-5"><h1>Accounts</h1></span>
+<div class="m-1">
+	<h1 id="accounts-header">Accounts</h1>
 	<div class="table-container">
-		<div class="p-1 m-1 max-w-md">
+		<div class="p-0 m-3 w-11/12 flex space-x-3">
 			<input bind:value={$accountsTableStore.search} type="search" placeholder="Search..." />
+			<a href="/admin/servers/create" class="btn bg-primary-400-500-token">
+				<span class="mx-1 px-0 py-3 text-token"><AccountEdit /></span>
+				<span class="mx-1 px-0 py-2 text-token">Edit</span>
+			</a>
 		</div>
-		<table class="table table-hover" use:tableInteraction>
+		<table aria-describedby="accounts-header" class="table table-hover" use:tableInteraction>
 			<thead>
 				<tr>
 					<th>ID</th>

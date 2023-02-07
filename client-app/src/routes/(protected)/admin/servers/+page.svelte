@@ -47,7 +47,7 @@
 </script>
 
 <div class="m-1">
-	<h1>Servers</h1>
+	<h1 id="servers-header">Servers</h1>
 	<div class="table-container">
 		<div class="p-0 m-3 w-11/12 flex space-x-3">
 			<input bind:value={$serversTableStore.search} type="search" placeholder="Search..." />
@@ -56,7 +56,7 @@
 				<span class="mx-1 px-0 py-2 text-token">Create</span>
 			</a>
 		</div>
-		<table class="table table-hover" use:tableInteraction>
+		<table aria-describedby="servers-header" class="table table-hover" use:tableInteraction>
 			<thead>
 				<tr>
 					<th>ID</th>
