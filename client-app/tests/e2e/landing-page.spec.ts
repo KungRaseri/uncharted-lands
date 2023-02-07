@@ -1,6 +1,6 @@
 import { expect, test, } from '@playwright/test';
 
-test.describe('Landing Page suite', async () => {
+test.describe('Landing Page - suite', async () => {
 	test.beforeEach(async ({ page }) => {
 		await page.goto('/');
 		await page.waitForLoadState("networkidle");
@@ -15,13 +15,15 @@ test.describe('Landing Page suite', async () => {
 	});
 
 	test('main feature actions -> Introduction', async ({ page }) => {
-		const expected = "Area Under Construction";
+		const expectedContent = "Area Under Construction";
+		const expectedTitle = "Introduction - Coming Soon™ | Uncharted Lands";
 
 		await page.getByTestId('main-feature-introduction').waitFor();
 		await page.getByTestId('main-feature-introduction').click();
 		await page.waitForLoadState("networkidle");
 
-		expect(await page.textContent('.alert-message')).toContain(expected);
+		expect(await page.textContent('.alert-message')).toContain(expectedContent);
+		await expect(page).toHaveTitle(expectedTitle);
 	});
 
 	test('main feature actions -> Register', async ({ page }) => {
@@ -29,10 +31,9 @@ test.describe('Landing Page suite', async () => {
 
 		await page.getByTestId('main-feature-register').waitFor();
 		await page.getByTestId('main-feature-register').click();
-		await page.waitForLoadState("networkidle");
+		await page.waitForLoadState('networkidle');
 
-		await page.getByText(expected).waitFor();
-		expect(await page.textContent('h1')).toContain(expected);
+		expect(await page.getByText(expected).textContent()).toContain(expected);
 	});
 
 	test('main feature actions -> Sign In', async ({ page }) => {
@@ -42,7 +43,6 @@ test.describe('Landing Page suite', async () => {
 		await page.getByTestId('main-feature-signin').click();
 		await page.waitForLoadState("networkidle");
 
-		await page.getByText(expected).waitFor();
-		expect(await page.textContent('h1')).toContain(expected);
+		expect(await page.getByText(expected).textContent()).toContain(expected);
 	});
 });
