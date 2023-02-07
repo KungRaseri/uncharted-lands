@@ -5,6 +5,7 @@
 
 // and what to do when importing types
 declare namespace App {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	import type { Account, Role, Profile } from "@prisma/client"
 
 	interface Locals {

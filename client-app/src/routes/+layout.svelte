@@ -3,12 +3,10 @@
 	import '@skeletonlabs/skeleton/styles/all.css';
 	import '../app.postcss';
 
-	import { writable, type Writable } from 'svelte/store';
-	import { AppShell, AppRail, AppRailTile, AppBar } from '@skeletonlabs/skeleton';
+	import { AppShell } from '@skeletonlabs/skeleton';
 
 	import Header from '$lib/components/app/Header.svelte';
 	import Footer from '$lib/components/app/Footer.svelte';
-
 </script>
 
 <AppShell slotPageContent="w-full h-full">

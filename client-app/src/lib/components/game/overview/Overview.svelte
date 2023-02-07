@@ -177,7 +177,7 @@
 										>Agriculture I (2)</td
 									>
 									<td
-										class="relative whitespace-nowrap text-right text-sm font-medium sm:pr-6 text-left"
+										class="relative whitespace-nowrap text-right text-sm font-medium sm:pr-6"
 									>
 										<a href="#" class="text-indigo-600 hover:text-indigo-900"
 											>Edit<span class="sr-only">, Lindsay Walton</span></a

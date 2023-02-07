@@ -1,9 +1,7 @@
-import type { PageServerLoad, Action, Actions } from "./$types"
-import { fail, redirect } from "@sveltejs/kit"
-import { AccountRole, type Region, type Tile, type World } from "@prisma/client"
+import type { PageServerLoad } from "./$types"
 import { db } from "$lib/db"
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async () => {
     return {
         accounts: db.account.findMany({
             include: {
