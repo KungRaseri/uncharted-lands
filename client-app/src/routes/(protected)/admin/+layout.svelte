@@ -8,6 +8,10 @@
 	const storeValue: Writable<number> = writable(1);
 </script>
 
+<svelte:head>
+	<title>Administration | Uncharted Lands</title>
+</svelte:head>
+
 <AppShell slotSidebarLeft="" slotPageContent="overflow-y-scroll">
 	<svelte:fragment slot="sidebarLeft">
 		<Navigation />

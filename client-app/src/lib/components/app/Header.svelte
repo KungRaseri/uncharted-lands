@@ -96,6 +96,7 @@
 						bg-primary-hover-token
 						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-active-token' : ''}
 						"
+						data-testid="header-signin"
 				>
 					<span
 						class="
@@ -111,6 +112,7 @@
 						{$page.route.id === '/(auth)/register' ? 'bg-primary-active-token' : ''}
 						bg-primary-hover-token 
 						"
+						data-testid="header-register"
 				>
 					<span
 						class="

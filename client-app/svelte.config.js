@@ -4,10 +4,14 @@ import { withSentryConfig } from '@sentry/svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
+	compilerOptions: {
+		enableSourcemap: true
+	},
 	// Consult https://github.com/sveltejs/svelte-preprocess
 	// for more information about preprocessors
 	preprocess: [preprocess({
-		postcss: true
+		postcss: true,
+		sourceMap: true
 	})],
 
 	kit: {

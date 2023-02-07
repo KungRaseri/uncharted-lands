@@ -1,20 +1,6 @@
-<script lang="ts">
-	import { state, connect } from '$lib/state';
-	import { page } from '$app/stores';
-
-	import { onMount } from 'svelte';
-
-	onMount(async () => {
-		// let test = await fetch(
-		// 	`${
-		// 		import.meta.env.VITE_API_URL
-		// 	}/weather/getgeolocation?q=Wenatchee&limit=5&apiId=41ce5f680911dcb7b1fe03babaf75ad4`
-		// ).then((res) => {
-		// 	return res.json();
-		// });
-		// console.log('mounted', test);
-	});
-</script>
+<svelte:head>
+	<title>Portal | Uncharted Lands</title>
+</svelte:head>
 
 <div class="mt-5 w-full lg:mx-auto lg:w-2/4 h-full">
 	<div class="relative shadow-xl lg:overflow-hidden lg:rounded-2xl">
@@ -35,14 +21,14 @@
 				</span>
 			</p>
 			<div class="mx-auto flex space-x-2">
-				<a href="/introduction" class="btn variant-soft-secondary w-full">
+				<a role="button" data-testid="main-feature-introduction" href="/introduction" class="btn variant-soft-secondary w-full">
 					<span class="text-secondary-50">Introduction</span>
 				</a>
-				<a href="/register" class="btn variant-soft-secondary w-full">
+				<a role="button" data-testid="main-feature-register" href="/register" class="btn variant-soft-secondary w-full">
 					<span class="text-secondary-50">Register</span>
 				</a>
-				<a href="/login" class="btn variant-soft-secondary w-full">
-					<span class="text-secondary-50">Login</span>
+				<a role="button" data-testid="main-feature-signin" href="/sign-in" class="btn variant-soft-secondary w-full">
+					<span class="text-secondary-50">Sign In</span>
 				</a>
 			</div>
 		</div>

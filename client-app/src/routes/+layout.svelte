@@ -11,10 +11,6 @@
 
 </script>
 
-<svelte:head>
-	<title>Portal | Uncharted Lands</title>
-</svelte:head>
-
 <AppShell slotPageContent="w-full h-full">
 	<svelte:fragment slot="header">
 		<Header />

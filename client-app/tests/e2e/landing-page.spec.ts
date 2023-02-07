@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, } from '@playwright/test';
 
 test.describe('Landing Page suite', async () => {
 	test.beforeEach(async ({ page }) => {
@@ -17,8 +17,8 @@ test.describe('Landing Page suite', async () => {
 	test('main feature actions -> Introduction', async ({ page }) => {
 		const expected = "Area Under Construction";
 
-		await page.getByText("Introduction").waitFor();
-		await page.getByText("Introduction").click();
+		await page.getByTestId('main-feature-introduction').waitFor();
+		await page.getByTestId('main-feature-introduction').click();
 		await page.waitForLoadState("networkidle");
 
 		expect(await page.textContent('.alert-message')).toContain(expected);
@@ -27,19 +27,19 @@ test.describe('Landing Page suite', async () => {
 	test('main feature actions -> Register', async ({ page }) => {
 		const expected = "Register your account";
 
-		await page.getByText("Register").waitFor();
-		await page.getByText("Register").click();
+		await page.getByTestId('main-feature-register').waitFor();
+		await page.getByTestId('main-feature-register').click();
 		await page.waitForLoadState("networkidle");
 
 		await page.getByText(expected).waitFor();
 		expect(await page.textContent('h1')).toContain(expected);
 	});
 
-	test('main feature actions -> Login', async ({ page }) => {
+	test('main feature actions -> Sign In', async ({ page }) => {
 		const expected = "Sign into your account";
 
-		await page.getByText("Login").waitFor();
-		await page.getByText("Login").click();
+		await page.getByTestId('main-feature-signin').waitFor();
+		await page.getByTestId('main-feature-signin').click();
 		await page.waitForLoadState("networkidle");
 
 		await page.getByText(expected).waitFor();

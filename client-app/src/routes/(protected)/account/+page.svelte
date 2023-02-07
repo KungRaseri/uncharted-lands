@@ -4,6 +4,11 @@
 	export let data: PageData;
 </script>
 
+
+<svelte:head>
+	<title>Account | Uncharted Lands</title>
+</svelte:head>
+
 <div class="mt-5 mx-auto w-full sm:w-96">
 	<div class="card variant-filled-surface p-0 rounded-none sm:rounded-3xl">
 		<header class="w-full p-4 card-header flex border-b border-b-surface-50 justify-between">
