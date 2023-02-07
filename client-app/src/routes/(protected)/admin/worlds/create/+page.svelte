@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { generate } from '$lib/game/world-generator';
 	import type { ActionData, PageData } from './$types';
-	import { RangeSlider } from '@skeletonlabs/skeleton';
-	import type { Options } from 'fractal-noise';
+	import { RangeSlider, tooltip } from '@skeletonlabs/skeleton';
 	import type { Region } from '@prisma/client';
 
 	export let data: PageData;
 	export let form: ActionData;
 
-	let map: Region[][] = [[]];
+	let map: Region[] = [];
 
 	let elevationOptions = {
 		scale: 1,
@@ -39,15 +37,13 @@
 	let width: number = 100,
 		height: number = 100;
 
-	let elevationSeed: number = new Date().getTime();
-	let precipitationSeed: number = new Date().getTime();
-	let temperatureSeed: number = new Date().getTime();
+	let elevationSeed: number = Date.now();
+	let precipitationSeed: number = Date.now();
+	let temperatureSeed: number = Date.now();
 
 	async function generateMap() {
 		invalidateAll();
 	}
-
-	let isTileTooltipActive = false;
 
 	$: map = data.map;
 	$: width, height;
@@ -62,7 +58,7 @@
 			class="space-y-3"
 			use:enhance={() => {
 				return async ({ result }) => {
-					if (result.type === 'failure') invalidateAll();
+					if (result.type !== 'redirect') invalidateAll();
 
 					applyAction(result);
 				};
@@ -453,20 +449,23 @@
 	</div>
 
 	{#if map}
-		<div class="grid grid-cols-10 w-full border-token p-0.5">
-			{#each map as regions, i}
-				{#each regions as region, j}
-					<div class="grid grid-cols-10 p-0.5 m-0 border-token border-yellow-500">
-						{#each region.elevationMap as elevation, k}
-							<div
-								class="px-1 py-0 border-token border-neutral-500 justify-center text-center items-center"
-								style="background: rgb({elevation * 255}, {elevation * 255}, {elevation * 255})"
-							>
-								{k}
-							</div>
-						{/each}
-					</div>
-				{/each}
+		<div class="grid grid-cols-10 p-0 border-token w-11/12 mx-auto">
+			{#each map as region}
+				<div class="p-0 border-token">
+					{#each region.elevationMap as elevationRow}
+						<div class="grid grid-cols-10 p-0">
+							{#each elevationRow as elevationColumn}
+								<div
+									class="w-full px-0.5 py-2.5 justify-center text-center items-center"
+									style="background: 
+											rgb({elevationColumn * 255}, {elevationColumn * 255}, {elevationColumn * 255})"
+								>
+									<!-- {j},{k} -->
+								</div>
+							{/each}
+						</div>
+					{/each}
+				</div>
 			{/each}
 		</div>
 	{/if}

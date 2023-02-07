@@ -11,7 +11,6 @@ Sentry.init({
 })
 
 export const handle: Handle = async function ({ event, resolve }) {
-
     const user = await AuthenticateUser(event.cookies);
 
     if (!user) {

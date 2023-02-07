@@ -1,26 +1,38 @@
 import { makeNoise2D } from 'open-simplex-noise';
 import { makeRectangle, type Options } from 'fractal-noise';
 
-function chunks(array: number[], chunkSize: number) {
-    let splitChunks: number[][] = [[]];
+function chunks(heightMap: number[][], chunkSize: number) {
+    const splitChunks: number[][][] = [];
 
     if (chunkSize === 0)
         return splitChunks;
 
-    for (let i = 0; i < array.length; i += chunkSize) {
-        const chunk = array.slice(i, i + chunkSize);
-        splitChunks = splitChunks.concat(chunk)
+    for (let i = 0; i < chunkSize; i++) {
+        splitChunks[i] = []
+        for (let j = 0; j < chunkSize; j++) {
+            const iIndex = i * chunkSize;
+            const jIndex = j * chunkSize;
+
+            // console.log(`i${iIndex}-${iIndex + chunkSize}`, `j${jIndex}-${jIndex + chunkSize}`)
+            const chunk = heightMap.slice(iIndex, iIndex + chunkSize).map(r => r.slice(jIndex, jIndex + chunkSize));
+            // console.log(chunk)
+            splitChunks[i][j] = chunk;
+        }
     }
 
     return splitChunks;
 }
 
-export async function generate(width: number, height: number, eSeed: number, pSeed: number, tSeed: number, elevationOptions: Options, precipitationOptions: Options, temperatureOptions: Options) {
-    const elevationNoise = makeNoise2D(eSeed)
-    const precipitationNoise = makeNoise2D(pSeed)
-    const temperatureNoise = makeNoise2D(tSeed)
+type MapOptions = {
+    width: number, height: number, eSeed: number, pSeed: number, tSeed: number
+}
 
-    const elevationMap = makeRectangle(width, height, elevationNoise, {
+export async function generate(mapOptions: MapOptions, elevationOptions: Options, precipitationOptions: Options, temperatureOptions: Options) {
+    const elevationNoise = makeNoise2D(mapOptions.eSeed)
+    const precipitationNoise = makeNoise2D(mapOptions.pSeed)
+    const temperatureNoise = makeNoise2D(mapOptions.tSeed)
+
+    const elevationMap = makeRectangle(mapOptions.width, mapOptions.height, elevationNoise, {
         amplitude: elevationOptions.amplitude,
         persistence: elevationOptions.persistence,
         frequency: elevationOptions.frequency,
@@ -28,7 +40,7 @@ export async function generate(width: number, height: number, eSeed: number, pSe
         scale: elevationOptions.scale
     })
 
-    const precipitationMap = makeRectangle(width, height, precipitationNoise, {
+    const precipitationMap = makeRectangle(mapOptions.width, mapOptions.height, precipitationNoise, {
         amplitude: precipitationOptions.amplitude,
         persistence: precipitationOptions.persistence,
         frequency: precipitationOptions.frequency,
@@ -36,7 +48,7 @@ export async function generate(width: number, height: number, eSeed: number, pSe
         scale: precipitationOptions.scale
     })
 
-    const temperatureMap = makeRectangle(width, height, temperatureNoise, {
+    const temperatureMap = makeRectangle(mapOptions.width, mapOptions.height, temperatureNoise, {
         amplitude: temperatureOptions.amplitude,
         persistence: temperatureOptions.persistence,
         frequency: temperatureOptions.frequency,
@@ -44,5 +56,5 @@ export async function generate(width: number, height: number, eSeed: number, pSe
         scale: temperatureOptions.scale
     })
 
-    return { elevationMap: elevationMap, precipitationMap: precipitationMap, temperatureMap: temperatureMap }
+    return { elevationMap: chunks(elevationMap, 10), precipitationMap: chunks(precipitationMap, 10), temperatureMap: chunks(temperatureMap, 10) }
 }

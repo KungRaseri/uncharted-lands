@@ -96,9 +96,9 @@ model World {
 model Region {
   id               String  @id @default(uuid())
   name             String  @unique
-  elevationMap     Float[]
-  precipitationMap Float[]
-  temperatureMap   Float[]
+  elevationMap     Json
+  precipitationMap Json
+  temperatureMap   Json
 
   tiles Tile[]
 
