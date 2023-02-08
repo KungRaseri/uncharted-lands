@@ -1,6 +1,8 @@
 <script lang="ts">
 </script>
 
-<div>
-	<p>View</p>
+<div class="table-container">
+	<div class="table">
+		
+	</div>
 </div>

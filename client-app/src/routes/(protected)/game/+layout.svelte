@@ -4,6 +4,7 @@
 	import GameFooter from '$lib/components/game/Footer.svelte';
 
 	import * as signalR from '@microsoft/signalr';
+	import { AppShell } from '@skeletonlabs/skeleton';
 
 	const connection = new signalR.HubConnectionBuilder()
 		.withUrl('http://localhost:5036/hubs/game')
@@ -64,12 +65,19 @@
 	<div class="text-xs text-neutral-400 text-center">{serverTime}</div>
 	<div class="text-xs text-neutral-400 text-center">{localTime}</div>
 </div>
-<div>
-	{#if data.account.profile}
-		<GameNavigation />
-	{/if}
+
+<AppShell>
+	<svelte:fragment slot="header">
+		{#if data.account.profile}
+			<GameNavigation />
+		{/if}
+	</svelte:fragment>
+
 	<slot />
-	{#if data.account.profile}
-		<GameFooter />
-	{/if}
-</div>
+
+	<svelte:fragment slot="footer">
+		{#if data.account.profile}
+			<GameFooter />
+		{/if}
+	</svelte:fragment>
+</AppShell>

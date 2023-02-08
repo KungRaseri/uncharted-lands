@@ -22,7 +22,6 @@ const saveWorld: Action = async ({ request }) => {
     const precipitationOptions = data.get("precipitation-options")
     const temperatureOptions = data.get("temperature-options")
 
-
     if (typeof map !== 'string' ||
         !map ||
         typeof mapOptions !== 'string' ||

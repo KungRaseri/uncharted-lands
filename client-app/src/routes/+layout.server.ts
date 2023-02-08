@@ -9,13 +9,13 @@ const mainMenuLinks = [
 	{
 		name: 'Forum',
 		route: '/forum',
+		isActive: false,
+	},
+	{
+		name: 'Game',
+		route: '/game',
 		isActive: false
 	},
-	// {
-	// 	name: 'Game',
-	// 	route: '/game',
-	// 	isActive: false
-	// },
 	{
 		name: 'Admin',
 		route: '/admin',

@@ -96,7 +96,7 @@
 						bg-primary-hover-token
 						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-active-token' : ''}
 						"
-						data-testid="header-signin"
+					data-testid="header-signin"
 				>
 					<span
 						class="
@@ -112,7 +112,7 @@
 						{$page.route.id === '/(auth)/register' ? 'bg-primary-active-token' : ''}
 						bg-primary-hover-token 
 						"
-						data-testid="header-register"
+					data-testid="header-register"
 				>
 					<span
 						class="
@@ -137,11 +137,7 @@
 						use:menu={{ menu: 'userMenu' }}
 					>
 						{#if $page.data.account.profile?.picture}
-							<img
-								class="w-6 rounded-full"
-								src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-								alt=""
-							/>
+							<img class="w-6 rounded-full" src={$page.data.account.profile.picture} alt="" />
 						{:else}
 							<div class="w-6 items-center justify-center mx-auto">
 								<Account size={24} />
