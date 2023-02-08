@@ -24,7 +24,7 @@ function chunks(heightMap: number[][], chunkSize: number) {
 }
 
 type MapOptions = {
-    width: number, height: number, eSeed: number, pSeed: number, tSeed: number
+    serverId: string | null, worldName: string | null, width: number, height: number, eSeed: number, pSeed: number, tSeed: number
 }
 
 export async function generate(mapOptions: MapOptions, elevationOptions: Options, precipitationOptions: Options, temperatureOptions: Options) {

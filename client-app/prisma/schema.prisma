@@ -84,6 +84,10 @@ model World {
   id   String @id @default(uuid())
   name String @unique
 
+  elevationSettings     Json
+  precipitationSettings Json
+  temperatureSettings   Json
+
   regions Region[]
 
   server   Server @relation(fields: [serverId], references: [id])
@@ -94,8 +98,8 @@ model World {
 }
 
 model Region {
-  id               String  @id @default(uuid())
-  name             String  @unique
+  id               String @id @default(uuid())
+  name             String
   elevationMap     Json
   precipitationMap Json
   temperatureMap   Json
@@ -105,8 +109,7 @@ model Region {
   world   World  @relation(fields: [worldId], references: [id])
   worldId String
 
-  biome   Biome  @relation(fields: [biomeId], references: [id])
-  biomeId String
+  @@unique([name, worldId])
 }
 
 model Biome {
@@ -116,8 +119,6 @@ model Biome {
   precipitationMax Float
   temperatureMin   Float
   temperatureMax   Float
-
-  Region Region[]
 }
 
 model Tile {

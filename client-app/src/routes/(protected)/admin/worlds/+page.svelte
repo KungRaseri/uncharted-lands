@@ -45,7 +45,8 @@
 				<tr>
 					<th><input type="checkbox" id="select-all" name="select-all" /></th>
 					<th>ID</th>
-					<th>Server {`<ID>`}</th>
+					<th>World Name</th>
+						<th>Server {`<ID>`}</th>
 					<th>Regions</th>
 				</tr>
 			</thead>
@@ -55,6 +56,7 @@
 						<tr>
 							<td><input type="checkbox" /></td>
 							<td>{world.id}</td>
+							<td>{world.name}</td>
 							<td>{`${world.server.name} <${world.serverId}>`}</td>
 							<td>{world.regions.length}</td>
 						</tr>

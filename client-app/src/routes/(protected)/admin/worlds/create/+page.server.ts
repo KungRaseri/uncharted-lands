@@ -1,37 +1,12 @@
 import { db } from "$lib/db"
 import { generate } from "$lib/game/world-generator"
-import type { Region } from "@prisma/client"
-import { fail } from "@sveltejs/kit"
+import type { Prisma, Region, Tile } from "@prisma/client"
+import { fail, redirect } from "@sveltejs/kit"
+import { makeSphereSurface, type Options } from "fractal-noise"
 import type { Action, Actions, PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async () => {
-    const width = 100, height = 100,
-        octaves = 8, scale = 0.75,
-        amplitude = 1, persistence = 0.5,
-        frequency = 0.05,
-        elevationSeed = Date.now(), precipitationSeed = Date.now(), temperatureSeed = Date.now();
-
-    const map: Region[][] = []
-
-    const maps = await generate({ width, height, eSeed: elevationSeed, pSeed: precipitationSeed, tSeed: temperatureSeed }, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency }, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency }, { scale: (x) => { return x * scale }, octaves, amplitude, persistence, frequency })
-
-    for (let i = 0; i < maps.elevationMap.length; i++) {
-        map[i] = []
-        for (let j = 0; j < maps.elevationMap[i].length; j++) {
-            map[i][j] = {
-                id: '',
-                biomeId: '',
-                worldId: '',
-                name: `${i}:${j}`,
-                elevationMap: maps.elevationMap[i][j],
-                precipitationMap: maps.precipitationMap[i],
-                temperatureMap: maps.temperatureMap[i],
-            }
-        }
-    }
-
     return {
-        map: map.flat(1),
         servers: await db.server.findMany({
             select: {
                 id: true,
@@ -43,46 +18,99 @@ export const load: PageServerLoad = async () => {
 
 const saveWorld: Action = async ({ request }) => {
     const data = await request.formData();
-    const serverId = data.get("server-id")
-    const worldName = data.get("world-name")
     const map = data.get("map")
+    const mapOptions = data.get("map-options")
+    const elevationOptions = data.get("elevation-options")
+    const precipitationOptions = data.get("precipitation-options")
+    const temperatureOptions = data.get("temperature-options")
 
-    if (typeof serverId !== 'string' ||
-        !serverId ||
-        typeof map !== 'string' ||
+
+    if (typeof map !== 'string' ||
         !map ||
-        typeof worldName !== 'string' ||
-        !worldName) {
-        return fail(400, { invalid: true })
+        typeof mapOptions !== 'string' ||
+        !mapOptions ||
+        typeof elevationOptions !== 'string' ||
+        !elevationOptions ||
+        typeof precipitationOptions !== 'string' ||
+        !precipitationOptions ||
+        typeof temperatureOptions !== 'string' ||
+        !temperatureOptions) {
+        return fail(400, { invalid: true, message: 'Some properties were invalid or were not provided.' })
     }
 
     const generatedMap: Region[] = JSON.parse(map);
+    const mapSettings = JSON.parse(mapOptions);
+    const elevationSettings = JSON.parse(elevationOptions);
+    const precipitationSettings = JSON.parse(precipitationOptions);
+    const temperatureSettings = JSON.parse(temperatureOptions);
 
-    // const newWorld = await db.world.create({
-    //     data: {
-    //         name: worldName,
-    //         server: {
-    //             connect: {
-    //                 id: serverId
-    //             }
-    //         }
-    //     }
-    // })
+    // create the world
 
-    // const dbRegions: Region[] = [];
+    const world = await db.world.create({
+        data: {
+            name: mapSettings.worldName,
+            serverId: mapSettings.serverId,
+            elevationSettings,
+            precipitationSettings,
+            temperatureSettings
+        },
+        include: {
+            server: true
+        }
+    })
 
-    // generatedMap.forEach(async (regions: Region[]) => {
-    //     regions.forEach(async (region: Region) => {
-    //         region.worldId = newWorld.id
-    //         dbRegions.push(await db.region.create({
-    //             data: region
-    //         }));
-    //     });
-    // });
+    // iterate through the generatedMap,
+    for (const generatedRegion of generatedMap) {
+        const elevationMap: number[][] = JSON.parse(JSON.stringify(generatedRegion?.elevationMap))
+        const precipitationMap: number[][] = JSON.parse(JSON.stringify(generatedRegion?.precipitationMap))
+        const temperatureMap: number[][] = JSON.parse(JSON.stringify(generatedRegion?.temperatureMap))
 
-    // console.log(dbRegions)
+        const region = await db.region.create({
+            data: {
+                name: generatedRegion.name,
+                elevationMap: generatedRegion.elevationMap as Prisma.JsonArray,
+                precipitationMap: generatedRegion.precipitationMap as Prisma.JsonArray,
+                temperatureMap: generatedRegion.temperatureMap as Prisma.JsonArray,
+                worldId: world.id
+            },
+            include: {
+                world: true,
+            }
+        });
 
-    // throw redirect(302, '/admin/worlds')
+        elevationMap.forEach(async (row, x) => {
+            row.forEach(async (elevation, y) => {
+                // create tiles, 
+                const tile = await db.tile.create({
+                    data: {
+                        id: crypto.randomUUID(),
+                        elevation: elevation,
+                        precipitation: precipitationMap[x][y],
+                        temperature: temperatureMap[x][y],
+                        regionId: region.id
+                    },
+                    include: {
+                        region: true
+                    }
+                });
+            })
+        })
+    }
+
+    await db.world.findUnique({
+        where: {
+            id: world.id
+        },
+        include: {
+            regions: {
+                include: {
+                    tiles: true
+                }
+            }
+        }
+    })
+
+    throw redirect(302, '/admin/worlds')
 }
 
 export const actions: Actions = { saveWorld }
