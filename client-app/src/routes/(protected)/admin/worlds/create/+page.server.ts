@@ -1,8 +1,6 @@
 import { db } from "$lib/db"
-import { generate } from "$lib/game/world-generator"
-import type { Prisma, Region, Tile } from "@prisma/client"
+import type { Prisma, Region } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
-import { makeSphereSurface, type Options } from "fractal-noise"
 import type { Action, Actions, PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async () => {
@@ -96,19 +94,6 @@ const saveWorld: Action = async ({ request }) => {
             })
         })
     }
-
-    await db.world.findUnique({
-        where: {
-            id: world.id
-        },
-        include: {
-            regions: {
-                include: {
-                    tiles: true
-                }
-            }
-        }
-    })
 
     throw redirect(302, '/admin/worlds')
 }
