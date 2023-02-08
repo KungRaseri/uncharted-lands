@@ -53,7 +53,7 @@ async function getRandomTile(worldId: string) {
     return randomTile;
 }
 
-const settle: Action = async ({ cookies, request, locals }) => {
+const settle: Action = async ({ request, locals }) => {
     const data = await request.formData();
     const username = data.get('username');
     const server = data.get('server');
@@ -72,7 +72,7 @@ const settle: Action = async ({ cookies, request, locals }) => {
     const chosenTile = await getRandomTile(world);
 
     // update the player profile and connect it to the server
-    const newPlayerProfile = await db.profile.create({
+    await db.profile.create({
         data: {
             username,
             account: {

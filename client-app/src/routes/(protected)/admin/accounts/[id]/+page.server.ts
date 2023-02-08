@@ -1,10 +1,9 @@
-import { fail, redirect, Server } from "@sveltejs/kit"
-import { AccountRole, type Tile } from "@prisma/client"
+import { fail } from "@sveltejs/kit"
 import { db } from "$lib/db"
 import type { PageServerLoad, Actions, Action } from "./$types"
 import { generate } from "$lib/game/world-generator"
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ params }) => {
     const world = await db.world.findUnique({
         where: {
             id: params.id

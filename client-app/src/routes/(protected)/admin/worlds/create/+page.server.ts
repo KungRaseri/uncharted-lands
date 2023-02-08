@@ -78,16 +78,13 @@ const saveWorld: Action = async ({ request }) => {
         elevationMap.forEach(async (row, x) => {
             row.forEach(async (elevation, y) => {
                 // create tiles, 
-                const tile = await db.tile.create({
+                await db.tile.create({
                     data: {
                         id: crypto.randomUUID(),
                         elevation: elevation,
                         precipitation: precipitationMap[x][y],
                         temperature: temperatureMap[x][y],
                         regionId: region.id
-                    },
-                    include: {
-                        region: true
                     }
                 });
             })
