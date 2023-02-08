@@ -14,10 +14,11 @@
 </script>
 
 <AppBar
-	padding="px-2 py-3"
+	gridColumns="grid-cols-3"
+	slotDefault="place-self-center"
+	slotTrail="place-content-end"
 	background="bg-surface-100-800-token"
 	shadow="shadow-md"
-	class="justify-between"
 >
 	<svelte:fragment slot="lead">
 		<div class="block sm:hidden">
