@@ -1,4 +1,4 @@
-import { type Biome, PrismaClient } from "@prisma/client";
+import { type Biome, type Resource, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -101,6 +101,25 @@ const biomes: Biome[] = [
     }
 ]
 
+const resources: Resource[] = [
+    {
+        id: "",
+        name: "Food"
+    },
+    {
+        id: "",
+        name: "Water"
+    },
+    {
+        id: "",
+        name: "Wood"
+    },
+    {
+        id: "",
+        name: "Stone"
+    }
+]
+
 async function main() {
     console.log('Start seeding ...')
     // seed data here
@@ -131,6 +150,26 @@ async function main() {
         // other seed data
 
         console.log(`Biome ${resultBiome.name} with ID[${resultBiome.id}] created`)
+    })
+
+    // resources, etc.
+    console.log(`Seeding [${resources.length}] Resources`)
+    resources.forEach(async (resource) => {
+        const resultResource = await prisma.resource.upsert({
+            where: {
+                name: resource.name
+            },
+            create: {
+                name: resource.name,
+            },
+            update: {
+                name: resource.name,
+            }
+        })
+
+        // other seed data
+
+        console.log(`Biome ${resultResource.name} with ID[${resultResource.id}] created`)
     })
 
     console.log(`Seeding finished.`)

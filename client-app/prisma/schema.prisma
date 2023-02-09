@@ -22,11 +22,9 @@ enum ServerStatus {
   ONLINE
 }
 
-enum Resource {
-  FOOD
-  WATER
-  WOOD
-  STONE
+enum TileType {
+  OCEAN
+  LAND
 }
 
 model Account {
@@ -119,36 +117,48 @@ model Biome {
   precipitationMax Float
   temperatureMin   Float
   temperatureMax   Float
+  Tile             Tile[]
 }
 
 model Tile {
-  id            String @id @default(uuid())
+  id            String   @id @default(uuid())
   elevation     Float
   temperature   Float
   precipitation Float
+  type          TileType
 
-  resources      TileResource[]
-  habitablePlots Plot[]
+  Plots Plot[]
 
-  region       Region      @relation(fields: [regionId], references: [id])
+  Region       Region      @relation(fields: [regionId], references: [id])
   regionId     String
   Settlement   Settlement? @relation(fields: [settlementId], references: [id])
   settlementId String?
+  Biome        Biome       @relation(fields: [biomeId], references: [id])
+  biomeId      String
 }
 
-model TileResource {
-  id       String   @id @default(uuid())
-  resource Resource
-  value    Int
+model PlotResource {
+  id    String @id @default(uuid())
+  value Int
 
-  tile   Tile   @relation(fields: [tileId], references: [id])
-  tileId String
+  Plot       Plot?    @relation(fields: [plotId], references: [id])
+  plotId     String?
+  Resource   Resource @relation(fields: [resourceId], references: [id])
+  resourceId String
 
-  @@unique([tileId, resource])
+  @@unique([plotId, resourceId])
+}
+
+model Resource {
+  id                String              @id @default(uuid())
+  name              String              @unique
+  PlotResource      PlotResource[]
+  StructureModifier StructureModifier[]
 }
 
 model Plot {
-  id String @id @default(uuid())
+  id        String         @id @default(uuid())
+  resources PlotResource[]
 
   settlement   Settlement? @relation(fields: [settlementId], references: [id])
   settlementId String?
@@ -186,9 +196,10 @@ model StructureModifier {
   id          String   @id @default(uuid())
   name        String
   description String
-  resource    Resource
+  resource    Resource @relation(fields: [resourceId], references: [id])
   value       Int
 
   settlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
   settlementStructureId String
+  resourceId            String
 }

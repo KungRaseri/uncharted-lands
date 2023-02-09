@@ -34,29 +34,29 @@
 				};
 			}}
 		>
-			<label for="email" class="block text-md font-medium text-token">Email address</label>
-			<div class="">
+			<label for="email" class="label">
+				<span>Email address</span>
 				<input
-					class="variant-ghost-surface {form?.invalid ? 'input-error' : ''}"
+					class="input {form?.invalid ? 'input-error' : ''}"
 					id="email"
 					name="email"
 					type="email"
 					autocomplete="email"
 					required
 				/>
-			</div>
+			</label>
 
-			<label for="password" class="block text-md font-medium text-token">Password</label>
-			<div class="">
+			<label for="password" class="label">
+				<span>Password</span>
 				<input
-					class="variant-ghost-surface {form?.invalid ? 'input-error' : ''}"
+					class="input {form?.invalid ? 'input-error' : ''}"
 					id="password"
 					name="password"
 					type="password"
 					autocomplete="current-password"
 					required
 				/>
-			</div>
+			</label>
 
 			{#if form?.invalid}
 				<div transition:slide>

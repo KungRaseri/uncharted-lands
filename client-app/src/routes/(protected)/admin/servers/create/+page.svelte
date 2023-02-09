@@ -24,35 +24,36 @@
 				};
 			}}
 		>
-			<div class="mx-1">
-				<label for="name">Server Name</label>
+			<label for="name" class="label">
+				<span>Server Name</span>
 				<input
-					class={form?.invalid ? 'input-error' : 'variant-ghost-surface'}
+					class="input {form?.invalid ? 'input-error' : 'variant-ghost-surface'}"
 					id="name"
 					name="name"
 					type="text"
 				/>
-			</div>
-			<div class="mx-1">
-				<label for="hostname">Hostname</label>
+			</label>
+			<label for="hostname" class="label">
+				<span>Hostname</span>
 				<input
-					class={form?.invalid ? 'input-error' : 'variant-ghost-surface'}
+					class="input {form?.invalid ? 'input-error' : 'variant-ghost-surface'}"
 					id="hostname"
 					name="hostname"
 					type="text"
 				/>
-			</div>
-			<div class="mx-1">
-				<label for="port">Port</label>
+			</label>
+			<label for="port" class="label">
+				<span>Port</span>
 				<input
-					class={form?.invalid ? 'input-error' : 'variant-ghost-surface'}
+					class="input {form?.invalid ? 'input-error' : 'variant-ghost-surface'}"
 					id="port"
 					name="port"
 					min="5000"
 					max="9999"
 					type="number"
 				/>
-			</div>
+			</label>
+
 			{#if form?.invalid}
 				<div class="alert variant-ghost-error">
 					<div class="alert-message">

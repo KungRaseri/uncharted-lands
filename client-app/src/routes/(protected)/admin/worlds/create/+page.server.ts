@@ -1,5 +1,5 @@
 import { db } from "$lib/db"
-import type { Prisma, Region } from "@prisma/client"
+import { TileType, type Prisma, type Region } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 
@@ -42,7 +42,6 @@ const saveWorld: Action = async ({ request }) => {
     const temperatureSettings = JSON.parse(temperatureOptions);
 
     // create the world
-
     const world = await db.world.create({
         data: {
             name: mapSettings.worldName,
@@ -77,14 +76,19 @@ const saveWorld: Action = async ({ request }) => {
 
         elevationMap.forEach(async (row, x) => {
             row.forEach(async (elevation, y) => {
+                const type = elevation < 0 ? TileType.OCEAN : TileType.LAND;
+                const biome = await determineBiome(precipitationMap[x][y], temperatureMap[x][y])
+
                 // create tiles, 
                 await db.tile.create({
                     data: {
                         id: crypto.randomUUID(),
                         elevation: elevation,
+                        type: type,
                         precipitation: precipitationMap[x][y],
                         temperature: temperatureMap[x][y],
-                        regionId: region.id
+                        regionId: region.id,
+                        biomeId: biome.id
                     }
                 });
             })
@@ -92,6 +96,29 @@ const saveWorld: Action = async ({ request }) => {
     }
 
     throw redirect(302, '/admin/worlds')
+}
+
+async function determineBiome(precipitation: number, temperature: number) {
+    const biomes = await db.biome.findMany({
+        where: {
+            precipitationMax: {
+                gte: precipitation
+            },
+            precipitationMin: {
+                lte: precipitation
+            },
+            temperatureMax: {
+                gte: temperature
+            },
+            temperatureMin: {
+                lte: temperature
+            }
+        }
+    });
+
+    console.log(biomes);
+
+    return biomes[0];
 }
 
 export const actions: Actions = { saveWorld }
