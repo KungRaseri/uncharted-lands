@@ -19,6 +19,9 @@ const config = {
 	server: {
 		port: 3000
 	},
+	test: {
+		include: ['src/**/*.{test}.{js,ts}']
+	}
 };
 
 export default config;

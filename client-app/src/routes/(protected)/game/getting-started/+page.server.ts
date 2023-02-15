@@ -6,6 +6,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     if (locals.account.profile) {
         throw redirect(302, '/game')
     }
+
     return {
         servers: await db.server.findMany(),
         worlds: await db.world.findMany(),
@@ -30,10 +31,13 @@ async function getRandomTile(worldId: string) {
             worldId: worldData.id,
             tiles: {
                 some: {
-                    biome: Biome.SHRUBLAND
+                    elevation: {
+                        gt: 0.1,
+                        lt: 0.9
+                    }
                 },
                 every: {
-                    settlement: undefined
+                    Settlement: undefined
                 }
             }
         },
@@ -43,14 +47,14 @@ async function getRandomTile(worldId: string) {
     })
 
     const soilTiles = potentialRegions[Math.floor(Math.random() * potentialRegions.length)]
-        .tiles.filter(t => t.biome === Biome.SHRUBLAND);
+        .tiles.filter(t => t.elevation > 0.2 && t.elevation < 0.6);
 
     const randomTile = soilTiles[Math.floor(Math.random() * soilTiles.length)]
 
     return randomTile;
 }
 
-const settle: Action = async ({ cookies, request, locals }) => {
+const settle: Action = async ({ request, locals }) => {
     const data = await request.formData();
     const username = data.get('username');
     const server = data.get('server');
@@ -69,7 +73,7 @@ const settle: Action = async ({ cookies, request, locals }) => {
     const chosenTile = await getRandomTile(world);
 
     // update the player profile and connect it to the server
-    const newPlayerProfile = await db.profile.create({
+    await db.profile.create({
         data: {
             username,
             account: {
@@ -77,62 +81,27 @@ const settle: Action = async ({ cookies, request, locals }) => {
                     id: locals.account.id
                 }
             },
-        }
-    })
-
-    const profileServerData = await db.profileServerData.create({
-        data: {
-            profileId: newPlayerProfile.id,
-            serverId: server,
-            settlements: {
+            picture: `https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,
+            profileServerData: {
                 create: {
-                    name: "Home Settlement",
-                    tile: {
-                        connect: {
-                            id: chosenTile.id
+                    serverId: server,
+                    settlements: {
+                        create: {
+                            name: "Home Settlement",
+                            tile: {
+                                connect: {
+                                    id: chosenTile.id
+                                }
+                            },
+                            Plot: {
+                                create: {
+                                    tileId: chosenTile.id
+                                }
+                            }
                         }
                     }
-                },
-            }
-        }
-    })
-
-    await db.profile.update({
-        data: {
-            profileServerData: {
-                connect: {
-                    profileId: newPlayerProfile.id,
                 }
             }
-        },
-        where: {
-            id: newPlayerProfile.id
-        }
-    })
-
-    await db.server.update({
-        data: {
-            profileServerData: {
-                connect: {
-                    serverId: profileServerData.serverId
-                }
-            }
-        },
-        where: {
-            id: server
-        }
-    })
-
-    await db.account.update({
-        data: {
-            profile: {
-                connect: {
-                    id: newPlayerProfile.id
-                }
-            }
-        },
-        where: {
-            id: locals.account.id
         }
     })
 

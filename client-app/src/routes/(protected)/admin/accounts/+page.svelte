@@ -1,7 +1,5 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
-	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import type { PageData } from './$types';
 	import {
 		createDataTableStore,
 		dataTableHandler,
@@ -12,7 +10,6 @@
 	import Information from 'svelte-material-icons/Information.svelte';
 	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
 	import AccountEdit from 'svelte-material-icons/AccountEdit.svelte';
-	import { json } from '@sveltejs/kit';
 
 	export let data: PageData;
 
@@ -28,19 +25,18 @@
 	});
 
 	accountsTableStore.subscribe((model) => dataTableHandler(model));
-
-	let isWorldFormActive = false;
-
-	function handleCreateServer() {
-		isWorldFormActive = true;
-	}
 </script>
 
 <div class="m-1">
 	<h1 id="accounts-header">Accounts</h1>
 	<div class="table-container">
 		<div class="p-0 m-3 w-11/12 flex space-x-3">
-			<input bind:value={$accountsTableStore.search} type="search" placeholder="Search..." />
+			<input
+				bind:value={$accountsTableStore.search}
+				type="search"
+				placeholder="Search..."
+				class="input"
+			/>
 			<a href="/admin/servers/create" class="btn bg-primary-400-500-token">
 				<span class="mx-1 px-0 py-3 text-token"><AccountEdit /></span>
 				<span class="mx-1 px-0 py-2 text-token">Edit</span>
@@ -64,7 +60,7 @@
 							<td>{account.id}</td>
 							<td>{account.email}</td>
 							<td>{account.role}</td>
-							<td>{account.profile ?? 'No Profile Found'}</td>
+							<td>{account.profile ? 'No Profile Found' : 'Profile Found'}</td>
 							<td>{account.createdAt}</td>
 							<td>{account.updatedAt}</td>
 						</tr>

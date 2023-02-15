@@ -36,59 +36,43 @@
 				};
 			}}
 		>
-			<label for="email" class="flex text-md font-medium text-token">
-				Email address
-				{#if form?.email}
-					<span class="rounded-full mx-1 p-1 variant-ghost-error">
-						<Information />
-					</span>
-				{/if}
-			</label>
-			<div class="">
+			<label for="email" class="label">
+				<span>Email address</span>
 				<input
 					id="email"
 					name="email"
 					type="email"
 					autocomplete="email"
 					required
-					class="variant-ghost-surface {form?.email ? 'input-error' : ''}"
+					class="input {form?.email ? 'input-error' : ''}"
 				/>
-			</div>
-
-			<label for="password" class="flex text-md font-medium text-token">
-				Password
-				{#if form?.email}
-					<span class="rounded-full mx-1 p-1 variant-ghost-error">
-						<Information />
-					</span>
-				{/if}
 			</label>
-			<div class="">
+
+			<label for="password" class="label">
+				<span>Password</span>
 				<input
 					id="password"
 					name="password"
 					type="password"
 					autocomplete="current-password"
 					required
-					class="variant-ghost-surface {form?.email ? 'input-error' : ''}"
+					class="input {form?.email ? 'input-error' : ''}"
 				/>
-			</div>
+			</label>
 
-			<div class="flex justify-around">
-				<div class="flex">
+			<div class="flex justify-around items-center">
+				<label for="remember_me" class="label">
 					<input
 						id="remember_me"
 						name="remember_me"
 						type="checkbox"
-						class="checked:text-surface-900 focus:outline-primary-900 focus:ring-primary-900"
+						class="checkbox"
 						bind:value={isRememberMeChecked}
 					/>
-					<label for="remember_me" class="ml-2 block text-sm text-token">Remember me</label>
-				</div>
+					<span class="">Remember me</span>
+				</label>
 
-				<div class="text-sm">
-					<a href="forgot-password" class="font-medium">Forgot your password?</a>
-				</div>
+				<a href="forgot-password" class="font-medium">Forgot your password?</a>
 			</div>
 
 			{#if form?.email}

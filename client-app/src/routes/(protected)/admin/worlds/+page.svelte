@@ -34,7 +34,12 @@
 	<h1 id="worlds-header">Worlds</h1>
 	<div class="table-container">
 		<div class="p-0 m-3 w-11/12 flex space-x-3">
-			<input bind:value={$worldsTableStore.search} type="search" placeholder="Search..." />
+			<input
+				bind:value={$worldsTableStore.search}
+				type="search"
+				placeholder="Search..."
+				class="input"
+			/>
 			<a href="/admin/worlds/create" class="btn bg-primary-400-500-token">
 				<span class="mx-1 px-0 py-3 text-token"><WebPlus /></span>
 				<span class="mx-1 px-0 py-2 text-token">Create</span>
@@ -46,7 +51,7 @@
 					<th><input type="checkbox" id="select-all" name="select-all" /></th>
 					<th>ID</th>
 					<th>World Name</th>
-						<th>Server {`<ID>`}</th>
+					<th>Server {`<ID>`}</th>
 					<th>Regions</th>
 				</tr>
 			</thead>
