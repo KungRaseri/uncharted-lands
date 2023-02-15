@@ -4,13 +4,13 @@ import * as Sentry from '@sentry/svelte';
 import { BrowserTracing } from '@sentry/tracing';
 
 Sentry.init({
-    dsn: "https://f9090c82f625466fa6f91eff48e20c32@o4504635308638208.ingest.sentry.io/4504635311915008",
+    dsn: process.env.SENTRY_DSN,
     integrations: [new BrowserTracing()],
     tracesSampleRate: 1.0,
     environment: process.env.NODE_ENV
 })
 
-export const handle: Handle = async function ({ event, resolve }) {
+export const handle: Handle = (async ({ event, resolve }) => {
     const user = await AuthenticateUser(event.cookies);
 
     if (!user) {
@@ -25,9 +25,9 @@ export const handle: Handle = async function ({ event, resolve }) {
     }
 
     return await resolve(event);
-}
+}) satisfies Handle
 
-export const handleError: HandleServerError = async ({ error, event }) => {
+export const handleError: HandleServerError = (async ({ error, event }) => {
     const errorId = crypto.randomUUID();
 
     Sentry.withScope(async (scope) => {
@@ -36,4 +36,9 @@ export const handleError: HandleServerError = async ({ error, event }) => {
 
         Sentry.captureException(error);
     })
-}
+
+    return {
+        message: 'Whoops!',
+        errorId
+    };
+}) satisfies HandleServerError;

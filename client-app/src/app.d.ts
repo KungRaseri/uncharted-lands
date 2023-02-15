@@ -8,6 +8,10 @@ declare namespace App {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	import type { Account, Role, Profile } from "@prisma/client"
 
+	interface Error {
+		message: string;
+		errorId: string
+	}
 	interface Locals {
 		account: Account = {
 			id: string,
