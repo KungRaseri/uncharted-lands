@@ -1,5 +1,5 @@
 import { db } from "$lib/db"
-import { TileType, type Prisma, type Region } from "@prisma/client"
+import type { TileType, Prisma, Region } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 
@@ -118,7 +118,7 @@ async function determineBiome(precipitation: number, temperature: number) {
 
     console.log(biomes);
 
-    return biomes;
+    return biomes[0];
 }
 
 export const actions: Actions = { saveWorld }
