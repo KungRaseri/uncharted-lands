@@ -118,7 +118,7 @@ async function determineBiome(precipitation: number, temperature: number) {
 
     console.log(biomes);
 
-    return biomes[0];
+    return biomes;
 }
 
 export const actions: Actions = { saveWorld }

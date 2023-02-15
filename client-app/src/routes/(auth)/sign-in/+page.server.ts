@@ -34,9 +34,11 @@ const login: Action = async ({ cookies, request, url }) => {
         return fail(400, { email, incorrect: true })
     }
 
-    const authenticatedUser = await db.account.update({
+    const userAuthToken = crypto.randomUUID();
+
+    await db.account.update({
         where: { email: account.email },
-        data: { userAuthToken: crypto.randomUUID() }
+        data: { userAuthToken: userAuthToken }
     })
 
     const ts = new TimeSpan();
@@ -47,7 +49,7 @@ const login: Action = async ({ cookies, request, url }) => {
     ts.hours = 6;
     const age6h = ts.totalSeconds
 
-    cookies.set('session', authenticatedUser.userAuthToken, {
+    cookies.set('session', userAuthToken, {
         path: '/',
         httpOnly: true,
         sameSite: 'strict',

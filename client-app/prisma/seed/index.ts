@@ -122,7 +122,6 @@ const resources: Resource[] = [
 
 async function main() {
     console.log('Start seeding ...')
-    // seed data here
 
     // biomes, etc.
     console.log(`Seeding [${biomes.length}] Biomes`)

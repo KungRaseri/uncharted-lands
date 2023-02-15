@@ -24,7 +24,6 @@ export const handle: Handle = async function ({ event, resolve }) {
         event.locals.account = user;
     }
 
-
     return await resolve(event);
 }
 

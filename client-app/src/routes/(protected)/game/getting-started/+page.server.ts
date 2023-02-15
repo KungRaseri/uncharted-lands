@@ -6,6 +6,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     if (locals.account.profile) {
         throw redirect(302, '/game')
     }
+
     return {
         servers: await db.server.findMany(),
         worlds: await db.world.findMany(),

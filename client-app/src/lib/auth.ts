@@ -20,7 +20,7 @@ export const AuthenticateUser = async (cookies: Cookies) => {
             profile: true,
             createdAt: true,
             updatedAt: true
-        },
+        }
     })
 
     if (!account) {
