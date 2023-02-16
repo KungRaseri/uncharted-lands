@@ -20,7 +20,7 @@ const config = {
 		port: 3000
 	},
 	test: {
-		include: ['src/**/*.{test}.{js,ts}']
+		include: ['src/**/*.test.{js,ts}']
 	}
 };
 
