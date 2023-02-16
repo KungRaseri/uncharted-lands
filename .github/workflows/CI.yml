@@ -47,6 +47,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     strategy:
@@ -59,7 +60,6 @@ jobs:
         uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
       - run: npx playwright install
       - run: npx playwright install-deps
       - run: npm test
