@@ -1,11 +1,11 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { sveltekit } from '@sveltejs/kit/vite';
-import type { UserConfig } from 'vite';
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const config: UserConfig = {
+/** @type {import('vite').UserConfig} */
+const config = {
 	build: {
 		sourcemap: true
 	},

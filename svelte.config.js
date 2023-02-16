@@ -1,9 +1,9 @@
 import adapter from '@sveltejs/adapter-vercel';
 import preprocess from 'svelte-preprocess';
 import { withSentryConfig } from '@sentry/svelte';
-import type { Config } from '@sveltejs/kit';
 
-const config: Config = {
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
 	compilerOptions: {
 		enableSourcemap: true
 	},
