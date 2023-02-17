@@ -19,12 +19,12 @@
 				alt="Workflow"
 			/>
 			<h1 class="mt-6 text-xl lg:text-3xl tracking-tight font-bold text-primary-50">
-				Register your account
+				Forgot your password?
 			</h1>
 		</div>
 
 		<form
-			action="?/register"
+			action="?/resetPassword"
 			method="POST"
 			class="space-y-2"
 			use:enhance={() => {
@@ -49,36 +49,18 @@
 			</div>
 
 			<div class="space-y-1">
-				<label for="password" class="block text-md font-medium text-primary-50"> Password </label>
-				<div class="mt-1">
-					<input
-						id="password"
-						name="password"
-						type="password"
-						autocomplete="current-password"
-						required
-						class="rounded-sm"
-					/>
-				</div>
-
 				{#if form?.invalid}
 					<div transition:slide>
 						<div class="alert variant-ghost-error mx-5 mt-5">
 							<div class="alert-message text-primary-50">
 								<Information size={24} />
 								<div class="grid grid-cols-1">Form information is invalid</div>
-								{#if form?.length}
-									Password must be 16 or more characters in length
-								{/if}
-								{#if form?.exists}
-									Please enter the account information again
-								{/if}
 							</div>
 						</div>
 					</div>
 				{/if}
 			</div>
-			<button class="w-full p-2 btn btn-base variant-ghost-primary">Register</button>
+			<button class="w-full p-2 btn btn-base variant-ghost-primary">Reset Password</button>
 		</form>
 	</div>
 </div>
