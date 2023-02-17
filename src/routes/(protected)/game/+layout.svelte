@@ -4,7 +4,6 @@
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
 
-	let chosenServer: string;
 	let serverTime: string = '...';
 	let localTime: string = '...';
 

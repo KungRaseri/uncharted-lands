@@ -1,10 +1,7 @@
-import type { PageServerLoad, Action, Actions } from "./$types"
-import { fail, json, redirect } from "@sveltejs/kit"
-import { AccountRole, type Region, type Tile, type World } from "@prisma/client"
+import type { PageServerLoad } from "./$types"
 import { db } from "$lib/db"
-import { generate } from '$lib/game/world-generator'
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async () => {
     return {
         worlds: await db.world.findMany({
             include: {

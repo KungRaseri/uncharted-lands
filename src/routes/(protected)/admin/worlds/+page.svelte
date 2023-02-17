@@ -1,20 +1,10 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
-	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
-	import {
-		createDataTableStore,
-		dataTableHandler,
-		tableInteraction,
-		type DataTableModel
-	} from '@skeletonlabs/skeleton';
+	import type { PageData } from './$types';
+	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
 
-	import Information from 'svelte-material-icons/Information.svelte';
 	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
-	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
 
 	export let data: PageData;
-	export let form: ActionData;
 
 	let worldsTableStore = createDataTableStore(data.worlds, {
 		search: '',

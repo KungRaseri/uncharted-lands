@@ -1,5 +1,6 @@
 import { db } from "$lib/db"
-import type { TileType, Prisma, Region } from "@prisma/client"
+import { TileType } from "@prisma/client"
+import type { Prisma, Region } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 

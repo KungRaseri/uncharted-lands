@@ -1,11 +1,7 @@
 <script lang="ts">
-	import { AppShell, AppRail, AppRailTile } from '@skeletonlabs/skeleton';
+	import { AppShell } from '@skeletonlabs/skeleton';
 	import { writable, type Writable } from 'svelte/store';
 	import Navigation from '$lib/components/admin/Navigation.svelte';
-	import type { LayoutData } from './$types';
-
-	// export let data: LayoutData;
-	const storeValue: Writable<number> = writable(1);
 </script>
 
 <svelte:head>

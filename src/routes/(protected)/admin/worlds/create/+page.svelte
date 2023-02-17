@@ -2,7 +2,7 @@
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
-	import { RangeSlider, tooltip } from '@skeletonlabs/skeleton';
+	import { RangeSlider } from '@skeletonlabs/skeleton';
 	import type { Region } from '@prisma/client';
 	import { generate } from '$lib/game/world-generator';
 	import Information from 'svelte-material-icons/Information.svelte';

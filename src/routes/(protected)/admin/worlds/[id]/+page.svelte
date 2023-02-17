@@ -3,16 +3,6 @@
 
 	import Home from 'svelte-material-icons/Home.svelte';
 
-	let isWorldFormActive = false;
-
-	function toggleWorldForm() {
-		isWorldFormActive = !isWorldFormActive;
-	}
-
-	function closeWorldForm() {
-		isWorldFormActive = !isWorldFormActive;
-	}
-
 	export let data: PageData;
 </script>
 

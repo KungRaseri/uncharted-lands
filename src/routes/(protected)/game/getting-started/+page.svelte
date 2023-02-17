@@ -1,9 +1,6 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
 
-	import LightningBoltCircle from 'svelte-material-icons/LightningBoltCircle.svelte';
-	import Commit from 'svelte-material-icons/SourceCommit.svelte';
-	import GithubLogo from 'svelte-material-icons/Github.svelte';
 	import Campfire from 'svelte-material-icons/Campfire.svelte';
 
 	import { applyAction, enhance } from '$app/forms';
@@ -11,7 +8,6 @@
 
 	let selectedServer: string, selectedWorld: string, username: string;
 	export let data: PageData;
-	export let form: ActionData;
 </script>
 
 <div class="bg-surface-700 mt-10 p-5 w-full md:w-1/2 mx-auto">
