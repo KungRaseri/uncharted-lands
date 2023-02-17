@@ -1,6 +1,6 @@
 import { fail } from "@sveltejs/kit"
 import { db } from "$lib/db"
-import type { PageServerLoad, Actions, Action } from "./$types"
+import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async ({ params }) => {
     const account = await db.account.findUnique({

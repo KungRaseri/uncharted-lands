@@ -11,7 +11,7 @@ export default mergeConfig(viteConfig, defineConfig({
             provider: 'c8',
             all: true,
             reporter: ['text', 'json', 'html'],
-            include: ['src', 'tests']
+            include: ['src']
         }
     }
 }))
