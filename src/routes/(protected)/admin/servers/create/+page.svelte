@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { applyAction, enhance } from '$app/forms';
-	import { goto, invalidateAll } from '$app/navigation';
-	import type { ActionData, PageData } from './$types';
+	import { invalidateAll } from '$app/navigation';
+	import type { ActionData } from './$types';
 
 	import Information from 'svelte-material-icons/Information.svelte';
 
-	export let data: PageData;
 	export let form: ActionData;
 </script>
 

@@ -117,8 +117,8 @@ model Biome {
   precipitationMax Float
   temperatureMin   Float
   temperatureMax   Float
-  
-  Tile             Tile[]
+
+  Tile Tile[]
 }
 
 model Tile {

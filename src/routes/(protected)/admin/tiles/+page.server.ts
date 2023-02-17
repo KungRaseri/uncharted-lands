@@ -1,16 +1,20 @@
-import type { PageServerLoad, Action, Actions } from "./$types"
-import { fail, redirect } from "@sveltejs/kit"
-import { AccountRole, type Region, type Tile, type World } from "@prisma/client"
+import type { PageServerLoad } from "./$types"
 import { db } from "$lib/db"
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = (async () => {
     return {
         tiles: db.tile.findMany({
             include: {
-                region: true,
-                resources: true,
-                settlement: true
+                Biome: true,
+                Plots: {
+                    include: {
+                        resources: true,
+                        settlement: true
+                    }
+                },
+                Region: true,
+                Settlement: true
             }
         })
     }
-}
+}) satisfies PageServerLoad

@@ -1,14 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import {
-		createDataTableStore,
-		dataTableHandler,
-		tableInteraction,
-		type DataTableModel
-	} from '@skeletonlabs/skeleton';
+	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
 
-	import Information from 'svelte-material-icons/Information.svelte';
-	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
 	import AccountEdit from 'svelte-material-icons/AccountEdit.svelte';
 
 	export let data: PageData;

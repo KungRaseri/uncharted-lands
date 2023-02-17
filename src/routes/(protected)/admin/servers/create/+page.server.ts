@@ -1,10 +1,9 @@
-import { goto } from "$app/navigation"
 import { db } from "$lib/db"
-import { AccountRole, Prisma, ServerStatus } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async () => {
     return {}
 }
 
