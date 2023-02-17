@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountRole {
+  MEMBER
+  SUPPORT
+  ADMINISTRATOR
+}
+
+enum ServerStatus {
+  OFFLINE
+  MAINTENANCE
+  ONLINE
+}
+
+enum TileType {
+  OCEAN
+  LAND
+}
+
+model Account {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String
+  userAuthToken String      @unique
+  role          AccountRole @default(MEMBER)
+  profile       Profile?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Profile {
+  id       String @id @default(uuid())
+  username String @unique
+  picture  String
+
+  profileServerData ProfileServerData[]
+
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String  @unique
+}
+
+model ProfileServerData {
+  profileId String @unique
+  serverId  String @unique
+
+  settlements Settlement[]
+
+  profile Profile @relation(fields: [profileId], references: [id])
+  server  Server  @relation(fields: [serverId], references: [id])
+
+  @@unique([profileId, serverId])
+}
+
+model Server {
+  id       String       @id @default(uuid())
+  name     String       @unique
+  hostname String       @default("localhost")
+  port     Int          @default(5000)
+  status   ServerStatus @default(OFFLINE)
+
+  profileServerData ProfileServerData[]
+  worlds            World[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([hostname, port])
+}
+
+model World {
+  id   String @id @default(uuid())
+  name String @unique
+
+  elevationSettings     Json
+  precipitationSettings Json
+  temperatureSettings   Json
+
+  regions Region[]
+
+  server   Server @relation(fields: [serverId], references: [id])
+  serverId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Region {
+  id               String @id @default(uuid())
+  name             String
+  elevationMap     Json
+  precipitationMap Json
+  temperatureMap   Json
+
+  tiles Tile[]
+
+  world   World  @relation(fields: [worldId], references: [id])
+  worldId String
+
+  @@unique([name, worldId])
+}
+
+model Biome {
+  id               String @id @default(uuid())
+  name             String @unique
+  precipitationMin Float
+  precipitationMax Float
+  temperatureMin   Float
+  temperatureMax   Float
+
+  Tile Tile[]
+}
+
+model Tile {
+  id            String   @id @default(uuid())
+  elevation     Float
+  temperature   Float
+  precipitation Float
+  type          TileType
+
+  Plots Plot[]
+
+  Region       Region      @relation(fields: [regionId], references: [id])
+  regionId     String
+  Settlement   Settlement? @relation(fields: [settlementId], references: [id])
+  settlementId String?
+  Biome        Biome       @relation(fields: [biomeId], references: [id])
+  biomeId      String
+}
+
+model PlotResource {
+  id    String @id @default(uuid())
+  value Int
+
+  Plot       Plot?    @relation(fields: [plotId], references: [id])
+  plotId     String?
+  Resource   Resource @relation(fields: [resourceId], references: [id])
+  resourceId String
+
+  @@unique([plotId, resourceId])
+}
+
+model Resource {
+  id                String              @id @default(uuid())
+  name              String              @unique
+  PlotResource      PlotResource[]
+  StructureModifier StructureModifier[]
+}
+
+model Plot {
+  id        String         @id @default(uuid())
+  resources PlotResource[]
+
+  settlement   Settlement? @relation(fields: [settlementId], references: [id])
+  settlementId String?
+
+  Tile   Tile   @relation(fields: [tileId], references: [id])
+  tileId String
+}
+
+model Settlement {
+  id   String @id @default(uuid())
+  name String
+
+  structures SettlementStructure[]
+  tile       Tile[]
+
+  profileServerData          ProfileServerData @relation(fields: [profileServerDataProfileId], references: [profileId])
+  profileServerDataProfileId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Plot      Plot[]
+}
+
+model SettlementStructure {
+  id          String              @id @default(uuid())
+  name        String
+  description String
+  modifiers   StructureModifier[]
+
+  settlement   Settlement @relation(fields: [settlementId], references: [id])
+  settlementId String
+}
+
+model StructureModifier {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  resource    Resource @relation(fields: [resourceId], references: [id])
+  value       Int
+
+  settlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
+  settlementStructureId String
+  resourceId            String
+}
