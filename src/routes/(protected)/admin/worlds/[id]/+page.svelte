@@ -1,14 +1,7 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
-	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import type { PageData } from './$types';
 
-	import Edit from 'svelte-material-icons/TooltipEdit.svelte';
-	import Information from 'svelte-material-icons/Information.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
 	import Home from 'svelte-material-icons/Home.svelte';
-
-	import { getCSSFromTile } from '$lib/game/tile-helper';
 
 	let isWorldFormActive = false;
 
@@ -43,7 +36,6 @@
 									p-1 py-3
 									hover:bg-opacity-50
 									bg-opacity-80
-									{getCSSFromTile(tile.biome)?.bg}
 									"
 							>
 								{#if tile.settlementId}
