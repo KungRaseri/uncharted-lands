@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AppShell, AppRail, AppRailTile } from '@skeletonlabs/skeleton';
+	import { AppRail, AppRailTile } from '@skeletonlabs/skeleton';
 	import { writable, type Writable } from 'svelte/store';
 	import { page } from '$app/stores';
 

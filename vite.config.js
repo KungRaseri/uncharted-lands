@@ -1,3 +1,6 @@
+/// <reference types="vitest" />
+import { defineConfig } from 'vite'
+
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { sveltekit } from '@sveltejs/kit/vite';
 import dotenv from "dotenv";
@@ -5,11 +8,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 /** @type {import('vite').UserConfig} */
-const config = {
+const config = defineConfig({
 	build: {
 		sourcemap: true
 	},
-	plugins: [sveltekit(),
+	plugins: [sveltekit({ hot: !process.env.VITEST }),
 	sentryVitePlugin({
 		org: "red-syndicate",
 		project: "browser-game",
@@ -18,10 +21,7 @@ const config = {
 	})],
 	server: {
 		port: 3000
-	},
-	test: {
-		include: ['src/**/*.test.{js,ts}']
 	}
-};
+})
 
 export default config;

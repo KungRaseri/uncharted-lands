@@ -8,7 +8,10 @@ package
 .env.*
 .env-*
 !.env.example
+assets
+
+
 test-results/
 playwright-report/
 playwright/.cache/
-assets
+coverage

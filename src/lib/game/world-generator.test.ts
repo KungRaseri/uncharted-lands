@@ -1,9 +1,9 @@
 import { generate } from './world-generator';
-import { describe, expect, test } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 
 describe('world-generator.ts', () => {
-    test("default case - generate 3 noisemaps", async () => {
+    it("Should generate a noisemap for elevation, precipitation, and temperature", async () => {
         const mapOptions = {
             serverId: 'test-id',
             worldName: 'test-world',
@@ -45,7 +45,7 @@ describe('world-generator.ts', () => {
         expect(target.temperatureMap[0]).toHaveLength(10)
     });
 
-    test("generate precipitation within a specific range", async () => {
+    it("Should generate precipitation within a specific range", async () => {
         const mapOptions = {
             serverId: 'test-id',
             worldName: 'test-world',
