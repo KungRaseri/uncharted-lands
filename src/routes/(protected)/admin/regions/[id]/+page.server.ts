@@ -1,9 +1,8 @@
-import { fail, redirect, Server } from "@sveltejs/kit"
-import { AccountRole } from "@prisma/client"
+import { fail } from "@sveltejs/kit"
 import { db } from "$lib/db"
-import type { PageServerLoad, Actions, Action } from "./$types"
+import type { PageServerLoad } from "./$types"
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ params }) => {
     const region = await db.region.findUnique({
         where: {
             id: params.id

@@ -1,24 +1,7 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
-	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
-
-	import Edit from 'svelte-material-icons/TooltipEdit.svelte';
-	import Information from 'svelte-material-icons/Information.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
-
-	let isWorldFormActive = false;
-
-	function toggleWorldForm() {
-		isWorldFormActive = !isWorldFormActive;
-	}
-
-	function closeWorldForm() {
-		isWorldFormActive = !isWorldFormActive;
-	}
+	import type { PageData } from './$types';
 
 	export let data: PageData;
-	export let form: ActionData;
 </script>
 
 <div class="m-1">
@@ -46,7 +29,7 @@
 							href="/admin/tiles/{tile.id}"
 							class="m-1 py-10 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
 						>
-							{tile.biome}
+							{tile.biomeId}
 						</a>
 					{/each}
 				</div>

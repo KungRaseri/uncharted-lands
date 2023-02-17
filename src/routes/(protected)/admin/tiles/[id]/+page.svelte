@@ -1,11 +1,5 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
-	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
-
-	import Edit from 'svelte-material-icons/TooltipEdit.svelte';
-	import Information from 'svelte-material-icons/Information.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
 </script>
@@ -24,7 +18,7 @@
 
 				{#if data.tile.settlementId}
 					<div class="w-1/2">
-						<span class="text-lg">{data.tile.settlement?.name}</span>
+						<span class="text-lg">{data.tile.Settlement?.name}</span>
 
 						<div class="flex">
 							<span class="bg-slate-300 rounded-full py-1 px-2 mx-1 w-fit">
@@ -32,23 +26,23 @@
 							</span>
 							<span class="bg-slate-300 rounded-full py-1 px-2 mx-1 w-fit">
 								<span class="text-xs text-gray-500">
-									Server Profile Data ID: {data.tile.settlement?.profileServerDataProfileId}
+									Server Profile Data ID: {data.tile.Settlement?.profileServerDataProfileId}
 								</span>
 							</span>
 						</div>
 					</div>
 				{/if}
 				<hr />
-				{#if !data.tile.resources.length}
+				{#if !data.tile.Plots.length}
 					<p>None</p>
 				{/if}
 				<div class="w-full flex p-0 m-0">
-					{#each data.tile.resources as resource, i}
+					{#each data.tile.Plots as plot, i}
 						<a
-							href="/admin/resources/{resource.id}"
+							href="/admin/resources/{plot.id}"
 							class="m-1 p-2 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
 						>
-							{resource.resource} [{resource.value}]
+							{plot.tileId} [{plot.settlementId}]
 						</a>
 					{/each}
 				</div>
