@@ -28,7 +28,7 @@ async function getRandomTile(worldId: string) {
 
     const potentialRegions = await db.region.findMany({
         where: {
-            worldId: worldData.id,
+            worldId: worldId,
             tiles: {
                 some: {
                     elevation: {
@@ -82,7 +82,7 @@ const settle: Action = async ({ request, locals }) => {
                 }
             },
             picture: `https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,
-            profileServerData: {
+            servers: {
                 create: {
                     serverId: server,
                     settlements: {

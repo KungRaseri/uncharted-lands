@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import type { Account } from 'prisma/prisma-client';
+
 	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
 
 	import AccountEdit from 'svelte-material-icons/AccountEdit.svelte';
@@ -53,7 +55,7 @@
 							<td>{account.id}</td>
 							<td>{account.email}</td>
 							<td>{account.role}</td>
-							<td>{account.profile ? 'No Profile Found' : 'Profile Found'}</td>
+							<td>{account.profile ? 'Profile Found' : 'No Profile Found'}</td>
 							<td>{account.createdAt}</td>
 							<td>{account.updatedAt}</td>
 						</tr>

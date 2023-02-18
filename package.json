@@ -58,7 +58,6 @@
     "simplex-noise": "^4.0.1",
     "svelte-canvas": "^0.8.1",
     "svelte-check": "^2.7.1",
-    "svelte-headless-table": "^0.17.2",
     "svelte-material-icons": "^2.0.4",
     "svelte-preprocess": "^5.0.1",
     "tailwindcss": "^3.1.8",
@@ -69,9 +68,9 @@
     "vitest": "^0.28.5"
   },
   "dependencies": {
+    "@prisma/client": "^4.10.1",
     "@sveltejs/kit": "^1.7.1",
-    "svelte": "^3.55.1",
-    "@prisma/client": "^4.10.1"
+    "svelte": "^3.55.1"
   },
   "type": "module"
 }

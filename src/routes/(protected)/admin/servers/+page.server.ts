@@ -10,7 +10,7 @@ export const load: PageServerLoad = async () => {
                         regions: true
                     }
                 },
-                profileServerData: {
+                players: {
                     include: {
                         settlements: true
                     }

@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ params }) => {
         },
         include: {
             worlds: true,
-            profileServerData: {
+            players: {
                 include: {
                     profile: true,
                     settlements: true

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
+	import type { PageData } from './$types';
 	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
 
 	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
@@ -61,7 +61,7 @@
 				{#if $serversTableStore}
 					{#each $serversTableStore.filtered as server, index}
 						<tr>
-							<td>{server.id}</td>
+							<td><a href="/admin/servers/{server.id}">{server.id}</a></td>
 							<td>{server.name}</td>
 							<td>{server.hostname}</td>
 							<td>{server.port}</td>

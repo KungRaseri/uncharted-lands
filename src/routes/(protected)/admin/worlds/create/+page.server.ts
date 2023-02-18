@@ -78,8 +78,9 @@ const saveWorld: Action = async ({ request }) => {
         elevationMap.forEach(async (row, x) => {
             row.forEach(async (elevation, y) => {
                 const type = elevation < 0 ? TileType.OCEAN : TileType.LAND;
-                const biome = await determineBiome(precipitationMap[x][y], temperatureMap[x][y])
+                const biome = await determineBiome(precipitationMap[x][y] * 100, temperatureMap[x][y] * 100)
 
+                console.log(biome)
                 // create tiles, 
                 await db.tile.create({
                     data: {
@@ -100,6 +101,7 @@ const saveWorld: Action = async ({ request }) => {
 }
 
 async function determineBiome(precipitation: number, temperature: number) {
+    console.log(precipitation, temperature)
     const biomes = await db.biome.findMany({
         where: {
             precipitationMax: {
@@ -117,7 +119,8 @@ async function determineBiome(precipitation: number, temperature: number) {
         }
     });
 
-    console.log(biomes);
+    console.log(biomes.length)
+    console.log(Math.floor(Math.random() * biomes.length))
 
     return biomes[0];
 }

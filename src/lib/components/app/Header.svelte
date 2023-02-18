@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { createEventDispatcher } from 'svelte';
 
 	import { AppBar, LightSwitch, menu } from '@skeletonlabs/skeleton';
 	import Menu from 'svelte-material-icons/Menu.svelte';

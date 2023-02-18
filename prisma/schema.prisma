@@ -44,7 +44,7 @@ model Profile {
   username String @unique
   picture  String
 
-  profileServerData ProfileServerData[]
+  servers ProfileServerData[]
 
   account   Account @relation(fields: [accountId], references: [id])
   accountId String  @unique
@@ -69,8 +69,8 @@ model Server {
   port     Int          @default(5000)
   status   ServerStatus @default(OFFLINE)
 
-  profileServerData ProfileServerData[]
-  worlds            World[]
+  players ProfileServerData[]
+  worlds  World[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -80,7 +80,7 @@ model Server {
 
 model World {
   id   String @id @default(uuid())
-  name String @unique
+  name String
 
   elevationSettings     Json
   precipitationSettings Json
@@ -93,6 +93,8 @@ model World {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([name, serverId])
 }
 
 model Region {
@@ -110,17 +112,6 @@ model Region {
   @@unique([name, worldId])
 }
 
-model Biome {
-  id               String @id @default(uuid())
-  name             String @unique
-  precipitationMin Float
-  precipitationMax Float
-  temperatureMin   Float
-  temperatureMax   Float
-
-  Tile Tile[]
-}
-
 model Tile {
   id            String   @id @default(uuid())
   elevation     Float
@@ -136,6 +127,17 @@ model Tile {
   settlementId String?
   Biome        Biome       @relation(fields: [biomeId], references: [id])
   biomeId      String
+}
+
+model Biome {
+  id               String @id @default(uuid())
+  name             String @unique
+  precipitationMin Float
+  precipitationMax Float
+  temperatureMin   Float
+  temperatureMax   Float
+
+  Tile Tile[]
 }
 
 model PlotResource {
