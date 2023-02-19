@@ -113,7 +113,7 @@ const settle: Action = async ({ request, locals }) => {
         }
     })
 
-    const settlement = await db.settlement.create({
+    await db.settlement.create({
         data: {
             name: "Home Settlement",
             playerProfile: {
