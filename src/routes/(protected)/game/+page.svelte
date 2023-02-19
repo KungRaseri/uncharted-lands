@@ -1,7 +1,14 @@
 <script lang="ts">
-	import Overview from '$lib/components/game/overview/Overview.svelte';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 </script>
 
-<div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
-	<Overview />
+<div class="card p-4">
+	<header class="card-header">Overview</header>
+	<div class="p-4">
+		{#each data.settlements as settlement}
+			{settlement.id} | {settlement.name}
+		{/each}
+	</div>
 </div>

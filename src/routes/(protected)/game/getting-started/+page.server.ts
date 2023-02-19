@@ -1,4 +1,5 @@
 import { db } from '$lib/db';
+import { TileType } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
 
@@ -15,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     }
 }
 
-async function getRandomTile(worldId: string) {
+async function getRandomPlot(worldId: string) {
     const worldData = await db.world.findUnique({
         where: {
             id: worldId
@@ -32,26 +33,36 @@ async function getRandomTile(worldId: string) {
             tiles: {
                 some: {
                     elevation: {
-                        gt: 0.1,
-                        lt: 0.9
+                        gt: 0.2,
+                        lt: 0.8
+                    },
+                    Plots: {
+                        some: {
+                            Settlement: undefined
+                        }
                     }
                 },
                 every: {
-                    Settlement: undefined
+                    type: TileType.LAND
                 }
             }
         },
         include: {
-            tiles: true
+            tiles: {
+                include: {
+                    Plots: true
+                }
+            }
         }
     })
 
-    const soilTiles = potentialRegions[Math.floor(Math.random() * potentialRegions.length)]
-        .tiles.filter(t => t.elevation > 0.2 && t.elevation < 0.6);
+    const randomRegionIndex = Math.floor(Math.random() * potentialRegions.length)
+    const randomTile = potentialRegions[randomRegionIndex]
+        .tiles[Math.floor(Math.random() * potentialRegions[randomRegionIndex].tiles.length)];
 
-    const randomTile = soilTiles[Math.floor(Math.random() * soilTiles.length)]
+    const randomPlot = randomTile.Plots[Math.floor(Math.random() * randomTile.Plots.length)]
 
-    return randomTile;
+    return randomPlot;
 }
 
 const settle: Action = async ({ request, locals }) => {
@@ -70,10 +81,9 @@ const settle: Action = async ({ request, locals }) => {
     }
 
     // choose a random tile to settle in for now
-    const chosenTile = await getRandomTile(world);
+    const chosenPlot = await getRandomPlot(world);
 
-    // update the player profile and connect it to the server
-    await db.profile.create({
+    const profile = await db.profile.create({
         data: {
             username,
             account: {
@@ -82,28 +92,44 @@ const settle: Action = async ({ request, locals }) => {
                 }
             },
             picture: `https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,
-            servers: {
-                create: {
-                    serverId: server,
-                    settlements: {
-                        create: {
-                            name: "Home Settlement",
-                            tile: {
-                                connect: {
-                                    id: chosenTile.id
-                                }
-                            },
-                            Plot: {
-                                create: {
-                                    tileId: chosenTile.id
-                                }
-                            }
-                        }
-                    }
+        }
+    })
+
+    const serverProfile = await db.profileServerData.create({
+        data: {
+            profile: {
+                connect: {
+                    id: profile.id
+                }
+            },
+            server: {
+                connect: {
+                    id: server
+                }
+            }
+        },
+        include: {
+            settlements: true
+        }
+    })
+
+    const settlement = await db.settlement.create({
+        data: {
+            name: "Home Settlement",
+            playerProfile: {
+                connect: {
+                    profileId: serverProfile.profileId
+                }
+            },
+            Plot: {
+                connect: {
+                    id: chosenPlot.id
                 }
             }
         }
     })
+
+    // update the player profile and connect it to the server
 
     throw redirect(302, '/game')
 }

@@ -7,7 +7,7 @@ const biomes: Biome[] = [
         id: "",
         name: "TUNDRA",
         precipitationMin: 10,
-        precipitationMax: 100,
+        precipitationMax: 175,
         temperatureMin: -10,
         temperatureMax: 5
     },
@@ -15,32 +15,32 @@ const biomes: Biome[] = [
         id: "",
         name: "FOREST_BOREAL",
         precipitationMin: 25,
-        precipitationMax: 200,
-        temperatureMin: 0,
+        precipitationMax: 300,
+        temperatureMin: -5,
         temperatureMax: 10
     },
     {
         id: "",
         name: "FOREST_TEMPERATE_SEASONAL",
         precipitationMin: 50,
-        precipitationMax: 225,
-        temperatureMin: 5,
+        precipitationMax: 350,
+        temperatureMin: 4,
         temperatureMax: 22
     },
     {
         id: "",
         name: "FOREST_TROPICAL_SEASONAL",
         precipitationMin: 50,
-        precipitationMax: 275,
-        temperatureMin: 22,
+        precipitationMax: 350,
+        temperatureMin: 20,
         temperatureMax: 32
     },
     {
         id: "",
         name: "RAINFOREST_TEMPERATE",
         precipitationMin: 175,
-        precipitationMax: 325,
-        temperatureMin: 8,
+        precipitationMax: 375,
+        temperatureMin: 7,
         temperatureMax: 25
     },
     {
@@ -55,7 +55,7 @@ const biomes: Biome[] = [
         id: "",
         name: "WOODLAND",
         precipitationMin: 15,
-        precipitationMax: 125,
+        precipitationMax: 150,
         temperatureMin: -2,
         temperatureMax: 23
     },
@@ -86,7 +86,7 @@ const biomes: Biome[] = [
     {
         id: "",
         name: "DESERT_COLD",
-        precipitationMin: 5,
+        precipitationMin: 1,
         precipitationMax: 50,
         temperatureMin: -4,
         temperatureMax: 22
@@ -168,7 +168,7 @@ async function main() {
 
         // other seed data
 
-        console.log(`Biome ${resultResource.name} with ID[${resultResource.id}] created`)
+        console.log(`Resource ${resultResource.name} with ID[${resultResource.id}] created`)
     })
 
     console.log(`Seeding finished.`)
