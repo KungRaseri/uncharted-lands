@@ -11,7 +11,7 @@
 		sort: '',
 		pagination: {
 			offset: 0,
-			limit: 5,
+			limit: 25,
 			size: 0,
 			amounts: [1, 2, 5, 10]
 		}

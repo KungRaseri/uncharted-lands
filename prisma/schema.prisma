@@ -99,6 +99,8 @@ model World {
 
 model Region {
   id               String @id @default(uuid())
+  xCoord           Int @default(-1)
+  yCoord           Int @default(-1)
   name             String
   elevationMap     Json
   precipitationMap Json

@@ -68,7 +68,9 @@ const saveWorld: Action = async ({ request }) => {
                 elevationMap: generatedRegion.elevationMap as Prisma.JsonArray,
                 precipitationMap: generatedRegion.precipitationMap as Prisma.JsonArray,
                 temperatureMap: generatedRegion.temperatureMap as Prisma.JsonArray,
-                worldId: world.id
+                worldId: world.id,
+                xCoord: generatedRegion.xCoord,
+                yCoord: generatedRegion.yCoord
             },
             include: {
                 world: true,
@@ -78,9 +80,8 @@ const saveWorld: Action = async ({ request }) => {
         elevationMap.forEach(async (row, x) => {
             row.forEach(async (elevation, y) => {
                 const type = elevation < 0 ? TileType.OCEAN : TileType.LAND;
-                const biome = await determineBiome(precipitationMap[x][y] * 100, temperatureMap[x][y] * 100)
+                const biome = await determineBiome(precipitationMap[x][y], temperatureMap[x][y])
 
-                console.log(biome)
                 // create tiles, 
                 await db.tile.create({
                     data: {
@@ -101,28 +102,13 @@ const saveWorld: Action = async ({ request }) => {
 }
 
 async function determineBiome(precipitation: number, temperature: number) {
-    console.log(precipitation, temperature)
-    const biomes = await db.biome.findMany({
-        where: {
-            precipitationMax: {
-                gte: precipitation
-            },
-            precipitationMin: {
-                lte: precipitation
-            },
-            temperatureMax: {
-                gte: temperature
-            },
-            temperatureMin: {
-                lte: temperature
-            }
-        }
-    });
+    const biomes = await db.biome.findMany();
 
-    console.log(biomes.length)
-    console.log(Math.floor(Math.random() * biomes.length))
+    const filteredBiomes = biomes.filter(biome =>
+        precipitation >= biome.precipitationMin && precipitation <= biome.precipitationMax
+        && temperature >= biome.temperatureMin && temperature <= biome.temperatureMax)
 
-    return biomes[0];
+    return filteredBiomes[Math.floor(Math.random() * filteredBiomes.length)];
 }
 
 export const actions: Actions = { saveWorld }

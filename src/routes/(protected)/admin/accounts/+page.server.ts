@@ -7,7 +7,7 @@ export const load: PageServerLoad = async () => {
             include: {
                 profile: {
                     include: {
-                        profileServerData: {
+                        servers: {
                             include: {
                                 profile: true,
                                 server: true,
