@@ -35,6 +35,7 @@ export const handleError: HandleServerError = (async ({ error, event }) => {
         scope.setExtra('errorId', errorId);
 
         Sentry.captureException(error);
+        console.log(error)
     })
 
     return {

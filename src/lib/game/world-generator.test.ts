@@ -1,4 +1,4 @@
-import { generate } from './world-generator';
+import { generate, generatePrecipitation, generateTemperature } from './world-generator';
 import { describe, it, expect } from 'vitest';
 
 
@@ -45,7 +45,9 @@ describe('world-generator.ts', () => {
         expect(target.temperatureMap[0]).toHaveLength(10)
     });
 
-    it("Should generate precipitation within a specific range", async () => {
+    it("generatePrecipition() - Should generate precipitation within a specific range", async () => {
+        const precipitationMin = 1, precipitationMax = 450;
+
         const mapOptions = {
             serverId: 'test-id',
             worldName: 'test-world',
@@ -56,39 +58,47 @@ describe('world-generator.ts', () => {
             tSeed: Date.now()
         }
 
-        const elevationOptions = {
+        const precipitationOptions = {
             amplitude: 1.0,
             frequency: 0.04,
             octaves: 8,
-            persistence: 0.5,
-            scale: (x: number) => {
-                return x * 1
-            }
+            persistence: 0.5
         }
 
-        const precipitationOptions = {
-            amplitude: 1.0,
-            frequency: 1,
-            octaves: 8,
-            persistence: 0.5,
-            scale: (x: number) => {
-                return x * 1
-            }
+        const target = await generatePrecipitation(mapOptions, precipitationOptions);
+
+
+        expect(Math.max(...target.flat(3))).toBeLessThanOrEqual(precipitationMax)
+        expect(Math.min(...target.flat(3))).toBeGreaterThanOrEqual(precipitationMin)
+    })
+
+    it("generateTemperature() - Should generate temperature within a specific range", async () => {
+        const temperatureMin = -10, temperatureMax = 32;
+
+        const mapOptions = {
+            serverId: 'test-id',
+            worldName: 'test-world',
+            width: 100,
+            height: 100,
+            eSeed: Date.now(),
+            pSeed: Date.now(),
+            tSeed: Date.now()
         }
 
         const temperatureOptions = {
             amplitude: 1.0,
             frequency: 0.04,
             octaves: 8,
-            persistence: 0.5,
-            scale: (x: number) => {
-                return x * 1
-            }
+            persistence: 0.5
         }
 
-        const target = await generate(mapOptions, elevationOptions, precipitationOptions, temperatureOptions);
+        const target = await generateTemperature(mapOptions, temperatureOptions);
 
-        console.log(Math.max(...target.precipitationMap.flat(3)))
-        console.log(Math.min(...target.precipitationMap.flat(3)))
+
+        expect(Math.max(...target.flat(3))).toBeLessThanOrEqual(temperatureMax)
+        expect(Math.min(...target.flat(3))).toBeGreaterThanOrEqual(temperatureMin)
+
+        console.log(Math.max(...target.flat(3)))
+        console.log(Math.min(...target.flat(3)))
     })
 })

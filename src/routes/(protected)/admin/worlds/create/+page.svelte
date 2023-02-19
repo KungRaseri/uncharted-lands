@@ -4,8 +4,13 @@
 	import type { ActionData, PageData } from './$types';
 	import { RangeSlider } from '@skeletonlabs/skeleton';
 	import type { Region } from '@prisma/client';
-	import { generate } from '$lib/game/world-generator';
+	import {
+		generateElevation,
+		generatePrecipitation,
+		generateTemperature
+	} from '$lib/game/world-generator';
 	import Information from 'svelte-material-icons/Information.svelte';
+	import World from '$lib/components/game/map/World.svelte';
 
 	export let data: PageData;
 	export let form: ActionData;
@@ -49,7 +54,7 @@
 	async function generateMap() {
 		const generatedMap: Region[][] = [];
 
-		const maps = await generate(
+		const elevationMap = await generateElevation(
 			{
 				worldName: mapOptions.worldName,
 				serverId: mapOptions.serverId,
@@ -67,20 +72,38 @@
 				amplitude: elevationOptions.amplitude,
 				persistence: elevationOptions.persistence,
 				frequency: elevationOptions.frequency
+			}
+		);
+
+		const precipitationMap = await generatePrecipitation(
+			{
+				worldName: mapOptions.worldName,
+				serverId: mapOptions.serverId,
+				width: mapOptions.width,
+				height: mapOptions.height,
+				eSeed: mapOptions.elevationSeed,
+				pSeed: mapOptions.precipitationSeed,
+				tSeed: mapOptions.temperatureSeed
 			},
 			{
-				scale: (x) => {
-					return x * precipitationOptions.scale;
-				},
 				octaves: precipitationOptions.octaves,
 				amplitude: precipitationOptions.amplitude,
 				persistence: precipitationOptions.persistence,
 				frequency: precipitationOptions.frequency
+			}
+		);
+
+		const temperatureMap = await generateTemperature(
+			{
+				worldName: mapOptions.worldName,
+				serverId: mapOptions.serverId,
+				width: mapOptions.width,
+				height: mapOptions.height,
+				eSeed: mapOptions.elevationSeed,
+				pSeed: mapOptions.precipitationSeed,
+				tSeed: mapOptions.temperatureSeed
 			},
 			{
-				scale: (x) => {
-					return x * temperatureOptions.scale;
-				},
 				octaves: temperatureOptions.octaves,
 				amplitude: temperatureOptions.amplitude,
 				persistence: temperatureOptions.persistence,
@@ -88,16 +111,18 @@
 			}
 		);
 
-		for (let i = 0; i < maps.elevationMap.length; i++) {
+		for (let i = 0; i < elevationMap.length; i++) {
 			generatedMap[i] = [];
-			for (let j = 0; j < maps.elevationMap[i].length; j++) {
+			for (let j = 0; j < elevationMap[i].length; j++) {
 				generatedMap[i][j] = {
 					id: '',
 					worldId: '',
+					xCoord: i,
+					yCoord: j,
 					name: `${i}:${j}`,
-					elevationMap: maps.elevationMap[i][j],
-					precipitationMap: maps.precipitationMap[i][j],
-					temperatureMap: maps.temperatureMap[i][j]
+					elevationMap: elevationMap[i][j],
+					precipitationMap: precipitationMap[i][j],
+					temperatureMap: temperatureMap[i][j]
 				};
 			}
 		}
@@ -558,24 +583,6 @@
 	</div>
 
 	{#if map}
-		<div class="grid grid-cols-10 p-0 border-token w-full xl:w-5/6 mx-auto">
-			{#each map as region}
-				<div class="p-0 border-token">
-					{#each region.elevationMap as elevationRow}
-						<div class="grid grid-cols-10 p-0">
-							{#each elevationRow as elevationColumn}
-								<div
-									class="px-0 py-2.5 justify-center text-center items-center"
-									style="background: 
-											rgb({elevationColumn * 255}, {elevationColumn * 255}, {elevationColumn * 255})"
-								>
-									<!-- {j},{k} -->
-								</div>
-							{/each}
-						</div>
-					{/each}
-				</div>
-			{/each}
-		</div>
+		<World {map} />
 	{/if}
 </div>

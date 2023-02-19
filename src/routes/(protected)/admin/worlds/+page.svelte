@@ -11,7 +11,7 @@
 		sort: '',
 		pagination: {
 			offset: 0,
-			limit: 5,
+			limit: 25,
 			size: 0,
 			amounts: [1, 2, 5, 10]
 		}
@@ -50,7 +50,7 @@
 					{#each $worldsTableStore.filtered as world, index}
 						<tr>
 							<td><input type="checkbox" /></td>
-							<td>{world.id}</td>
+							<td><a href="/admin/worlds/{world.id}">{world.id}</a></td>
 							<td>{world.name}</td>
 							<td>{`${world.server.name} <${world.serverId}>`}</td>
 							<td>{world.regions.length}</td>

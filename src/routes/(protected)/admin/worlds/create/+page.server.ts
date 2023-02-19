@@ -68,7 +68,9 @@ const saveWorld: Action = async ({ request }) => {
                 elevationMap: generatedRegion.elevationMap as Prisma.JsonArray,
                 precipitationMap: generatedRegion.precipitationMap as Prisma.JsonArray,
                 temperatureMap: generatedRegion.temperatureMap as Prisma.JsonArray,
-                worldId: world.id
+                worldId: world.id,
+                xCoord: generatedRegion.xCoord,
+                yCoord: generatedRegion.yCoord
             },
             include: {
                 world: true,
@@ -81,7 +83,7 @@ const saveWorld: Action = async ({ request }) => {
                 const biome = await determineBiome(precipitationMap[x][y], temperatureMap[x][y])
 
                 // create tiles, 
-                await db.tile.create({
+                const tile = await db.tile.create({
                     data: {
                         id: crypto.randomUUID(),
                         elevation: elevation,
@@ -90,8 +92,25 @@ const saveWorld: Action = async ({ request }) => {
                         temperature: temperatureMap[x][y],
                         regionId: region.id,
                         biomeId: biome.id
+                    },
+                    include: {
+                        Plots: true
                     }
                 });
+
+                const plotsTotal = Math.floor(1 + Math.random() * 6)
+
+                for (let i = 0; i < plotsTotal; i++) {
+                    await db.plot.create({
+                        data: {
+                            Tile: {
+                                connect: {
+                                    id: tile.id
+                                }
+                            }
+                        }
+                    })
+                }
             })
         })
     }
@@ -100,26 +119,17 @@ const saveWorld: Action = async ({ request }) => {
 }
 
 async function determineBiome(precipitation: number, temperature: number) {
-    const biomes = await db.biome.findMany({
-        where: {
-            precipitationMax: {
-                gte: precipitation
-            },
-            precipitationMin: {
-                lte: precipitation
-            },
-            temperatureMax: {
-                gte: temperature
-            },
-            temperatureMin: {
-                lte: temperature
-            }
-        }
-    });
+    const biomes = await db.biome.findMany();
 
-    console.log(biomes);
+    let filteredBiomes = biomes.filter(biome =>
+        Math.round(precipitation) >= biome.precipitationMin && Math.round(precipitation) <= biome.precipitationMax
+        && Math.round(temperature) >= biome.temperatureMin && Math.round(temperature) <= biome.temperatureMax)
 
-    return biomes[0];
+    if (!filteredBiomes.length)
+        filteredBiomes = filteredBiomes.concat(biomes.filter(biome =>
+            Math.round(precipitation) >= biome.precipitationMin && Math.round(precipitation) <= biome.precipitationMax));
+
+    return filteredBiomes[Math.floor(Math.random() * filteredBiomes.length)];
 }
 
 export const actions: Actions = { saveWorld }

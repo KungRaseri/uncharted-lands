@@ -58,3 +58,51 @@ export async function generate(mapOptions: MapOptions, elevationOptions: Options
 
     return { elevationMap: chunks(elevationMap, 10), precipitationMap: chunks(precipitationMap, 10), temperatureMap: chunks(temperatureMap, 10) }
 }
+
+export async function generateElevation(mapOptions: MapOptions, elevationOptions: Options) {
+    const elevationNoise = makeNoise2D(mapOptions.eSeed)
+
+    const elevationMap = makeRectangle(mapOptions.width, mapOptions.height, elevationNoise, {
+        amplitude: elevationOptions.amplitude,
+        persistence: elevationOptions.persistence,
+        frequency: elevationOptions.frequency,
+        octaves: elevationOptions.octaves,
+        scale: elevationOptions.scale
+    })
+
+    return chunks(elevationMap, 10)
+}
+
+export async function generatePrecipitation(mapOptions: MapOptions, precipitationOptions: Options) {
+    const precipitationNoise = makeNoise2D(mapOptions.pSeed)
+    const precipitationMin = 1, precipitationMax = 450;
+
+    const precipitationMap = makeRectangle(mapOptions.width, mapOptions.height, precipitationNoise, {
+        amplitude: precipitationOptions.amplitude,
+        persistence: precipitationOptions.persistence,
+        frequency: precipitationOptions.frequency,
+        octaves: precipitationOptions.octaves,
+        scale: (x: number) => {
+            return x * (precipitationMax - precipitationMin) / 2 + (precipitationMax + precipitationMin) / 2;
+        }
+    })
+
+    return chunks(precipitationMap, 10)
+}
+
+export async function generateTemperature(mapOptions: MapOptions, temperatureOptions: Options) {
+    const temperatureNoise = makeNoise2D(mapOptions.tSeed)
+    const temperatureMin = -10, temperatureMax = 32;
+
+    const temperatureMap = makeRectangle(mapOptions.width, mapOptions.height, temperatureNoise, {
+        amplitude: temperatureOptions.amplitude,
+        persistence: temperatureOptions.persistence,
+        frequency: temperatureOptions.frequency,
+        octaves: temperatureOptions.octaves,
+        scale: (x: number) => {
+            return x * (temperatureMax - temperatureMin) / 2 + (temperatureMax + temperatureMin) / 2;
+        }
+    })
+
+    return chunks(temperatureMap, 10)
+}

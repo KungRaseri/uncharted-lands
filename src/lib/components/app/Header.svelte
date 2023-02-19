@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { createEventDispatcher } from 'svelte';
 
 	import { AppBar, LightSwitch, menu } from '@skeletonlabs/skeleton';
 	import Menu from 'svelte-material-icons/Menu.svelte';
@@ -58,8 +57,7 @@
 							</span>
 						</a>
 					{/if}
-				{/if}
-				{#if !link.requiredRole}
+				{:else}
 					<a
 						href={link.route}
 						class="btn rounded-md
@@ -154,18 +152,23 @@
 							data-menu="userMenu"
 						>
 							{#each $page.data.userMenuLinks as link}
-								<a
-									href={link.route}
-									class="btn
-										{link.isActive ? 'bg-primary-active-token' : ''}
-										{link.requiredRole && $page.data.account.role !== link.requiredRole ? 'hidden' : ''}
-										"
-									aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+								<div
+									class="{link.requiredRole && link.requiredRole !== $page.data.account.role
+										? 'hidden'
+										: ''}							"
 								>
-									<span class="text-token">
-										{link.name}
-									</span>
-								</a>
+									<a
+										href={link.route}
+										class="btn 
+									{link.isActive ? 'bg-primary-active-token' : ''}
+									"
+										aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+									>
+										<span class="text-token">
+											{link.name}
+										</span>
+									</a>
+								</div>
 							{/each}
 							<form method="POST" action="/auth?/signout">
 								<button class="btn">

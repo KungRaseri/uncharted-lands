@@ -9,6 +9,9 @@ export const load: PageServerLoad = async ({ params }) => {
         },
         include: {
             regions: {
+                orderBy: {
+                    name: 'asc'
+                },
                 include: {
                     tiles: true
                 }
