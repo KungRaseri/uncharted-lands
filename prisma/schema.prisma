@@ -160,12 +160,11 @@ model Resource {
 model Plot {
   id String @id @default(uuid())
 
-  resources PlotResource[]
+  resources  PlotResource[]
+  Settlement Settlement?
 
-  Settlement   Settlement? @relation(fields: [settlementId], references: [id])
-  settlementId String?
-  Tile         Tile        @relation(fields: [tileId], references: [id])
-  tileId       String
+  Tile   Tile   @relation(fields: [tileId], references: [id])
+  tileId String
 }
 
 model Settlement {
@@ -175,9 +174,10 @@ model Settlement {
   updatedAt DateTime @updatedAt
 
   structures SettlementStructure[]
-  Plot       Plot[]
 
-  playerProfile   ProfileServerData @relation(fields: [playerProfileId], references: [profileId])
+  Plot            Plot              @relation(fields: [plotId], references: [id])
+  plotId          String            @unique
+  PlayerProfile   ProfileServerData @relation(fields: [playerProfileId], references: [profileId])
   playerProfileId String
 }
 

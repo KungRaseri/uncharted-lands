@@ -100,12 +100,34 @@ const saveWorld: Action = async ({ request }) => {
 
                 const plotsTotal = Math.floor(1 + Math.random() * 6)
 
+                const resources = await db.resource.findMany({
+                    where: {
+                        name: {
+                            in: ["Food", "Water"]
+                        }
+                    }
+                });
+
                 for (let i = 0; i < plotsTotal; i++) {
                     await db.plot.create({
                         data: {
                             Tile: {
                                 connect: {
                                     id: tile.id
+                                }
+                            },
+                            resources: {
+                                createMany: {
+                                    data: [
+                                        {
+                                            resourceId: resources[0].id,
+                                            value: Math.floor(1 + Math.random() * 5)
+                                        },
+                                        {
+                                            resourceId: resources[1].id,
+                                            value: Math.floor(1 + Math.random() * 5)
+                                        }
+                                    ]
                                 }
                             }
                         }

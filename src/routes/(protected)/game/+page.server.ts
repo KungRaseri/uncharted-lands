@@ -1,6 +1,6 @@
-import type { PageServerLoad } from "./$types"
-import { redirect } from "@sveltejs/kit"
 import { db } from "$lib/db"
+import { redirect } from "@sveltejs/kit"
+import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (!locals.account.profile) {
@@ -9,10 +9,23 @@ export const load: PageServerLoad = async ({ locals }) => {
 
     const settlements = await db.settlement.findMany({
         where: {
-            playerProfile: {
+            PlayerProfile: {
                 profileId: locals.account.profile.id,
-                serverId: "90de5a83-8773-47ce-b2ca-fa60c8339611" //TODO: update when server swapping is available
+                serverId: "06fc223b-412d-4bbd-97db-7e43744e046d" //TODO: update when server swapping is available
             },
+        },
+        include: {
+            Plot: {
+                include: {
+                    resources: true,
+                    Tile: true
+                }
+            },
+            structures: {
+                include: {
+                    modifiers: true
+                }
+            }
         }
     })
 

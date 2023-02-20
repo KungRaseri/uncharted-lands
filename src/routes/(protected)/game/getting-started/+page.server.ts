@@ -116,7 +116,7 @@ const settle: Action = async ({ request, locals }) => {
     await db.settlement.create({
         data: {
             name: "Home Settlement",
-            playerProfile: {
+            PlayerProfile: {
                 connect: {
                     profileId: serverProfile.profileId
                 }

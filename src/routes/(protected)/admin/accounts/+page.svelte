@@ -52,7 +52,9 @@
 				{#if $accountsTableStore}
 					{#each $accountsTableStore.filtered as account, index}
 						<tr>
-							<td>{account.id}</td>
+							<td>
+								<a href="/admin/accounts/{account.id}/">{account.id}</a>
+							</td>
 							<td>{account.email}</td>
 							<td>{account.role}</td>
 							<td>{account.profile ? 'Profile Found' : 'No Profile Found'}</td>

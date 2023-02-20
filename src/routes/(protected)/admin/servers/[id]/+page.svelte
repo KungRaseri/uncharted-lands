@@ -20,9 +20,9 @@
 	<hr class="m-2" />
 
 	<!-- worlds -->
-	<div class="p-4">
+	<div class="p-4 grid grid-cols-6">
 		{#each data.server.worlds as world}
-			<div class="card p-4 w-1/6">
+			<div class="card p-4">
 				<header class="card-header">
 					<h2 class="text-2xl">
 						<a href="/admin/worlds/{world.id}/">{world.name}</a>
@@ -39,9 +39,9 @@
 	</div>
 
 	<!-- players -->
-	<div class="p-4">
+	<div class="p-4 grid grid-cols-6">
 		{#each data.server.players as player}
-			<div class="card p-4 w-1/6">
+			<div class="card p-4">
 				<div class="p-4">
 					<Avatar src={player.profile.picture} />
 				</div>

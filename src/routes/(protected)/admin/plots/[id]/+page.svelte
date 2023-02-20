@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { set_custom_element_data } from 'svelte/internal';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -32,7 +31,7 @@
 					<h3>{data.plot.Settlement.id}</h3>
 				</header>
 				<div class="p-4">
-					{data.plot.Settlement.playerProfile.profile.username}
+					{data.plot.Settlement.PlayerProfile.profile.username}
 					{data.plot.Settlement.name}
 					{#each data.plot.Settlement.structures as structure}
 						{structure.name}

@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ params }) => {
         include: {
             Settlement: {
                 include: {
-                    playerProfile: {
+                    PlayerProfile: {
                         include: {
                             profile: true
                         }
