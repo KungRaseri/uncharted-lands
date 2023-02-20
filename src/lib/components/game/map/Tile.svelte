@@ -1,7 +1,9 @@
 <script lang="ts">
-	export let TileInfo: any;
+	import type { Tile } from '@prisma/client';
+
+	export let tile: Tile;
 </script>
 
-<div class="p-0 m-0">
-	<div class="m-2">{TileInfo.Id}</div>
+<div class="px-0 py-1.5 xl:py-2.5 justify-center text-center items-center text-xs">
+	{tile.id}
 </div>

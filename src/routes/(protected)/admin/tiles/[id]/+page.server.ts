@@ -10,8 +10,7 @@ export const load: PageServerLoad = async ({ params }) => {
         include: {
             Biome: true,
             Plots: true,
-            Region: true,
-            Settlement: true
+            Region: true
         }
     });
 

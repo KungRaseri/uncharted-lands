@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Avatar } from '@skeletonlabs/skeleton';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -18,29 +19,39 @@
 
 	<hr class="m-2" />
 
-	<!-- players -->
-	<div class="p-4">
-		{#each data.server.players as player}
-			<div>{player}</div>
-		{/each}
-	</div>
-
 	<!-- worlds -->
 	<div class="p-4">
 		{#each data.server.worlds as world}
 			<div class="card p-4 w-1/6">
-				<header class="card-header flex space-x-3">
-					<h2>{world.name}</h2>
+				<header class="card-header">
+					<h2 class="text-2xl">
+						<a href="/admin/worlds/{world.id}/">{world.name}</a>
+					</h2>
 					<span class="text-xs py-2 text-token">{world.id}</span>
 				</header>
 				<hr class="m-2" />
 				<div class="p-4 grid grid-cols-1">
-					<div class="py-2 flex">
-						Server ID: {world.serverId}
-					</div>
 					<div>Created At: {world.createdAt.toDateString()}</div>
 					<div>Updated At: {world.updatedAt.toDateString()}</div>
 				</div>
+			</div>
+		{/each}
+	</div>
+
+	<!-- players -->
+	<div class="p-4">
+		{#each data.server.players as player}
+			<div class="card p-4 w-1/6">
+				<div class="p-4">
+					<Avatar src={player.profile.picture} />
+				</div>
+				<header class="card-header">
+					<h2 class="text-2xl">
+						<a href="/admin/accounts/{player.profile.accountId}/">{player.profile.username}</a>
+					</h2>
+					<span class="text-xs py-2 text-token">{player.profileId}</span>
+				</header>
+				<hr class="m-2" />
 			</div>
 		{/each}
 	</div>

@@ -3,30 +3,31 @@ import { db } from "$lib/db"
 import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async ({ params }) => {
-    const region = await db.region.findUnique({
+    const plot = await db.plot.findUnique({
         where: {
             id: params.id
         },
         include: {
-            world: {
+            Settlement: {
                 include: {
-                    server: true
+                    playerProfile: {
+                        include: {
+                            profile: true
+                        }
+                    },
+                    structures: true
                 }
             },
-            tiles: {
-                include: {
-                    Biome: true,
-                    Plots: true
-                }
-            }
+            Tile: true,
+            resources: true
         }
     });
 
-    if (!region) {
+    if (!plot) {
         throw fail(404, { success: false, id: params.id })
     }
 
     return {
-        region
+        plot
     }
 }

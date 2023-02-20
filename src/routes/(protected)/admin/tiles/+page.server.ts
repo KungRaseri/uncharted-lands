@@ -9,11 +9,10 @@ export const load: PageServerLoad = (async () => {
                 Plots: {
                     include: {
                         resources: true,
-                        settlement: true
+                        Settlement: true
                     }
                 },
-                Region: true,
-                Settlement: true
+                Region: true
             }
         })
     }

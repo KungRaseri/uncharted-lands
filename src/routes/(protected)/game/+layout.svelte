@@ -30,7 +30,7 @@
 	<div class="text-xs text-neutral-400 text-center">{localTime}</div>
 </div>
 
-<AppShell>
+<AppShell slotHeader="z-0">
 	<svelte:fragment slot="header">
 		{#if data.account.profile}
 			<GameNavigation />

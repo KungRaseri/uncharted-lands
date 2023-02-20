@@ -1,6 +1,6 @@
 import { redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { AuthenticateUser } from "$lib/auth";
-import * as Sentry from '@sentry/svelte';
+import * as Sentry from '@sentry/node';
 import { BrowserTracing } from '@sentry/tracing';
 
 Sentry.init({
@@ -34,8 +34,9 @@ export const handleError: HandleServerError = (async ({ error, event }) => {
         scope.setExtra('event', event);
         scope.setExtra('errorId', errorId);
 
-        Sentry.captureException(error);
-        console.log(error)
+        Sentry.captureException(error, {
+            contexts: { sveltekit: { event, errorId } }
+        });
     })
 
     return {

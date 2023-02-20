@@ -13,7 +13,12 @@ export const load: PageServerLoad = async ({ params }) => {
                     name: 'asc'
                 },
                 include: {
-                    tiles: true
+                    tiles: {
+                        include: {
+                            Biome: true,
+                            Plots: true
+                        }
+                    }
                 }
             }
         }
