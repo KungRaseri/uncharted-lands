@@ -1,12 +1,11 @@
 <script lang="ts">
-	import type { Region, World } from '@prisma/client';
-	import Tile from './Tile.svelte';
+	import type { Region } from '@prisma/client';
 
-	export let map: World;
+	export let regions: Region[];
 </script>
 
 <div class="grid grid-cols-10 p-0 border-token w-full xl:w-5/6 mx-auto">
-	{#each map.regions as region}
+	{#each regions as region}
 		<div class="p-0 border-token">
 			<a href="/admin/regions/{region.id}">
 				{#each region.elevationMap as elevationRow, x}

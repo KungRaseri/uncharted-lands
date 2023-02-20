@@ -15,7 +15,7 @@
 	export let data: PageData;
 	export let form: ActionData;
 
-	let map: Region[] | null = null;
+	let regions: Region[] | null = null;
 
 	let elevationOptions = {
 		scale: 1,
@@ -127,10 +127,10 @@
 			}
 		}
 
-		map = generatedMap.flat(1);
+		regions = generatedMap.flat(1);
 	}
 
-	$: map;
+	$: regions;
 </script>
 
 <div class="w-full h-full p-5 space-y-5">
@@ -551,7 +551,7 @@
 				};
 			}}
 		>
-			<input type="hidden" name="map" id="map" value={JSON.stringify(map)} />
+			<input type="hidden" name="map" id="map" value={JSON.stringify(regions)} />
 			<input type="hidden" name="map-options" id="map-options" value={JSON.stringify(mapOptions)} />
 			<input
 				type="hidden"
@@ -582,7 +582,7 @@
 		</form>
 	</div>
 
-	{#if map}
-		<World {map} />
+	{#if regions}
+		<World {regions} />
 	{/if}
 </div>
