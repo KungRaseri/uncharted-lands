@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,6 +5,161 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Account {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String
+  userAuthToken String      @unique
+  role          AccountRole @default(MEMBER)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  profile       Profile?
+}
+
+model Profile {
+  id        String              @id @default(uuid())
+  username  String              @unique
+  picture   String
+  accountId String              @unique
+  account   Account             @relation(fields: [accountId], references: [id])
+  servers   ProfileServerData[]
+}
+
+model ProfileServerData {
+  profileId   String       @unique
+  serverId    String       @unique
+  profile     Profile      @relation(fields: [profileId], references: [id])
+  server      Server       @relation(fields: [serverId], references: [id])
+  settlements Settlement[]
+
+  @@unique([profileId, serverId])
+}
+
+model Server {
+  id        String              @id @default(uuid())
+  name      String              @unique
+  hostname  String              @default("localhost")
+  port      Int                 @default(5000)
+  status    ServerStatus        @default(OFFLINE)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  players   ProfileServerData[]
+  worlds    World[]
+
+  @@unique([hostname, port])
+}
+
+model World {
+  id                    String   @id @default(uuid())
+  name                  String
+  elevationSettings     Json
+  precipitationSettings Json
+  temperatureSettings   Json
+  serverId              String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  regions               Region[]
+  server                Server   @relation(fields: [serverId], references: [id])
+
+  @@unique([name, serverId])
+}
+
+model Region {
+  id               String @id @default(uuid())
+  xCoord           Int    @default(-1)
+  yCoord           Int    @default(-1)
+  name             String
+  elevationMap     Json
+  precipitationMap Json
+  temperatureMap   Json
+  worldId          String
+  world            World  @relation(fields: [worldId], references: [id])
+  tiles            Tile[]
+
+  @@unique([name, worldId])
+}
+
+model Tile {
+  id            String   @id @default(uuid())
+  elevation     Float
+  temperature   Float
+  precipitation Float
+  type          TileType
+  regionId      String
+  biomeId       String
+  Plots         Plot[]
+  Region        Region   @relation(fields: [regionId], references: [id])
+  Biome         Biome    @relation(fields: [biomeId], references: [id])
+}
+
+model Biome {
+  id               String @id @default(uuid())
+  name             String @unique
+  precipitationMin Float
+  precipitationMax Float
+  temperatureMin   Float
+  temperatureMax   Float
+  Tile             Tile[]
+}
+
+model PlotResource {
+  id         String   @id @default(uuid())
+  value      Int
+  plotId     String?
+  resourceId String
+  Plot       Plot?    @relation(fields: [plotId], references: [id])
+  Resource   Resource @relation(fields: [resourceId], references: [id])
+
+  @@unique([plotId, resourceId])
+}
+
+model Resource {
+  id                String              @id @default(uuid())
+  name              String              @unique
+  PlotResource      PlotResource[]
+  StructureModifier StructureModifier[]
+}
+
+model Plot {
+  id         String         @id @default(uuid())
+  tileId     String
+  Settlement Settlement?
+  Tile       Tile           @relation(fields: [tileId], references: [id])
+  resources  PlotResource[]
+}
+
+model Settlement {
+  id              String                @id @default(uuid())
+  name            String
+  plotId          String                @unique
+  playerProfileId String
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  Plot            Plot                  @relation(fields: [plotId], references: [id])
+  PlayerProfile   ProfileServerData     @relation(fields: [playerProfileId], references: [profileId])
+  structures      SettlementStructure[]
+}
+
+model SettlementStructure {
+  id           String              @id @default(uuid())
+  name         String
+  description  String
+  settlementId String
+  settlement   Settlement          @relation(fields: [settlementId], references: [id])
+  modifiers    StructureModifier[]
+}
+
+model StructureModifier {
+  id                    String              @id @default(uuid())
+  name                  String
+  description           String
+  value                 Int
+  settlementStructureId String
+  resourceId            String
+  resource              Resource            @relation(fields: [resourceId], references: [id])
+  settlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
 }
 
 enum AccountRole {
@@ -25,181 +177,4 @@ enum ServerStatus {
 enum TileType {
   OCEAN
   LAND
-}
-
-model Account {
-  id            String      @id @default(uuid())
-  email         String      @unique
-  passwordHash  String
-  userAuthToken String      @unique
-  role          AccountRole @default(MEMBER)
-  profile       Profile?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Profile {
-  id       String @id @default(uuid())
-  username String @unique
-  picture  String
-
-  servers ProfileServerData[]
-
-  account   Account @relation(fields: [accountId], references: [id])
-  accountId String  @unique
-}
-
-model ProfileServerData {
-  profileId String @unique
-  serverId  String @unique
-
-  settlements Settlement[]
-
-  profile Profile @relation(fields: [profileId], references: [id])
-  server  Server  @relation(fields: [serverId], references: [id])
-
-  @@unique([profileId, serverId])
-}
-
-model Server {
-  id        String       @id @default(uuid())
-  name      String       @unique
-  hostname  String       @default("localhost")
-  port      Int          @default(5000)
-  status    ServerStatus @default(OFFLINE)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-
-  players ProfileServerData[]
-  worlds  World[]
-
-  @@unique([hostname, port])
-}
-
-model World {
-  id                    String   @id @default(uuid())
-  name                  String
-  elevationSettings     Json
-  precipitationSettings Json
-  temperatureSettings   Json
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  regions Region[]
-
-  server   Server @relation(fields: [serverId], references: [id])
-  serverId String
-
-  @@unique([name, serverId])
-}
-
-model Region {
-  id               String @id @default(uuid())
-  xCoord           Int    @default(-1)
-  yCoord           Int    @default(-1)
-  name             String
-  elevationMap     Json
-  precipitationMap Json
-  temperatureMap   Json
-
-  tiles Tile[]
-
-  world   World  @relation(fields: [worldId], references: [id])
-  worldId String
-
-  @@unique([name, worldId])
-}
-
-model Tile {
-  id            String   @id @default(uuid())
-  elevation     Float
-  temperature   Float
-  precipitation Float
-  type          TileType
-
-  Plots Plot[]
-
-  Region   Region @relation(fields: [regionId], references: [id])
-  regionId String
-  Biome    Biome  @relation(fields: [biomeId], references: [id])
-  biomeId  String
-}
-
-model Biome {
-  id               String @id @default(uuid())
-  name             String @unique
-  precipitationMin Float
-  precipitationMax Float
-  temperatureMin   Float
-  temperatureMax   Float
-
-  Tile Tile[]
-}
-
-model PlotResource {
-  id    String @id @default(uuid())
-  value Int
-
-  Plot       Plot?    @relation(fields: [plotId], references: [id])
-  plotId     String?
-  Resource   Resource @relation(fields: [resourceId], references: [id])
-  resourceId String
-
-  @@unique([plotId, resourceId])
-}
-
-model Resource {
-  id   String @id @default(uuid())
-  name String @unique
-
-  PlotResource      PlotResource[]
-  StructureModifier StructureModifier[]
-}
-
-model Plot {
-  id String @id @default(uuid())
-
-  resources  PlotResource[]
-  Settlement Settlement?
-
-  Tile   Tile   @relation(fields: [tileId], references: [id])
-  tileId String
-}
-
-model Settlement {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  structures SettlementStructure[]
-
-  Plot            Plot              @relation(fields: [plotId], references: [id])
-  plotId          String            @unique
-  PlayerProfile   ProfileServerData @relation(fields: [playerProfileId], references: [profileId])
-  playerProfileId String
-}
-
-model SettlementStructure {
-  id          String @id @default(uuid())
-  name        String
-  description String
-
-  modifiers StructureModifier[]
-
-  settlement   Settlement @relation(fields: [settlementId], references: [id])
-  settlementId String
-}
-
-model StructureModifier {
-  id          String   @id @default(uuid())
-  name        String
-  description String
-  resource    Resource @relation(fields: [resourceId], references: [id])
-  value       Int
-
-  settlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
-  settlementStructureId String
-  resourceId            String
 }

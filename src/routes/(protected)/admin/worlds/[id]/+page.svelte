@@ -28,7 +28,7 @@
 		<hr class="m-2" />
 
 		{#if data.world.regions}
-			<World map={data.world} />
+			<World regions={data.world.regions} />
 		{/if}
 	</div>
 </div>
