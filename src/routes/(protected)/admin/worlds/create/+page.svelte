@@ -9,6 +9,7 @@
 		generatePrecipitation,
 		generateTemperature
 	} from '$lib/game/world-generator';
+
 	import Information from 'svelte-material-icons/Information.svelte';
 	import World from '$lib/components/game/map/World.svelte';
 

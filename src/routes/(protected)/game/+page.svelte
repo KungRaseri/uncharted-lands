@@ -8,7 +8,7 @@
 	<header class="card-header"><h2>Overview</h2></header>
 	<div class="p-4">
 		{#each data.settlements as settlement}
-			{settlement.id} | {settlement.name}
+			<a href="/game/settlements/{settlement.id}/">{settlement.id}</a> | {settlement.name}
 		{/each}
 	</div>
 </div>

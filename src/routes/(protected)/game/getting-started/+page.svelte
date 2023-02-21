@@ -39,7 +39,7 @@
 				<div class="flex-row">
 					<select id="world" name="world" class="rounded-md" bind:value={selectedWorld}>
 						{#each data.worlds.filter((w) => w.serverId === selectedServer) as world, i}
-							<option value={world.id}>World {i}</option>
+							<option value={world.id}>{world.name}</option>
 						{/each}
 					</select>
 				</div>

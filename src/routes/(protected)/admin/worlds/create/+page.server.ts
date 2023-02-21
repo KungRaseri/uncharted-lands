@@ -1,5 +1,5 @@
 import { db } from "$lib/db"
-import { TileType } from "@prisma/client"
+import { TileType, type Biome, type Tile, type World } from "@prisma/client"
 import type { Prisma, Region } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
@@ -42,7 +42,13 @@ const saveWorld: Action = async ({ request }) => {
     const precipitationSettings = JSON.parse(precipitationOptions);
     const temperatureSettings = JSON.parse(temperatureOptions);
 
-    // create the world
+    await handleWorldCreation(generatedMap, mapSettings, elevationSettings, precipitationSettings, temperatureSettings);
+
+    throw redirect(302, '/admin/worlds')
+}
+
+async function handleWorldCreation(generatedMap: Region[], mapSettings: any, elevationSettings: any, precipitationSettings: any, temperatureSettings: any) {
+
     const world = await db.world.create({
         data: {
             name: mapSettings.worldName,
@@ -56,7 +62,10 @@ const saveWorld: Action = async ({ request }) => {
         }
     })
 
-    // iterate through the generatedMap,
+    await handleRegionCreation(world, generatedMap);
+}
+
+async function handleRegionCreation(world: World, generatedMap: Region[]) {
     for (const generatedRegion of generatedMap) {
         const elevationMap: number[][] = JSON.parse(JSON.stringify(generatedRegion?.elevationMap))
         const precipitationMap: number[][] = JSON.parse(JSON.stringify(generatedRegion?.precipitationMap))
@@ -77,67 +86,75 @@ const saveWorld: Action = async ({ request }) => {
             }
         });
 
-        elevationMap.forEach(async (row, x) => {
-            row.forEach(async (elevation, y) => {
+        for (const row of elevationMap) {
+            const x = elevationMap.indexOf(row);
+            for (const elevation of row) {
+                const y = row.indexOf(elevation);
+
                 const type = elevation < 0 ? TileType.OCEAN : TileType.LAND;
                 const biome = await determineBiome(precipitationMap[x][y], temperatureMap[x][y])
 
-                // create tiles, 
-                const tile = await db.tile.create({
-                    data: {
-                        id: crypto.randomUUID(),
-                        elevation: elevation,
-                        type: type,
-                        precipitation: precipitationMap[x][y],
-                        temperature: temperatureMap[x][y],
-                        regionId: region.id,
-                        biomeId: biome.id
-                    },
-                    include: {
-                        Plots: true
+                await handleTileCreation(region, type, biome, elevation, precipitationMap[x][y], temperatureMap[x][y]);
+            }
+        }
+    }
+}
+
+async function handleTileCreation(region: Region, type: TileType, biome: Biome, elevation: number, precipitation: number, temperature: number) {
+    const tile = await db.tile.create({
+        data: {
+            id: crypto.randomUUID(),
+            elevation: elevation,
+            type: type,
+            precipitation: precipitation,
+            temperature: temperature,
+            regionId: region.id,
+            biomeId: biome.id
+        },
+        include: {
+            Plots: true
+        }
+    });
+
+    await handlePlotCreation(tile);
+}
+
+async function handlePlotCreation(tile: Tile) {
+    const resources = await db.resource.findMany({
+        where: {
+            name: {
+                in: ["Food", "Water"]
+            }
+        }
+    });
+
+    const plotsTotal = Math.floor(1 + Math.random() * 6)
+
+    for (let i = 0; i < plotsTotal; i++) {
+        await db.plot.create({
+            data: {
+                Tile: {
+                    connect: {
+                        id: tile.id
                     }
-                });
-
-                const plotsTotal = Math.floor(1 + Math.random() * 6)
-
-                const resources = await db.resource.findMany({
-                    where: {
-                        name: {
-                            in: ["Food", "Water"]
-                        }
-                    }
-                });
-
-                for (let i = 0; i < plotsTotal; i++) {
-                    await db.plot.create({
-                        data: {
-                            Tile: {
-                                connect: {
-                                    id: tile.id
-                                }
+                },
+                resources: {
+                    createMany: {
+                        data: [
+                            {
+                                resourceId: resources[0].id,
+                                value: Math.floor(1 + Math.random() * 5)
                             },
-                            resources: {
-                                createMany: {
-                                    data: [
-                                        {
-                                            resourceId: resources[0].id,
-                                            value: Math.floor(1 + Math.random() * 5)
-                                        },
-                                        {
-                                            resourceId: resources[1].id,
-                                            value: Math.floor(1 + Math.random() * 5)
-                                        }
-                                    ]
-                                }
+                            {
+                                resourceId: resources[1].id,
+                                value: Math.floor(1 + Math.random() * 5)
                             }
-                        }
-                    })
+                        ]
+                    }
                 }
-            })
+            }
         })
     }
-
-    throw redirect(302, '/admin/worlds')
 }
 
 async function determineBiome(precipitation: number, temperature: number) {
