@@ -104,30 +104,34 @@ model Biome {
   Tile             Tile[]
 }
 
-model PlotResource {
-  id         String   @id @default(uuid())
-  value      Int
-  plotId     String?
-  resourceId String
-  Plot       Plot?    @relation(fields: [plotId], references: [id])
-  Resource   Resource @relation(fields: [resourceId], references: [id])
-
-  @@unique([plotId, resourceId])
-}
-
 model Resource {
-  id                String              @id @default(uuid())
-  name              String              @unique
-  PlotResource      PlotResource[]
-  StructureModifier StructureModifier[]
+  id   String @id @default(uuid())
+  name String @unique
 }
 
 model Plot {
-  id         String         @id @default(uuid())
-  tileId     String
-  Settlement Settlement?
-  Tile       Tile           @relation(fields: [tileId], references: [id])
-  resources  PlotResource[]
+  id               String         @id @default(uuid())
+  tileId           String
+  attributes       PlotAttributes @relation(fields: [plotAttributesId], references: [id])
+  Settlement       Settlement?
+  Tile             Tile           @relation(fields: [tileId], references: [id])
+  plotAttributesId String         @unique
+}
+
+model PlotAttributes {
+  id        String @id @default(uuid())
+  fertility Int
+  solar     Int
+  wind      Int
+  forest    Int
+  rock      Int
+  minerals  Int
+  wildlife  Int
+  area      Int
+  plotId    String
+  Plot      Plot?
+
+  @@unique([id, plotId])
 }
 
 model Settlement {
@@ -143,23 +147,24 @@ model Settlement {
 }
 
 model SettlementStructure {
-  id           String              @id @default(uuid())
-  name         String
-  description  String
-  settlementId String
-  settlement   Settlement          @relation(fields: [settlementId], references: [id])
-  modifiers    StructureModifier[]
+  id                    String              @id @default(uuid())
+  name                  String
+  description           String
+  areaRequirement       Int
+  populationRequirement Int
+  settlementId          String
+  settlement            Settlement          @relation(fields: [settlementId], references: [id])
+  modifiers             StructureModifier[]
 }
 
 model StructureModifier {
-  id                    String              @id @default(uuid())
+  id                    String @id @default(uuid())
   name                  String
   description           String
   value                 Int
   settlementStructureId String
-  resourceId            String
-  resource              Resource            @relation(fields: [resourceId], references: [id])
-  settlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
+
+  settlementStructure SettlementStructure @relation(fields: [settlementStructureId], references: [id])
 }
 
 enum AccountRole {

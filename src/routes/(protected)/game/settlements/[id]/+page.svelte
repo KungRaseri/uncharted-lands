@@ -4,7 +4,7 @@
 	export let data: PageData;
 </script>
 
-<div class="card p-4">
+<div class="card p-4 m-5">
 	<header class="card-header">
 		<h2>{data.settlement.name}</h2>
 		<span class="text-xs">{data.settlement.id}</span>
@@ -19,9 +19,9 @@
 					{structure.description}
 
 					{#each structure.modifiers as modifier}
-						<div>
+						{modifier.description}
+						<div class="badge variant-ghost-secondary">
 							{modifier.name}
-							{modifier.description}
 							{modifier.value}
 						</div>
 					{/each}

@@ -82,7 +82,7 @@ async function handleRegionCreation(world: World, generatedMap: Region[]) {
                 yCoord: generatedRegion.yCoord
             },
             include: {
-                world: true,
+                world: true
             }
         });
 
@@ -110,9 +110,6 @@ async function handleTileCreation(region: Region, type: TileType, biome: Biome, 
             temperature: temperature,
             regionId: region.id,
             biomeId: biome.id
-        },
-        include: {
-            Plots: true
         }
     });
 
@@ -120,17 +117,30 @@ async function handleTileCreation(region: Region, type: TileType, biome: Biome, 
 }
 
 async function handlePlotCreation(tile: Tile) {
-    const resources = await db.resource.findMany({
-        where: {
-            name: {
-                in: ["Food", "Water"]
-            }
-        }
-    });
-
     const plotsTotal = Math.floor(1 + Math.random() * 6)
 
+    const biome = await db.biome.findUnique({
+        where: {
+            id: tile.biomeId
+        }
+    })
+
     for (let i = 0; i < plotsTotal; i++) {
+        const plotId = crypto.randomUUID();
+        const plotAttributes = await db.plotAttributes.create({
+            data: {
+                area: 50,
+                fertility: 1,
+                solar: 1,
+                wind: 1,
+                forest: 1,
+                rock: 1,
+                minerals: 1,
+                wildlife: 1,
+                plotId: plotId
+            }
+        })
+
         await db.plot.create({
             data: {
                 Tile: {
@@ -138,18 +148,9 @@ async function handlePlotCreation(tile: Tile) {
                         id: tile.id
                     }
                 },
-                resources: {
-                    createMany: {
-                        data: [
-                            {
-                                resourceId: resources[0].id,
-                                value: Math.floor(1 + Math.random() * 5)
-                            },
-                            {
-                                resourceId: resources[1].id,
-                                value: Math.floor(1 + Math.random() * 5)
-                            }
-                        ]
+                attributes: {
+                    connect: {
+                        id: plotAttributes.id
                     }
                 }
             }
