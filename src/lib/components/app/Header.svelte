@@ -48,11 +48,7 @@
 								bg-primary-hover-token
 								"
 						>
-							<span
-								class="
-									text-token
-									"
-							>
+							<span class="text-token">
 								{link.name}
 							</span>
 						</a>
@@ -69,11 +65,7 @@
 							"
 						aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
 					>
-						<span
-							class="
-								text-token
-								"
-						>
+						<span class="text-token">
 							{link.name}
 						</span>
 					</a>
@@ -84,9 +76,6 @@
 
 	<svelte:fragment slot="trail">
 		<div class="flex space-x-2">
-			<div class="p-2.5">
-				<LightSwitch />
-			</div>
 			{#if !$page.data.account}
 				<a
 					href="/sign-in"
@@ -96,13 +85,7 @@
 						"
 					data-testid="header-signin"
 				>
-					<span
-						class="
-							text-token
-							"
-					>
-						Sign in
-					</span>
+					<span class="text-token"> Sign in </span>
 				</a>
 				<a
 					href="/register"
@@ -112,13 +95,7 @@
 						"
 					data-testid="header-register"
 				>
-					<span
-						class="
-							text-token
-							"
-					>
-						Register
-					</span>
+					<span class="text-token"> Register </span>
 				</a>
 			{:else}
 				<div>

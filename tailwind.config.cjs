@@ -13,5 +13,5 @@ module.exports = {
     require("@tailwindcss/line-clamp"),
     ...require('@skeletonlabs/skeleton/tailwind/skeleton.cjs')()
   ],
-  important: true,
+  important: true
 }

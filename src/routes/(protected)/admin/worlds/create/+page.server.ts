@@ -113,17 +113,11 @@ async function handleTileCreation(region: Region, type: TileType, biome: Biome, 
         }
     });
 
-    await handlePlotCreation(tile);
+    await handlePlotCreation(tile, biome);
 }
 
-async function handlePlotCreation(tile: Tile) {
+async function handlePlotCreation(tile: Tile, biome: Biome) {
     const plotsTotal = Math.floor(1 + Math.random() * 6)
-
-    const biome = await db.biome.findUnique({
-        where: {
-            id: tile.biomeId
-        }
-    })
 
     for (let i = 0; i < plotsTotal; i++) {
         const plotId = crypto.randomUUID();

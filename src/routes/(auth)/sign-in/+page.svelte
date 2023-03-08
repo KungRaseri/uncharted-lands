@@ -15,12 +15,8 @@
 <div class="mx-auto w-full md:w-96 mt-2 lg:mt-5 bg-surface-200-700-token">
 	<div class="mx-auto w-full px-5 py-3">
 		<div class="flex">
-			<img
-				class="w-10 py-5 mr-2"
-				src="https://tailwindui.com/img/logos/workflow-mark.svg?color=indigo&shade=600"
-				alt="Workflow"
-			/>
-			<h1 class="mt-6 text-xl lg:text-2xl tracking-tight font-bold text-token">
+			<img class="w-20 py-5 mr-2" src="logo.png" alt="Workflow" />
+			<h1 class="mt-6 text-2xl tracking-tight font-bold text-token">
 				Sign into your account
 			</h1>
 		</div>
