@@ -17,8 +17,12 @@ const config = {
 	kit: {
 		adapter: adapter({}),
 		csp: {
-			mode: 'hash',
+			mode: 'auto',
 			directives: {
+				'img-src': [
+					'self',
+					'data:'
+				],
 				'style-src': [
 					'self',
 					'https://fonts.googleapis.com'
