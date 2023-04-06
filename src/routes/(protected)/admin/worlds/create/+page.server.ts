@@ -113,10 +113,10 @@ async function handleTileCreation(region: Region, type: TileType, biome: Biome, 
         }
     });
 
-    await handlePlotCreation(tile, biome);
+    await handlePlotCreation(tile);
 }
 
-async function handlePlotCreation(tile: Tile, biome: Biome) {
+async function handlePlotCreation(tile: Tile) {
     const plotsTotal = Math.floor(1 + Math.random() * 6)
 
     for (let i = 0; i < plotsTotal; i++) {
@@ -124,7 +124,7 @@ async function handlePlotCreation(tile: Tile, biome: Biome) {
         const plotAttributes = await db.plotAttributes.create({
             data: {
                 area: 50,
-                fertility: 1,
+                fertility: 1 + (tile.precipitation),
                 solar: 1,
                 wind: 1,
                 forest: 1,

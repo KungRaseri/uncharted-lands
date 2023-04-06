@@ -83,7 +83,7 @@ export async function generatePrecipitation(mapOptions: MapOptions, precipitatio
         frequency: precipitationOptions.frequency,
         octaves: precipitationOptions.octaves,
         scale: (x: number) => {
-            return x * (precipitationMax - precipitationMin) / 2 + (precipitationMax + precipitationMin) / 2;
+            return normalizeValue(x, precipitationMin, precipitationMax);
         }
     })
 
@@ -100,9 +100,15 @@ export async function generateTemperature(mapOptions: MapOptions, temperatureOpt
         frequency: temperatureOptions.frequency,
         octaves: temperatureOptions.octaves,
         scale: (x: number) => {
-            return x * (temperatureMax - temperatureMin) / 2 + (temperatureMax + temperatureMin) / 2;
+            return normalizeValue(x, temperatureMin, temperatureMax);
         }
     })
 
     return chunks(temperatureMap, 10)
 }
+
+function normalizeValue(value: number, min: number, max: number) {
+    return value * (max - min) / 2 + (max + min) / 2;
+}
+
+

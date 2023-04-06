@@ -47,19 +47,20 @@
 		{/if}
 	</div>
 	<div class="px-6 py-1 w-full">
-		<div class="w-full flex p-0 m-0">
-			<h3>Resources</h3>
+		<div class="w-full p-0 m-0">
+			<h3>Attributes</h3>
 
-			<hr class="my-2" />
-
-			{#each data.plot.resources as resource, i}
-				<a
-					href="/admin/resources/{resource.id}"
-					class="m-1 p-2 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
-				>
-					{resource.id} [{resource.value}]
-				</a>
-			{/each}
+			<div class="card m-0 p-3">
+				<div class="">
+					Area: {data.plot.attributes.area}
+					Solar: {data.plot.attributes.solar}
+					Wind: {data.plot.attributes.wind}
+					Wildlife: {data.plot.attributes.wildlife}
+					Forest: {data.plot.attributes.forest}
+					Rocks: {data.plot.attributes.rocks}
+					Minerals: {data.plot.attributes.minerals}
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

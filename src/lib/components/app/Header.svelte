@@ -1,12 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	import { AppBar, LightSwitch, menu } from '@skeletonlabs/skeleton';
-	import Menu from 'svelte-material-icons/Menu.svelte';
+	import { AppBar, popup } from '@skeletonlabs/skeleton';
+	import type { PopupSettings } from '@skeletonlabs/skeleton';
+
+	import MenuIcon from 'svelte-material-icons/Menu.svelte';
 	import Account from 'svelte-material-icons/Account.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import BellOutline from 'svelte-material-icons/BellOutline.svelte';
 	import { slide } from 'svelte/transition';
+
+	const MenuOptions: PopupSettings = {
+		placement: 'bottom',
+		event: 'click',
+		target: 'userMenu'
+	};
 
 	export let isMainMenuOpen = false;
 </script>
@@ -30,7 +38,7 @@
 				}}
 			>
 				{#if !isMainMenuOpen}
-					<Menu size={24} />
+					<MenuIcon size={24} />
 				{:else}
 					<Close size={24} />
 				{/if}
@@ -63,7 +71,7 @@
 							: ''}
 							bg-primary-hover-token
 							"
-						aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+						aria-current={link.isActive ? 'page' : undefined}
 					>
 						<span class="text-token">
 							{link.name}
@@ -89,9 +97,9 @@
 				</a>
 				<a
 					href="/register"
-					class="btn rounded-md 
+					class="btn rounded-md
 						{$page.route.id === '/(auth)/register' ? 'bg-primary-active-token' : ''}
-						bg-primary-hover-token 
+						bg-primary-hover-token
 						"
 					data-testid="header-register"
 				>
@@ -109,7 +117,7 @@
 						id="user-menu-button"
 						aria-expanded="false"
 						aria-haspopup="true"
-						use:menu={{ menu: 'userMenu' }}
+						use:popup={MenuOptions}
 					>
 						{#if $page.data.account.profile?.picture}
 							<img class="w-6 rounded-full" src={$page.data.account.profile.picture} alt="" />
@@ -126,7 +134,7 @@
 							aria-orientation="vertical"
 							aria-labelledby="user-menu-button"
 							tabindex="-1"
-							data-menu="userMenu"
+							data-popup="userMenu"
 						>
 							{#each $page.data.userMenuLinks as link}
 								<div
@@ -136,7 +144,7 @@
 								>
 									<a
 										href={link.route}
-										class="btn 
+										class="btn
 									{link.isActive ? 'bg-primary-active-token' : ''}
 									"
 										aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
@@ -159,6 +167,7 @@
 		</div>
 	</svelte:fragment>
 </AppBar>
+
 <!-- Mobile menu, show/hide based on menu state. -->
 {#if isMainMenuOpen}
 	<div

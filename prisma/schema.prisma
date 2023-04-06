@@ -124,7 +124,7 @@ model PlotAttributes {
   solar     Int
   wind      Int
   forest    Int
-  rock      Int
+  rocks     Int
   minerals  Int
   wildlife  Int
   area      Int

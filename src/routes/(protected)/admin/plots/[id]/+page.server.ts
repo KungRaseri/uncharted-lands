@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ params }) => {
                 }
             },
             Tile: true,
-            resources: true
+            attributes: true
         }
     });
 
