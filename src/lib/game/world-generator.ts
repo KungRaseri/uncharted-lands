@@ -7,19 +7,26 @@ function chunks(heightMap: number[][], chunkSize: number) {
     if (chunkSize === 0)
         return splitChunks;
 
-    for (let i = 0; i < chunkSize; i++) {
-        splitChunks[i] = []
-        for (let j = 0; j < chunkSize; j++) {
-            const iIndex = i * chunkSize;
-            const jIndex = j * chunkSize;
+    const height = heightMap.length;
+    const width = heightMap[0].length;
 
-            // console.log(`i${iIndex}-${iIndex + chunkSize}`, `j${jIndex}-${jIndex + chunkSize}`)
-            const chunk = heightMap.slice(iIndex, iIndex + chunkSize).map(r => r.slice(jIndex, jIndex + chunkSize));
-            // console.log(chunk)
-            splitChunks[i][j] = chunk;
+    for (let i = 0; i < height; i += chunkSize) {
+        const rowChunks = []
+        for (let j = 0; j < width; j += chunkSize) {
+            const chunk = [];
+
+            for (let y = i; y < i + chunkSize; y++) {
+                if (y >= height) break;
+                const row = heightMap[y];
+                const slicedRow = row.slice(j, j + chunkSize);
+                chunk.push(slicedRow);
+            }
+            rowChunks.push(chunk);
         }
+        splitChunks.push(rowChunks);
     }
 
+    console.log(splitChunks)
     return splitChunks;
 }
 
@@ -28,83 +35,42 @@ type MapOptions = {
 }
 
 export async function generate(mapOptions: MapOptions, elevationOptions: Options, precipitationOptions: Options, temperatureOptions: Options) {
-    const elevationNoise = makeNoise2D(mapOptions.eSeed)
-    const precipitationNoise = makeNoise2D(mapOptions.pSeed)
-    const temperatureNoise = makeNoise2D(mapOptions.tSeed)
-
-    const elevationMap = makeRectangle(mapOptions.width, mapOptions.height, elevationNoise, {
-        amplitude: elevationOptions.amplitude,
-        persistence: elevationOptions.persistence,
-        frequency: elevationOptions.frequency,
-        octaves: elevationOptions.octaves,
-        scale: elevationOptions.scale
-    })
-
-    const precipitationMap = makeRectangle(mapOptions.width, mapOptions.height, precipitationNoise, {
-        amplitude: precipitationOptions.amplitude,
-        persistence: precipitationOptions.persistence,
-        frequency: precipitationOptions.frequency,
-        octaves: precipitationOptions.octaves,
-        scale: precipitationOptions.scale
-    })
-
-    const temperatureMap = makeRectangle(mapOptions.width, mapOptions.height, temperatureNoise, {
-        amplitude: temperatureOptions.amplitude,
-        persistence: temperatureOptions.persistence,
-        frequency: temperatureOptions.frequency,
-        octaves: temperatureOptions.octaves,
-        scale: temperatureOptions.scale
-    })
+    const elevationMap = generateMap(mapOptions, makeNoise2D(mapOptions.eSeed), elevationOptions);
+    const precipitationMap = generateMap(mapOptions, makeNoise2D(mapOptions.pSeed), precipitationOptions);
+    const temperatureMap = generateMap(mapOptions, makeNoise2D(mapOptions.tSeed), temperatureOptions);
 
     return { elevationMap: chunks(elevationMap, 10), precipitationMap: chunks(precipitationMap, 10), temperatureMap: chunks(temperatureMap, 10) }
 }
 
-export async function generateElevation(mapOptions: MapOptions, elevationOptions: Options) {
-    const elevationNoise = makeNoise2D(mapOptions.eSeed)
-
-    const elevationMap = makeRectangle(mapOptions.width, mapOptions.height, elevationNoise, {
-        amplitude: elevationOptions.amplitude,
-        persistence: elevationOptions.persistence,
-        frequency: elevationOptions.frequency,
-        octaves: elevationOptions.octaves,
-        scale: elevationOptions.scale
+function generateMap(mapOptions: MapOptions, noiseFn: (x: number, y: number) => number, options: Options) {
+    const { amplitude, persistence, frequency, octaves, scale } = options;
+    const map = makeRectangle(mapOptions.width, mapOptions.height, noiseFn, {
+        amplitude,
+        persistence,
+        frequency,
+        octaves,
+        scale: scale
     })
 
-    return chunks(elevationMap, 10)
+    return chunks(map, 10)
 }
 
-export async function generatePrecipitation(mapOptions: MapOptions, precipitationOptions: Options) {
-    const precipitationNoise = makeNoise2D(mapOptions.pSeed)
+export async function generateElevation(mapOptions: MapOptions, options: Options) {
+    const noiseFn = makeNoise2D(mapOptions.eSeed);
+    return generateMap(mapOptions, noiseFn, options);
+}
+
+export async function generatePrecipitation(mapOptions: MapOptions, options: Options) {
+    const noiseFn = makeNoise2D(mapOptions.pSeed);
     const precipitationMin = 1, precipitationMax = 450;
 
-    const precipitationMap = makeRectangle(mapOptions.width, mapOptions.height, precipitationNoise, {
-        amplitude: precipitationOptions.amplitude,
-        persistence: precipitationOptions.persistence,
-        frequency: precipitationOptions.frequency,
-        octaves: precipitationOptions.octaves,
-        scale: (x: number) => {
-            return normalizeValue(x, precipitationMin, precipitationMax);
-        }
-    })
-
-    return chunks(precipitationMap, 10)
+    return generateMap(mapOptions, noiseFn, { ...options, scale: (x) => normalizeValue(x, precipitationMin, precipitationMax) });
 }
-
-export async function generateTemperature(mapOptions: MapOptions, temperatureOptions: Options) {
-    const temperatureNoise = makeNoise2D(mapOptions.tSeed)
+export async function generateTemperature(mapOptions: MapOptions, options: Options) {
+    const noiseFn = makeNoise2D(mapOptions.tSeed);
     const temperatureMin = -10, temperatureMax = 32;
 
-    const temperatureMap = makeRectangle(mapOptions.width, mapOptions.height, temperatureNoise, {
-        amplitude: temperatureOptions.amplitude,
-        persistence: temperatureOptions.persistence,
-        frequency: temperatureOptions.frequency,
-        octaves: temperatureOptions.octaves,
-        scale: (x: number) => {
-            return normalizeValue(x, temperatureMin, temperatureMax);
-        }
-    })
-
-    return chunks(temperatureMap, 10)
+    return generateMap(mapOptions, noiseFn, { ...options, scale: (x) => normalizeValue(x, temperatureMin, temperatureMax) });
 }
 
 function normalizeValue(value: number, min: number, max: number) {

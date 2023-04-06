@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Account {
-  id            String      @id @default(uuid())
+  id            String      @id @default(cuid())
   email         String      @unique
   passwordHash  String
   userAuthToken String      @unique
@@ -19,7 +19,7 @@ model Account {
 }
 
 model Profile {
-  id        String              @id @default(uuid())
+  id        String              @id @default(cuid())
   username  String              @unique
   picture   String
   accountId String              @unique
@@ -38,7 +38,7 @@ model ProfileServerData {
 }
 
 model Server {
-  id        String              @id @default(uuid())
+  id        String              @id @default(cuid())
   name      String              @unique
   hostname  String              @default("localhost")
   port      Int                 @default(5000)
@@ -52,7 +52,7 @@ model Server {
 }
 
 model World {
-  id                    String   @id @default(uuid())
+  id                    String   @id @default(cuid())
   name                  String
   elevationSettings     Json
   precipitationSettings Json
@@ -67,7 +67,7 @@ model World {
 }
 
 model Region {
-  id               String @id @default(uuid())
+  id               String @id @default(cuid())
   xCoord           Int    @default(-1)
   yCoord           Int    @default(-1)
   name             String
@@ -82,7 +82,7 @@ model Region {
 }
 
 model Tile {
-  id            String   @id @default(uuid())
+  id            String   @id @default(cuid())
   elevation     Float
   temperature   Float
   precipitation Float
@@ -95,7 +95,7 @@ model Tile {
 }
 
 model Biome {
-  id               String @id @default(uuid())
+  id               String @id @default(cuid())
   name             String @unique
   precipitationMin Float
   precipitationMax Float
@@ -105,12 +105,12 @@ model Biome {
 }
 
 model Resource {
-  id   String @id @default(uuid())
+  id   String @id @default(cuid())
   name String @unique
 }
 
 model Plot {
-  id               String         @id @default(uuid())
+  id               String         @id @default(cuid())
   tileId           String
   attributes       PlotAttributes @relation(fields: [plotAttributesId], references: [id])
   Settlement       Settlement?
@@ -119,7 +119,7 @@ model Plot {
 }
 
 model PlotAttributes {
-  id        String @id @default(uuid())
+  id        String @id @default(cuid())
   fertility Int
   solar     Int
   wind      Int
@@ -135,7 +135,7 @@ model PlotAttributes {
 }
 
 model Settlement {
-  id              String                @id @default(uuid())
+  id              String                @id @default(cuid())
   name            String
   plotId          String                @unique
   playerProfileId String
@@ -147,7 +147,7 @@ model Settlement {
 }
 
 model SettlementStructure {
-  id                    String              @id @default(uuid())
+  id                    String              @id @default(cuid())
   name                  String
   description           String
   areaRequirement       Int
@@ -158,7 +158,7 @@ model SettlementStructure {
 }
 
 model StructureModifier {
-  id                    String @id @default(uuid())
+  id                    String @id @default(cuid())
   name                  String
   description           String
   value                 Int
