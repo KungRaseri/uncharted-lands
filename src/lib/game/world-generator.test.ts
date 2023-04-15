@@ -36,16 +36,19 @@ describe('world-generator.ts', () => {
         }
 
         const target = await generate(mapOptions, elevationOptions, precipitationOptions, temperatureOptions);
+        const elevation = target.elevationMap[0][0]
+        const precipitation = target.precipitationMap[0][0]
+        const temperature = target.temperatureMap[0][0]
 
-        expect(target.elevationMap).toHaveLength(10)
-        expect(target.elevationMap[0]).toHaveLength(10)
-        expect(target.precipitationMap).toHaveLength(10)
-        expect(target.precipitationMap[0]).toHaveLength(10)
-        expect(target.temperatureMap).toHaveLength(10)
-        expect(target.temperatureMap[0]).toHaveLength(10)
+        expect(elevation).toHaveLength(10)
+        expect(elevation[0]).toHaveLength(10)
+        expect(precipitation).toHaveLength(10)
+        expect(precipitation[0]).toHaveLength(10)
+        expect(temperature).toHaveLength(10)
+        expect(temperature[0]).toHaveLength(10)
     });
 
-    it("generatePrecipition() - Should generate precipitation within a specific range", async () => {
+    it("generatePrecipitation() - Should generate precipitation within a specific range", async () => {
         const precipitationMin = 1, precipitationMax = 450;
 
         const mapOptions = {

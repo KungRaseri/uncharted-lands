@@ -45,9 +45,9 @@
 					{#each $plotsTableStore.filtered as plot, index}
 						<tr>
 							<td><a href="/admin/plots/{plot.id}">{plot.id}</a></td>
-							<td>{plot.settlementId}</td>
+							<td>{plot.Settlement?.id}</td>
 							<td>{plot.tileId}</td>
-							<td>{plot.resources}</td>
+							<td>{plot.area}</td>
 						</tr>
 					{/each}
 				{/if}

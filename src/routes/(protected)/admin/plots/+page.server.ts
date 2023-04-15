@@ -5,7 +5,6 @@ export const load: PageServerLoad = (async () => {
     return {
         plots: db.plot.findMany({
             include: {
-                resources: true,
                 Settlement: true,
                 Tile: true
             }

@@ -8,7 +8,6 @@ export const load: PageServerLoad = (async () => {
                 Biome: true,
                 Plots: {
                     include: {
-                        resources: true,
                         Settlement: true
                     }
                 },

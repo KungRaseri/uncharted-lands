@@ -27,7 +27,7 @@
 					href="/admin/plots/{plot.id}"
 					class="m-1 p-2 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
 				>
-					{plot.tileId} [{plot.settlementId}]
+					{plot.tileId}
 				</a>
 			{/each}
 		</div>

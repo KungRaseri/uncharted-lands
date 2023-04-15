@@ -12,15 +12,26 @@ const config = defineConfig({
 	build: {
 		sourcemap: true
 	},
-	plugins: [sveltekit({ hot: !process.env.VITEST }),
-	sentryVitePlugin({
-		org: "red-syndicate",
-		project: "browser-game",
-		include: './build',
-		authToken: process.env.SENTRY_AUTH_TOKEN
-	})],
+	plugins: [
+		sveltekit({ hot: !process.env.VITEST }),
+		sentryVitePlugin({
+			org: "red-syndicate",
+			project: "browser-game",
+			include: './build',
+			authToken: process.env.SENTRY_AUTH_TOKEN
+		})
+	],
 	server: {
 		port: 3000
+	},
+	preview: {
+		port: 3000
+	},
+	optimizeDeps: {
+		include: [
+			'@mdi/js', 
+			'@skeletonlabs/skeleton'
+		]
 	}
 })
 

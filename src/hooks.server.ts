@@ -1,13 +1,19 @@
-import { redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
+import { redirect, type Hook, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { AuthenticateUser } from "$lib/auth";
+
 import * as Sentry from '@sentry/node';
-import { BrowserTracing } from '@sentry/tracing';
+import { BrowserTracing } from '@sentry/browser';
 
 Sentry.init({
     dsn: process.env.SENTRY_DSN,
     integrations: [new BrowserTracing()],
     tracesSampleRate: 1.0,
     environment: process.env.NODE_ENV
+})
+
+export const handleHook: Hook = (async ({ request, resolve }) => {
+
+    return resolve(request);
 })
 
 export const handle: Handle = (async ({ event, resolve }) => {
@@ -24,7 +30,9 @@ export const handle: Handle = (async ({ event, resolve }) => {
         event.locals.account = user;
     }
 
-    return await resolve(event);
+
+    const response = await resolve(event);
+    return response
 }) satisfies Handle
 
 export const handleError: HandleServerError = (async ({ error, event }) => {

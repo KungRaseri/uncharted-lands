@@ -26,7 +26,6 @@ function chunks(heightMap: number[][], chunkSize: number) {
         splitChunks.push(rowChunks);
     }
 
-    console.log(splitChunks)
     return splitChunks;
 }
 

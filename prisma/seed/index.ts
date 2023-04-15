@@ -104,19 +104,27 @@ const biomes: Biome[] = [
 const resources: Resource[] = [
     {
         id: "",
-        name: "Food"
+        name: "Food",
+        description: "",
+        icon: ""
     },
     {
         id: "",
-        name: "Water"
+        name: "Water",
+        description: "",
+        icon: ""
     },
     {
         id: "",
-        name: "Wood"
+        name: "Wood",
+        description: "",
+        icon: ""
     },
     {
         id: "",
-        name: "Stone"
+        name: "Stone",
+        description: "",
+        icon: ""
     }
 ]
 
@@ -160,6 +168,8 @@ async function main() {
             },
             create: {
                 name: resource.name,
+                description: resource.description,
+                icon: resource.icon
             },
             update: {
                 name: resource.name,

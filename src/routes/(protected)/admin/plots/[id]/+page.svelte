@@ -52,13 +52,27 @@
 
 			<div class="card m-0 p-3">
 				<div class="">
-					Area: {data.plot.attributes.area}
-					Solar: {data.plot.attributes.solar}
-					Wind: {data.plot.attributes.wind}
-					Wildlife: {data.plot.attributes.wildlife}
-					Forest: {data.plot.attributes.forest}
-					Rocks: {data.plot.attributes.rocks}
-					Minerals: {data.plot.attributes.minerals}
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Area: {data.plot.area}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Solar: {data.plot.solar}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Wind: {data.plot.wind}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Wildlife: {data.plot.wildlife}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Forest: {data.plot.forest}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Rocks: {data.plot.rocks}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Minerals: {data.plot.minerals}
+					</span>
 				</div>
 			</div>
 		</div>
