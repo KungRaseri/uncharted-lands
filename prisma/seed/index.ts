@@ -104,26 +104,44 @@ const biomes: Biome[] = [
 const resources: Resource[] = [
     {
         id: "",
+        name: "Solar",
+        description: "A measure of the amount of sunlight that reaches the plot. A higher value indicates that the plot is located in an area with more hours of sunlight, which can be useful for certain types of structures or activities.",
+        icon: ""
+    },
+    {
+        id: "",
+        name: "Wind",
+        description: "A measure of the strength of the winds that pass over the plot. A higher value indicates that the plot is located in an area with stronger winds, which can be harnessed for energy or used for other purposes such as ventilation or transportation.",
+        icon: ""
+    },
+    {
+        id: "",
         name: "Food",
-        description: "",
+        description: "Refers to any type of edible plant or animal resources that can be gathered, hunted, or grown within a settlement. Food is essential for keeping settlers alive and healthy.",
         icon: ""
     },
     {
         id: "",
         name: "Water",
-        description: "",
+        description: "Refers to any source of fresh water within a settlement. Water is essential for the survival of settlers, as well as for farming and other activities.",
         icon: ""
     },
     {
         id: "",
         name: "Wood",
-        description: "",
+        description: "Refers to any type of trees or woody plants that can be harvested within a settlement. Wood is a valuable resource for building structures, making tools, and fueling fires.",
         icon: ""
     },
     {
         id: "",
         name: "Stone",
-        description: "",
+        description: "Refers to any type of rocks or minerals that can be mined within a settlement. Stone is a valuable resource for building structures and making tools.",
+        icon: ""
+    },
+    {
+        id: "",
+        name: "Ore",
+        description: "Refers to any type of metallic or mineral resources that can be mined within a settlement. Ores are valuable resources for creating weapons, armor, and other advanced structures.",
         icon: ""
     }
 ]

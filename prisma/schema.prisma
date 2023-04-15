@@ -111,20 +111,27 @@ model Resource {
   icon        String
 
   SettlementResource SettlementResource[]
+  PlotResource       PlotResource[]
+}
+
+model PlotResource {
+  id         String @id @default(cuid())
+  plotId     String
+  resourceId String
+  amount     Int
+
+  Resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  Plot     Plot     @relation(fields: [plotId], references: [id])
+
+  @@unique([plotId, resourceId])
 }
 
 model Plot {
   id     String @id @default(cuid())
   tileId String
+  area   Int
 
-  fertility Int
-  solar     Int
-  wind      Int
-  forest    Int
-  rocks     Int
-  minerals  Int
-  wildlife  Int
-  area      Int
+  resources PlotResource[]
 
   Settlement Settlement?
   Tile       Tile        @relation(fields: [tileId], references: [id], onDelete: Cascade)

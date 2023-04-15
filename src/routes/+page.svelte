@@ -1,15 +1,3 @@
-<script lang="ts">
-	import io from 'socket.io-client';
-
-	const socket = io('https://localhost:3000');
-
-	socket.emit('message', 'Hello, world!');
-
-	socket.on('connect', () => {
-		console.log(`Connected to server ${socket.id}`);
-	});
-</script>
-
 <svelte:head>
 	<title>Portal | Uncharted Lands</title>
 </svelte:head>

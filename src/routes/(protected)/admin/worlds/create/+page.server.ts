@@ -1,6 +1,6 @@
 import { db } from "$lib/db"
-import { TileType, type Biome, type Tile, type World } from "@prisma/client"
-import type { Prisma, Region } from "@prisma/client"
+import { TileType } from "@prisma/client"
+import type { Prisma, Region, Plot, Biome, Tile, World } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 import cuid from 'cuid';
@@ -132,22 +132,31 @@ async function handlePlotCreation(tile: Tile) {
         data: {
             id: cuid(),
             area: plotData.area,
-            solar: plotData.solar,
-            wind: plotData.wind,
-            fertility: plotData.fertility,
-            wildlife: plotData.wildlife,
-            forest: plotData.forest,
-            rocks: plotData.rocks,
-            minerals: plotData.minerals,
             Tile: {
                 connect: {
                     id: tile.id
                 }
-            },
+            }
         }
     })
 
+    await handlePlotResourceCreation(plot, plotData);
+
     return plot;
+}
+
+async function handlePlotResourceCreation(plot: Plot, plotData: any) {
+    const resources = await db.resource.findMany();
+
+    for (const resource of resources) {
+        await db.plotResource.create({
+            data: {
+                amount: 
+                    plotId: plot.id,
+                resourceId: resource.id
+            }
+        })
+    }
 }
 
 async function determinePlotsTotal(elevation: number, precipitation: number, temperature: number) {
@@ -175,6 +184,7 @@ async function determinePlotsTotal(elevation: number, precipitation: number, tem
 }
 
 async function determinePlotData(elevation: number, precipitation: number, temperature: number) {
+    
     const fertility = Math.round(Math.max(1, Math.min(5, elevation * 0.2 + precipitation * 0.2 + temperature * 0.6 + Math.random() * 0.6)))
     const wildlife = Math.round(Math.max(1, Math.min(5, elevation * 0.1 + precipitation * 0.4 + temperature * 0.4 + Math.random() * 0.4)))
     const solar = Math.round(Math.max(1, Math.min(5, elevation * 0.1 + precipitation * 0.2 + temperature * 0.5 + Math.random() * 0.5)));
