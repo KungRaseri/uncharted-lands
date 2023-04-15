@@ -21,7 +21,7 @@
 </script>
 
 <div class="m-1">
-	<h1 id="settlements-header">settlements</h1>
+	<h1 id="settlements-header">Settlements</h1>
 	<div class="table-container">
 		<div class="p-0 m-3 w-11/12 flex space-x-3">
 			<input

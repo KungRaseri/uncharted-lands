@@ -21,7 +21,8 @@ const config = {
 			directives: {
 				'img-src': [
 					'self',
-					'data:'
+					'data:',
+					'https://via.placeholder.com'
 				],
 				'style-src': [
 					'self',

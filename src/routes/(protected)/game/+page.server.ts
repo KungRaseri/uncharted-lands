@@ -17,11 +17,12 @@ export const load: PageServerLoad = async ({ locals }) => {
         include: {
             Plot: {
                 include: {
-                    resources: true,
+                    Settlement: true,
                     Tile: true
                 }
             },
-            structures: {
+            SettlementResources: true,
+            Structures: {
                 include: {
                     modifiers: true
                 }

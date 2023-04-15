@@ -10,14 +10,11 @@ export const load = (async ({ params }) => {
         include: {
             Plot: {
                 include: {
-                    resources: {
-                        include: {
-                            Resource: true
-                        }
-                    }
+                    Settlement: true,
+                    Tile: true
                 }
             },
-            structures: {
+            Structures: {
                 include: {
                     modifiers: true
                 }

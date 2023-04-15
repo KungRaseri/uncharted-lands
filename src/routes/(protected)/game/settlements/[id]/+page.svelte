@@ -13,7 +13,7 @@
 	<div class="p-4 space-y-5">
 		<div class="card p-4">
 			<h3>Structures</h3>
-			{#each data.settlement.structures as structure}
+			{#each data.settlement.Structures as structure}
 				<div class="badge variant-ghost-secondary">
 					{structure.name}
 					{structure.description}
@@ -28,23 +28,43 @@
 				</div>
 			{/each}
 		</div>
-		<div class="card p-4">
+		<div class="card">
 			<header class="card-header">
-				<h3>Plot</h3>
+				<h3>
+					Plot
+					<div class="badge variant-ghost-secondary">
+						Area: {data.settlement.Plot.area}
+					</div>
+					<div class="badge variant-ghost-secondary">
+						Solar: {data.settlement.Plot.solar}
+					</div>
+					<div class="badge variant-ghost-secondary">
+						Wind: {data.settlement.Plot.wind}
+					</div>
+					<div class="badge variant-ghost-secondary">
+						Fertility: {data.settlement.Plot.fertility}
+					</div>
+					<div class="badge variant-ghost-secondary">
+						Wildlife: {data.settlement.Plot.wildlife}
+					</div>
+				</h3>
 				<span class="text-xs">{data.settlement.Plot.id}</span>
 			</header>
 
 			<hr class="my-2" />
+			<section class="p-4" />
 
-			<div class="p-4">
-				<h4>Resources</h4>
-				{#each data.settlement.Plot.resources as plotResource}
-					<div class="badge variant-ghost-secondary">
-						{plotResource.Resource.name}
-						{plotResource.value}
-					</div>
-				{/each}
-			</div>
+			<footer class="card-footer">
+				<div class="badge variant-ghost-secondary">
+					Forest: {data.settlement.Plot.forest}
+				</div>
+				<div class="badge variant-ghost-secondary">
+					Rocks: {data.settlement.Plot.rocks}
+				</div>
+				<div class="badge variant-ghost-secondary">
+					Minerals: {data.settlement.Plot.minerals}
+				</div>
+			</footer>
 		</div>
 	</div>
 </div>
