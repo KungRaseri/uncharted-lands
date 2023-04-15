@@ -25,7 +25,7 @@ const config = defineConfig({
 		port: 3000
 	},
 	preview: {
-		port: 3000
+		port: 4173
 	},
 	optimizeDeps: {
 		include: [
