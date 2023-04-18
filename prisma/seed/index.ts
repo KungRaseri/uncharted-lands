@@ -1,4 +1,4 @@
-import { type Biome, type Resource, PrismaClient } from "@prisma/client";
+import { type Biome, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -101,50 +101,50 @@ const biomes: Biome[] = [
     }
 ]
 
-const resources: Resource[] = [
-    {
-        id: "",
-        name: "Solar",
-        description: "A measure of the amount of sunlight that reaches the plot. A higher value indicates that the plot is located in an area with more hours of sunlight, which can be useful for certain types of structures or activities.",
-        icon: ""
-    },
-    {
-        id: "",
-        name: "Wind",
-        description: "A measure of the strength of the winds that pass over the plot. A higher value indicates that the plot is located in an area with stronger winds, which can be harnessed for energy or used for other purposes such as ventilation or transportation.",
-        icon: ""
-    },
-    {
-        id: "",
-        name: "Food",
-        description: "Refers to any type of edible plant or animal resources that can be gathered, hunted, or grown within a settlement. Food is essential for keeping settlers alive and healthy.",
-        icon: ""
-    },
-    {
-        id: "",
-        name: "Water",
-        description: "Refers to any source of fresh water within a settlement. Water is essential for the survival of settlers, as well as for farming and other activities.",
-        icon: ""
-    },
-    {
-        id: "",
-        name: "Wood",
-        description: "Refers to any type of trees or woody plants that can be harvested within a settlement. Wood is a valuable resource for building structures, making tools, and fueling fires.",
-        icon: ""
-    },
-    {
-        id: "",
-        name: "Stone",
-        description: "Refers to any type of rocks or minerals that can be mined within a settlement. Stone is a valuable resource for building structures and making tools.",
-        icon: ""
-    },
-    {
-        id: "",
-        name: "Ore",
-        description: "Refers to any type of metallic or mineral resources that can be mined within a settlement. Ores are valuable resources for creating weapons, armor, and other advanced structures.",
-        icon: ""
-    }
-]
+// const resources: Resource[] = [
+//     {
+//         id: "",
+//         name: "Solar",
+//         description: "A measure of the amount of sunlight that reaches the plot. A higher value indicates that the plot is located in an area with more hours of sunlight, which can be useful for certain types of structures or activities.",
+//         icon: ""
+//     },
+//     {
+//         id: "",
+//         name: "Wind",
+//         description: "A measure of the strength of the winds that pass over the plot. A higher value indicates that the plot is located in an area with stronger winds, which can be harnessed for energy or used for other purposes such as ventilation or transportation.",
+//         icon: ""
+//     },
+//     {
+//         id: "",
+//         name: "Food",
+//         description: "Refers to any type of edible plant or animal resources that can be gathered, hunted, or grown within a settlement. Food is essential for keeping settlers alive and healthy.",
+//         icon: ""
+//     },
+//     {
+//         id: "",
+//         name: "Water",
+//         description: "Refers to any source of fresh water within a settlement. Water is essential for the survival of settlers, as well as for farming and other activities.",
+//         icon: ""
+//     },
+//     {
+//         id: "",
+//         name: "Wood",
+//         description: "Refers to any type of trees or woody plants that can be harvested within a settlement. Wood is a valuable resource for building structures, making tools, and fueling fires.",
+//         icon: ""
+//     },
+//     {
+//         id: "",
+//         name: "Stone",
+//         description: "Refers to any type of rocks or minerals that can be mined within a settlement. Stone is a valuable resource for building structures and making tools.",
+//         icon: ""
+//     },
+//     {
+//         id: "",
+//         name: "Ore",
+//         description: "Refers to any type of metallic or mineral resources that can be mined within a settlement. Ores are valuable resources for creating weapons, armor, and other advanced structures.",
+//         icon: ""
+//     }
+// ]
 
 async function main() {
     console.log('Start seeding ...')
@@ -175,28 +175,6 @@ async function main() {
         // other seed data
 
         console.log(`Biome ${resultBiome.name} with ID[${resultBiome.id}] created`)
-    })
-
-    // resources, etc.
-    console.log(`Seeding [${resources.length}] Resources`)
-    resources.forEach(async (resource) => {
-        const resultResource = await prisma.resource.upsert({
-            where: {
-                name: resource.name
-            },
-            create: {
-                name: resource.name,
-                description: resource.description,
-                icon: resource.icon
-            },
-            update: {
-                name: resource.name,
-            }
-        })
-
-        // other seed data
-
-        console.log(`Resource ${resultResource.name} with ID[${resultResource.id}] created`)
     })
 
     console.log(`Seeding finished.`)

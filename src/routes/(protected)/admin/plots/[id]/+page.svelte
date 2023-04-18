@@ -62,16 +62,19 @@
 						Wind: {data.plot.wind}
 					</span>
 					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
-						Wildlife: {data.plot.wildlife}
+						Food: {data.plot.food}
 					</span>
 					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
-						Forest: {data.plot.forest}
+						Water: {data.plot.water}
 					</span>
 					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
-						Rocks: {data.plot.rocks}
+						Wood: {data.plot.wood}
 					</span>
 					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
-						Minerals: {data.plot.minerals}
+						Stone: {data.plot.stone}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Ore: {data.plot.ore}
 					</span>
 				</div>
 			</div>

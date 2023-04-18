@@ -1,11 +1,16 @@
 /*
   Warnings:
 
-  - You are about to drop the column `value` on the `PlotResource` table. All the data in the column will be lost.
   - You are about to drop the column `resourceId` on the `StructureModifier` table. All the data in the column will be lost.
+  - You are about to drop the `PlotResource` table. If the table is not empty, all the data it contains will be lost.
   - Added the required column `area` to the `Plot` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `amount` to the `PlotResource` table without a default value. This is not possible if the table is not empty.
-  - Made the column `plotId` on table `PlotResource` required. This step will fail if there are existing NULL values in that column.
+  - Added the required column `food` to the `Plot` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `ore` to the `Plot` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `solar` to the `Plot` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `stone` to the `Plot` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `water` to the `Plot` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `wind` to the `Plot` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `wood` to the `Plot` table without a default value. This is not possible if the table is not empty.
   - Added the required column `description` to the `Resource` table without a default value. This is not possible if the table is not empty.
   - Added the required column `icon` to the `Resource` table without a default value. This is not possible if the table is not empty.
   - Added the required column `areaRequirement` to the `SettlementStructure` table without a default value. This is not possible if the table is not empty.
@@ -46,12 +51,14 @@ ALTER TABLE "Tile" DROP CONSTRAINT "Tile_regionId_fkey";
 ALTER TABLE "World" DROP CONSTRAINT "World_serverId_fkey";
 
 -- AlterTable
-ALTER TABLE "Plot" ADD COLUMN     "area" INTEGER NOT NULL;
-
--- AlterTable
-ALTER TABLE "PlotResource" DROP COLUMN "value",
-ADD COLUMN     "amount" INTEGER NOT NULL,
-ALTER COLUMN "plotId" SET NOT NULL;
+ALTER TABLE "Plot" ADD COLUMN     "area" INTEGER NOT NULL,
+ADD COLUMN     "food" INTEGER NOT NULL,
+ADD COLUMN     "ore" INTEGER NOT NULL,
+ADD COLUMN     "solar" INTEGER NOT NULL,
+ADD COLUMN     "stone" INTEGER NOT NULL,
+ADD COLUMN     "water" INTEGER NOT NULL,
+ADD COLUMN     "wind" INTEGER NOT NULL,
+ADD COLUMN     "wood" INTEGER NOT NULL;
 
 -- AlterTable
 ALTER TABLE "Resource" ADD COLUMN     "description" TEXT NOT NULL,
@@ -63,6 +70,9 @@ ADD COLUMN     "populationRequirement" INTEGER NOT NULL;
 
 -- AlterTable
 ALTER TABLE "StructureModifier" DROP COLUMN "resourceId";
+
+-- DropTable
+DROP TABLE "PlotResource";
 
 -- CreateTable
 CREATE TABLE "SettlementResource" (
@@ -87,12 +97,6 @@ ALTER TABLE "Region" ADD CONSTRAINT "Region_worldId_fkey" FOREIGN KEY ("worldId"
 
 -- AddForeignKey
 ALTER TABLE "Tile" ADD CONSTRAINT "Tile_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PlotResource" ADD CONSTRAINT "PlotResource_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "Resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PlotResource" ADD CONSTRAINT "PlotResource_plotId_fkey" FOREIGN KEY ("plotId") REFERENCES "Plot"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Plot" ADD CONSTRAINT "Plot_tileId_fkey" FOREIGN KEY ("tileId") REFERENCES "Tile"("id") ON DELETE CASCADE ON UPDATE CASCADE;

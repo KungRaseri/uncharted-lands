@@ -132,6 +132,13 @@ async function handlePlotCreation(tile: Tile) {
         data: {
             id: cuid(),
             area: plotData.area,
+            solar: plotData.solar,
+            wind: plotData.wind,
+            food: plotData.food,
+            water: plotData.water,
+            wood: plotData.wood,
+            stone: plotData.stone,
+            ore: plotData.ore,
             Tile: {
                 connect: {
                     id: tile.id
@@ -140,23 +147,7 @@ async function handlePlotCreation(tile: Tile) {
         }
     })
 
-    await handlePlotResourceCreation(plot, plotData);
-
     return plot;
-}
-
-async function handlePlotResourceCreation(plot: Plot, plotData: any) {
-    const resources = await db.resource.findMany();
-
-    for (const resource of resources) {
-        await db.plotResource.create({
-            data: {
-                amount: 
-                    plotId: plot.id,
-                resourceId: resource.id
-            }
-        })
-    }
 }
 
 async function determinePlotsTotal(elevation: number, precipitation: number, temperature: number) {
@@ -184,28 +175,22 @@ async function determinePlotsTotal(elevation: number, precipitation: number, tem
 }
 
 async function determinePlotData(elevation: number, precipitation: number, temperature: number) {
-    
-    const fertility = Math.round(Math.max(1, Math.min(5, elevation * 0.2 + precipitation * 0.2 + temperature * 0.6 + Math.random() * 0.6)))
-    const wildlife = Math.round(Math.max(1, Math.min(5, elevation * 0.1 + precipitation * 0.4 + temperature * 0.4 + Math.random() * 0.4)))
-    const solar = Math.round(Math.max(1, Math.min(5, elevation * 0.1 + precipitation * 0.2 + temperature * 0.5 + Math.random() * 0.5)));
-    const wind = Math.round(Math.max(1, Math.min(5, elevation * 0.3 + precipitation * 0.3 + temperature * 0.3 + Math.random() * 0.3)));
-    const forest = Math.round(Math.max(1, (1 + (elevation * 2) + (temperature / 10) + (precipitation / 150))));
-    const rocks = Math.round(Math.max(1, (1 - (elevation * -1) + (temperature / 20))));
-    const minerals = Math.round(Math.max(1, (1 + (elevation * 2) + (temperature / 20) + (precipitation / 300))));
-
     const minArea = 30;
     const maxArea = 80;
-    const elevationWeight = 0.2;
-    const precipitationWeight = 0.3;
-    const temperatureWeight = 0.1;
+    const elevationFactor = 1 + elevation;
+    const precipitationFactor = 1 + Math.log10(precipitation);
+    const temperatureFactor = temperature / 10;
 
-    const elevationModifier = (elevation + 1) / 2;
-    const precipitationModifier = precipitation / 450;
-    const temperatureModifier = (temperature + 10) / 42;
+    const solar = Math.round(Math.min(Math.max((1 + (temperature - 18) / 14 + precipitation / 225 + elevation / 2) / 3, 0), 5));
+    const wind = Math.round(Math.min(Math.max((1 + (temperature - 18) / 10 + precipitation / 400 + elevation / 2) / 3, 0), 5));
+    const food = Math.round(Math.min(Math.max((1 + (temperature - 18) / 10 + precipitation / 300 + elevation / 3) / 3, 0), 5));
+    const water = Math.round(Math.min(Math.max((1 + (temperature - 18) / 14 + precipitation / 100 + elevation / 5) / 3, 0), 5));
+    const wood = Math.round(Math.min(Math.max((1 + (temperature - 18) / 14 + precipitation / 250 + elevation / 4) / 3, 0), 5));
+    const stone = Math.round(Math.min(Math.max((1 + (temperature - 18) / 10 + precipitation / 200 + elevation / 3) / 3, 0), 5));
+    const ore = Math.round(Math.min(Math.max((1 + (temperature - 18) / 10 + precipitation / 200 + elevation / 3) / 3, 0), 5));
+    const area = Math.max(Math.min(Math.round(minArea * elevationFactor * precipitationFactor * temperatureFactor * (0.5 + Math.random() * 0.7)), maxArea), minArea);
 
-    const area = minArea + ((maxArea - minArea) * (elevationWeight * elevationModifier + precipitationWeight * precipitationModifier + temperatureWeight * temperatureModifier));
-
-    return { area: Math.round(area), solar, wind, fertility, wildlife, forest, rocks, minerals }
+    return { area, solar, wind, food, water, wood, stone, ore }
 }
 
 async function determineBiome(precipitation: number, temperature: number) {
