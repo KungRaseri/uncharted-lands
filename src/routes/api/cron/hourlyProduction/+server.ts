@@ -5,24 +5,33 @@ export const POST: RequestHandler = async () => {
     const settlements = await db.settlement.findMany({
         include: {
             Plot: true,
-            SettlementResources: true
+            Storage: true,
+            Structures: true
         }
     })
     for (const settlement of settlements) {
-            await db.settlementResource.update({
-                where: {
-                    settlementId_resourceId: {
-                        resourceId: resource.id,
-                        settlementId: settlement.id
-                    }
+        await db.settlementStorage.update({
+            where: {
+                id: settlement.settlementStorageId
+            },
+            data: {
+                food: {
+                    increment: settlement.Plot.food
                 },
-                data: {
-                    amount: {
-                        increment: resource.amount
-                    }
+                water: {
+                    increment: settlement.Plot.water
+                },
+                wood: {
+                    increment: settlement.Plot.wood
+                },
+                stone: {
+                    increment: settlement.Plot.stone
+                },
+                ore: {
+                    increment: settlement.Plot.ore
                 }
-            })
-        }
+            }
+        })
     }
 
     return new Response("ok");
