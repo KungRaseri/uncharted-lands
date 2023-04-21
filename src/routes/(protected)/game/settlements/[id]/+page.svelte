@@ -42,10 +42,10 @@
 						Wind: {data.settlement.Plot.wind}
 					</div>
 					<div class="badge variant-ghost-secondary">
-						Fertility: {data.settlement.Plot.fertility}
+						Food: {data.settlement.Plot.food}
 					</div>
 					<div class="badge variant-ghost-secondary">
-						Wildlife: {data.settlement.Plot.wildlife}
+						Water: {data.settlement.Plot.water}
 					</div>
 				</h3>
 				<span class="text-xs">{data.settlement.Plot.id}</span>
@@ -56,13 +56,13 @@
 
 			<footer class="card-footer">
 				<div class="badge variant-ghost-secondary">
-					Forest: {data.settlement.Plot.forest}
+					Wood: {data.settlement.Plot.wood}
 				</div>
 				<div class="badge variant-ghost-secondary">
-					Rocks: {data.settlement.Plot.rocks}
+					Stone: {data.settlement.Plot.stone}
 				</div>
 				<div class="badge variant-ghost-secondary">
-					Minerals: {data.settlement.Plot.minerals}
+					Ore: {data.settlement.Plot.ore}
 				</div>
 			</footer>
 		</div>

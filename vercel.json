@@ -3,6 +3,10 @@
         {
             "path": "/api/cron/hourlyProduction",
             "schedule": "0 * * * *"
+        },
+        {
+            "path": "/api/cron/hourlyHalfHourProduction",
+            "schedule": "30 * * * *"
         }
     ]
 }

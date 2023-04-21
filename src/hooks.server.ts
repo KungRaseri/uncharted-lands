@@ -1,4 +1,4 @@
-import { redirect, type Hook, type Handle, type HandleServerError } from "@sveltejs/kit";
+import { redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { AuthenticateUser } from "$lib/auth";
 
 import * as Sentry from '@sentry/node';
@@ -9,11 +9,6 @@ Sentry.init({
     integrations: [new BrowserTracing()],
     tracesSampleRate: 1.0,
     environment: process.env.NODE_ENV
-})
-
-export const handleHook: Hook = (async ({ request, resolve }) => {
-
-    return resolve(request);
 })
 
 export const handle: Handle = (async ({ event, resolve }) => {
@@ -39,16 +34,12 @@ export const handleError: HandleServerError = (async ({ error, event }) => {
     const errorId = crypto.randomUUID();
 
     Sentry.withScope(async (scope) => {
-        scope.setExtra('event', event);
-        scope.setExtra('errorId', errorId);
-
-        Sentry.captureException(error, {
-            contexts: { sveltekit: { event, errorId } }
-        });
+        scope.setTag("errorId", errorId)
+        Sentry.captureException(error);
     })
 
     return {
-        message: 'Whoops!',
+        message: `${event.url.search} at ${event.url.pathname} failed.`,
         errorId
     };
 }) satisfies HandleServerError;

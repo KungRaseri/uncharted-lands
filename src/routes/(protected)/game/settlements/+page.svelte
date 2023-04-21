@@ -35,10 +35,8 @@
 			<thead>
 				<tr>
 					<th>ID</th>
-					<th>Type</th>
-					<th>Elevation</th>
-					<th>Precipitation</th>
-					<th>Temperature</th>
+					<th>Name</th>
+					<th>Resources</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -47,6 +45,11 @@
 						<tr>
 							<td><a href="/game/settlements/{settlement.id}">{settlement.id}</a></td>
 							<td>{settlement.name}</td>
+							<td>
+								<div class="card">
+									{settlement.name}
+								</div>
+							</td>
 						</tr>
 					{/each}
 				{/if}

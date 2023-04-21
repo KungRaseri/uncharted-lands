@@ -3,7 +3,17 @@ import { TileType } from "@prisma/client"
 import type { Prisma, Region, Plot, Biome, Tile, World } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
+import { normalizeValue } from '$lib/game/world-generator'
+
 import cuid from 'cuid';
+
+let world: World;
+let regions: Region[] = [];
+let tiles: Tile[] = [];
+let plots: Plot[] = [];
+let biomes: Biome[] = [];
+
+let generatedRegions: Region[];
 
 export const load: PageServerLoad = async () => {
     return {
@@ -16,7 +26,7 @@ export const load: PageServerLoad = async () => {
     }
 }
 
-const saveWorld: Action = async ({ request }) => {
+const save: Action = async ({ request }) => {
     const data = await request.formData();
     const map = data.get("map")
     const mapOptions = data.get("map-options")
@@ -32,170 +42,241 @@ const saveWorld: Action = async ({ request }) => {
         return fail(400, { invalid: true, message: 'Some properties were invalid or were not provided.' })
     }
 
-    const generatedMap: Region[] = JSON.parse(map.toString());
+    generatedRegions = JSON.parse(map.toString());
+
     const mapSettings = JSON.parse(mapOptions.toString());
     const elevationSettings = JSON.parse(elevationOptions.toString());
     const precipitationSettings = JSON.parse(precipitationOptions.toString());
     const temperatureSettings = JSON.parse(temperatureOptions.toString());
 
-    const world = await handleWorldCreation(mapSettings, elevationSettings, precipitationSettings, temperatureSettings);
+    biomes = await db.biome.findMany() ?? [];
 
-    await finalizeWorldCreation(world, generatedMap)
+    createWorld(mapSettings, elevationSettings, precipitationSettings, temperatureSettings);
+    createRegions();
+    await createTiles();
+    createPlots();
+
+    await finishWorldCreation()
 
     throw redirect(302, '/admin/worlds')
 }
 
-async function finalizeWorldCreation(world: World, generatedMap: Region[]) {
+function createWorld(mapSettings: any, elevationSettings: Prisma.JsonValue, precipitationSettings: Prisma.JsonValue, temperatureSettings: Prisma.JsonValue) {
+    world = {
+        id: cuid(),
+        name: mapSettings.worldName,
+        serverId: mapSettings.serverId,
+        elevationSettings: elevationSettings,
+        precipitationSettings: precipitationSettings,
+        temperatureSettings: temperatureSettings,
+        createdAt: new Date(Date.now()),
+        updatedAt: new Date(Date.now())
+    }
+}
 
-    for (const generatedRegion of generatedMap) {
-        const region = await handleRegionCreation(world, generatedRegion)
+function createRegions() {
+    regions = generatedRegions.map((v) => {
+        v.id = cuid();
+        v.worldId = world.id;
 
-        const elevationMap: number[][] = JSON.parse(JSON.stringify(generatedRegion?.elevationMap))
-        const precipitationMap: number[][] = JSON.parse(JSON.stringify(generatedRegion?.precipitationMap))
-        const temperatureMap: number[][] = JSON.parse(JSON.stringify(generatedRegion?.temperatureMap))
+        return v;
+    });
+}
 
-        for (const row of elevationMap) {
-            const x = elevationMap.indexOf(row);
-            for (const elevation of row) {
-                const y = row.indexOf(elevation);
+async function createTiles() {
+    for (const region of regions) {
 
+        const elevationMap = region.elevationMap as number[][]
+        const precipitationMap = region.precipitationMap as number[][]
+        const temperatureMap = region.temperatureMap as number[][]
+
+        for (const [x, row] of elevationMap.entries()) {
+            for (const [y, elevation] of row.entries()) {
                 const type = elevation < 0 ? TileType.OCEAN : TileType.LAND;
-                const biome = await determineBiome(precipitationMap[x][y], temperatureMap[x][y])
+                const biome = await determineBiome(normalizeValue(precipitationMap[x][y], 0, 450), normalizeValue(temperatureMap[x][y], -10, 32))
 
-                const tile = await handleTileCreation(region, type, biome, elevation, precipitationMap[x][y], temperatureMap[x][y]);
-
-                const plotsTotal = await determinePlotsTotal(tile.elevation, tile.precipitation, tile.temperature);
-
-                for (let i = 0; i < plotsTotal; i++) {
-                    await handlePlotCreation(tile);
-                }
+                tiles.push({
+                    id: cuid(),
+                    regionId: region.id,
+                    biomeId: biome.id,
+                    type,
+                    elevation: elevationMap[x][y],
+                    precipitation: precipitationMap[x][y],
+                    temperature: temperatureMap[x][y]
+                });
             }
         }
     }
 }
 
-async function handleWorldCreation(mapSettings: any, elevationSettings: any, precipitationSettings: any, temperatureSettings: any) {
-    const world = await db.world.create({
+function createPlots() {
+    for (const tile of tiles) {
+        const biome = biomes.find(biome => biome.id === tile.biomeId)
+        if (biome === undefined) return;
+
+        const plotsTotal = determinePlotsTotal(tile.elevation, biome);
+
+        for (let i = 0; i < plotsTotal; i++) {
+            const plotData: Plot = determinePlotData(tile, biome);
+            plots.push(plotData);
+        }
+    }
+}
+
+
+async function finishWorldCreation() {
+    await db.world.create({
         data: {
-            name: mapSettings.worldName,
-            serverId: mapSettings.serverId,
-            elevationSettings,
-            precipitationSettings,
-            temperatureSettings
-        },
-        include: {
-            server: true
+            id: world.id,
+            name: world.name,
+            serverId: world.serverId,
+            elevationSettings: world.elevationSettings as Prisma.InputJsonValue,
+            precipitationSettings: world.precipitationSettings as Prisma.InputJsonValue,
+            temperatureSettings: world.temperatureSettings as Prisma.InputJsonValue,
+            createdAt: world.createdAt,
+            updatedAt: world.updatedAt
         }
     })
 
-    return world
-}
-
-async function handleRegionCreation(world: World, generatedRegion: Region) {
-    const region = await db.region.create({
-        data: {
-            name: generatedRegion.name,
-            elevationMap: generatedRegion.elevationMap as Prisma.JsonArray,
-            precipitationMap: generatedRegion.precipitationMap as Prisma.JsonArray,
-            temperatureMap: generatedRegion.temperatureMap as Prisma.JsonArray,
-            worldId: world.id,
-            xCoord: generatedRegion.xCoord,
-            yCoord: generatedRegion.yCoord
-        },
-        include: {
-            world: true
-        }
-    });
-
-    return region;
-}
-
-async function handleTileCreation(region: Region, type: TileType, biome: Biome, elevation: number, precipitation: number, temperature: number) {
-    const tile = await db.tile.create({
-        data: {
-            elevation: elevation,
-            type: type,
-            precipitation: precipitation,
-            temperature: temperature,
-            regionId: region.id,
-            biomeId: biome.id
-        }
-    });
-
-    return tile;
-}
-
-async function handlePlotCreation(tile: Tile) {
-    const plotData = await determinePlotData(tile.elevation, tile.precipitation, tile.temperature);
-
-    const plot = await db.plot.create({
-        data: {
-            id: cuid(),
-            area: plotData.area,
-            solar: plotData.solar,
-            wind: plotData.wind,
-            food: plotData.food,
-            water: plotData.water,
-            wood: plotData.wood,
-            stone: plotData.stone,
-            ore: plotData.ore,
-            Tile: {
-                connect: {
-                    id: tile.id
-                }
-            }
-        }
+    // const region = await db.region.create({
+    //     data: {
+    //         name: generatedRegion.name,
+    //         elevationMap: generatedRegion.elevationMap as Prisma.JsonArray,
+    //         precipitationMap: generatedRegion.precipitationMap as Prisma.JsonArray,
+    //         temperatureMap: generatedRegion.temperatureMap as Prisma.JsonArray,
+    //         worldId: world.id,
+    //         xCoord: generatedRegion.xCoord,
+    //         yCoord: generatedRegion.yCoord
+    //     },
+    //     include: {
+    //         world: true
+    //     }
+    // });
+    await db.region.createMany({
+        data: regions as Prisma.Enumerable<Prisma.RegionCreateManyInput>
     })
 
-    return plot;
+    // const tile = await db.tile.create({
+    //     data: {
+    //         elevation: elevation,
+    //         type: type,
+    //         precipitation: precipitation,
+    //         temperature: temperature,
+    //         regionId: region.id,
+    //         biomeId: biome.id
+    //     }
+    // });
+    await db.tile.createMany({
+        data: tiles as Prisma.Enumerable<Prisma.TileCreateManyInput>
+    })
+
+    // const plot = await db.plot.create({
+    //     data: {
+    //         id: cuid(),
+    //         area: plotData.area,
+    //         solar: plotData.solar,
+    //         wind: plotData.wind,
+    //         food: plotData.food,
+    //         water: plotData.water,
+    //         wood: plotData.wood,
+    //         stone: plotData.stone,
+    //         ore: plotData.ore,
+    //         Tile: {
+    //             connect: {
+    //                 id: tile.id
+    //             }
+    //         }
+    //     }
+    // })
+    await db.plot.createMany({
+        data: plots as Prisma.Enumerable<Prisma.PlotCreateManyInput>
+    })
 }
 
-async function determinePlotsTotal(elevation: number, precipitation: number, temperature: number) {
-    let plots = Math.floor(Math.random() * (6 + 1));
+function determinePlotsTotal(elevation: number, biome: Biome) {
+    if (elevation <= 0) return 0; // make sure to return 0 plots for oceanic tiles.
 
-    if (elevation < 0) {
-        plots = 0;
-    } else if (elevation > 1000) {
-        plots = Math.min(plots + 1, 6);
-    }
-
-    if (precipitation < 200) {
-        plots = Math.max(plots - 1, 0);
-    } else if (precipitation > 800) {
-        plots = Math.min(plots + 1, 6);
-    }
-
-    if (temperature < 10) {
-        plots = Math.max(plots - 1, 0);
-    } else if (temperature > 30) {
-        plots = Math.min(plots + 1, 6);
-    }
-
-    return plots;
+    return Math.floor(Math.random() * (biome.plotsMax - biome.plotsMin + 1)) + biome.plotsMin;
 }
 
-async function determinePlotData(elevation: number, precipitation: number, temperature: number) {
-    const minArea = 30;
-    const maxArea = 80;
-    const elevationFactor = 1 + elevation;
-    const precipitationFactor = 1 + Math.log10(precipitation);
-    const temperatureFactor = temperature / 10;
+function determinePlotData(tile: Tile, biome: Biome) {
+    const area = Math.floor(Math.random() * (biome.plotAreaMax - biome.plotAreaMin + 1)) + biome.plotAreaMin;
 
-    const solar = Math.round(Math.min(Math.max((1 + (temperature - 18) / 14 + precipitation / 225 + elevation / 2) / 3, 0), 5));
-    const wind = Math.round(Math.min(Math.max((1 + (temperature - 18) / 10 + precipitation / 400 + elevation / 2) / 3, 0), 5));
-    const food = Math.round(Math.min(Math.max((1 + (temperature - 18) / 10 + precipitation / 300 + elevation / 3) / 3, 0), 5));
-    const water = Math.round(Math.min(Math.max((1 + (temperature - 18) / 14 + precipitation / 100 + elevation / 5) / 3, 0), 5));
-    const wood = Math.round(Math.min(Math.max((1 + (temperature - 18) / 14 + precipitation / 250 + elevation / 4) / 3, 0), 5));
-    const stone = Math.round(Math.min(Math.max((1 + (temperature - 18) / 10 + precipitation / 200 + elevation / 3) / 3, 0), 5));
-    const ore = Math.round(Math.min(Math.max((1 + (temperature - 18) / 10 + precipitation / 200 + elevation / 3) / 3, 0), 5));
-    const area = Math.max(Math.min(Math.round(minArea * elevationFactor * precipitationFactor * temperatureFactor * (0.5 + Math.random() * 0.7)), maxArea), minArea);
+    const solar = 1 + ((tile.elevation + 1) / 2) * biome.solarModifier
+    const wind = 1 + ((tile.elevation + 1) / 2) * biome.solarModifier
 
-    return { area, solar, wind, food, water, wood, stone, ore }
+    const food = determineFood(tile.elevation, tile.precipitation, tile.temperature, solar, wind);
+    const water = determineWater(tile.elevation, tile.precipitation, tile.temperature, solar, wind);
+
+    const wood = Math.round((tile.elevation + tile.precipitation + tile.temperature + solar) / 4)
+    const stone = Math.round((tile.elevation + tile.precipitation + tile.temperature + wind) / 4)
+    const ore = Math.round((tile.elevation + tile.precipitation + tile.temperature + solar + wind) / 5)
+
+    return { id: cuid(), tileId: tile.id, area, solar, wind, food, water, wood, stone, ore }
+}
+
+function determineSolar(elevation: number, precipitation: number, temperature: number) {
+    // Determine base solar value based on elevation
+    let solar = 1;
+
+    if (elevation > 0) {
+        solar += elevation / 10000;
+        if (solar > 5) solar = 5;
+    } else {
+        solar -= Math.abs(elevation) / 10000;
+        if (solar < 1) solar = 1;
+    }
+
+    // Adjust solar based on precipitation
+    solar -= precipitation / 150;
+    if (solar < 1) solar = 1;
+
+    // Adjust solar based on temperature
+    solar += temperature / 20;
+    if (solar > 5) solar = 5;
+
+    return Math.round(solar);
+}
+
+function determineWind(elevation: number, precipitation: number, temperature: number) {
+    // Determine base wind value based on elevation
+    let wind = 5;
+    if (elevation > 0) {
+        wind -= elevation / 10000;
+        if (wind < 1) wind = 1;
+    } else {
+        wind += Math.abs(elevation) / 10000;
+        if (wind > 5) wind = 5;
+    }
+
+    // Adjust wind based on precipitation
+    wind += precipitation / 150;
+    if (wind > 5) wind = 5;
+
+    // Adjust wind based on temperature
+    wind -= temperature / 20;
+    if (wind < 1) wind = 1;
+
+    return Math.round(wind);
+}
+
+function determineFood(elevation: number, precipitation: number, temperature: number, solar: number, wind: number) {
+    let food = (elevation + precipitation + temperature) / 3
+
+    food += (solar - wind) / 10;
+
+    return Math.round(Math.max(1, Math.min(5, food)))
+}
+
+function determineWater(elevation: number, precipitation: number, temperature: number, solar: number, wind: number) {
+    let water = (elevation + precipitation + temperature) / 3
+
+    water += (solar + wind) / 10;
+
+    return Math.round(Math.max(1, Math.min(5, water)))
 }
 
 async function determineBiome(precipitation: number, temperature: number) {
-    const biomes = await db.biome.findMany();
-
     let filteredBiomes = biomes.filter(biome =>
         Math.round(precipitation) >= biome.precipitationMin && Math.round(precipitation) <= biome.precipitationMax
         && Math.round(temperature) >= biome.temperatureMin && Math.round(temperature) <= biome.temperatureMax)
@@ -207,4 +288,4 @@ async function determineBiome(precipitation: number, temperature: number) {
     return filteredBiomes[Math.floor(Math.random() * filteredBiomes.length)];
 }
 
-export const actions: Actions = { saveWorld }
+export const actions: Actions = { save }

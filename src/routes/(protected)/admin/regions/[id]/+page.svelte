@@ -35,7 +35,6 @@
 						<span>E: {(tile.elevation * 100).toPrecision(3)}</span>
 						<span>P: {tile.precipitation.toPrecision(3)}</span>
 						<span>T: {tile.temperature.toPrecision(3)}</span>
-						<span>{tile.Biome.name.substring(0, 9)}...</span>
 					</div>
 				</div>
 			{/each}

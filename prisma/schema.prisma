@@ -83,15 +83,16 @@ model Region {
 
 model Tile {
   id            String   @id @default(cuid())
+  biomeId       String
+  regionId      String
   elevation     Float
   temperature   Float
   precipitation Float
   type          TileType
-  regionId      String
-  biomeId       String
-  Plots         Plot[]
-  Region        Region   @relation(fields: [regionId], references: [id], onDelete: Cascade)
-  Biome         Biome    @relation(fields: [biomeId], references: [id])
+
+  Plots  Plot[]
+  Biome  Biome  @relation(fields: [biomeId], references: [id])
+  Region Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
 }
 
 model Biome {
@@ -101,72 +102,87 @@ model Biome {
   precipitationMax Float
   temperatureMin   Float
   temperatureMax   Float
-  Tile             Tile[]
-}
+  plotsMin         Int
+  plotsMax         Int
+  plotAreaMin      Int
+  plotAreaMax      Int
+  solarModifier    Int
+  windModifier     Int
+  foodModifier     Int
+  waterModifier    Int
+  woodModifier     Int
+  stoneModifier    Int
+  oreModifier      Int
 
-model Resource {
-  id          String @id @default(cuid())
-  name        String @unique
-  description String
-  icon        String
-
-  SettlementResource SettlementResource[]
+  Tile Tile[]
 }
 
 model Plot {
   id     String @id @default(cuid())
   tileId String
   area   Int
-  solar Int
-  wind Int
-  food Int
-  water Int
-  wood Int
-  stone Int
-  ore Int
+  solar  Int
+  wind   Int
+  food   Int
+  water  Int
+  wood   Int
+  stone  Int
+  ore    Int
 
   Settlement Settlement?
   Tile       Tile        @relation(fields: [tileId], references: [id], onDelete: Cascade)
 }
 
 model Settlement {
-  id              String   @id @default(cuid())
-  plotId          String   @unique
-  playerProfileId String
-  name            String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                  String @id @default(cuid())
+  plotId              String @unique
+  playerProfileId     String
+  settlementStorageId String @unique
+  name                String
 
-  Plot                Plot                  @relation(fields: [plotId], references: [id], onDelete: Cascade)
-  PlayerProfile       ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
-  Structures          SettlementStructure[]
-  SettlementResources SettlementResource[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Storage       SettlementStorage     @relation(fields: [settlementStorageId], references: [id], onDelete: Cascade)
+  Plot          Plot                  @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  PlayerProfile ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
+  Structures    SettlementStructure[]
 }
 
-model SettlementResource {
-  id           String   @id @default(cuid())
-  resourceId   String
-  settlementId String
-  amount       Int
-  capacity     Int
-  updatedAt    DateTime @updatedAt
-
-  Resource   Resource   @relation(fields: [resourceId], references: [id])
-  Settlement Settlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
-
-  @@unique([settlementId, resourceId])
+model SettlementStorage {
+  id         String      @id @default(cuid())
+  food       Int
+  water      Int
+  wood       Int
+  stone      Int
+  ore        Int
+  Settlement Settlement?
 }
 
 model SettlementStructure {
-  id                    String @id @default(cuid())
-  settlementId          String
-  name                  String
-  description           String
-  areaRequirement       Int
-  populationRequirement Int
+  id                      String @id @default(cuid())
+  structureRequirementsId String @unique
+  settlementId            String
+  name                    String
+  description             String
 
-  settlement Settlement          @relation(fields: [settlementId], references: [id], onDelete: Cascade)
-  modifiers  StructureModifier[]
+  buildRequirements StructureRequirements @relation(fields: [structureRequirementsId], references: [id], onDelete: Cascade)
+  settlement        Settlement            @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  modifiers         StructureModifier[]
+}
+
+model StructureRequirements {
+  id    String @id @default(cuid())
+  area  Int
+  solar Int
+  wind  Int
+  food  Int
+  water Int
+  wood  Int
+  stone Int
+  ore   Int
+
+  SettlementStructure SettlementStructure?
 }
 
 model StructureModifier {

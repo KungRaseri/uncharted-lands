@@ -30,19 +30,14 @@ function chunks(heightMap: number[][], chunkSize: number) {
 }
 
 type MapOptions = {
-    serverId: string | null, worldName: string | null, width: number, height: number, eSeed: number, pSeed: number, tSeed: number
+    serverId: string | null, worldName: string | null, width: number, height: number, seed: number
 }
 
-export async function generate(mapOptions: MapOptions, elevationOptions: Options, precipitationOptions: Options, temperatureOptions: Options) {
-    const elevationMap = generateMap(mapOptions, makeNoise2D(mapOptions.eSeed), elevationOptions);
-    const precipitationMap = generateMap(mapOptions, makeNoise2D(mapOptions.pSeed), precipitationOptions);
-    const temperatureMap = generateMap(mapOptions, makeNoise2D(mapOptions.tSeed), temperatureOptions);
-
-    return { elevationMap: chunks(elevationMap, 10), precipitationMap: chunks(precipitationMap, 10), temperatureMap: chunks(temperatureMap, 10) }
-}
-
-function generateMap(mapOptions: MapOptions, noiseFn: (x: number, y: number) => number, options: Options) {
+export async function generateMap(mapOptions: MapOptions, options: Options) {
     const { amplitude, persistence, frequency, octaves, scale } = options;
+
+    const noiseFn = makeNoise2D(mapOptions.seed);
+
     const map = makeRectangle(mapOptions.width, mapOptions.height, noiseFn, {
         amplitude,
         persistence,
@@ -54,25 +49,7 @@ function generateMap(mapOptions: MapOptions, noiseFn: (x: number, y: number) => 
     return chunks(map, 10)
 }
 
-export async function generateElevation(mapOptions: MapOptions, options: Options) {
-    const noiseFn = makeNoise2D(mapOptions.eSeed);
-    return generateMap(mapOptions, noiseFn, options);
-}
-
-export async function generatePrecipitation(mapOptions: MapOptions, options: Options) {
-    const noiseFn = makeNoise2D(mapOptions.pSeed);
-    const precipitationMin = 1, precipitationMax = 450;
-
-    return generateMap(mapOptions, noiseFn, { ...options, scale: (x) => normalizeValue(x, precipitationMin, precipitationMax) });
-}
-export async function generateTemperature(mapOptions: MapOptions, options: Options) {
-    const noiseFn = makeNoise2D(mapOptions.tSeed);
-    const temperatureMin = -10, temperatureMax = 32;
-
-    return generateMap(mapOptions, noiseFn, { ...options, scale: (x) => normalizeValue(x, temperatureMin, temperatureMax) });
-}
-
-function normalizeValue(value: number, min: number, max: number) {
+export function normalizeValue(value: number, min: number, max: number) {
     return value * (max - min) / 2 + (max + min) / 2;
 }
 

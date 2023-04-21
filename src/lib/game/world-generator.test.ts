@@ -1,4 +1,4 @@
-import { generate, generatePrecipitation, generateTemperature } from './world-generator';
+import { generateMap } from './world-generator';
 import { describe, it, expect } from 'vitest';
 
 
@@ -9,9 +9,7 @@ describe('world-generator.ts', () => {
             worldName: 'test-world',
             width: 100,
             height: 100,
-            eSeed: Date.now(),
-            pSeed: Date.now(),
-            tSeed: Date.now()
+            seed: Date.now()
         }
 
         const elevationOptions = {
@@ -35,10 +33,9 @@ describe('world-generator.ts', () => {
             persistence: 0.5
         }
 
-        const target = await generate(mapOptions, elevationOptions, precipitationOptions, temperatureOptions);
-        const elevation = target.elevationMap[0][0]
-        const precipitation = target.precipitationMap[0][0]
-        const temperature = target.temperatureMap[0][0]
+        const elevation = await generateMap(mapOptions, elevationOptions);
+        const precipitation = await generateMap(mapOptions, precipitationOptions);
+        const temperature = await generateMap(mapOptions, temperatureOptions);
 
         expect(elevation).toHaveLength(10)
         expect(elevation[0]).toHaveLength(10)
@@ -49,16 +46,12 @@ describe('world-generator.ts', () => {
     });
 
     it("generatePrecipitation() - Should generate precipitation within a specific range", async () => {
-        const precipitationMin = 1, precipitationMax = 450;
-
         const mapOptions = {
             serverId: 'test-id',
             worldName: 'test-world',
             width: 100,
             height: 100,
-            eSeed: Date.now(),
-            pSeed: Date.now(),
-            tSeed: Date.now()
+            seed: Date.now()
         }
 
         const precipitationOptions = {
@@ -68,24 +61,20 @@ describe('world-generator.ts', () => {
             persistence: 0.5
         }
 
-        const target = await generatePrecipitation(mapOptions, precipitationOptions);
+        const target = await generateMap(mapOptions, precipitationOptions);
 
 
-        expect(Math.max(...target.flat(3))).toBeLessThanOrEqual(precipitationMax)
-        expect(Math.min(...target.flat(3))).toBeGreaterThanOrEqual(precipitationMin)
+        expect(Math.max(...target.flat(3))).toBeLessThanOrEqual(1)
+        expect(Math.min(...target.flat(3))).toBeGreaterThanOrEqual(-1)
     })
 
     it("generateTemperature() - Should generate temperature within a specific range", async () => {
-        const temperatureMin = -10, temperatureMax = 32;
-
         const mapOptions = {
             serverId: 'test-id',
             worldName: 'test-world',
             width: 100,
             height: 100,
-            eSeed: Date.now(),
-            pSeed: Date.now(),
-            tSeed: Date.now()
+            seed: Date.now()
         }
 
         const temperatureOptions = {
@@ -95,11 +84,11 @@ describe('world-generator.ts', () => {
             persistence: 0.5
         }
 
-        const target = await generateTemperature(mapOptions, temperatureOptions);
+        const target = await generateMap(mapOptions, temperatureOptions);
 
 
-        expect(Math.max(...target.flat(3))).toBeLessThanOrEqual(temperatureMax)
-        expect(Math.min(...target.flat(3))).toBeGreaterThanOrEqual(temperatureMin)
+        expect(Math.max(...target.flat(3))).toBeLessThanOrEqual(1)
+        expect(Math.min(...target.flat(3))).toBeGreaterThanOrEqual(-1)
 
         console.log(Math.max(...target.flat(3)))
         console.log(Math.min(...target.flat(3)))

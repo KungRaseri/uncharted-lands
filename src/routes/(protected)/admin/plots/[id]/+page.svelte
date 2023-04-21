@@ -33,7 +33,7 @@
 				<div class="p-4">
 					{data.plot.Settlement.PlayerProfile.profile.username}
 					{data.plot.Settlement.name}
-					{#each data.plot.Settlement.structures as structure}
+					{#each data.plot.Settlement.Structures as structure}
 						{structure.name}
 					{/each}
 				</div>
