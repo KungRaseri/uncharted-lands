@@ -29,7 +29,7 @@ const config = {
 					'https://fonts.googleapis.com'
 				],
 				'script-src': [
-					'self',
+					'self'
 				],
 				'default-src': [
 					'self',

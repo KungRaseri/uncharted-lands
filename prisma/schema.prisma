@@ -23,15 +23,15 @@ model Profile {
   username  String              @unique
   picture   String
   accountId String              @unique
-  account   Account             @relation(fields: [accountId], references: [id])
+  account   Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
   servers   ProfileServerData[]
 }
 
 model ProfileServerData {
   profileId   String       @unique
   serverId    String       @unique
-  profile     Profile      @relation(fields: [profileId], references: [id])
-  server      Server       @relation(fields: [serverId], references: [id])
+  profile     Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  server      Server       @relation(fields: [serverId], references: [id], onDelete: Cascade)
   settlements Settlement[]
 
   @@unique([profileId, serverId])

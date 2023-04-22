@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import TileDetails from '$lib/components/admin/TileDetails.svelte';
+	import SettlementDetails from '$lib/components/admin/SettlementDetails.svelte';
 
 	export let data: PageData;
 </script>
@@ -12,41 +14,24 @@
 	<li>Plot [{data.plot.id}]</li>
 </ol>
 
-<div class="card p-4">
+<div class="card">
 	<header class="card-header">
 		<h2>{data.plot.id}</h2>
 	</header>
 
-	<div class="p-4 grid grid-cols-1">
-		<h3>Tile</h3>
-		<div class="card p-4">
-			<header>
-				<h3>{data.plot.Tile.id}</h3>
-			</header>
-		</div>
-		<h3>Settlement</h3>
+	<section class="p-4 grid grid-cols-1 space-y-2">
+		<TileDetails tile={data.plot.Tile} />
 		{#if data.plot.Settlement}
-			<div class="card p-4">
-				<header>
-					<h3>{data.plot.Settlement.id}</h3>
-				</header>
-				<div class="p-4">
-					{data.plot.Settlement.PlayerProfile.profile.username}
-					{data.plot.Settlement.name}
-					{#each data.plot.Settlement.Structures as structure}
-						{structure.name}
-					{/each}
-				</div>
-			</div>
+			<SettlementDetails settlement={data.plot.Settlement} />
 		{:else}
-			<div class="card p-4">
-				<header>
+			<div class="card">
+				<section class="p-4">
 					<h3>No Settlement Found</h3>
-				</header>
+				</section>
 			</div>
 		{/if}
-	</div>
-	<div class="px-6 py-1 w-full">
+	</section>
+	<section class="px-6 py-1 w-full">
 		<div class="w-full p-0 m-0">
 			<h3>Attributes</h3>
 
@@ -79,5 +64,5 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</section>
 </div>

@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ locals }) => {
                     Tile: true
                 }
             },
-            SettlementResources: true,
+            Storage: true,
             Structures: {
                 include: {
                     modifiers: true

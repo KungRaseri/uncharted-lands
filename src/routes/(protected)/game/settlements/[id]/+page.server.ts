@@ -14,6 +14,7 @@ export const load = (async ({ params }) => {
                     Tile: true
                 }
             },
+            Storage: true,
             Structures: {
                 include: {
                     modifiers: true

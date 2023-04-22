@@ -1,6 +1,7 @@
 import { fail } from "@sveltejs/kit"
 import { db } from "$lib/db"
 import type { PageServerLoad, Actions, Action } from "./$types"
+import { TileType } from "@prisma/client";
 
 export const load: PageServerLoad = async ({ params }) => {
     const world = await db.world.findUnique({
@@ -15,11 +16,17 @@ export const load: PageServerLoad = async ({ params }) => {
                 include: {
                     tiles: {
                         include: {
-                            Plots: true
+                            Plots: {
+                                include: {
+                                    Settlement: true
+                                }
+                            },
+                            Biome: true
                         }
                     }
                 }
-            }
+            },
+            server: true
         }
     });
 
@@ -27,8 +34,43 @@ export const load: PageServerLoad = async ({ params }) => {
         throw fail(404, { success: false, id: params.id })
     }
 
+    const [landTiles, oceanTiles, settlements] = await db.$transaction([
+        db.tile.count({
+            where: {
+                type: TileType.LAND,
+                Region: {
+                    worldId: world.id
+                }
+            }
+        }),
+        db.tile.count({
+            where: {
+                type: TileType.OCEAN,
+                Region: {
+                    worldId: world.id
+                }
+            }
+        }),
+        db.settlement.count({
+            where: {
+                Plot: {
+                    Tile: {
+                        Region: {
+                            worldId: world.id
+                        }
+                    }
+                },
+            }
+        })
+    ])
+
     return {
-        world
+        world,
+        worldInfo: {
+            landTiles,
+            oceanTiles,
+            settlements
+        }
     }
 }
 

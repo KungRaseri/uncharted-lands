@@ -1,31 +1,16 @@
 <script lang="ts">
-	import type { Region } from '@prisma/client';
+	import type { Region, Prisma } from '@prisma/client';
+	import RegionComponent from '$lib/components/game/map/Region.svelte';
 
-	export let regions: Region[];
+	export let regions: Prisma.RegionGetPayload<{ include: { tiles: true } }>;
 </script>
 
 <div class="grid grid-cols-10 p-0 border-token w-full xl:w-1/2 mx-auto">
 	{#each regions as region}
 		<div class="p-0 border-token">
-			<a href="/admin/regions/{region.id}">
-				{#each region.elevationMap as elevationRow, x}
-					<div class="grid grid-cols-10 p-0">
-						{#each elevationRow as elevationColumn, y}
-							<div
-								class="
-									px-0 py-1.5 
-									justify-center text-center items-center text-xs
-									"
-								style="
-									background: rgb({elevationColumn * 255}, {elevationColumn * 255}, {elevationColumn * 255})
-									"
-							>
-								<!-- {x}.{y} -->
-							</div>
-						{/each}
-					</div>
-				{/each}
-			</a>
+			<div class="grid grid-cols-10 p-0">
+				<RegionComponent {region} />
+			</div>
 		</div>
 	{/each}
 </div>

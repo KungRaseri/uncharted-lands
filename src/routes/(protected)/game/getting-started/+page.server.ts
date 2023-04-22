@@ -17,48 +17,32 @@ export const load: PageServerLoad = async ({ locals }) => {
 }
 
 async function getRandomPlot(worldId: string) {
-    const worldData = await db.world.findUnique({
-        where: {
-            id: worldId
-        }
-    })
 
-    if (!worldData) {
-        throw fail(404, { notfound: true })
-    }
-
-    const potentialRegions = await db.region.findMany({
+    const potentialTiles = await db.tile.findMany({
         where: {
-            worldId: worldId,
-            tiles: {
-                some: {
-                    elevation: {
-                        gt: 0.2,
-                        lt: 0.8
-                    },
-                    Plots: {
-                        some: {
-                            Settlement: undefined
-                        }
-                    }
-                },
-                every: {
-                    type: TileType.LAND
-                }
+            elevation: {
+                gt: 0,
+                lt: 0.8
+            },
+            precipitation: {
+                gt: -0.5,
+                lt: 1
+            },
+            temperature: {
+                gt: -0.5,
+                lt: 0.5
+            },
+            Region: {
+                worldId: worldId
             }
         },
         include: {
-            tiles: {
-                include: {
-                    Plots: true
-                }
-            }
+            Plots: true
         }
     })
 
-    const randomRegionIndex = Math.floor(Math.random() * potentialRegions.length)
-    const randomTile = potentialRegions[randomRegionIndex]
-        .tiles[Math.floor(Math.random() * potentialRegions[randomRegionIndex].tiles.length)];
+    const randomTileIndex = Math.floor(Math.random() * potentialTiles.length)
+    const randomTile = potentialTiles[randomTileIndex];
 
     const randomPlot = randomTile.Plots[Math.floor(Math.random() * randomTile.Plots.length)]
 
@@ -83,50 +67,61 @@ const settle: Action = async ({ request, locals }) => {
     // choose a random tile to settle in for now
     const chosenPlot = await getRandomPlot(world);
 
-    const profile = await db.profile.create({
-        data: {
-            username,
-            account: {
-                connect: {
-                    id: locals.account.id
-                }
-            },
-            picture: `https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,
-        }
-    })
+    await db.$transaction(async (tx) => {
+        const profile = await tx.profile.create({
+            data: {
+                username,
+                account: {
+                    connect: {
+                        id: locals.account.id
+                    }
+                },
+                picture: `https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,
+            }
+        })
 
-    const serverProfile = await db.profileServerData.create({
-        data: {
-            profile: {
-                connect: {
-                    id: profile.id
+        const serverProfile = await tx.profileServerData.create({
+            data: {
+                profile: {
+                    connect: {
+                        id: profile.id
+                    }
+                },
+                server: {
+                    connect: {
+                        id: server
+                    }
                 }
             },
-            server: {
-                connect: {
-                    id: server
+            include: {
+                settlements: true
+            }
+        })
+
+        await tx.settlement.create({
+            data: {
+                name: "Home Settlement",
+                Storage: {
+                    create: {
+                        food: 5,
+                        water: 5,
+                        wood: 10,
+                        stone: 5,
+                        ore: 0
+                    }
+                },
+                PlayerProfile: {
+                    connect: {
+                        profileId: serverProfile.profileId
+                    }
+                },
+                Plot: {
+                    connect: {
+                        id: chosenPlot.id
+                    }
                 }
             }
-        },
-        include: {
-            settlements: true
-        }
-    })
-
-    await db.settlement.create({
-        data: {
-            name: "Home Settlement",
-            PlayerProfile: {
-                connect: {
-                    profileId: serverProfile.profileId
-                }
-            },
-            Plot: {
-                connect: {
-                    id: chosenPlot.id
-                }
-            }
-        }
+        })
     })
 
     // update the player profile and connect it to the server

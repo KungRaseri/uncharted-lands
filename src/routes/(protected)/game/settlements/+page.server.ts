@@ -10,7 +10,7 @@ export const load = (async ({ locals }) => {
             },
         },
         include: {
-            SettlementResources: true
+            Storage: true
         }
     })
 

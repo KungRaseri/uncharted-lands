@@ -46,8 +46,14 @@
 							<td><a href="/game/settlements/{settlement.id}">{settlement.id}</a></td>
 							<td>{settlement.name}</td>
 							<td>
-								<div class="card">
-									{settlement.name}
+								<div class="card w-fit">
+									<section class="p-1">
+										<span class="badge variant-ghost-surface">Food: {settlement.Storage.food}</span>
+										<span class="badge variant-ghost-surface">Water: {settlement.Storage.water}</span>
+										<span class="badge variant-ghost-surface">Wood: {settlement.Storage.wood}</span>
+										<span class="badge variant-ghost-surface">Stone: {settlement.Storage.stone}</span>
+										<span class="badge variant-ghost-surface">Ore: {settlement.Storage.ore}</span>	
+									</section>
 								</div>
 							</td>
 						</tr>

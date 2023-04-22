@@ -41,12 +41,6 @@
 					<div class="badge variant-ghost-secondary">
 						Wind: {data.settlement.Plot.wind}
 					</div>
-					<div class="badge variant-ghost-secondary">
-						Food: {data.settlement.Plot.food}
-					</div>
-					<div class="badge variant-ghost-secondary">
-						Water: {data.settlement.Plot.water}
-					</div>
 				</h3>
 				<span class="text-xs">{data.settlement.Plot.id}</span>
 			</header>
@@ -55,6 +49,12 @@
 			<section class="p-4" />
 
 			<footer class="card-footer">
+				<div class="badge variant-ghost-secondary">
+					Food: {data.settlement.Plot.food}
+				</div>
+				<div class="badge variant-ghost-secondary">
+					Water: {data.settlement.Plot.water}
+				</div>
 				<div class="badge variant-ghost-secondary">
 					Wood: {data.settlement.Plot.wood}
 				</div>

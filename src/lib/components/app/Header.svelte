@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	import { AppBar, popup } from '@skeletonlabs/skeleton';
+	import { AppBar, popup, LightSwitch } from '@skeletonlabs/skeleton';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 
 	import MenuIcon from 'svelte-material-icons/Menu.svelte';
@@ -84,6 +84,7 @@
 
 	<svelte:fragment slot="trail">
 		<div class="flex space-x-2">
+			<LightSwitch />
 			{#if !$page.data.account}
 				<a
 					href="/sign-in"
