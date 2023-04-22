@@ -15,7 +15,6 @@ export const load: PageServerLoad = async ({ params }) => {
             },
             tiles: {
                 include: {
-                    Biome: true,
                     Plots: true
                 }
             }

@@ -4,21 +4,69 @@
 
 <AppBar
 	gridColumns="grid-cols-3"
+	slotLead="place-self-start"
 	slotDefault="place-self-center"
-	slotTrail="place-content-end"
-	padding="px-2 py-2"
+	slotTrail="place-self-end"
+	padding="px-3 py-0"
 	background="bg-surface-200-700-token"
 	shadow="shadow-md"
-	class="justify-between"
 >
-	<svelte:fragment slot="lead">lead</svelte:fragment>
+	<svelte:fragment slot="lead">
+		<div class="btn-group rounded-none variant-filled-secondary text-secondary-50-900-token">
+			<a
+				href="/game"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+			>
+				Overview
+			</a>
+			<a
+				href="/game/settlements"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+			>
+				Settlements
+			</a>
+			<a
+				href="/game/map"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+			>
+				Map
+			</a>
+			<a
+				href="/game/wardens"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+			>
+				Wardens
+			</a>
+		</div>
+	</svelte:fragment>
 
-	<div class="btn-group">
-		<a href="/game" class="variant-glass-secondary">Overview</a>
-		<a href="/game/settlements" class="variant-glass-secondary">Settlements</a>
-		<a href="/game/map" class="variant-glass-secondary">Map</a>
-		<a href="/game/wardens" class="variant-glass-secondary">Wardens</a>
-	</div>
-
-	<svelte:fragment slot="trail">trail</svelte:fragment>
+	<svelte:fragment slot="trail">
+		<div class="btn-group rounded-none variant-filled-secondary text-secondary-50-900-token">
+			<a
+				href="/game/profile"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+				>Profile</a
+			>
+			<a
+				href="/game/history"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+				>History</a
+			>
+			<a
+				href="/game/messages"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+				>Messages</a
+			>
+			<a
+				href="/game/guild"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+				>Guild Forum</a
+			>
+			<a
+				href="/game/guild"
+				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
+				>Guild</a
+			>
+		</div>
+	</svelte:fragment>
 </AppBar>

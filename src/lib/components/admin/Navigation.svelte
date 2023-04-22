@@ -26,10 +26,10 @@
 			icon: Web
 		},
 		{
-			label: 'Accounts',
-			title: 'Accounts',
-			href: '/admin/accounts',
-			value: '/admin/accounts',
+			label: 'Players',
+			title: 'Players',
+			href: '/admin/players',
+			value: '/admin/players',
 			icon: AccountGroup
 		},
 		{
@@ -40,6 +40,7 @@
 			icon: FolderSearchOutline
 		}
 	];
+	$: isActive = (href: string) => (href === $page.url.pathname ? '!bg-primary-active-token' : '');
 
 	const storeValue: Writable<number> = writable(1);
 </script>
@@ -52,7 +53,7 @@
 			href="/admin"
 			value={'/admin'}
 			class="py-1 px-0 btn btn-sm w-16 
-				{$page.route.id === '/(protected)/admin' ? 'bg-primary-active-token' : ''} 
+				{isActive('/admin')} 
 				hover:variant-ghost-secondary 
 				rounded-none"
 		>
@@ -67,7 +68,7 @@
 			href={railTile.href}
 			value={railTile.value}
 			class="py-1 px-0 btn btn-sm w-16 
-				{$page.route.id?.includes(railTile.value) ? 'bg-primary-active-token' : ''} 
+				{isActive(railTile.href)} 
 				hover:variant-ghost-secondary 
 				rounded-none"
 		>

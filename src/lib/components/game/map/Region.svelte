@@ -1,9 +1,19 @@
 <script lang="ts">
-	import Tile from './Tile.svelte';
+	import type { Prisma } from '@prisma/client';
+	import TileComponent from './Tile.svelte';
 
-	export let RegionInfo: any;
+	export let region: Prisma.RegionGetPayload<{
+		include: {
+			tiles: {
+				include: {
+					Biome: true;
+					Plots: true;
+				};
+			};
+		};
+	}>;
 </script>
 
-{#each RegionInfo.Tiles as TileInfo}
-	<Tile {TileInfo} />
+{#each region.tiles as tile}
+	<TileComponent {tile} />
 {/each}

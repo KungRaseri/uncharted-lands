@@ -15,7 +15,7 @@
 		<div class="flex">
 			<img
 				class="w-10 py-5 mr-2"
-				src="https://tailwindui.com/img/logos/workflow-mark.svg?color=indigo&shade=600"
+				src="logo.png"
 				alt="Workflow"
 			/>
 			<h1 class="mt-6 text-xl lg:text-2xl tracking-tight font-bold text-token">

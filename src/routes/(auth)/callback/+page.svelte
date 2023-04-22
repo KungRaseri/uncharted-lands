@@ -13,7 +13,7 @@
 			<div>
 				<img
 					class="h-12 w-auto"
-					src="https://tailwindui.com/img/logos/workflow-mark.svg?color=indigo&shade=600"
+					src="logo.png"
 					alt="Workflow"
 				/>
 				<h2 class="mt-6 text-3xl tracking-tight font-bold text-gray-900">

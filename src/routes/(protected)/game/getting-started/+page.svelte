@@ -10,7 +10,7 @@
 	export let data: PageData;
 </script>
 
-<div class="bg-surface-700 mt-10 p-5 w-full md:w-1/2 mx-auto">
+<div class="bg-surface-200-700-token mt-10 p-5 w-full md:w-1/2 mx-auto">
 	<form
 		action="?/settle"
 		method="POST"
@@ -39,7 +39,7 @@
 				<div class="flex-row">
 					<select id="world" name="world" class="rounded-md" bind:value={selectedWorld}>
 						{#each data.worlds.filter((w) => w.serverId === selectedServer) as world, i}
-							<option value={world.id}>World {i}</option>
+							<option value={world.id}>{world.name}</option>
 						{/each}
 					</select>
 				</div>
@@ -55,7 +55,7 @@
 			</div>
 
 			<div class="mt-6 gap-y-6 gap-x-4 sm:grid-cols-6">
-				<input id="username" type="text" name="username" bind:value={username} />
+				<input id="username" type="text" name="username" class="input" bind:value={username} />
 			</div>
 		</div>
 

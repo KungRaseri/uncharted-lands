@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Account {
-  id            String      @id @default(uuid())
+  id            String      @id @default(cuid())
   email         String      @unique
   passwordHash  String
   userAuthToken String      @unique
@@ -19,26 +19,26 @@ model Account {
 }
 
 model Profile {
-  id        String              @id @default(uuid())
+  id        String              @id @default(cuid())
   username  String              @unique
   picture   String
   accountId String              @unique
-  account   Account             @relation(fields: [accountId], references: [id])
+  account   Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
   servers   ProfileServerData[]
 }
 
 model ProfileServerData {
   profileId   String       @unique
   serverId    String       @unique
-  profile     Profile      @relation(fields: [profileId], references: [id])
-  server      Server       @relation(fields: [serverId], references: [id])
+  profile     Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  server      Server       @relation(fields: [serverId], references: [id], onDelete: Cascade)
   settlements Settlement[]
 
   @@unique([profileId, serverId])
 }
 
 model Server {
-  id        String              @id @default(uuid())
+  id        String              @id @default(cuid())
   name      String              @unique
   hostname  String              @default("localhost")
   port      Int                 @default(5000)
@@ -52,7 +52,7 @@ model Server {
 }
 
 model World {
-  id                    String   @id @default(uuid())
+  id                    String   @id @default(cuid())
   name                  String
   elevationSettings     Json
   precipitationSettings Json
@@ -61,13 +61,13 @@ model World {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   regions               Region[]
-  server                Server   @relation(fields: [serverId], references: [id])
+  server                Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
   @@unique([name, serverId])
 }
 
 model Region {
-  id               String @id @default(uuid())
+  id               String @id @default(cuid())
   xCoord           Int    @default(-1)
   yCoord           Int    @default(-1)
   name             String
@@ -75,91 +75,124 @@ model Region {
   precipitationMap Json
   temperatureMap   Json
   worldId          String
-  world            World  @relation(fields: [worldId], references: [id])
+  world            World  @relation(fields: [worldId], references: [id], onDelete: Cascade)
   tiles            Tile[]
 
   @@unique([name, worldId])
 }
 
 model Tile {
-  id            String   @id @default(uuid())
+  id            String   @id @default(cuid())
+  biomeId       String
+  regionId      String
   elevation     Float
   temperature   Float
   precipitation Float
   type          TileType
-  regionId      String
-  biomeId       String
-  Plots         Plot[]
-  Region        Region   @relation(fields: [regionId], references: [id])
-  Biome         Biome    @relation(fields: [biomeId], references: [id])
+
+  Plots  Plot[]
+  Biome  Biome  @relation(fields: [biomeId], references: [id])
+  Region Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
 }
 
 model Biome {
-  id               String @id @default(uuid())
+  id               String @id @default(cuid())
   name             String @unique
   precipitationMin Float
   precipitationMax Float
   temperatureMin   Float
   temperatureMax   Float
-  Tile             Tile[]
-}
+  plotsMin         Int
+  plotsMax         Int
+  plotAreaMin      Int
+  plotAreaMax      Int
+  solarModifier    Int
+  windModifier     Int
+  foodModifier     Int
+  waterModifier    Int
+  woodModifier     Int
+  stoneModifier    Int
+  oreModifier      Int
 
-model PlotResource {
-  id         String   @id @default(uuid())
-  value      Int
-  plotId     String?
-  resourceId String
-  Plot       Plot?    @relation(fields: [plotId], references: [id])
-  Resource   Resource @relation(fields: [resourceId], references: [id])
-
-  @@unique([plotId, resourceId])
-}
-
-model Resource {
-  id                String              @id @default(uuid())
-  name              String              @unique
-  PlotResource      PlotResource[]
-  StructureModifier StructureModifier[]
+  Tile Tile[]
 }
 
 model Plot {
-  id         String         @id @default(uuid())
-  tileId     String
+  id     String @id @default(cuid())
+  tileId String
+  area   Int
+  solar  Int
+  wind   Int
+  food   Int
+  water  Int
+  wood   Int
+  stone  Int
+  ore    Int
+
   Settlement Settlement?
-  Tile       Tile           @relation(fields: [tileId], references: [id])
-  resources  PlotResource[]
+  Tile       Tile        @relation(fields: [tileId], references: [id], onDelete: Cascade)
 }
 
 model Settlement {
-  id              String                @id @default(uuid())
-  name            String
-  plotId          String                @unique
-  playerProfileId String
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  Plot            Plot                  @relation(fields: [plotId], references: [id])
-  PlayerProfile   ProfileServerData     @relation(fields: [playerProfileId], references: [profileId])
-  structures      SettlementStructure[]
+  id                  String @id @default(cuid())
+  plotId              String @unique
+  playerProfileId     String
+  settlementStorageId String @unique
+  name                String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Storage       SettlementStorage     @relation(fields: [settlementStorageId], references: [id], onDelete: Cascade)
+  Plot          Plot                  @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  PlayerProfile ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
+  Structures    SettlementStructure[]
+}
+
+model SettlementStorage {
+  id         String      @id @default(cuid())
+  food       Int
+  water      Int
+  wood       Int
+  stone      Int
+  ore        Int
+  Settlement Settlement?
 }
 
 model SettlementStructure {
-  id           String              @id @default(uuid())
-  name         String
-  description  String
-  settlementId String
-  settlement   Settlement          @relation(fields: [settlementId], references: [id])
-  modifiers    StructureModifier[]
+  id                      String @id @default(cuid())
+  structureRequirementsId String @unique
+  settlementId            String
+  name                    String
+  description             String
+
+  buildRequirements StructureRequirements @relation(fields: [structureRequirementsId], references: [id], onDelete: Cascade)
+  settlement        Settlement            @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  modifiers         StructureModifier[]
+}
+
+model StructureRequirements {
+  id    String @id @default(cuid())
+  area  Int
+  solar Int
+  wind  Int
+  food  Int
+  water Int
+  wood  Int
+  stone Int
+  ore   Int
+
+  SettlementStructure SettlementStructure?
 }
 
 model StructureModifier {
-  id                    String              @id @default(uuid())
+  id                    String @id @default(cuid())
+  settlementStructureId String
   name                  String
   description           String
   value                 Int
-  settlementStructureId String
-  resourceId            String
-  resource              Resource            @relation(fields: [resourceId], references: [id])
-  settlementStructure   SettlementStructure @relation(fields: [settlementStructureId], references: [id])
+
+  settlementStructure SettlementStructure @relation(fields: [settlementStructureId], references: [id], onDelete: Cascade)
 }
 
 enum AccountRole {

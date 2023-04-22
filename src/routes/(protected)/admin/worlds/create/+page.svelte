@@ -4,11 +4,8 @@
 	import type { ActionData, PageData } from './$types';
 	import { RangeSlider } from '@skeletonlabs/skeleton';
 	import type { Region } from '@prisma/client';
-	import {
-		generateElevation,
-		generatePrecipitation,
-		generateTemperature
-	} from '$lib/game/world-generator';
+	import { generateMap } from '$lib/game/world-generator';
+
 	import Information from 'svelte-material-icons/Information.svelte';
 	import World from '$lib/components/game/map/World.svelte';
 
@@ -51,23 +48,18 @@
 		temperatureSeed: Date.now()
 	};
 
-	async function generateMap() {
+	async function generate() {
 		const generatedMap: Region[][] = [];
 
-		const elevationMap = await generateElevation(
+		const elevationMap = await generateMap(
 			{
 				worldName: mapOptions.worldName,
 				serverId: mapOptions.serverId,
 				width: mapOptions.width,
 				height: mapOptions.height,
-				eSeed: mapOptions.elevationSeed,
-				pSeed: mapOptions.precipitationSeed,
-				tSeed: mapOptions.temperatureSeed
+				seed: mapOptions.elevationSeed
 			},
 			{
-				scale: (x) => {
-					return x * elevationOptions.scale;
-				},
 				octaves: elevationOptions.octaves,
 				amplitude: elevationOptions.amplitude,
 				persistence: elevationOptions.persistence,
@@ -75,15 +67,13 @@
 			}
 		);
 
-		const precipitationMap = await generatePrecipitation(
+		const precipitationMap = await generateMap(
 			{
 				worldName: mapOptions.worldName,
 				serverId: mapOptions.serverId,
 				width: mapOptions.width,
 				height: mapOptions.height,
-				eSeed: mapOptions.elevationSeed,
-				pSeed: mapOptions.precipitationSeed,
-				tSeed: mapOptions.temperatureSeed
+				seed: mapOptions.precipitationSeed
 			},
 			{
 				octaves: precipitationOptions.octaves,
@@ -93,15 +83,13 @@
 			}
 		);
 
-		const temperatureMap = await generateTemperature(
+		const temperatureMap = await generateMap(
 			{
 				worldName: mapOptions.worldName,
 				serverId: mapOptions.serverId,
 				width: mapOptions.width,
 				height: mapOptions.height,
-				eSeed: mapOptions.elevationSeed,
-				pSeed: mapOptions.precipitationSeed,
-				tSeed: mapOptions.temperatureSeed
+				seed: mapOptions.temperatureSeed
 			},
 			{
 				octaves: temperatureOptions.octaves,
@@ -149,7 +137,7 @@
 					bind:value={mapOptions.worldName}
 					required
 					on:change={async () => {
-						await generateMap();
+						await generate();
 					}}
 				/>
 			</label>
@@ -161,44 +149,6 @@
 					{/each}
 				</select>
 			</label>
-			<RangeSlider
-				id="width"
-				name="width"
-				label="width"
-				step={1}
-				min={1}
-				max={10}
-				ticked
-				accent="accent-primary-500"
-				bind:value={mapOptions.width}
-				on:change={async () => {
-					await generateMap();
-				}}
-			>
-				<span>Width</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{mapOptions.width}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="height"
-				name="height"
-				label="height"
-				step={1}
-				min={1}
-				max={10}
-				ticked
-				accent="accent-primary-500"
-				bind:value={mapOptions.height}
-				on:change={async () => {
-					await generateMap();
-				}}
-			>
-				<span>Height</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{mapOptions.height}
-				</span>
-			</RangeSlider>
 		</div>
 
 		<h2>Elevation</h2>
@@ -212,29 +162,11 @@
 					class="input"
 					bind:value={mapOptions.elevationSeed}
 					on:change={async () => {
-						await generateMap();
+						await generate();
 					}}
 				/>
 			</label>
-			<RangeSlider
-				id="elevation-scale"
-				name="elevation-scale"
-				label="elevation-scale"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.scale}
-				on:change={async () => {
-					await generateMap();
-				}}
-			>
-				<span> Scale </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{elevationOptions.scale}
-				</span>
-			</RangeSlider>
+
 			<RangeSlider
 				id="elevation-octaves"
 				name="elevation-octaves"
@@ -246,7 +178,7 @@
 				accent="accent-primary-500"
 				bind:value={elevationOptions.octaves}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span> Octaves </span>
@@ -266,7 +198,7 @@
 				accent="accent-primary-500"
 				bind:value={elevationOptions.amplitude}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span> Amplitude </span>
@@ -286,7 +218,7 @@
 				accent="accent-primary-500"
 				bind:value={elevationOptions.frequency}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span> Frequency </span>
@@ -306,7 +238,7 @@
 				accent="accent-primary-500"
 				bind:value={elevationOptions.persistence}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span> Persistence </span>
@@ -327,7 +259,7 @@
 					class="input"
 					bind:value={mapOptions.precipitationSeed}
 					on:change={async () => {
-						await generateMap();
+						await generate();
 					}}
 				/>
 			</label>
@@ -342,7 +274,7 @@
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.scale}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Scale</span>
@@ -361,7 +293,7 @@
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.octaves}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Octaves</span>
@@ -380,7 +312,7 @@
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.amplitude}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Amplitude</span>
@@ -399,7 +331,7 @@
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.frequency}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Frequency</span>
@@ -418,7 +350,7 @@
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.persistence}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Persistence</span>
@@ -439,7 +371,7 @@
 					class="input"
 					bind:value={mapOptions.temperatureSeed}
 					on:change={async () => {
-						await generateMap();
+						await generate();
 					}}
 				/>
 			</label>
@@ -454,7 +386,7 @@
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.scale}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Scale</span>
@@ -473,7 +405,7 @@
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.octaves}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Octaves</span>
@@ -492,7 +424,7 @@
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.amplitude}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Amplitude</span>
@@ -511,7 +443,7 @@
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.frequency}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Frequency</span>
@@ -530,7 +462,7 @@
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.persistence}
 				on:change={async () => {
-					await generateMap();
+					await generate();
 				}}
 			>
 				<span>Persistence</span>
@@ -541,7 +473,7 @@
 		</div>
 
 		<form
-			action="?/saveWorld"
+			action="?/save"
 			method="POST"
 			use:enhance={() => {
 				return async ({ result }) => {

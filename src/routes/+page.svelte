@@ -21,13 +21,28 @@
 				</span>
 			</p>
 			<div class="mx-auto flex space-x-2">
-				<a role="button" data-testid="main-feature-introduction" href="/introduction" class="btn variant-soft-secondary w-full">
+				<a
+					role="button"
+					data-testid="main-feature-introduction"
+					href="/introduction"
+					class="btn variant-soft-secondary w-full"
+				>
 					<span class="text-secondary-50">Introduction</span>
 				</a>
-				<a role="button" data-testid="main-feature-register" href="/register" class="btn variant-soft-secondary w-full">
+				<a
+					role="button"
+					data-testid="main-feature-register"
+					href="/register"
+					class="btn variant-soft-secondary w-full"
+				>
 					<span class="text-secondary-50">Register</span>
 				</a>
-				<a role="button" data-testid="main-feature-signin" href="/sign-in" class="btn variant-soft-secondary w-full">
+				<a
+					role="button"
+					data-testid="main-feature-signin"
+					href="/sign-in"
+					class="btn variant-soft-secondary w-full"
+				>
 					<span class="text-secondary-50">Sign In</span>
 				</a>
 			</div>

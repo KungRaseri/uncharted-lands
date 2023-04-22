@@ -15,11 +15,17 @@ export const load: PageServerLoad = async ({ params }) => {
                             profile: true
                         }
                     },
-                    structures: true
+                    Storage: true,
+                    Structures: true,
+                    Plot: true
                 }
             },
-            Tile: true,
-            resources: true
+            Tile: {
+                include: {
+                    Biome: true,
+                    Region: true
+                }
+            }
         }
     });
 

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import TileDetails from '$lib/components/admin/TileDetails.svelte';
+	import SettlementDetails from '$lib/components/admin/SettlementDetails.svelte';
 
 	export let data: PageData;
 </script>
@@ -12,54 +14,55 @@
 	<li>Plot [{data.plot.id}]</li>
 </ol>
 
-<div class="card p-4">
+<div class="card">
 	<header class="card-header">
 		<h2>{data.plot.id}</h2>
 	</header>
 
-	<div class="p-4 grid grid-cols-1">
-		<h3>Tile</h3>
-		<div class="card p-4">
-			<header>
-				<h3>{data.plot.Tile.id}</h3>
-			</header>
-		</div>
-		<h3>Settlement</h3>
+	<section class="p-4 grid grid-cols-1 space-y-2">
+		<TileDetails tile={data.plot.Tile} />
 		{#if data.plot.Settlement}
-			<div class="card p-4">
-				<header>
-					<h3>{data.plot.Settlement.id}</h3>
-				</header>
-				<div class="p-4">
-					{data.plot.Settlement.PlayerProfile.profile.username}
-					{data.plot.Settlement.name}
-					{#each data.plot.Settlement.structures as structure}
-						{structure.name}
-					{/each}
-				</div>
-			</div>
+			<SettlementDetails settlement={data.plot.Settlement} />
 		{:else}
-			<div class="card p-4">
-				<header>
+			<div class="card">
+				<section class="p-4">
 					<h3>No Settlement Found</h3>
-				</header>
+				</section>
 			</div>
 		{/if}
-	</div>
-	<div class="px-6 py-1 w-full">
-		<div class="w-full flex p-0 m-0">
-			<h3>Resources</h3>
+	</section>
+	<section class="px-6 py-1 w-full">
+		<div class="w-full p-0 m-0">
+			<h3>Attributes</h3>
 
-			<hr class="my-2" />
-
-			{#each data.plot.resources as resource, i}
-				<a
-					href="/admin/resources/{resource.id}"
-					class="m-1 p-2 text-xs rounded-full bg-slate-600 text-slate-300 hover:bg-slate-500"
-				>
-					{resource.id} [{resource.value}]
-				</a>
-			{/each}
+			<div class="card m-0 p-3">
+				<div class="">
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Area: {data.plot.area}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Solar: {data.plot.solar}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Wind: {data.plot.wind}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Food: {data.plot.food}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Water: {data.plot.water}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Wood: {data.plot.wood}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Stone: {data.plot.stone}
+					</span>
+					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+						Ore: {data.plot.ore}
+					</span>
+				</div>
+			</div>
 		</div>
-	</div>
+	</section>
 </div>

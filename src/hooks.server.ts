@@ -1,7 +1,8 @@
 import { redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { AuthenticateUser } from "$lib/auth";
+
 import * as Sentry from '@sentry/node';
-import { BrowserTracing } from '@sentry/tracing';
+import { BrowserTracing } from '@sentry/browser';
 
 Sentry.init({
     dsn: process.env.SENTRY_DSN,
@@ -24,23 +25,21 @@ export const handle: Handle = (async ({ event, resolve }) => {
         event.locals.account = user;
     }
 
-    return await resolve(event);
+
+    const response = await resolve(event);
+    return response
 }) satisfies Handle
 
 export const handleError: HandleServerError = (async ({ error, event }) => {
     const errorId = crypto.randomUUID();
 
     Sentry.withScope(async (scope) => {
-        scope.setExtra('event', event);
-        scope.setExtra('errorId', errorId);
-
-        Sentry.captureException(error, {
-            contexts: { sveltekit: { event, errorId } }
-        });
+        scope.setTag("errorId", errorId)
+        Sentry.captureException(error);
     })
 
     return {
-        message: 'Whoops!',
+        message: `${event.url.search} at ${event.url.pathname} failed.`,
         errorId
     };
 }) satisfies HandleServerError;

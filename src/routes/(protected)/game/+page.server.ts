@@ -11,17 +11,18 @@ export const load: PageServerLoad = async ({ locals }) => {
         where: {
             PlayerProfile: {
                 profileId: locals.account.profile.id,
-                serverId: "06fc223b-412d-4bbd-97db-7e43744e046d" //TODO: update when server swapping is available
+                serverId: (await db.server.findFirst())?.id //TODO: update when server swapping is available
             },
         },
         include: {
             Plot: {
                 include: {
-                    resources: true,
+                    Settlement: true,
                     Tile: true
                 }
             },
-            structures: {
+            Storage: true,
+            Structures: {
                 include: {
                     modifiers: true
                 }
