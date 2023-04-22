@@ -21,6 +21,6 @@
 	<slot />
 
 	<svelte:fragment slot="footer">
-		<!-- <Footer /> -->
+		<Footer />
 	</svelte:fragment>
 </AppShell>
