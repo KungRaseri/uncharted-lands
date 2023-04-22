@@ -20,6 +20,9 @@
 # generate the typescript client
 npx prisma generate
 
+# run migration scripts against dev environment
+npx prisma migrate dev
+
 # push the schema to the database
 npx prisma db push
 ```
