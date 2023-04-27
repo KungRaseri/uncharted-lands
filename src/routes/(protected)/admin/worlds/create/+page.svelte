@@ -3,16 +3,18 @@
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
 	import { RangeSlider } from '@skeletonlabs/skeleton';
-	import type { Region } from '@prisma/client';
+	import type { Prisma } from '@prisma/client';
 	import { generateMap } from '$lib/game/world-generator';
 
 	import Information from 'svelte-material-icons/Information.svelte';
-	import World from '$lib/components/game/map/World.svelte';
+	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
 
 	export let data: PageData;
 	export let form: ActionData;
 
-	let regions: Region[] | null = null;
+	let regions: Prisma.RegionGetPayload<{
+		include: { tiles: { include: { Biome: true; Plots: true } } };
+	}>[];
 
 	let elevationOptions = {
 		scale: 1,
@@ -48,75 +50,7 @@
 		temperatureSeed: Date.now()
 	};
 
-	async function generate() {
-		const generatedMap: Region[][] = [];
-
-		const elevationMap = await generateMap(
-			{
-				worldName: mapOptions.worldName,
-				serverId: mapOptions.serverId,
-				width: mapOptions.width,
-				height: mapOptions.height,
-				seed: mapOptions.elevationSeed
-			},
-			{
-				octaves: elevationOptions.octaves,
-				amplitude: elevationOptions.amplitude,
-				persistence: elevationOptions.persistence,
-				frequency: elevationOptions.frequency
-			}
-		);
-
-		const precipitationMap = await generateMap(
-			{
-				worldName: mapOptions.worldName,
-				serverId: mapOptions.serverId,
-				width: mapOptions.width,
-				height: mapOptions.height,
-				seed: mapOptions.precipitationSeed
-			},
-			{
-				octaves: precipitationOptions.octaves,
-				amplitude: precipitationOptions.amplitude,
-				persistence: precipitationOptions.persistence,
-				frequency: precipitationOptions.frequency
-			}
-		);
-
-		const temperatureMap = await generateMap(
-			{
-				worldName: mapOptions.worldName,
-				serverId: mapOptions.serverId,
-				width: mapOptions.width,
-				height: mapOptions.height,
-				seed: mapOptions.temperatureSeed
-			},
-			{
-				octaves: temperatureOptions.octaves,
-				amplitude: temperatureOptions.amplitude,
-				persistence: temperatureOptions.persistence,
-				frequency: temperatureOptions.frequency
-			}
-		);
-
-		for (let i = 0; i < elevationMap.length; i++) {
-			generatedMap[i] = [];
-			for (let j = 0; j < elevationMap[i].length; j++) {
-				generatedMap[i][j] = {
-					id: '',
-					worldId: '',
-					xCoord: i,
-					yCoord: j,
-					name: `${i}:${j}`,
-					elevationMap: elevationMap[i][j],
-					precipitationMap: precipitationMap[i][j],
-					temperatureMap: temperatureMap[i][j]
-				};
-			}
-		}
-
-		regions = generatedMap.flat(1);
-	}
+	async function generate() {}
 
 	$: regions;
 </script>
@@ -515,6 +449,6 @@
 	</div>
 
 	{#if regions}
-		<World {regions} />
+		<WorldMapPreview {regions} />
 	{/if}
 </div>

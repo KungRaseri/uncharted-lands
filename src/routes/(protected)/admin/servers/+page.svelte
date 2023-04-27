@@ -1,75 +1,26 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
+	import { Table, tableMapperValues } from '@skeletonlabs/skeleton';
 
 	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
 
 	export let data: PageData;
 
-	let serversTableStore = createDataTableStore(data.servers, {
-		search: '',
-		sort: '',
-		pagination: {
-			offset: 0,
-			limit: 15,
-			size: 0,
-			amounts: [5, 15, 25]
-		}
-	});
-
-	serversTableStore.subscribe((model) => dataTableHandler(model));
+	let tableSimple: TableSource = {
+		head: Object.keys(data.servers[0]),
+		body: tableMapperValues(data.servers, Object.keys(data.servers[0])),
+		meta: tableMapperValues(data.servers, [...Object.keys(data.servers[0]), 'position']),
+		foot: ['Total Servers', data.servers.length.toString()]
+	};
 
 	let isServerFormActive: Boolean = false;
 
-	function toggleServerForm() {
-		isServerFormActive = !isServerFormActive;
-	}
-
-	function closeServerForm() {
-		isServerFormActive = !isServerFormActive;
-	}
-
-	$: serversTableStore.updateSource(data.servers);
+	function selectionHandler() {}
 </script>
 
-<div class="m-1">
-	<h1 id="servers-header">Servers</h1>
-	<div class="table-container">
-		<div class="p-0 m-3 w-11/12 flex space-x-3">
-			<input
-				bind:value={$serversTableStore.search}
-				type="search"
-				placeholder="Search..."
-				class="input"
-			/>
-			<a href="/admin/servers/create" class="btn bg-primary-400-500-token">
-				<span class="mx-1 px-0 py-3 text-token"><ServerPlus /></span>
-				<span class="mx-1 px-0 py-2 text-token">Create</span>
-			</a>
-		</div>
-		<table aria-describedby="servers-header" class="table table-hover" use:tableInteraction>
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Name</th>
-					<th>Hostname</th>
-					<th>Port</th>
-					<th>Status</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if $serversTableStore}
-					{#each $serversTableStore.filtered as server, index}
-						<tr>
-							<td><a href="/admin/servers/{server.id}">{server.id}</a></td>
-							<td>{server.name}</td>
-							<td>{server.hostname}</td>
-							<td>{server.port}</td>
-							<td>{server.status}</td>
-						</tr>
-					{/each}
-				{/if}
-			</tbody>
-		</table>
-	</div>
+<div class="card w-4/5">
+	<h1 class="card-header">Servers</h1>
+	<section class="p-4">
+		<Table source={tableSimple} interactive={true} on:selected={selectionHandler} />
+	</section>
 </div>

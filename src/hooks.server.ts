@@ -1,6 +1,5 @@
 import { redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { AuthenticateUser } from "$lib/auth";
-
 import * as Sentry from '@sentry/node';
 import { BrowserTracing } from '@sentry/browser';
 

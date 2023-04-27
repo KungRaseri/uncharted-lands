@@ -2,7 +2,7 @@
 	import type { Region, Prisma } from '@prisma/client';
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
 
-	export let regions: Prisma.RegionGetPayload<{ include: { tiles: true } }>;
+	export let regions: Region[];
 </script>
 
 <div class="grid grid-cols-10 p-0 border-token w-full xl:w-1/2 mx-auto">

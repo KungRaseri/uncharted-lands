@@ -13,7 +13,7 @@
 	import Footer from '$lib/components/app/Footer.svelte';
 </script>
 
-<AppShell slotPageContent="w-full h-full">
+<AppShell>
 	<svelte:fragment slot="header">
 		<Header />
 	</svelte:fragment>

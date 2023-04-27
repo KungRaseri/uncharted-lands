@@ -52,5 +52,3 @@ export async function generateMap(mapOptions: MapOptions, options: Options) {
 export function normalizeValue(value: number, min: number, max: number) {
     return value * (max - min) / 2 + (max + min) / 2;
 }
-
-

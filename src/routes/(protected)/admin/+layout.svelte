@@ -8,11 +8,9 @@
 	<title>Administration | Uncharted Lands</title>
 </svelte:head>
 
-<AppShell slotSidebarLeft="" slotPageContent="overflow-y-scroll">
+<AppShell>
 	<svelte:fragment slot="sidebarLeft">
 		<Navigation />
 	</svelte:fragment>
-	<div class="px-5 py-2">
-		<slot />
-	</div>
+	<slot />
 </AppShell>

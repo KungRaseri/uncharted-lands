@@ -1,7 +1,7 @@
 import { db } from '$lib/db'
 import type { RequestHandler } from '@sveltejs/kit';
 
-export const POST: RequestHandler = async () => {
+export const GET: RequestHandler = async () => {
     const settlements = await db.settlement.findMany({
         include: {
             Plot: true,

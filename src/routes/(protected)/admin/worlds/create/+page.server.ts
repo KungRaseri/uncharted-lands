@@ -7,6 +7,11 @@ import { normalizeValue } from '$lib/game/world-generator'
 
 import cuid from 'cuid';
 
+let mapSettings: any;
+let elevationSettings: Prisma.JsonValue;
+let precipitationSettings: Prisma.JsonValue;
+let temperatureSettings: Prisma.JsonValue;
+
 let world: World;
 let regions: Region[] = [];
 let tiles: Tile[] = [];
@@ -44,14 +49,14 @@ const save: Action = async ({ request }) => {
 
     generatedRegions = JSON.parse(map.toString());
 
-    const mapSettings = JSON.parse(mapOptions.toString());
-    const elevationSettings = JSON.parse(elevationOptions.toString());
-    const precipitationSettings = JSON.parse(precipitationOptions.toString());
-    const temperatureSettings = JSON.parse(temperatureOptions.toString());
+    mapSettings = JSON.parse(mapOptions.toString());
+    elevationSettings = JSON.parse(elevationOptions.toString());
+    precipitationSettings = JSON.parse(precipitationOptions.toString());
+    temperatureSettings = JSON.parse(temperatureOptions.toString());
 
     biomes = await db.biome.findMany() ?? [];
 
-    createWorld(mapSettings, elevationSettings, precipitationSettings, temperatureSettings);
+    createWorld();
     createRegions();
     await createTiles();
     createPlots();
@@ -61,7 +66,7 @@ const save: Action = async ({ request }) => {
     throw redirect(302, '/admin/worlds')
 }
 
-function createWorld(mapSettings: any, elevationSettings: Prisma.JsonValue, precipitationSettings: Prisma.JsonValue, temperatureSettings: Prisma.JsonValue) {
+function createWorld() {
     world = {
         id: cuid(),
         name: mapSettings.worldName,
