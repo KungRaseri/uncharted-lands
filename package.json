@@ -1,5 +1,6 @@
 {
-  "name": "browser-game",
+  "name": "uncharted-lands",
+  "description": "Uncharted Lands is a game where players must build and manage settlements in a procedurally generated world. They must overcome various challenges such as extreme weather conditions, scarce resources, and hostile creatures, all while expanding their settlements and improving their technology.",
   "version": "0.0.1",
   "private": true,
   "scripts": {
