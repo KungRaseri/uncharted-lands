@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "prisma generate && vite build",
-    "postinstall": "prisma migrate deploy",
+    "postbuild": "prisma migrate deploy",
     "preview": "vite preview",
     "test": "playwright test",
     "test:unit": "vitest",
