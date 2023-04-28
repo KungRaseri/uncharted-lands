@@ -32,6 +32,9 @@ body:
       label: Steps to Reproduce
       description: Please provide detailed steps to reproduce the bug.
       placeholder: Steps to reproduce
+      value: |
+        "1. Provide reproduction steps
+        2. To help with triage and testing"
     validations:
       required: true
   - type: dropdown
@@ -45,15 +48,3 @@ body:
         - High
     validations:
       required: true
-  - type: checkboxes
-    id: additional-info
-    attributes:
-      label: Additional Information
-      description: Please provide any additional information that may be helpful in resolving the bug.
-      options:
-        - label: Screenshot
-          required: false
-        - label: Error Log
-          required: false
-        - label: Stack Trace
-          required: false
