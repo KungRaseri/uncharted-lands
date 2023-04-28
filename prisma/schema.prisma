@@ -120,14 +120,14 @@ model Biome {
 model Plot {
   id     String @id @default(cuid())
   tileId String
-  area   Int
-  solar  Int
-  wind   Int
-  food   Int
-  water  Int
-  wood   Int
-  stone  Int
-  ore    Int
+  area   Int @default(30)
+  solar  Int @default(1)
+  wind   Int @default(1)
+  food   Int @default(1)
+  water  Int @default(1)
+  wood   Int @default(1)
+  stone  Int @default(1)
+  ore    Int @default(1)
 
   Settlement Settlement?
   Tile       Tile        @relation(fields: [tileId], references: [id], onDelete: Cascade)
@@ -138,7 +138,7 @@ model Settlement {
   plotId              String @unique
   playerProfileId     String
   settlementStorageId String @unique
-  name                String
+  name                String @default("Home Settlment")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -173,14 +173,14 @@ model SettlementStructure {
 
 model StructureRequirements {
   id    String @id @default(cuid())
-  area  Int
-  solar Int
-  wind  Int
-  food  Int
-  water Int
-  wood  Int
-  stone Int
-  ore   Int
+  area  Int @default(1)
+  solar Int @default(1)
+  wind  Int @default(1)
+  food  Int @default(1)
+  water Int @default(1)
+  wood  Int @default(1)
+  stone Int @default(1)
+  ore   Int @default(1)
 
   SettlementStructure SettlementStructure?
 }
