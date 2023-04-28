@@ -1,38 +1,59 @@
-## Description
-
-[Description of the issue]
-
-## Steps to Reproduce
-
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
-4. [Step 4]
-5. [Step 5]
-
-## Expected Behavior
-
-[What you expected to happen]
-
-## Actual Behavior
-
-[What actually happened]
-
-## Reproducibility
-
-[How often the issue occurs]
-
-## Environment
-
-- Operating System: [Operating system and version]
-- Browser: [Browser name and version]
-- Device: [Device name and model]
-- Additional Details: [Any additional details that may be relevant]
-
-## Screenshots
-
-[If applicable, add screenshots to help explain the issue]
-
-## Possible Solutions
-
-[If you have any thoughts on how to solve the issue, please list them here]
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees:
+  - KungRaseri
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com, or DiscordUser#1234
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide detailed steps to reproduce the bug.
+      placeholder: Steps to reproduce
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is the bug?
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+  - type: checkboxes
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Please provide any additional information that may be helpful in resolving the bug.
+      options:
+        - label: Screenshot
+          required: false
+        - label: Error Log
+          required: false
+        - label: Stack Trace
+          required: false
