@@ -15,30 +15,7 @@ const config = {
 	})],
 
 	kit: {
-		adapter: adapter({}),
-		csp: {
-			mode: 'auto',
-			directives: {
-				'img-src': [
-					'self',
-					'data:',
-					'https://via.placeholder.com'
-				],
-				'style-src': [
-					'self',
-					'https://fonts.googleapis.com'
-				],
-				'script-src': [
-					'self'
-				],
-				'default-src': [
-					'self',
-					'https://fonts.gstatic.com',
-					'https://vitals.vercel-insights.com',
-					'https://o4504635308638208.ingest.sentry.io'
-				]
-			}
-		}
+		adapter: adapter({})
 	}
 };
 

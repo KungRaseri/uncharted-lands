@@ -2,11 +2,11 @@
 	<title>Portal | Uncharted Lands</title>
 </svelte:head>
 
-<div class="mt-5 w-full lg:mx-auto lg:w-2/4 h-full">
+<div class="w-full lg:mx-auto lg:w-2/4 h-full pt-5">
 	<div class="relative shadow-xl lg:overflow-hidden lg:rounded-2xl">
 		<div class="absolute inset-0">
 			<div
-				class="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-600 mix-blend-multiply"
+				class="absolute inset-0 bg-gradient-to-r from-0% to-100% via-50% from-primary-600 to-secondary-600 via-surface-900 mix-blend-color"
 			/>
 		</div>
 		<div class="relative p-5">

@@ -52,7 +52,7 @@
 			tag="a"
 			href="/admin"
 			value={'/admin'}
-			class="py-1 px-0 btn btn-sm w-16 
+			class="p-1 btn btn-sm w-16 
 				{isActive('/admin')} 
 				hover:variant-ghost-secondary 
 				rounded-none"

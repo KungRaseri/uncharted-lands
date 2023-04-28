@@ -6,17 +6,6 @@
   - You are about to drop the `Resource` table. If the table is not empty, all the data it contains will be lost.
   - A unique constraint covering the columns `[settlementStorageId]` on the table `Settlement` will be added. If there are existing duplicate values, this will fail.
   - A unique constraint covering the columns `[structureRequirementsId]` on the table `SettlementStructure` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `foodModifier` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `oreModifier` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `plotAreaMax` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `plotAreaMin` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `plotsMax` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `plotsMin` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `solarModifier` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `stoneModifier` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `waterModifier` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `windModifier` to the `Biome` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `woodModifier` to the `Biome` table without a default value. This is not possible if the table is not empty.
   - Added the required column `area` to the `Plot` table without a default value. This is not possible if the table is not empty.
   - Added the required column `food` to the `Plot` table without a default value. This is not possible if the table is not empty.
   - Added the required column `ore` to the `Plot` table without a default value. This is not possible if the table is not empty.
@@ -72,17 +61,17 @@ ALTER TABLE "Tile" DROP CONSTRAINT "Tile_regionId_fkey";
 ALTER TABLE "World" DROP CONSTRAINT "World_serverId_fkey";
 
 -- AlterTable
-ALTER TABLE "Biome" ADD COLUMN     "foodModifier" INTEGER NOT NULL,
-ADD COLUMN     "oreModifier" INTEGER NOT NULL,
-ADD COLUMN     "plotAreaMax" INTEGER NOT NULL,
-ADD COLUMN     "plotAreaMin" INTEGER NOT NULL,
-ADD COLUMN     "plotsMax" INTEGER NOT NULL,
-ADD COLUMN     "plotsMin" INTEGER NOT NULL,
-ADD COLUMN     "solarModifier" INTEGER NOT NULL,
-ADD COLUMN     "stoneModifier" INTEGER NOT NULL,
-ADD COLUMN     "waterModifier" INTEGER NOT NULL,
-ADD COLUMN     "windModifier" INTEGER NOT NULL,
-ADD COLUMN     "woodModifier" INTEGER NOT NULL;
+ALTER TABLE "Biome" ADD COLUMN     "foodModifier" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "oreModifier" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "plotAreaMax" INTEGER NOT NULL DEFAULT 50,
+ADD COLUMN     "plotAreaMin" INTEGER NOT NULL DEFAULT 30,
+ADD COLUMN     "plotsMax" INTEGER NOT NULL DEFAULT 10,
+ADD COLUMN     "plotsMin" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "solarModifier" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "stoneModifier" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "waterModifier" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "windModifier" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "woodModifier" INTEGER NOT NULL DEFAULT 1;
 
 -- AlterTable
 ALTER TABLE "Plot" ADD COLUMN     "area" INTEGER NOT NULL,
