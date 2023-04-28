@@ -6,14 +6,6 @@
   - You are about to drop the `Resource` table. If the table is not empty, all the data it contains will be lost.
   - A unique constraint covering the columns `[settlementStorageId]` on the table `Settlement` will be added. If there are existing duplicate values, this will fail.
   - A unique constraint covering the columns `[structureRequirementsId]` on the table `SettlementStructure` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `area` to the `Plot` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `food` to the `Plot` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `ore` to the `Plot` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `solar` to the `Plot` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `stone` to the `Plot` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `water` to the `Plot` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `wind` to the `Plot` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `wood` to the `Plot` table without a default value. This is not possible if the table is not empty.
   - Added the required column `settlementStorageId` to the `Settlement` table without a default value. This is not possible if the table is not empty.
   - Added the required column `structureRequirementsId` to the `SettlementStructure` table without a default value. This is not possible if the table is not empty.
 
@@ -74,17 +66,18 @@ ADD COLUMN     "windModifier" INTEGER NOT NULL DEFAULT 1,
 ADD COLUMN     "woodModifier" INTEGER NOT NULL DEFAULT 1;
 
 -- AlterTable
-ALTER TABLE "Plot" ADD COLUMN     "area" INTEGER NOT NULL,
-ADD COLUMN     "food" INTEGER NOT NULL,
-ADD COLUMN     "ore" INTEGER NOT NULL,
-ADD COLUMN     "solar" INTEGER NOT NULL,
-ADD COLUMN     "stone" INTEGER NOT NULL,
-ADD COLUMN     "water" INTEGER NOT NULL,
-ADD COLUMN     "wind" INTEGER NOT NULL,
-ADD COLUMN     "wood" INTEGER NOT NULL;
+ALTER TABLE "Plot" ADD COLUMN     "area" INTEGER NOT NULL DEFAULT 30,
+ADD COLUMN     "food" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "ore" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "solar" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "stone" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "water" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "wind" INTEGER NOT NULL DEFAULT 1,
+ADD COLUMN     "wood" INTEGER NOT NULL DEFAULT 1;
 
 -- AlterTable
-ALTER TABLE "Settlement" ADD COLUMN     "settlementStorageId" TEXT NOT NULL;
+ALTER TABLE "Settlement" ADD COLUMN     "settlementStorageId" TEXT NOT NULL,
+ALTER COLUMN "name" SET DEFAULT 'Home Settlment';
 
 -- AlterTable
 ALTER TABLE "SettlementStructure" ADD COLUMN     "structureRequirementsId" TEXT NOT NULL;
@@ -113,14 +106,14 @@ CREATE TABLE "SettlementStorage" (
 -- CreateTable
 CREATE TABLE "StructureRequirements" (
     "id" TEXT NOT NULL,
-    "area" INTEGER NOT NULL,
-    "solar" INTEGER NOT NULL,
-    "wind" INTEGER NOT NULL,
-    "food" INTEGER NOT NULL,
-    "water" INTEGER NOT NULL,
-    "wood" INTEGER NOT NULL,
-    "stone" INTEGER NOT NULL,
-    "ore" INTEGER NOT NULL,
+    "area" INTEGER NOT NULL DEFAULT 1,
+    "solar" INTEGER NOT NULL DEFAULT 1,
+    "wind" INTEGER NOT NULL DEFAULT 1,
+    "food" INTEGER NOT NULL DEFAULT 1,
+    "water" INTEGER NOT NULL DEFAULT 1,
+    "wood" INTEGER NOT NULL DEFAULT 1,
+    "stone" INTEGER NOT NULL DEFAULT 1,
+    "ore" INTEGER NOT NULL DEFAULT 1,
 
     CONSTRAINT "StructureRequirements_pkey" PRIMARY KEY ("id")
 );
