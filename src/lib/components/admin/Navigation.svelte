@@ -79,7 +79,7 @@
 	<svelte:fragment slot="trail">
 		<AppRailTile
 			tag="a"
-			href="https://github.com/RedSyndicate/browser-game"
+			href="https://github.com/RedSyndicate/uncharted-lands"
 			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
 		>
 			<Github width="100%" size={36} />

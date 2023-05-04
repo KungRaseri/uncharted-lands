@@ -1,26 +1,33 @@
 <script lang="ts">
+	import { type Server } from '@prisma/client';
 	import type { PageData } from './$types';
-	import { Table, tableMapperValues } from '@skeletonlabs/skeleton';
+	import { Table, tableMapperValues, type TableSource } from '@skeletonlabs/skeleton';
 
 	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
 
 	export let data: PageData;
 
-	let tableSimple: TableSource = {
-		head: Object.keys(data.servers[0]),
-		body: tableMapperValues(data.servers, Object.keys(data.servers[0])),
-		meta: tableMapperValues(data.servers, [...Object.keys(data.servers[0]), 'position']),
-		foot: ['Total Servers', data.servers.length.toString()]
-	};
+	let tableSimple: TableSource;
 
-	let isServerFormActive: Boolean = false;
+	if (data.servers.length > 0) {
+		tableSimple = {
+			head: Object.keys(data.servers[0]),
+			body: tableMapperValues(data.servers, Object.keys(data.servers[0])),
+			meta: tableMapperValues(data.servers, Object.keys(data.servers[0])),
+			foot: ['Total Servers', data.servers.length.toString()]
+		};
+	}
 
-	function selectionHandler() {}
+	function selectionHandler(e: any) {}
 </script>
 
-<div class="card w-4/5">
+<div class="card m-5">
 	<h1 class="card-header">Servers</h1>
 	<section class="p-4">
-		<Table source={tableSimple} interactive={true} on:selected={selectionHandler} />
+		{#if data.servers.length > 0}
+			<Table source={tableSimple} interactive={true} on:selected={selectionHandler} />
+		{:else}
+			<p>No Servers</p>
+		{/if}
 	</section>
 </div>

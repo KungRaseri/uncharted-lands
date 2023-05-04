@@ -83,7 +83,7 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="trail">
-		<div class="flex space-x-2">
+		<div class="flex">
 			<LightSwitch />
 			{#if !$page.data.account}
 				<a
@@ -131,8 +131,6 @@
 					<span class="relative rounded-md">
 						<nav
 							class="list-nav card p-3 -ml-5 mt-1 rounded-md"
-							role="menu"
-							aria-orientation="vertical"
 							aria-labelledby="user-menu-button"
 							tabindex="-1"
 							data-popup="userMenu"
