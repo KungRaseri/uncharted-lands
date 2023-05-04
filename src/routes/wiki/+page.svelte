@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>Knowledgebase - Coming Soon™ | Uncharted Lands</title>
+	<title>Wiki - Coming Soon™ | Uncharted Lands</title>
 </svelte:head>
 
 <UnderConstruction />
