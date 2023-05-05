@@ -46,20 +46,27 @@
 	<title>Portal | Uncharted Lands</title>
 </svelte:head>
 
-<header id="hero" class="hero-gradient items-center text-center grid grid-cols-1 space-y-10 gap-10">
-	<div class="flex flex-col items-center text-center space-y-10">
-		<div class="mt-10 h-[96px]"><Earth size="96" /></div>
-		<h1 class="!text-5xl max-w-[600px]">Uncharted Lands</h1>
-		<p class="!text-xl max-w-[475px]">
-			Utilize the resources around you to build a strong community and ward against the dangers of
-			wildlife and the environment
-		</p>
-		<div class="flex gap-4">
-			<a href="/game/getting-started" class="btn variant-filled-primary">
-				<span>Get Settled</span>
-				<Campfire />
-			</a>
-			<a href="/wiki/introduction" class="btn variant-soft-primary">Learn More</a>
+<header id="hero" class="hero-gradient">
+	<div class="hero-bg flex flex-col py-20 min-w-7xl">
+		<div class="p-4 flex flex-col items-center text-center space-y-10">
+			<Earth size="96" />
+			<h1 class="!text-5xl max-w-3xl">Uncharted Lands</h1>
+			<p class="!text-xl max-w-3xl">
+				Explore the vast uncharted wilderness, discover new biomes and terrains, and thrive in the
+				face of adversity. Trade with other players for a variety of goods. Expand your settlements
+				across the land, build new structures, and create a thriving community.
+			</p>
+			<p class="!text-xl max-w-2xl">
+				Will you be able to conquer the wilderness and thrive in Uncharted Lands?
+			</p>
+
+			<div class="flex gap-4">
+				<a href="/register" class="btn variant-filled-primary">
+					<span>Get Settled</span>
+					<Campfire />
+				</a>
+				<a href="/wiki/introduction" class="btn variant-soft-primary">Learn More</a>
+			</div>
 		</div>
 	</div>
 </header>
@@ -137,9 +144,19 @@
 					<div class="space-y-6">
 						<h6>Project</h6>
 						<ul class="space-y-3">
-							<li><a href="https://github.com/redsyndicate">Github Organization</a></li>
 							<li>
-								<a href="https://github.com/kungraseri/uncharted-lands/issues">Issue Tracking</a>
+								<a href="https://github.com/redsyndicate" target="_blank" rel="noreferrer">
+									Github Organization
+								</a>
+							</li>
+							<li>
+								<a
+									href="https://github.com/kungraseri/uncharted-lands/issues"
+									target="_blank"
+									rel="noreferrer"
+								>
+									Issue Tracking
+								</a>
 							</li>
 						</ul>
 					</div>
@@ -153,10 +170,12 @@
 					<a
 						href="https://github.com/kungraseri/uncharted-lands/blob/main/LICENSE"
 						target="_blank"
-						rel="noreferrer">GNU GPL v3</a
+						rel="noreferrer"
 					>
+						GNU GPL v3
+					</a>
 					<span class="opacity-10 mx-2">|</span>
-					<a href="https://redsyndicate.org" target="_blank" rel="noreferrer">Red Syndicate</a>
+					<a href="https://redsyndicate.org" target="_blank" rel="noreferrer"> Red Syndicate </a>
 				</p>
 				<div class="flex space-x-4">
 					<a
@@ -166,8 +185,8 @@
 						rel="noreferrer"
 					>
 						<Github />
-						<span class="hidden md:inline-block ml-2">Github</span></a
-					>
+						<span class="hidden md:inline-block ml-2"> Github </span>
+					</a>
 					<a
 						class="btn variant-soft"
 						href="https://discord.gg/eUuBSP6Qcb"
@@ -175,8 +194,8 @@
 						rel="noreferrer"
 					>
 						<Discord />
-						<span class="hidden md:inline-block ml-2">Discord</span></a
-					>
+						<span class="hidden md:inline-block ml-2"> Discord </span>
+					</a>
 					<a
 						class="btn variant-soft"
 						href="https://twitter.com/RedSyndicateOrg"
@@ -184,8 +203,8 @@
 						rel="noreferrer"
 					>
 						<Twitter />
-						<span class="hidden md:inline-block ml-2">Twitter</span></a
-					>
+						<span class="hidden md:inline-block ml-2"> Twitter </span>
+					</a>
 				</div>
 			</section>
 		</div>
