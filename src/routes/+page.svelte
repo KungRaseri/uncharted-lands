@@ -65,7 +65,7 @@
 </header>
 
 <div
-	class="p-4 max-w-6xl mx-auto text-center flex justify-center items-center gap-10 my-10 variant-glass-secondary rounded-2xl"
+	class="my-40 p-6 max-w-6xl mx-auto text-center flex justify-center items-center gap-10 variant-glass-secondary rounded-2xl"
 >
 	<p>Already have an account?</p>
 	<a href="sign-in" class="btn btn-sm variant-ghost-secondary">Sign In</a>
