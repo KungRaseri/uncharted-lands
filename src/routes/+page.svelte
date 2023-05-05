@@ -65,40 +65,44 @@
 </header>
 
 <div
-	class="my-40 p-6 max-w-6xl mx-auto text-center flex justify-center items-center gap-10 variant-glass-secondary rounded-2xl"
+	class="my-40 p-6 max-w-4xl mx-auto text-center flex justify-center items-center gap-10 variant-glass-secondary rounded-2xl"
 >
 	<p>Already have an account?</p>
 	<a href="sign-in" class="btn btn-sm variant-ghost-secondary">Sign In</a>
 </div>
 
-<section class="grid grid-cols-2 m-5 max-w-6xl mx-auto space-x-10">
-	<TabGroup
-		justify="justify-end"
-		active="variant-filled-primary"
-		hover="bg-surface-100-800-token hover:bg-surface-300-600-token"
-		flex="flex"
-	>
-		{#each featureImages as image, i}
-			<Tab bind:group={tabSet} name="feature-tabs-{image.title.toLowerCase()}" value={i}>
-				{image.title}
-			</Tab>
-		{/each}
+<div class="feature-gradient max-w-6xl mx-auto p-10 rounded-3xl">
+	<section class="grid grid-cols-2 m-5 max-w-5xl mx-auto space-x-10">
+		<TabGroup
+			justify="justify-center"
+			active="variant-filled-primary"
+			hover="bg-surface-100-800-token hover:bg-surface-300-600-token"
+			flex="flex"
+			class="variant-glass-surface rounded-2xl"
+		>
+			{#each featureImages as image, i}
+				<Tab bind:group={tabSet} name="feature-tabs-{image.title.toLowerCase()}" value={i}>
+					{image.title}
+				</Tab>
+			{/each}
 
-		<svelte:fragment slot="panel">
-			<p class="p-4 text-right">
-				{featureImages[tabSet].content}
-			</p>
-		</svelte:fragment>
-	</TabGroup>
-	<div>
-		<img
-			src={featureImages[tabSet].image.src}
-			alt={featureImages[tabSet].image.alt}
-			class="rounded-lg shadow-lg"
-			transition:fade
-		/>
-	</div>
-</section>
+			<svelte:fragment slot="panel">
+				<p class="p-4 text-right">
+					{featureImages[tabSet].content}
+				</p>
+			</svelte:fragment>
+		</TabGroup>
+
+		<div>
+			<img
+				src={featureImages[tabSet].image.src}
+				alt={featureImages[tabSet].image.alt}
+				class="rounded-lg shadow-lg aspect-[16/9]"
+				transition:fade
+			/>
+		</div>
+	</section>
+</div>
 
 <footer class="flex-none">
 	<div class="bg-surface-50-900-token border-t border-surface-500/10 text-xs md:text-base">
@@ -157,7 +161,7 @@
 				<div class="flex space-x-4">
 					<a
 						class="btn variant-soft"
-						href="https://github.com/skeletonlabs/skeleton"
+						href="https://github.com/kungraseri/uncharted-lands"
 						target="_blank"
 						rel="noreferrer"
 					>
@@ -196,6 +200,15 @@
 				transparent 40%
 			),
 			radial-gradient(at 100% 0%, rgba(var(--color-primary-900) / 0.33) 0px, transparent 40%);
+	}
+
+	.feature-gradient {
+		background-image: radial-gradient(
+				at 0% 100%,
+				rgba(var(--color-secondary-900) / 0.33) 0px,
+				transparent 75%
+			),
+			radial-gradient(at 100% 0%, rgba(var(--color-primary-900) / 0.33) 0px, transparent 75%);
 	}
 
 	a {
