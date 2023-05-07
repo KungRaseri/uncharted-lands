@@ -171,18 +171,12 @@
 			{#each $page.data.mainMenuLinks as link}
 				<a
 					href={link.href}
-					class="btn rounded-none
-						bg-primary-hover-token
-						{$page.route.id === link.href ||
-					$page.route.id === `/(protected)${link.href}` ||
-					$page.route.id === `/(auth)${link.href}`
-						? 'bg-primary-active-token'
-						: ''}
-						"
+					class="btn rounded-none bg-primary-hover-token"
+					class:bg-primary-active-token={$page.url.pathname === link.href}
 					on:click={() => {
 						isMainMenuOpen = false;
 					}}
-					aria-current={$page.route.id?.includes(link.href) ? 'page' : undefined}
+					aria-current={$page.url.pathname === link.href ? 'page' : undefined}
 				>
 					<span class="text-token">
 						{link.name}

@@ -49,7 +49,7 @@
 </svelte:head>
 
 <header id="hero" class="hero-gradient">
-	<div class="hero-bg flex flex-colmin-w-7xl">
+	<div class="hero-bg flex flex-col min-w-7xl">
 		<div class="p-4 flex flex-col items-center text-center space-y-10">
 			<Earth size="96" />
 			<h1 class="!text-5xl max-w-3xl">Uncharted Lands</h1>
@@ -85,14 +85,14 @@
 	{/if}
 </div>
 
-<section class="my-20 feature-gradient max-w-6xl mx-auto p-10 lg:rounded-3xl">
-	<div class="grid grid-cols-1 lg:grid-cols-2 m-5 max-w-5xl mx-auto">
+<section class="my-20 feature-gradient max-w-6xl mx-auto p-10 rounded-none xl:rounded-3xl">
+	<div class="grid grid-cols-1 lg:grid-cols-2 m-5 mx-auto">
 		<TabGroup
 			justify="justify-center lg:justify-end"
 			active="variant-filled-primary"
 			hover="bg-surface-100-800-token hover:bg-surface-300-600-token"
 			flex="flex"
-			class="variant-glass-surface rounded-t-2xl lg:rounded-2xl lg:rounded-r-none"
+			class="variant-glass-surface rounded-t-2xl lg:rounded-2xl lg:rounded-r-none sm:max-w-xl lg:max-w-full mx-auto"
 		>
 			{#each featureImages as image, i}
 				<Tab bind:group={tabSet} name="feature-tabs-{image.title.toLowerCase()}" value={i}>
@@ -107,11 +107,11 @@
 			</svelte:fragment>
 		</TabGroup>
 
-		<div>
+		<div class="mx-auto">
 			<img
 				src={featureImages[tabSet].image.src}
 				alt={featureImages[tabSet].image.alt}
-				class="rounded-b-2xl lg:rounded-2xl lg:rounded-l-none shadow-lg aspect-[16/9] w-fit"
+				class="rounded-b-2xl lg:rounded-2xl lg:rounded-l-none shadow-lg aspect-[16/9] sm:max-w-xl lg:max-w-full"
 				transition:fade
 			/>
 		</div>

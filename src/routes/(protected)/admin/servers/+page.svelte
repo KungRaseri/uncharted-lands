@@ -24,16 +24,18 @@
 
 <div class="grid grid-cols-2 p-4">
 	<h1>Servers</h1>
-	<div class="text-right">
-		<a href="servers/create" class="btn btn-sm variant-soft-primary w-min rounded-md">
-			<ServerPlus size={24} />
-			New Server
-		</a>
-	</div>
+	{#if data.servers.length}
+		<div class="text-right">
+			<a href="servers/create" class="btn btn-sm variant-soft-primary w-min rounded-md">
+				<ServerPlus size={24} />
+				New Server
+			</a>
+		</div>
+	{/if}
 </div>
 <hr class="mx-2" />
 <section class="p-4">
-	{#if data.servers.length > 0}
+	{#if data.servers.length}
 		<Table source={tableSimple} interactive={true} on:selected={selectionHandler} />
 	{:else}
 		<div class="justify-center items-center text-center">
