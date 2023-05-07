@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/stores';
+
 	import { ListBox, ListBoxItem, Tab, TabGroup } from '@skeletonlabs/skeleton';
 	import { fade } from 'svelte/transition';
 
@@ -47,7 +49,7 @@
 </svelte:head>
 
 <header id="hero" class="hero-gradient">
-	<div class="hero-bg flex flex-col py-20 min-w-7xl">
+	<div class="hero-bg flex flex-colmin-w-7xl">
 		<div class="p-4 flex flex-col items-center text-center space-y-10">
 			<Earth size="96" />
 			<h1 class="!text-5xl max-w-3xl">Uncharted Lands</h1>
@@ -72,20 +74,25 @@
 </header>
 
 <div
-	class="my-40 p-6 max-w-4xl mx-auto text-center flex justify-center items-center gap-10 variant-glass-secondary rounded-2xl"
+	class="my-20 p-6 max-w-4xl mx-auto text-center flex justify-center items-center gap-5 variant-glass-secondary rounded-none lg:rounded-2xl"
 >
-	<p>Already have an account?</p>
-	<a href="sign-in" class="btn btn-sm variant-ghost-secondary">Sign In</a>
+	{#if !$page.data.account}
+		<p>Already have an account?</p>
+		<a href="sign-in" class="btn btn-sm variant-ghost-secondary">Sign In</a>
+	{:else}
+		<p>Ready to get started?</p>
+		<a href="/game/getting-started" class="btn btn-sm variant-ghost-secondary">Settle Now</a>
+	{/if}
 </div>
 
-<div class="feature-gradient max-w-6xl mx-auto p-10 rounded-3xl">
-	<section class="grid grid-cols-2 m-5 max-w-5xl mx-auto space-x-10">
+<section class="my-20 feature-gradient max-w-6xl mx-auto p-10 lg:rounded-3xl">
+	<div class="grid grid-cols-1 lg:grid-cols-2 m-5 max-w-5xl mx-auto">
 		<TabGroup
-			justify="justify-center"
+			justify="justify-center lg:justify-end"
 			active="variant-filled-primary"
 			hover="bg-surface-100-800-token hover:bg-surface-300-600-token"
 			flex="flex"
-			class="variant-glass-surface rounded-2xl"
+			class="variant-glass-surface rounded-t-2xl lg:rounded-2xl lg:rounded-r-none"
 		>
 			{#each featureImages as image, i}
 				<Tab bind:group={tabSet} name="feature-tabs-{image.title.toLowerCase()}" value={i}>
@@ -94,7 +101,7 @@
 			{/each}
 
 			<svelte:fragment slot="panel">
-				<p class="p-4 text-right">
+				<p class="p-4 text-center lg:text-right">
 					{featureImages[tabSet].content}
 				</p>
 			</svelte:fragment>
@@ -104,15 +111,17 @@
 			<img
 				src={featureImages[tabSet].image.src}
 				alt={featureImages[tabSet].image.alt}
-				class="rounded-lg shadow-lg aspect-[16/9]"
+				class="rounded-b-2xl lg:rounded-2xl lg:rounded-l-none shadow-lg aspect-[16/9] w-fit"
 				transition:fade
 			/>
 		</div>
-	</section>
-</div>
+	</div>
+</section>
 
-<footer class="flex-none">
-	<div class="bg-surface-50-900-token border-t border-surface-500/10 text-xs md:text-base">
+<footer class="mt-10 flex-none">
+	<div
+		class="footer-gradient bg-surface-50-900-token border-t border-surface-500/10 text-xs md:text-base"
+	>
 		<div class="w-full max-w-7xl mx-auto p-4 py-16 md:py-24 space-y-10">
 			<section
 				class="flex flex-col md:flex-row justify-between items-center md:items-start space-y-5 md:space-y-0"
@@ -228,6 +237,15 @@
 				transparent 75%
 			),
 			radial-gradient(at 100% 0%, rgba(var(--color-primary-900) / 0.33) 0px, transparent 75%);
+	}
+
+	.footer-gradient {
+		background-image: radial-gradient(
+				at 0% 0%,
+				rgba(var(--color-secondary-900) / 0.33) 0px,
+				transparent 40%
+			),
+			radial-gradient(at 100% 0%, rgba(var(--color-primary-900) / 0.33) 0px, transparent 40%);
 	}
 
 	a {

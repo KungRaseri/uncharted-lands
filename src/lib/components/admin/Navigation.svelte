@@ -40,41 +40,42 @@
 			icon: FolderSearchOutline
 		}
 	];
-	$: isActive = (href: string) => (href === $page.url.pathname ? '!bg-primary-active-token' : '');
+
+	$: isActive = (href: string) => href === $page.url.pathname;
 
 	const storeValue: Writable<number> = writable(1);
 </script>
 
-<AppRail selected={storeValue} class="w-16 sm:w-min text-center align-middle">
+<AppRail selected={storeValue}>
 	<svelte:fragment slot="lead">
-		<AppRailTile
-			title="Dashboard"
-			tag="a"
-			href="/admin"
-			value={'/admin'}
-			class="p-1 btn btn-sm w-16 
-				{isActive('/admin')} 
+		<div class:bg-primary-active-token={isActive('/admin')}>
+			<AppRailTile
+				title="Dashboard"
+				tag="a"
+				href="/admin"
+				value={'/admin'}
+				class="p-1 btn btn-sm w-16 
 				hover:variant-ghost-secondary 
 				rounded-none"
-		>
-			<ViewDashboard width="100%" size={36} />
-			<span class="text-xs">Dashboard</span>
-		</AppRailTile>
+			>
+				<ViewDashboard width="100%" size={36} />
+				<span class="text-xs">Dashboard</span>
+			</AppRailTile>
+		</div>
 	</svelte:fragment>
 	{#each railTiles as railTile}
-		<AppRailTile
-			title={railTile.title}
-			tag="a"
-			href={railTile.href}
-			value={railTile.value}
-			class="py-1 px-0 btn btn-sm w-16 
-				{isActive(railTile.href)} 
-				hover:variant-ghost-secondary 
-				rounded-none"
-		>
-			<div class="mx-auto w-fit"><svelte:component this={railTile.icon} size={36} /></div>
-			<span class="text-xs">{railTile.label}</span>
-		</AppRailTile>
+		<div class:bg-primary-active-token={isActive(railTile.href)}>
+			<AppRailTile
+				title={railTile.title}
+				tag="a"
+				href={railTile.href}
+				value={railTile.value}
+				class="py-1 px-0 btn btn-sm w-16 hover:variant-ghost-secondary rounded-none"
+			>
+				<div class="mx-auto w-fit"><svelte:component this={railTile.icon} size={36} /></div>
+				<span class="text-xs">{railTile.label}</span>
+			</AppRailTile>
+		</div>
 	{/each}
 	<svelte:fragment slot="trail">
 		<AppRailTile
@@ -83,7 +84,7 @@
 			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
 		>
 			<Github width="100%" size={36} />
-			<span class="text-xs">src</span>
+			<span class="text-xs">Github</span>
 		</AppRailTile>
 	</svelte:fragment>
 </AppRail>
