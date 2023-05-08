@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WorldDetails from '$lib/components/admin/WorldDetails.svelte';
+	import WorldDetails from '$lib/components/admin/world/WorldDetails.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;

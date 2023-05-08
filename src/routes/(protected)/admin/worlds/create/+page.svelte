@@ -2,18 +2,19 @@
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
+	import { TileType, type Prisma, type Region, type Tile } from '@prisma/client';
 	import { RangeSlider } from '@skeletonlabs/skeleton';
-	import type { Prisma } from '@prisma/client';
-	import { generateMap } from '$lib/game/world-generator';
+	import { determineBiome, generateMap, normalizeValue } from '$lib/game/world-generator';
 
 	import Information from 'svelte-material-icons/Information.svelte';
-	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
+	import WorldMapPreview from '$lib/components/admin/world/WorldMapPreview.svelte';
+	import cuid from 'cuid';
 
 	export let data: PageData;
 	export let form: ActionData;
 
 	let regions: Prisma.RegionGetPayload<{
-		include: { tiles: { include: { Biome: true; Plots: true } } };
+		include: { tiles: { include: { Biome: true } } };
 	}>[];
 
 	let elevationOptions = {
@@ -45,12 +46,96 @@
 		worldName: '',
 		width: 100,
 		height: 100,
-		elevationSeed: Date.now(),
-		precipitationSeed: Date.now(),
-		temperatureSeed: Date.now()
+		seed: Date.now()
 	};
 
-	async function generate() {}
+	let elevationSeed = Date.now();
+	let precipitationSeed = Date.now() - 1;
+	let temperatureSeed = Date.now() + 1;
+
+	async function generate() {
+		const generatedMap: Prisma.RegionGetPayload<{
+			include: { tiles: { include: { Biome: true } } };
+		}>[][] = [];
+
+		const elevationMap = await generateMap(mapOptions, {
+			octaves: elevationOptions.octaves,
+			amplitude: elevationOptions.amplitude,
+			frequency: elevationOptions.frequency,
+			persistence: elevationOptions.persistence,
+			scale(x) {
+				return x * elevationOptions.scale;
+			}
+		});
+
+		const precipitationMap = await generateMap(mapOptions, {
+			octaves: precipitationOptions.octaves,
+			amplitude: precipitationOptions.amplitude,
+			frequency: precipitationOptions.frequency,
+			persistence: precipitationOptions.persistence,
+			scale(x) {
+				return x * precipitationOptions.scale;
+			}
+		});
+
+		const temperatureMap = await generateMap(mapOptions, {
+			octaves: temperatureOptions.octaves,
+			amplitude: temperatureOptions.amplitude,
+			frequency: temperatureOptions.frequency,
+			persistence: temperatureOptions.persistence,
+			scale(x) {
+				return x * temperatureOptions.scale;
+			}
+		});
+
+		for (let chunk = 0; chunk < elevationMap.length; chunk++) {
+			generatedMap[chunk] = [];
+			for (let x = 0; x < elevationMap[chunk].length; x++) {
+				const regionId = cuid();
+
+				let tiles: Prisma.TileGetPayload<{
+					include: { Biome: true };
+				}>[] = [];
+
+				for (let y = 0; y < elevationMap[chunk][x].length; y++) {
+					for (let t = 0; t < elevationMap[chunk][x][y].length; t++) {
+						const biome = await determineBiome(
+							data.biomes,
+							normalizeValue(precipitationMap[chunk][x][y][t], 0, 450),
+							normalizeValue(temperatureMap[chunk][x][y][t], -10, 32)
+						);
+
+						tiles.push({
+							id: cuid(),
+							regionId: regionId,
+							type: elevationMap[chunk][x][y][t] <= 0 ? TileType.OCEAN : TileType.LAND,
+							elevation: elevationMap[chunk][x][y][t],
+							precipitation: precipitationMap[chunk][x][y][t],
+							temperature: temperatureMap[chunk][x][y][t],
+							biomeId: biome.id,
+							Biome: biome
+						} as Prisma.TileGetPayload<{
+							include: { Biome: true };
+						}>);
+					}
+				}
+
+				generatedMap[chunk][x] = {
+					id: regionId,
+					worldId: '',
+					xCoord: chunk,
+					yCoord: x,
+					name: `${chunk}:${x}`,
+					elevationMap: elevationMap[chunk][x],
+					precipitationMap: precipitationMap[chunk][x],
+					temperatureMap: temperatureMap[chunk][x],
+					tiles: tiles
+				};
+			}
+		}
+
+		regions = generatedMap.flat(1);
+	}
 
 	$: regions;
 </script>
@@ -94,7 +179,7 @@
 					name="elevation-seed"
 					type="number"
 					class="input"
-					bind:value={mapOptions.elevationSeed}
+					bind:value={elevationSeed}
 					on:change={async () => {
 						await generate();
 					}}
@@ -191,7 +276,7 @@
 					name="precipitation-seed"
 					type="number"
 					class="input"
-					bind:value={mapOptions.precipitationSeed}
+					bind:value={precipitationSeed}
 					on:change={async () => {
 						await generate();
 					}}
@@ -303,7 +388,7 @@
 					name="temperature-seed"
 					type="number"
 					class="input"
-					bind:value={mapOptions.temperatureSeed}
+					bind:value={temperatureSeed}
 					on:change={async () => {
 						await generate();
 					}}

@@ -1,13 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	import { AppBar, popup, LightSwitch } from '@skeletonlabs/skeleton';
-	import type { PopupSettings } from '@skeletonlabs/skeleton';
-
-	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
-
-	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
+	import { AppBar, popup, LightSwitch, type PopupSettings } from '@skeletonlabs/skeleton';
 
 	import MenuIcon from 'svelte-material-icons/Menu.svelte';
 	import Account from 'svelte-material-icons/Account.svelte';
