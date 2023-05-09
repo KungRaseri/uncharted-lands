@@ -29,7 +29,7 @@ const config = defineConfig({
 	},
 	optimizeDeps: {
 		include: [
-			'@mdi/js', 
+			'@mdi/js',
 			'@skeletonlabs/skeleton'
 		]
 	}

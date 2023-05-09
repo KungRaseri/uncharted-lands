@@ -10,9 +10,9 @@
 	import { slide } from 'svelte/transition';
 
 	const MenuOptions: PopupSettings = {
-		placement: 'bottom',
 		event: 'click',
-		target: 'userMenu'
+		target: 'userMenu',
+		placement: 'bottom',
 	};
 
 	export let isMainMenuOpen = false;
@@ -106,7 +106,6 @@
 					id="user-menu-button"
 					aria-expanded="false"
 					aria-haspopup="true"
-					use:popup={MenuOptions}
 				>
 					{#if $page.data.account.profile?.picture}
 						<img class="rounded-full" src={$page.data.account.profile.picture} alt="user menu" />
@@ -178,5 +177,6 @@
 				</a>
 			{/each}
 		</div>
+		<div class="arrow variant-filled-primary" />
 	</div>
 {/if}
