@@ -4,7 +4,7 @@ import type { Biome, Tile } from '@prisma/client';
 import cuid from 'cuid';
 
 function chunks(heightMap: number[][], chunkSize: number) {
-    const splitChunks: number[][][] = [];
+    const splitChunks: number[][][][] = [];
 
     if (chunkSize === 0)
         return splitChunks;

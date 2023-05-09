@@ -26,7 +26,7 @@
 	shadow="shadow-md"
 >
 	<svelte:fragment slot="lead">
-		<div class="block xs:hidden">
+		<div class="block lg:hidden">
 			<button
 				type="button"
 				class="px-1.5 py-0 btn-icon variant-soft-surface justify-center items-center"
@@ -43,7 +43,7 @@
 				{/if}
 			</button>
 		</div>
-		<div class="hidden xs:block">
+		<div class="hidden lg:block">
 			{#each $page.data.mainMenuLinks as link}
 				<a
 					href={link.href}

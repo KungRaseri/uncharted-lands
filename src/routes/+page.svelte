@@ -52,7 +52,7 @@
 	<div class="hero-bg flex flex-col min-w-7xl">
 		<div class="p-4 flex flex-col items-center text-center space-y-10">
 			<Earth size="96" />
-			<h1 class="!text-5xl max-w-3xl">Uncharted Lands</h1>
+			<h1 class="h1">Uncharted Lands</h1>
 			<p class="!text-xl max-w-3xl">
 				Explore the vast uncharted wilderness, discover new biomes and terrains, and thrive in the
 				face of adversity. Trade with other players for a variety of goods. Expand your settlements
@@ -137,24 +137,29 @@
 					<div class="space-y-6">
 						<h6>Explore</h6>
 						<ul class="space-y-3">
-							<li><a href="/wiki">Wiki</a></li>
-							<li><a href="/game">Game</a></li>
-							<li><a href="/forum">Forum</a></li>
+							<li><a class="anchor" href="/wiki">Wiki</a></li>
+							<li><a class="anchor" href="/game">Game</a></li>
+							<li><a class="anchor" href="/forum">Forum</a></li>
 						</ul>
 					</div>
 					<div class="space-y-6">
 						<h6>Learn</h6>
 						<ul class="space-y-3">
-							<li><a href="/wiki/introduction">Introduction</a></li>
-							<li><a href="/wiki/getting-started">Getting Started</a></li>
-							<li><a href="/wiki/features">Features</a></li>
+							<li><a class="anchor" href="/wiki/introduction">Introduction</a></li>
+							<li><a class="anchor" href="/wiki/getting-started">Getting Started</a></li>
+							<li><a class="anchor" href="/wiki/features">Features</a></li>
 						</ul>
 					</div>
 					<div class="space-y-6">
 						<h6>Project</h6>
 						<ul class="space-y-3">
 							<li>
-								<a href="https://github.com/redsyndicate" target="_blank" rel="noreferrer">
+								<a
+									href="https://github.com/redsyndicate"
+									target="_blank"
+									rel="noreferrer"
+									class="anchor"
+								>
 									Github Organization
 								</a>
 							</li>
@@ -163,6 +168,7 @@
 									href="https://github.com/kungraseri/uncharted-lands/issues"
 									target="_blank"
 									rel="noreferrer"
+									class="anchor"
 								>
 									Issue Tracking
 								</a>
@@ -180,11 +186,14 @@
 						href="https://github.com/kungraseri/uncharted-lands/blob/main/LICENSE"
 						target="_blank"
 						rel="noreferrer"
+						class="anchor"
 					>
 						GNU GPL v3
 					</a>
 					<span class="opacity-10 mx-2">|</span>
-					<a href="https://redsyndicate.org" target="_blank" rel="noreferrer"> Red Syndicate </a>
+					<a href="https://redsyndicate.org" target="_blank" rel="noreferrer" class="anchor">
+						Red Syndicate
+					</a>
 				</p>
 				<div class="flex space-x-4">
 					<a

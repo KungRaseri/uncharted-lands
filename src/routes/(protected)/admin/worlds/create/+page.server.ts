@@ -34,6 +34,11 @@ export const load: PageServerLoad = async () => {
     }
 }
 
+const preview: Action = async({request}) => {
+    const data = await request.formData();
+
+}
+
 const save: Action = async ({ request }) => {
     const data = await request.formData();
     const map = data.get("map")
@@ -50,7 +55,6 @@ const save: Action = async ({ request }) => {
         return fail(400, { invalid: true, message: 'Some properties were invalid or were not provided.' })
     }
 
-    console.log(map.toString())
     generatedRegions = JSON.parse(map.toString());
 
     mapSettings = JSON.parse(mapOptions.toString());
@@ -158,4 +162,4 @@ async function finishWorldCreation() {
     ])
 }
 
-export const actions: Actions = { save }
+export const actions: Actions = { preview, save }

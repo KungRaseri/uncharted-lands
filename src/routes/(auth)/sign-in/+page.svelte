@@ -67,7 +67,7 @@
 					<span class="">Remember me</span>
 				</label>
 
-				<a href="forgot-password" class="font-medium">Forgot your password?</a>
+				<a href="forgot-password" class="anchor font-medium">Forgot your password?</a>
 			</div>
 
 			{#if form?.email}

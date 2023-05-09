@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
 	import { TileType, type Prisma, type Region, type Tile } from '@prisma/client';
-	import { RangeSlider } from '@skeletonlabs/skeleton';
+	import { RangeSlider, Stepper, Step, ProgressRadial } from '@skeletonlabs/skeleton';
 	import { determineBiome, generateMap, normalizeValue } from '$lib/game/world-generator';
 
 	import Information from 'svelte-material-icons/Information.svelte';
@@ -12,6 +12,8 @@
 
 	export let data: PageData;
 	export let form: ActionData;
+
+	const PREVIEW_STEP = 4;
 
 	let regions: Prisma.RegionGetPayload<{
 		include: { tiles: { include: { Biome: true } } };
@@ -98,20 +100,20 @@
 				}>[] = [];
 
 				for (let y = 0; y < elevationMap[chunk][x].length; y++) {
-					for (let t = 0; t < elevationMap[chunk][x][y].length; t++) {
+					for (let tile = 0; tile < elevationMap[chunk][x][y].length; tile++) {
 						const biome = await determineBiome(
 							data.biomes,
-							normalizeValue(precipitationMap[chunk][x][y][t], 0, 450),
-							normalizeValue(temperatureMap[chunk][x][y][t], -10, 32)
+							normalizeValue(precipitationMap[chunk][x][y][tile], 0, 450),
+							normalizeValue(temperatureMap[chunk][x][y][tile], -10, 32)
 						);
 
 						tiles.push({
 							id: cuid(),
 							regionId: regionId,
-							type: elevationMap[chunk][x][y][t] <= 0 ? TileType.OCEAN : TileType.LAND,
-							elevation: elevationMap[chunk][x][y][t],
-							precipitation: precipitationMap[chunk][x][y][t],
-							temperature: temperatureMap[chunk][x][y][t],
+							type: elevationMap[chunk][x][y][tile] <= 0 ? TileType.OCEAN : TileType.LAND,
+							elevation: elevationMap[chunk][x][y][tile],
+							precipitation: precipitationMap[chunk][x][y][tile],
+							temperature: temperatureMap[chunk][x][y][tile],
 							biomeId: biome.id,
 							Biome: biome
 						} as Prisma.TileGetPayload<{
@@ -137,362 +139,377 @@
 		regions = generatedMap.flat(1);
 	}
 
+	function onCompleteHandler(e: Event): void {
+		console.log('event:complete', e);
+	}
+
+	function onNextHandler(e: Event): void {
+		console.log('event:next', e);
+	}
+
+	function onStepHandler(e: Event): void {
+		console.log('event:step', e);
+
+		if (e.detail.state.current === PREVIEW_STEP) {
+			const data = new FormData()
+			console.log('PREVIEW');
+
+		}
+	}
+
+	function onBackHandler(e: Event): void {
+		console.log('event:back', e);
+	}
+
 	$: regions;
 </script>
 
 <div class="w-full h-full p-5 space-y-5">
-	<div class="card p-3 w-fit mx-auto rounded-md space-y-3">
+	<div class="card p-3 rounded-md space-y-3">
 		<h1 class="">New World</h1>
 		<hr class="my-1" />
-		<h2>General</h2>
-		<div class="flex space-x-3">
-			<label for="world-name" class="label">
-				<span>World Name</span>
-				<input
-					id="world-name"
-					name="world-name"
-					type="text"
-					class="input"
-					bind:value={mapOptions.worldName}
-					required
-					on:change={async () => {
-						await generate();
-					}}
-				/>
-			</label>
-			<label for="server-id" class="label">
-				<span>Server ID</span>
-				<select id="server-id" name="server-id" class="select" bind:value={mapOptions.serverId}>
-					{#each data.servers as server, i}
-						<option value={server.id}> {server.name}</option>
-					{/each}
-				</select>
-			</label>
-		</div>
+		<Stepper
+			buttonNext="variant-ghost-primary"
+			buttonComplete="variant-ghost-secondary"
+			on:complete={onCompleteHandler}
+			on:next={onNextHandler}
+			on:step={onStepHandler}
+			on:back={onBackHandler}
+		>
+			<Step locked={!mapOptions.worldName}>
+				<svelte:fragment slot="header">
+					<h2>General</h2>
+				</svelte:fragment>
+				<div class="flex flex-col space-y-3">
+					<label for="world-name" class="label">
+						<span>World Name</span>
+						<input
+							id="world-name"
+							name="world-name"
+							type="text"
+							class="input"
+							bind:value={mapOptions.worldName}
+							required
+						/>
+					</label>
+					<label for="server-id" class="label">
+						<span>Server ID</span>
+						<select id="server-id" name="server-id" class="select" bind:value={mapOptions.serverId}>
+							{#each data.servers as server, i}
+								<option value={server.id}> {server.name}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
+			</Step>
+			<Step>
+				<svelte:fragment slot="header">
+					<h2>Elevation</h2>
+				</svelte:fragment>
+				<div class="flex flex-col space-y-3">
+					<label for="elevation-seed" class="label">
+						<span>Seed</span>
+						<input
+							id="elevation-seed"
+							name="elevation-seed"
+							type="number"
+							class="input"
+							bind:value={elevationSeed}
+						/>
+					</label>
 
-		<h2>Elevation</h2>
-		<div class="flex space-x-3">
-			<label for="elevation-seed" class="label">
-				<span>Seed</span>
-				<input
-					id="elevation-seed"
-					name="elevation-seed"
-					type="number"
-					class="input"
-					bind:value={elevationSeed}
-					on:change={async () => {
-						await generate();
-					}}
-				/>
-			</label>
+					<RangeSlider
+						id="elevation-octaves"
+						name="elevation-octaves"
+						label="elevation-octaves"
+						step={1}
+						min={1}
+						max={16}
+						ticked
+						accent="accent-primary-500"
+						bind:value={elevationOptions.octaves}
+					>
+						<span> Octaves </span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{elevationOptions.octaves}
+						</span>
+					</RangeSlider>
 
-			<RangeSlider
-				id="elevation-octaves"
-				name="elevation-octaves"
-				label="elevation-octaves"
-				step={1}
-				min={1}
-				max={16}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.octaves}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span> Octaves </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{elevationOptions.octaves}
-				</span>
-			</RangeSlider>
+					<RangeSlider
+						id="elevations-amplitude"
+						name="elevations-amplitude"
+						label="elevations-amplitude"
+						step={0.1}
+						min={1}
+						max={5}
+						ticked
+						accent="accent-primary-500"
+						bind:value={elevationOptions.amplitude}
+					>
+						<span> Amplitude </span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{elevationOptions.amplitude}
+						</span>
+					</RangeSlider>
 
-			<RangeSlider
-				id="elevations-amplitude"
-				name="elevations-amplitude"
-				label="elevations-amplitude"
-				step={0.1}
-				min={1}
-				max={5}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.amplitude}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span> Amplitude </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{elevationOptions.amplitude}
-				</span>
-			</RangeSlider>
+					<RangeSlider
+						id="elevation-frequency"
+						name="elevation-frequency"
+						label="elevation-frequency"
+						step={0.01}
+						min={0.01}
+						max={1}
+						ticked
+						accent="accent-primary-500"
+						bind:value={elevationOptions.frequency}
+					>
+						<span> Frequency </span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{elevationOptions.frequency}
+						</span>
+					</RangeSlider>
 
-			<RangeSlider
-				id="elevation-frequency"
-				name="elevation-frequency"
-				label="elevation-frequency"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.frequency}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span> Frequency </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{elevationOptions.frequency}
-				</span>
-			</RangeSlider>
+					<RangeSlider
+						id="elevation-persistence"
+						name="elevation-persistence"
+						label="elevation-persistence"
+						step={0.01}
+						min={0.01}
+						max={1}
+						ticked
+						accent="accent-primary-500"
+						bind:value={elevationOptions.persistence}
+					>
+						<span> Persistence </span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{elevationOptions.persistence}
+						</span>
+					</RangeSlider>
+				</div>
+			</Step>
+			<Step>
+				<svelte:fragment slot="header">
+					<h2>Precipitation</h2>
+				</svelte:fragment>
+				<div class="flex flex-col space-y-3">
+					<label for="precipitation-seed" class="label">
+						<span>Seed</span>
+						<input
+							id="precipitation-seed"
+							name="precipitation-seed"
+							type="number"
+							class="input"
+							bind:value={precipitationSeed}
+						/>
+					</label>
+					<RangeSlider
+						id="precipitation-scale"
+						name="precipitation-scale"
+						label="precipitation-scale"
+						step={0.01}
+						min={0.01}
+						max={1}
+						ticked
+						accent="accent-primary-500"
+						bind:value={precipitationOptions.scale}
+					>
+						<span>Scale</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{precipitationOptions.scale}
+						</span>
+					</RangeSlider>
+					<RangeSlider
+						id="precipitation-octaves"
+						name="precipitation-octaves"
+						label="precipitation-octaves"
+						step={1}
+						min={1}
+						max={16}
+						ticked
+						accent="accent-primary-500"
+						bind:value={precipitationOptions.octaves}
+					>
+						<span>Octaves</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{precipitationOptions.octaves}
+						</span>
+					</RangeSlider>
+					<RangeSlider
+						id="precipitation-amplitude"
+						name="precipitation-amplitude"
+						label="precipitation-amplitude"
+						step={0.1}
+						min={1}
+						max={5}
+						ticked
+						accent="accent-primary-500"
+						bind:value={precipitationOptions.amplitude}
+					>
+						<span>Amplitude</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{precipitationOptions.amplitude}
+						</span>
+					</RangeSlider>
+					<RangeSlider
+						id="precipitation-frequency"
+						name="precipitation-frequency"
+						label="precipitation-frequency"
+						step={0.01}
+						min={0.01}
+						max={1}
+						ticked
+						accent="accent-primary-500"
+						bind:value={precipitationOptions.frequency}
+					>
+						<span>Frequency</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{precipitationOptions.frequency}
+						</span>
+					</RangeSlider>
+					<RangeSlider
+						id="precipitation-persistence"
+						name="precipitation-persistence"
+						label="precipitation-persistence"
+						step={0.01}
+						min={0.01}
+						max={1}
+						ticked
+						accent="accent-primary-500"
+						bind:value={precipitationOptions.persistence}
+					>
+						<span>Persistence</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{precipitationOptions.persistence}
+						</span>
+					</RangeSlider>
+				</div>
+			</Step>
+			<Step>
+				<svelte:fragment slot="header">
+					<h2>Temperature</h2>
+				</svelte:fragment>
+				<div class="flex flex-col space-y-3">
+					<label for="temperature-seed" class="label">
+						<span>Seed</span>
+						<input
+							id="temperature-seed"
+							name="temperature-seed"
+							type="number"
+							class="input"
+							bind:value={temperatureSeed}
+						/>
+					</label>
+					<RangeSlider
+						id="temperature-scale"
+						name="temperature-scale"
+						label="temperature-scale"
+						step={0.01}
+						min={0.01}
+						max={1}
+						ticked
+						accent="accent-primary-500"
+						bind:value={temperatureOptions.scale}
+					>
+						<span>Scale</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{temperatureOptions.scale}
+						</span>
+					</RangeSlider>
+					<RangeSlider
+						id="temperature-octaves"
+						name="temperature-octaves"
+						label="temperature-octaves"
+						step={1}
+						min={1}
+						max={16}
+						ticked
+						accent="accent-primary-500"
+						bind:value={temperatureOptions.octaves}
+					>
+						<span>Octaves</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{temperatureOptions.octaves}
+						</span>
+					</RangeSlider>
+					<RangeSlider
+						id="temperature-amplitude"
+						name="temperature-amplitude"
+						label="temperature-amplitude"
+						step={0.1}
+						min={1}
+						max={5}
+						ticked
+						accent="accent-primary-500"
+						bind:value={temperatureOptions.amplitude}
+					>
+						<span>Amplitude</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{temperatureOptions.amplitude}
+						</span>
+					</RangeSlider>
+					<RangeSlider
+						id="temperature-frequency"
+						name="temperature-frequency"
+						label="temperature-frequency"
+						step={0.01}
+						min={0.01}
+						max={1}
+						ticked
+						accent="accent-primary-500"
+						bind:value={temperatureOptions.frequency}
+					>
+						<span>Frequency</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{temperatureOptions.frequency}
+						</span>
+					</RangeSlider>
+					<RangeSlider
+						id="temperature-persistence"
+						name="temperature-persistence"
+						label="temperature-persistence"
+						step={0.01}
+						min={0.01}
+						max={1}
+						ticked
+						accent="accent-primary-500"
+						bind:value={temperatureOptions.persistence}
+					>
+						<span>Persistence</span>
+						<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+							{temperatureOptions.persistence}
+						</span>
+					</RangeSlider>
+				</div>
+			</Step>
+			<Step>
+				<svelte:fragment slot="header">
+					<h2>Preview</h2>
+				</svelte:fragment>
+				<div class="flex flex-col space-y-3">
+					{#if !regions}
+						<div class="placeholder animate-pulse" />
+					{:else}
+						{#each regions as region}
+							{#each region.tiles as tile}
+								<div
+									class="w-[1px] h-[1px]"
+									style="background: rgb({1 + tile.elevation * 255}, {1 +
+										tile.elevation * 255}, {1 + tile.elevation * 255})"
+								/>
+							{/each}
+						{/each}
+					{/if}
+				</div>
+			</Step>
+		</Stepper>
+		<!-- 
 
-			<RangeSlider
-				id="elevation-persistence"
-				name="elevation-persistence"
-				label="elevation-persistence"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.persistence}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span> Persistence </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{elevationOptions.persistence}
-				</span>
-			</RangeSlider>
-		</div>
 
-		<h2>Precipitation</h2>
-		<div class="flex space-x-3">
-			<label for="precipitation-seed" class="label">
-				<span>Seed</span>
-				<input
-					id="precipitation-seed"
-					name="precipitation-seed"
-					type="number"
-					class="input"
-					bind:value={precipitationSeed}
-					on:change={async () => {
-						await generate();
-					}}
-				/>
-			</label>
-			<RangeSlider
-				id="precipitation-scale"
-				name="precipitation-scale"
-				label="precipitation-scale"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.scale}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Scale</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{precipitationOptions.scale}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="precipitation-octaves"
-				name="precipitation-octaves"
-				label="precipitation-octaves"
-				step={1}
-				min={1}
-				max={16}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.octaves}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Octaves</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{precipitationOptions.octaves}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="precipitation-amplitude"
-				name="precipitation-amplitude"
-				label="precipitation-amplitude"
-				step={0.1}
-				min={1}
-				max={5}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.amplitude}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Amplitude</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{precipitationOptions.amplitude}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="precipitation-frequency"
-				name="precipitation-frequency"
-				label="precipitation-frequency"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.frequency}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Frequency</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{precipitationOptions.frequency}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="precipitation-persistence"
-				name="precipitation-persistence"
-				label="precipitation-persistence"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.persistence}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Persistence</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{precipitationOptions.persistence}
-				</span>
-			</RangeSlider>
-		</div>
+		
 
-		<h2>Temperature</h2>
-		<div class="flex space-x-3">
-			<label for="temperature-seed" class="label">
-				<span>Seed</span>
-				<input
-					id="temperature-seed"
-					name="temperature-seed"
-					type="number"
-					class="input"
-					bind:value={temperatureSeed}
-					on:change={async () => {
-						await generate();
-					}}
-				/>
-			</label>
-			<RangeSlider
-				id="temperature-scale"
-				name="temperature-scale"
-				label="temperature-scale"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.scale}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Scale</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{temperatureOptions.scale}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="temperature-octaves"
-				name="temperature-octaves"
-				label="temperature-octaves"
-				step={1}
-				min={1}
-				max={16}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.octaves}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Octaves</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{temperatureOptions.octaves}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="temperature-amplitude"
-				name="temperature-amplitude"
-				label="temperature-amplitude"
-				step={0.1}
-				min={1}
-				max={5}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.amplitude}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Amplitude</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{temperatureOptions.amplitude}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="temperature-frequency"
-				name="temperature-frequency"
-				label="temperature-frequency"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.frequency}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Frequency</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{temperatureOptions.frequency}
-				</span>
-			</RangeSlider>
-			<RangeSlider
-				id="temperature-persistence"
-				name="temperature-persistence"
-				label="temperature-persistence"
-				step={0.01}
-				min={0.01}
-				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.persistence}
-				on:change={async () => {
-					await generate();
-				}}
-			>
-				<span>Persistence</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
-					{temperatureOptions.persistence}
-				</span>
-			</RangeSlider>
-		</div>
-
+		
 		<form
-			action="?/save"
+			action="?/preview"
 			method="POST"
 			use:enhance={() => {
 				return async ({ result }) => {
@@ -528,9 +545,9 @@
 				</div>
 			{/if}
 			<button class="btn bg-primary-400-500-token rounded-md" disabled={!mapOptions.worldName}>
-				Save
+				Preview
 			</button>
-		</form>
+		</form> -->
 	</div>
 
 	{#if regions}
