@@ -1,6 +1,7 @@
 import { determineBiome, determinePlotData, determinePlotsTotal, normalizeValue, generateMap } from '$lib/game/world-generator'
-import { TileType, type Biome, type Plot, Prisma, type Region, type Tile, type World } from '@prisma/client';
-import { fail, json, redirect } from '@sveltejs/kit'
+import { TileType } from '@prisma/client';
+import type { Biome, Plot, Region, Tile, World } from '@prisma/client';
+import { fail, json } from '@sveltejs/kit';
 import cuid from 'cuid';
 import type { Options } from 'fractal-noise';
 

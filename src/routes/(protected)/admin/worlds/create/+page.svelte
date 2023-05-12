@@ -1,15 +1,7 @@
 <script lang="ts">
-	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
-	import {
-		TileType,
-		type Prisma,
-		type Region,
-		type Tile,
-		type World,
-		type Plot
-	} from '@prisma/client';
+	import type { Prisma, Region, Tile, TileType, World, Plot } from '@prisma/client';
 	import { RangeSlider, Stepper, Step, ProgressRadial } from '@skeletonlabs/skeleton';
 	import { determineBiome, generateMap, normalizeValue } from '$lib/game/world-generator';
 
@@ -17,9 +9,10 @@
 	import WorldMapPreview from '$lib/components/admin/world/WorldMapPreview.svelte';
 	import cuid from 'cuid';
 	import WorldComponent from '$lib/components/game/map/World.svelte';
+	import { fail } from '@sveltejs/kit';
+	import type { ErrorResponse } from '$lib/types';
 
 	export let data: PageData;
-	export let form: ActionData;
 
 	const PREVIEW_STEP = 4;
 
@@ -27,6 +20,8 @@
 	let regions: Region[];
 	let tiles: Tile[];
 	let plots: Plot[];
+
+	let errorResponse: ErrorResponse;
 
 	let elevationOptions = {
 		scale: 1,
@@ -66,101 +61,35 @@
 	let precipitationSeed = Date.now() - 1;
 	let temperatureSeed = Date.now() + 1;
 
-	async function generate() {
-		const generatedMap: Prisma.RegionGetPayload<{
-			include: { tiles: { include: { Biome: true } } };
-		}>[][] = [];
+	async function onCompleteHandler(e: Event): Promise<void> {
+		const formData = new FormData();
+		formData.set('world', new Blob([JSON.stringify(world)]));
+		formData.set('regions', new Blob([JSON.stringify(regions)]));
+		formData.set('tiles', new Blob([JSON.stringify(tiles)]));
+		formData.set('plots', new Blob([JSON.stringify(plots)]));
 
-		const elevationMap = await generateMap(mapOptions, {
-			octaves: elevationOptions.octaves,
-			amplitude: elevationOptions.amplitude,
-			frequency: elevationOptions.frequency,
-			persistence: elevationOptions.persistence,
-			scale(x) {
-				return x * elevationOptions.scale;
-			}
+		const response = await fetch('/api/world/save', {
+			method: 'POST',
+			body: formData
 		});
 
-		const precipitationMap = await generateMap(mapOptions, {
-			octaves: precipitationOptions.octaves,
-			amplitude: precipitationOptions.amplitude,
-			frequency: precipitationOptions.frequency,
-			persistence: precipitationOptions.persistence,
-			scale(x) {
-				return x * precipitationOptions.scale;
+		if (response) {
+			const data = await response.json();
+			if (data.result) {
+				await goto('/admin/worlds');
 			}
-		});
 
-		const temperatureMap = await generateMap(mapOptions, {
-			octaves: temperatureOptions.octaves,
-			amplitude: temperatureOptions.amplitude,
-			frequency: temperatureOptions.frequency,
-			persistence: temperatureOptions.persistence,
-			scale(x) {
-				return x * temperatureOptions.scale;
-			}
-		});
-
-		for (let chunk = 0; chunk < elevationMap.length; chunk++) {
-			generatedMap[chunk] = [];
-			for (let x = 0; x < elevationMap[chunk].length; x++) {
-				const regionId = cuid();
-
-				let tiles: Prisma.TileGetPayload<{
-					include: { Biome: true };
-				}>[] = [];
-
-				for (let y = 0; y < elevationMap[chunk][x].length; y++) {
-					for (let tile = 0; tile < elevationMap[chunk][x][y].length; tile++) {
-						const biome = await determineBiome(
-							data.biomes,
-							normalizeValue(precipitationMap[chunk][x][y][tile], 0, 450),
-							normalizeValue(temperatureMap[chunk][x][y][tile], -10, 32)
-						);
-
-						tiles.push({
-							id: cuid(),
-							regionId: regionId,
-							type: elevationMap[chunk][x][y][tile] <= 0 ? TileType.OCEAN : TileType.LAND,
-							elevation: elevationMap[chunk][x][y][tile],
-							precipitation: precipitationMap[chunk][x][y][tile],
-							temperature: temperatureMap[chunk][x][y][tile],
-							biomeId: biome.id,
-							Biome: biome
-						} as Prisma.TileGetPayload<{
-							include: { Biome: true };
-						}>);
-					}
-				}
-
-				generatedMap[chunk][x] = {
-					id: regionId,
-					worldId: '',
-					xCoord: chunk,
-					yCoord: x,
-					name: `${chunk}:${x}`,
-					elevationMap: elevationMap[chunk][x],
-					precipitationMap: precipitationMap[chunk][x],
-					temperatureMap: temperatureMap[chunk][x],
-					tiles: tiles
-				};
+			if (typeof data === typeof errorResponse) {
+				console.log('test');
 			}
 		}
-
-		regions = generatedMap.flat(1);
 	}
 
-	function onCompleteHandler(e: Event): void {
-		console.log('event:complete', e);
-	}
+	function onNextHandler(e: Event): void {}
 
-	function onNextHandler(e: Event): void {
-		console.log('event:next', e);
-	}
+	function onBackHandler(e: Event): void {}
 
 	async function onStepHandler(e: CustomEvent): Promise<void> {
-		console.log('event:step', e);
-
 		if (e.detail.state.current === PREVIEW_STEP) {
 			const formData = new FormData();
 			formData.set('map-options', JSON.stringify(mapOptions));
@@ -177,43 +106,53 @@
 			const responseData = await response.json();
 
 			({ world, regions, tiles, plots } = responseData);
-
-			console.log('response', world, regions, tiles, plots);
 		}
 	}
 
-	function onBackHandler(e: Event): void {
-		console.log('event:back', e);
+	function TileTypeToBackgroundColor(tileType: TileType) {
+		switch (tileType) {
+			case 'LAND':
+				return 'bg-amber-950';
+			default:
+				return 'bg-blue-950';
+		}
 	}
 
-	function tileToColor(elevation: number) {
-		let color = 'bg-blue-600';
+	function biomeToForegroundColor(biomeId: string) {
+		const biome = data.biomes.find((b) => b.id === biomeId);
 
-		if (elevation < -0.7) {
-			return 'bg-blue-950';
+		if (!biome) {
+			throw fail(400, { message: 'Invalid biomeId provided' });
 		}
 
-		if (elevation >= -0.7 && elevation < -0.3) {
-			return 'bg-blue-800';
+		switch (biome.name) {
+			case 'TUNDRA':
+				return 'text-blue-200';
+			case 'FOREST_BOREAL':
+				return 'text-teal-700';
+			case 'FOREST_TEMPERATE_SEASONAL':
+				return 'text-lime-700';
+			case 'FOREST_TROPICAL_SEASONAL':
+				return 'text-green-700';
+			case 'RAINFOREST_TEMPERATE':
+				return 'text-emerald-800';
+			case 'RAINFOREST_TROPICAL':
+				return 'text-emerald-700';
+			case 'WOODLAND':
+				return 'text-lime-950';
+			case 'SHRUBLAND':
+				return 'text-emerald-950';
+			case 'SAVANNA':
+				return 'text-yellow-600';
+			case 'GRASSLAND_TEMPERATE':
+				return 'text-lime-500';
+			case 'DESERT_COLD':
+				return 'text-orange-200';
+			case 'DESERT_SUBTROPICAL':
+				return 'text-orange-400';
+			default:
+				return 'text-blue-100';
 		}
-
-		if (elevation >= -0.3 && elevation < 0) {
-			return 'bg-blue-700';
-		}
-
-		if (elevation > 0 && elevation < 0.25) {
-			return 'bg-amber-500';
-		}
-
-		if (elevation >= 0.25 && elevation < 0.4) {
-			return 'bg-stone-600';
-		}
-
-		if (elevation >= 0.4) {
-			return 'bg-stone-300';
-		}
-
-		return color;
 	}
 
 	$: regions;
@@ -545,14 +484,14 @@
 						<div class="placeholder animate-pulse" />
 					</div>
 				{:else}
-					<div class="grid grid-cols-10 border-primary-200 w-5/6 mx-auto">
+					<div class="grid grid-cols-10 w-5/6 mx-auto">
 						{#each regions as region}
-							<div class="grid grid-cols-10 border-secondary-200">
+							<div class="grid grid-cols-10 border border-dotted border-surface-600">
 								{#each tiles.filter((t) => t.regionId === region.id) as tile}
 									<div
-										class="block p-1 aspect-square border border-primary-300 {tileToColor(
-											tile.elevation
-										)}"
+										class="block aspect-square border border-surface-900
+										{biomeToForegroundColor(tile.biomeId)}
+										{TileTypeToBackgroundColor(tile.type)}"
 									/>
 								{/each}
 							</div>
@@ -560,9 +499,9 @@
 					</div>
 				{/if}
 
-				{#if form?.invalid}
+				{#if errorResponse?.invalid}
 					<div class="alert variant-ghost-error w-11/12 mx-auto m-5">
-						<div class="alert-message"><Information />{form?.message}</div>
+						<div class="alert-message"><Information />{errorResponse.message}</div>
 					</div>
 				{/if}
 			</Step>
