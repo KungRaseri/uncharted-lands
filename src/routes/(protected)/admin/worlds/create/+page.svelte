@@ -2,22 +2,31 @@
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
-	import { TileType, type Prisma, type Region, type Tile } from '@prisma/client';
+	import {
+		TileType,
+		type Prisma,
+		type Region,
+		type Tile,
+		type World,
+		type Plot
+	} from '@prisma/client';
 	import { RangeSlider, Stepper, Step, ProgressRadial } from '@skeletonlabs/skeleton';
 	import { determineBiome, generateMap, normalizeValue } from '$lib/game/world-generator';
 
 	import Information from 'svelte-material-icons/Information.svelte';
 	import WorldMapPreview from '$lib/components/admin/world/WorldMapPreview.svelte';
 	import cuid from 'cuid';
+	import WorldComponent from '$lib/components/game/map/World.svelte';
 
 	export let data: PageData;
 	export let form: ActionData;
 
 	const PREVIEW_STEP = 4;
 
-	let regions: Prisma.RegionGetPayload<{
-		include: { tiles: { include: { Biome: true } } };
-	}>[];
+	let world: World;
+	let regions: Region[];
+	let tiles: Tile[];
+	let plots: Plot[];
 
 	let elevationOptions = {
 		scale: 1,
@@ -147,13 +156,27 @@
 		console.log('event:next', e);
 	}
 
-	function onStepHandler(e: Event): void {
+	async function onStepHandler(e: CustomEvent): Promise<void> {
 		console.log('event:step', e);
 
 		if (e.detail.state.current === PREVIEW_STEP) {
-			const data = new FormData()
-			console.log('PREVIEW');
+			const formData = new FormData();
+			formData.set('map-options', JSON.stringify(mapOptions));
+			formData.set('biomes', JSON.stringify(data.biomes));
+			formData.set('elevation-options', JSON.stringify(elevationOptions));
+			formData.set('precipitation-options', JSON.stringify(precipitationOptions));
+			formData.set('temperature-options', JSON.stringify(temperatureOptions));
 
+			const response = await fetch('/api/world/preview', {
+				method: 'POST',
+				body: formData
+			});
+
+			const responseData = await response.json();
+
+			({ world, regions, tiles, plots } = responseData);
+
+			console.log('response', world, regions, tiles, plots);
 		}
 	}
 
@@ -161,12 +184,26 @@
 		console.log('event:back', e);
 	}
 
+	function tileToColor(elevation: number) {
+		let color = 'bg-blue-950';
+
+		if(elevation < 0) {
+			return 'bg-slate-950'
+		} 
+		
+		if (elevation > 0) {
+			return 'bg-amber-950'
+		}
+
+		return color;
+	}
+
 	$: regions;
 </script>
 
 <div class="w-full h-full p-5 space-y-5">
 	<div class="card p-3 rounded-md space-y-3">
-		<h1 class="">New World</h1>
+		<h1 class="h1">New World</h1>
 		<hr class="my-1" />
 		<Stepper
 			buttonNext="variant-ghost-primary"
@@ -178,7 +215,7 @@
 		>
 			<Step locked={!mapOptions.worldName}>
 				<svelte:fragment slot="header">
-					<h2>General</h2>
+					<h2 class="h2">General</h2>
 				</svelte:fragment>
 				<div class="flex flex-col space-y-3">
 					<label for="world-name" class="label">
@@ -204,7 +241,7 @@
 			</Step>
 			<Step>
 				<svelte:fragment slot="header">
-					<h2>Elevation</h2>
+					<h2 class="h2">Elevation</h2>
 				</svelte:fragment>
 				<div class="flex flex-col space-y-3">
 					<label for="elevation-seed" class="label">
@@ -289,7 +326,7 @@
 			</Step>
 			<Step>
 				<svelte:fragment slot="header">
-					<h2>Precipitation</h2>
+					<h2 class="h2">Precipitation</h2>
 				</svelte:fragment>
 				<div class="flex flex-col space-y-3">
 					<label for="precipitation-seed" class="label">
@@ -386,7 +423,7 @@
 			</Step>
 			<Step>
 				<svelte:fragment slot="header">
-					<h2>Temperature</h2>
+					<h2 class="h2">Temperature</h2>
 				</svelte:fragment>
 				<div class="flex flex-col space-y-3">
 					<label for="temperature-seed" class="label">
@@ -483,74 +520,34 @@
 			</Step>
 			<Step>
 				<svelte:fragment slot="header">
-					<h2>Preview</h2>
+					<h2 class="h2">Preview</h2>
 				</svelte:fragment>
-				<div class="flex flex-col space-y-3">
-					{#if !regions}
+				{#if !regions}
+					<div class="flex flex-col space-y-3">
 						<div class="placeholder animate-pulse" />
-					{:else}
+					</div>
+				{:else}
+					<div class="grid grid-cols-10 border-primary-200">
 						{#each regions as region}
-							{#each region.tiles as tile}
-								<div
-									class="w-[1px] h-[1px]"
-									style="background: rgb({1 + tile.elevation * 255}, {1 +
-										tile.elevation * 255}, {1 + tile.elevation * 255})"
-								/>
-							{/each}
+							<div class="grid grid-cols-10 border-secondary-200">
+								{#each tiles.filter((t) => t.regionId === region.id) as tile}
+									<div
+										class="block p-1 aspect-square border border-primary-300 {tileToColor(
+											tile.elevation
+										)}"
+									/>
+								{/each}
+							</div>
 						{/each}
-					{/if}
-				</div>
+					</div>
+				{/if}
+
+				{#if form?.invalid}
+					<div class="alert variant-ghost-error w-11/12 mx-auto m-5">
+						<div class="alert-message"><Information />{form?.message}</div>
+					</div>
+				{/if}
 			</Step>
 		</Stepper>
-		<!-- 
-
-
-		
-
-		
-		<form
-			action="?/preview"
-			method="POST"
-			use:enhance={() => {
-				return async ({ result }) => {
-					if (result.type !== 'redirect') await invalidateAll();
-
-					await applyAction(result);
-				};
-			}}
-		>
-			<input type="hidden" name="map" id="map" value={JSON.stringify(regions)} />
-			<input type="hidden" name="map-options" id="map-options" value={JSON.stringify(mapOptions)} />
-			<input
-				type="hidden"
-				name="elevation-options"
-				id="elevation-options"
-				value={JSON.stringify(elevationOptions)}
-			/>
-			<input
-				type="hidden"
-				name="precipitation-options"
-				id="precipitation-options"
-				value={JSON.stringify(precipitationOptions)}
-			/>
-			<input
-				type="hidden"
-				name="temperature-options"
-				id="temperature-options"
-				value={JSON.stringify(temperatureOptions)}
-			/>
-			{#if form?.invalid}
-				<div class="alert variant-ghost-error w-11/12 mx-auto m-5">
-					<div class="alert-message"><Information />{form?.message}</div>
-				</div>
-			{/if}
-			<button class="btn bg-primary-400-500-token rounded-md" disabled={!mapOptions.worldName}>
-				Preview
-			</button>
-		</form> -->
 	</div>
-
-	{#if regions}
-		<WorldMapPreview {regions} />
-	{/if}
 </div>
