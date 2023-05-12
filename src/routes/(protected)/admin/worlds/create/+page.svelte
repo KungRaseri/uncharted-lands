@@ -57,7 +57,9 @@
 		worldName: '',
 		width: 100,
 		height: 100,
-		seed: Date.now()
+		elevationSeed: Date.now(),
+		precipitationSeed: Date.now(),
+		temperatureSeed: Date.now()
 	};
 
 	let elevationSeed = Date.now();
@@ -185,14 +187,30 @@
 	}
 
 	function tileToColor(elevation: number) {
-		let color = 'bg-blue-950';
+		let color = 'bg-blue-600';
 
-		if(elevation < 0) {
-			return 'bg-slate-950'
-		} 
-		
-		if (elevation > 0) {
-			return 'bg-amber-950'
+		if (elevation < -0.7) {
+			return 'bg-blue-950';
+		}
+
+		if (elevation >= -0.7 && elevation < -0.3) {
+			return 'bg-blue-800';
+		}
+
+		if (elevation >= -0.3 && elevation < 0) {
+			return 'bg-blue-700';
+		}
+
+		if (elevation > 0 && elevation < 0.25) {
+			return 'bg-amber-500';
+		}
+
+		if (elevation >= 0.25 && elevation < 0.4) {
+			return 'bg-stone-600';
+		}
+
+		if (elevation >= 0.4) {
+			return 'bg-stone-300';
 		}
 
 		return color;
@@ -527,7 +545,7 @@
 						<div class="placeholder animate-pulse" />
 					</div>
 				{:else}
-					<div class="grid grid-cols-10 border-primary-200">
+					<div class="grid grid-cols-10 border-primary-200 w-5/6 mx-auto">
 						{#each regions as region}
 							<div class="grid grid-cols-10 border-secondary-200">
 								{#each tiles.filter((t) => t.regionId === region.id) as tile}
