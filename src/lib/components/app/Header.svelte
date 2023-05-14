@@ -12,7 +12,7 @@
 	const MenuOptions: PopupSettings = {
 		event: 'click',
 		target: 'userMenu',
-		placement: 'bottom',
+		placement: 'bottom'
 	};
 
 	export let isMainMenuOpen = false;
@@ -106,6 +106,7 @@
 					id="user-menu-button"
 					aria-expanded="false"
 					aria-haspopup="true"
+					use:popup={MenuOptions}
 				>
 					{#if $page.data.account.profile?.picture}
 						<img class="rounded-full" src={$page.data.account.profile.picture} alt="user menu" />

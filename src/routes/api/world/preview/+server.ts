@@ -13,9 +13,13 @@ let plots: Plot[];
 
 let mapSettings: any;
 let biomes: Biome[] = []
+
 let elevationSettings: Options;
 let precipitationSettings: Options;
 let temperatureSettings: Options;
+let elevationMap: number[][][][];
+let precipitationMap: number[][][][];
+let temperatureMap: number[][][][];
 
 let generatedRegions: Region[][];
 
@@ -50,13 +54,11 @@ export async function POST({ request }): Promise<Response> {
     await initializeTiles();
     initializePlots();
 
-    return json({ world, regions, tiles, plots }, {})
+    return json({ world, regions, tiles, plots })
 }
 
 async function generateMaps() {
-    generatedRegions = [];
-
-    const elevationMap = await generateMap(
+    elevationMap = await generateMap(
         {
             worldName: mapSettings.worldName,
             serverId: mapSettings.serverId,
@@ -72,7 +74,7 @@ async function generateMaps() {
         }
     );
 
-    const precipitationMap = await generateMap(
+    precipitationMap = await generateMap(
         {
             worldName: mapSettings.worldName,
             serverId: mapSettings.serverId,
@@ -88,7 +90,7 @@ async function generateMaps() {
         }
     );
 
-    const temperatureMap = await generateMap(
+    temperatureMap = await generateMap(
         {
             worldName: mapSettings.worldName,
             serverId: mapSettings.serverId,
@@ -103,22 +105,6 @@ async function generateMaps() {
             frequency: temperatureSettings.frequency
         }
     );
-
-    for (let i = 0; i < elevationMap.length; i++) {
-        generatedRegions[i] = [];
-        for (let j = 0; j < elevationMap[i].length; j++) {
-            generatedRegions[i][j] = {
-                id: '',
-                worldId: '',
-                xCoord: i,
-                yCoord: j,
-                name: `${i}:${j}`,
-                elevationMap: elevationMap[i][j],
-                precipitationMap: precipitationMap[i][j],
-                temperatureMap: temperatureMap[i][j]
-            };
-        }
-    }
 }
 
 function initializeWorld() {
@@ -135,12 +121,25 @@ function initializeWorld() {
 }
 
 function initializeRegions() {
-    regions = generatedRegions.flat(1).map((v) => {
-        v.id = cuid();
-        v.worldId = world.id;
+    generatedRegions = [];
 
-        return v;
-    });
+    for (let i = 0; i < elevationMap.length; i++) {
+        generatedRegions[i] = [];
+        for (let j = 0; j < elevationMap[i].length; j++) {
+            generatedRegions[i][j] = {
+                id: cuid(),
+                worldId: world.id,
+                xCoord: i,
+                yCoord: j,
+                name: `${i}:${j}`,
+                elevationMap: elevationMap[i][j],
+                precipitationMap: precipitationMap[i][j],
+                temperatureMap: temperatureMap[i][j]
+            };
+        }
+    }
+
+    regions = generatedRegions.flat(1)
 }
 
 async function initializeTiles() {

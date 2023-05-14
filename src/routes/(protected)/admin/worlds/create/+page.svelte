@@ -1,15 +1,11 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
-	import type { Prisma, Region, Tile, TileType, World, Plot } from '@prisma/client';
+	import type { Prisma, Region, Tile, World, Plot } from '@prisma/client';
 	import { RangeSlider, Stepper, Step, ProgressRadial } from '@skeletonlabs/skeleton';
-	import { determineBiome, generateMap, normalizeValue } from '$lib/game/world-generator';
 
 	import Information from 'svelte-material-icons/Information.svelte';
-	import WorldMapPreview from '$lib/components/admin/world/WorldMapPreview.svelte';
-	import cuid from 'cuid';
 	import WorldComponent from '$lib/components/game/map/World.svelte';
-	import { fail } from '@sveltejs/kit';
 	import type { ErrorResponse } from '$lib/types';
 
 	export let data: PageData;
@@ -106,52 +102,6 @@
 			const responseData = await response.json();
 
 			({ world, regions, tiles, plots } = responseData);
-		}
-	}
-
-	function TileTypeToBackgroundColor(tileType: TileType) {
-		switch (tileType) {
-			case 'LAND':
-				return 'bg-amber-950';
-			default:
-				return 'bg-blue-950';
-		}
-	}
-
-	function biomeToForegroundColor(biomeId: string) {
-		const biome = data.biomes.find((b) => b.id === biomeId);
-
-		if (!biome) {
-			throw fail(400, { message: 'Invalid biomeId provided' });
-		}
-
-		switch (biome.name) {
-			case 'TUNDRA':
-				return 'text-blue-200';
-			case 'FOREST_BOREAL':
-				return 'text-teal-700';
-			case 'FOREST_TEMPERATE_SEASONAL':
-				return 'text-lime-700';
-			case 'FOREST_TROPICAL_SEASONAL':
-				return 'text-green-700';
-			case 'RAINFOREST_TEMPERATE':
-				return 'text-emerald-800';
-			case 'RAINFOREST_TROPICAL':
-				return 'text-emerald-700';
-			case 'WOODLAND':
-				return 'text-lime-950';
-			case 'SHRUBLAND':
-				return 'text-emerald-950';
-			case 'SAVANNA':
-				return 'text-yellow-600';
-			case 'GRASSLAND_TEMPERATE':
-				return 'text-lime-500';
-			case 'DESERT_COLD':
-				return 'text-orange-200';
-			case 'DESERT_SUBTROPICAL':
-				return 'text-orange-400';
-			default:
-				return 'text-blue-100';
 		}
 	}
 
@@ -479,25 +429,6 @@
 				<svelte:fragment slot="header">
 					<h2 class="h2">Preview</h2>
 				</svelte:fragment>
-				{#if !regions}
-					<div class="flex flex-col space-y-3">
-						<div class="placeholder animate-pulse" />
-					</div>
-				{:else}
-					<div class="grid grid-cols-10 w-5/6 mx-auto">
-						{#each regions as region}
-							<div class="grid grid-cols-10 border border-dotted border-surface-600">
-								{#each tiles.filter((t) => t.regionId === region.id) as tile}
-									<div
-										class="block aspect-square border border-surface-900
-										{biomeToForegroundColor(tile.biomeId)}
-										{TileTypeToBackgroundColor(tile.type)}"
-									/>
-								{/each}
-							</div>
-						{/each}
-					</div>
-				{/if}
 
 				{#if errorResponse?.invalid}
 					<div class="alert variant-ghost-error w-11/12 mx-auto m-5">
@@ -506,5 +437,15 @@
 				{/if}
 			</Step>
 		</Stepper>
+
+		<div class="bg-surface-50 w-5/6 mx-auto">
+			{#if !regions}
+				<div class="flex flex-col space-y-3">
+					<div class="placeholder animate-pulse rounded-none" />
+				</div>
+			{:else}
+				<WorldComponent {world} {regions} {tiles} biomes={data.biomes} />
+			{/if}
+		</div>
 	</div>
 </div>

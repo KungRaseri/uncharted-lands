@@ -2,6 +2,7 @@ import { makeNoise2D } from 'open-simplex-noise';
 import { makeRectangle, type Options } from 'fractal-noise';
 import type { Biome, Tile } from '@prisma/client';
 import cuid from 'cuid';
+import type { MapOptions } from '$lib/types';
 
 function chunks(heightMap: number[][], chunkSize: number) {
     const splitChunks: number[][][][] = [];
@@ -29,10 +30,6 @@ function chunks(heightMap: number[][], chunkSize: number) {
     }
 
     return splitChunks;
-}
-
-type MapOptions = {
-    serverId: string | null, worldName: string | null, width: number, height: number, seed: number
 }
 
 export async function generateMap(mapOptions: MapOptions, options: Options) {
