@@ -14,10 +14,10 @@
 			case 'LAND':
 				return 'bg-amber-200';
 			default:
-				if (tile.elevation < -0.5) return 'bg-blue-900';
-				if (tile.elevation >= -0.5 && tile.elevation < -0.4) return 'bg-blue-800';
-				if (tile.elevation >= -0.4 && tile.elevation < -0.3) return 'bg-blue-700';
-				if (tile.elevation >= -0.3 && tile.elevation < -0.075) return 'bg-blue-600';
+				if (tile.elevation < -0.39) return 'bg-blue-900';
+				if (tile.elevation >= -0.39 && tile.elevation < -0.2) return 'bg-blue-800';
+				if (tile.elevation >= -0.2 && tile.elevation < -0.15) return 'bg-blue-700';
+				if (tile.elevation >= -0.15 && tile.elevation < -0.098) return 'bg-blue-600';
 
 				return 'bg-blue-500';
 		}

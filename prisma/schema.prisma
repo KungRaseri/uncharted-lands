@@ -138,7 +138,7 @@ model Settlement {
   plotId              String @unique
   playerProfileId     String
   settlementStorageId String @unique
-  name                String @default("Home Settlment")
+  name                String @default("Home Settlement")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -148,6 +148,7 @@ model Settlement {
   PlayerProfile ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
   Structures    SettlementStructure[]
 }
+
 
 model SettlementStorage {
   id         String      @id @default(cuid())

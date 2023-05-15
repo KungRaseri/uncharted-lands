@@ -16,7 +16,6 @@
 
 	$: serverTime;
 	$: localTime;
-	$: data;
 
 	export let data: PageData;
 </script>
