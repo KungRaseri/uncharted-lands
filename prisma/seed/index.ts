@@ -1,4 +1,5 @@
-import { type Biome, PrismaClient } from "@prisma/client";
+import type { Biome, SettlementStructure } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 import cuid from 'cuid';
 
 const prisma = new PrismaClient();
@@ -279,6 +280,23 @@ const biomes: Biome[] = [
 //     }
 // ]
 
+// const settlementStructures: SettlementStructure[] = [
+//     {
+//         id: cuid(),
+//         name: 'Housing',
+//         description: 'Provides living space for settlers, increases population capacity of the settlement.',
+//         settlementId: '',
+//         structureRequirementsId: ''
+//     },
+//     {
+//         id: cuid(),
+//         name: 'Farm',
+//         description: 'Allows settlers to grow crops and produce food.',
+//         settlementId: '',
+
+//     }
+// ]
+
 async function main() {
     console.log('Start seeding ...')
 
@@ -293,10 +311,21 @@ async function main() {
             update: biome
         })
 
-        // other seed data
-
         console.log(`Biome ${resultBiome.name} with ID[${resultBiome.id}] created`)
     })
+
+    // console.log(`Seeding [${settlementStructures.length}] Structures`)
+    // settlementStructures.forEach(async (settlementStructure) => {
+    //     const resultStructure = await prisma.settlementStructure.upsert({
+    //         where: {
+    //             id: settlementStructure.id
+    //         },
+    //         create: settlementStructure,
+    //         update: settlementStructure
+    //     })
+
+    //     console.log(`Structure ${resultStructure.name} with ID[${resultStructure.id}] created`)
+    // })
 
     console.log(`Seeding finished.`)
 }
