@@ -297,6 +297,23 @@ const biomes: Biome[] = [
 //     }
 // ]
 
+// const settlementStructures: SettlementStructure[] = [
+//     {
+//         id: cuid(),
+//         name: 'Housing',
+//         description: 'Provides living space for settlers, increases population capacity of the settlement.',
+//         settlementId: '',
+//         structureRequirementsId: ''
+//     },
+//     {
+//         id: cuid(),
+//         name: 'Farm',
+//         description: 'Allows settlers to grow crops and produce food.',
+//         settlementId: '',
+
+//     }
+// ]
+
 async function main() {
     console.log('Start seeding ...')
 
