@@ -142,7 +142,7 @@ function initializeRegions() {
     regions = generatedRegions.flat(1)
 }
 
-async function initializeTiles() {
+function initializeTiles() {
     tiles = []
     for (const key of regions.keys()) {
 
@@ -153,7 +153,7 @@ async function initializeTiles() {
         for (const [x, row] of elevationMap.entries()) {
             for (const [y, elevation] of row.entries()) {
                 const type = elevation < 0 ? TileType.OCEAN : TileType.LAND;
-                const biome = await determineBiome(biomes, normalizeValue(precipitationMap[x][y], 0, 450), normalizeValue(temperatureMap[x][y], -10, 32))
+                const biome = determineBiome(biomes, normalizeValue(precipitationMap[x][y], 0, 450), normalizeValue(temperatureMap[x][y], -10, 32))
 
                 tiles.push({
                     id: cuid(),

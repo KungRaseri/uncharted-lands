@@ -88,11 +88,11 @@
 	async function onStepHandler(e: CustomEvent): Promise<void> {
 		if (e.detail.state.current === PREVIEW_STEP) {
 			const formData = new FormData();
-			formData.set('map-options', JSON.stringify(mapOptions));
-			formData.set('biomes', JSON.stringify(data.biomes));
-			formData.set('elevation-options', JSON.stringify(elevationOptions));
-			formData.set('precipitation-options', JSON.stringify(precipitationOptions));
-			formData.set('temperature-options', JSON.stringify(temperatureOptions));
+			formData.set('MapOptions', JSON.stringify(mapOptions));
+			formData.set('Biomes', JSON.stringify(data.biomes));
+			formData.set('ElevationOptions', JSON.stringify(elevationOptions));
+			formData.set('PrecipitationOptions', JSON.stringify(precipitationOptions));
+			formData.set('TemperatureOptions', JSON.stringify(temperatureOptions));
 
 			const response = await fetch('/api/world/preview', {
 				method: 'POST',

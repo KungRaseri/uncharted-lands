@@ -135,7 +135,7 @@ export function determineWater(elevation: number, precipitation: number, tempera
     return Math.round(Math.max(1, Math.min(5, water)))
 }
 
-export async function determineBiome(biomes: Biome[], precipitation: number, temperature: number) {
+export function determineBiome(biomes: Biome[], precipitation: number, temperature: number) {
     let filteredBiomes = biomes.filter(biome =>
         Math.round(precipitation) >= biome.precipitationMin && Math.round(precipitation) <= biome.precipitationMax
         && Math.round(temperature) >= biome.temperatureMin && Math.round(temperature) <= biome.temperatureMax)
