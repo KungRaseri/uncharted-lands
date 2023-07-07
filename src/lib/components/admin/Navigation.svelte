@@ -50,6 +50,8 @@
 	<svelte:fragment slot="lead">
 		<div class:bg-primary-active-token={isActive('/admin')}>
 			<AppRailTile
+				group="admin-apprail"
+				name="/dashboard"
 				title="Dashboard"
 				tag="a"
 				href="/admin"
@@ -66,6 +68,8 @@
 	{#each railTiles as railTile}
 		<div class:bg-primary-active-token={isActive(railTile.href)}>
 			<AppRailTile
+				group="admin-apprail"
+				name={railTile.value}
 				title={railTile.title}
 				tag="a"
 				href={railTile.href}
@@ -79,9 +83,12 @@
 	{/each}
 	<svelte:fragment slot="trail">
 		<AppRailTile
+			group="admin-apprail"
+			name="github"
 			tag="a"
 			href="https://github.com/RedSyndicate/uncharted-lands"
 			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
+			value="github"
 		>
 			<Github width="100%" size={36} />
 			<span class="text-xs">Github</span>

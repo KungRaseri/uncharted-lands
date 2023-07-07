@@ -11,7 +11,7 @@ Sentry.init({
 export const handleError: HandleClientError = (async ({ error, event }) => {
     const errorId = crypto.randomUUID();
 
-    Sentry.withScope(async (scope) => {
+    Sentry.withScope((scope) => {
         scope.setExtra('event', event);
         scope.setExtra('errorId', errorId);
 
