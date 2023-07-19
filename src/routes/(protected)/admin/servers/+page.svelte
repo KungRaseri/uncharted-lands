@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { type Server } from '@prisma/client';
 	import type { PageData } from './$types';
 	import { Table, tableMapperValues, type TableSource } from '@skeletonlabs/skeleton';
 
@@ -10,7 +9,7 @@
 
 	let tableSimple: TableSource;
 
-	if (data.servers.length > 0) {
+	if (data.servers.length) {
 		tableSimple = {
 			head: Object.keys(data.servers[0]),
 			body: tableMapperValues(data.servers, Object.keys(data.servers[0])),

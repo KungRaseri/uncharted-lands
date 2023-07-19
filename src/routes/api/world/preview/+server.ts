@@ -27,11 +27,13 @@ let generatedRegions: Region[][];
 export async function POST({ request }): Promise<Response> {
     const data = await request.formData();
 
-    const mapOptions = data.get("map-options");
-    const biomesData = data.get("biomes");
-    const elevationOptions = data.get("elevation-options");
-    const precipitationOptions = data.get("precipitation-options");
-    const temperatureOptions = data.get("temperature-options");
+    console.log(data)
+    
+    const mapOptions = data.get("MapOptions");
+    const biomesData = data.get("Biomes");
+    const elevationOptions = data.get("ElevationOptions");
+    const precipitationOptions = data.get("PrecipitationOptions");
+    const temperatureOptions = data.get("TemperatureOptions");
 
     if (!mapOptions ||
         !biomesData ||
@@ -51,7 +53,7 @@ export async function POST({ request }): Promise<Response> {
 
     initializeWorld();
     initializeRegions();
-    await initializeTiles();
+    initializeTiles();
     initializePlots();
 
     return json({ world, regions, tiles, plots })

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AppRail, AppRailTile } from '@skeletonlabs/skeleton';
+	import { AppRail, AppRailAnchor, AppRailTile } from '@skeletonlabs/skeleton';
 	import { writable, type Writable } from 'svelte/store';
 	import { page } from '$app/stores';
 
@@ -48,50 +48,31 @@
 
 <AppRail selected={storeValue}>
 	<svelte:fragment slot="lead">
-		<div class:bg-primary-active-token={isActive('/admin')}>
-			<AppRailTile
-				group="admin-apprail"
-				name="/dashboard"
-				title="Dashboard"
-				tag="a"
-				href="/admin"
-				value={'/admin'}
-				class="p-1 btn btn-sm w-16 
-				hover:variant-ghost-secondary 
-				rounded-none"
-			>
-				<ViewDashboard width="100%" size={36} />
+		<div class:bg-primary-active-token={isActive('/admin')} class="p-1">
+			<AppRailAnchor title="Dashboard" href="/admin">
+				<svelte:fragment slot="lead"><ViewDashboard width="100%" size={36} /></svelte:fragment>
 				<span class="text-xs">Dashboard</span>
-			</AppRailTile>
+			</AppRailAnchor>
 		</div>
 	</svelte:fragment>
 	{#each railTiles as railTile}
 		<div class:bg-primary-active-token={isActive(railTile.href)}>
-			<AppRailTile
-				group="admin-apprail"
-				name={railTile.value}
-				title={railTile.title}
-				tag="a"
-				href={railTile.href}
-				value={railTile.value}
-				class="py-1 px-0 btn btn-sm w-16 hover:variant-ghost-secondary rounded-none"
-			>
-				<div class="mx-auto w-fit"><svelte:component this={railTile.icon} size={36} /></div>
+			<AppRailAnchor title={railTile.title} href={railTile.href}>
+				<svelte:fragment slot="lead">
+					<svelte:component this={railTile.icon} size={36} />
+				</svelte:fragment>
 				<span class="text-xs">{railTile.label}</span>
-			</AppRailTile>
+			</AppRailAnchor>
 		</div>
 	{/each}
 	<svelte:fragment slot="trail">
-		<AppRailTile
-			group="admin-apprail"
-			name="github"
-			tag="a"
+		<AppRailAnchor
 			href="https://github.com/RedSyndicate/uncharted-lands"
-			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
-			value="github"
+			target="_blank"
+			title="Github"
 		>
-			<Github width="100%" size={36} />
+			<svelte:fragment slot="lead"><Github width="100%" size={36} /></svelte:fragment>
 			<span class="text-xs">Github</span>
-		</AppRailTile>
+		</AppRailAnchor>
 	</svelte:fragment>
 </AppRail>

@@ -1,63 +1,54 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
+	import { Table, tableMapperValues, type TableSource } from '@skeletonlabs/skeleton';
 
 	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
+	import Web from 'svelte-material-icons/Web.svelte';
 
 	export let data: PageData;
 
-	let worldsTableStore = createDataTableStore(data.worlds, {
-		search: '',
-		sort: '',
-		pagination: {
-			offset: 0,
-			limit: 25,
-			size: 0,
-			amounts: [1, 2, 5, 10]
-		}
-	});
+	let tableSimple: TableSource;
 
-	worldsTableStore.subscribe((model) => dataTableHandler(model));
+	if (data.worlds.length) {
+		tableSimple = {
+			head: Object.keys(data.worlds[0]),
+			body: tableMapperValues(data.worlds, Object.keys(data.worlds[0])),
+			meta: tableMapperValues(data.worlds, Object.keys(data.worlds[0])),
+			foot: ['Total Worlds', data.worlds.length.toString()]
+		};
+	}
+
+	function selectionHandler(e: any) {}
 </script>
 
-<div class="m-1">
-	<h1 id="worlds-header">Worlds</h1>
-	<div class="table-container">
-		<div class="p-0 m-3 w-11/12 flex space-x-3">
-			<input
-				bind:value={$worldsTableStore.search}
-				type="search"
-				placeholder="Search..."
-				class="input"
-			/>
-			<a href="/admin/worlds/create" class="btn bg-primary-400-500-token">
-				<span class="mx-1 px-0 py-3 text-token"><WebPlus /></span>
-				<span class="mx-1 px-0 py-2 text-token">Create</span>
+<div class="grid grid-cols-2 p-4">
+	<h1>Worlds</h1>
+	{#if data.worlds.length}
+		<div class="text-right">
+			<a href="worlds/create" class="btn btn-sm variant-soft-primary w-min rounded-md">
+				<WebPlus size={24} />
+				New World
 			</a>
 		</div>
-		<table aria-describedby="worlds-header" class="table table-hover" use:tableInteraction>
-			<thead>
-				<tr>
-					<th><input type="checkbox" id="select-all" name="select-all" /></th>
-					<th>ID</th>
-					<th>World Name</th>
-					<th>Server {`<ID>`}</th>
-					<th>Regions</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if $worldsTableStore}
-					{#each $worldsTableStore.filtered as world, index}
-						<tr>
-							<td><input type="checkbox" /></td>
-							<td><a href="/admin/worlds/{world.id}">{world.id}</a></td>
-							<td>{world.name}</td>
-							<td>{`${world.server.name} <${world.serverId}>`}</td>
-							<td>{world.regions.length}</td>
-						</tr>
-					{/each}
-				{/if}
-			</tbody>
-		</table>
-	</div>
+	{/if}
 </div>
+<hr class="mx-2" />
+<section class="p-4">
+	{#if data.worlds.length}
+		<Table source={tableSimple} interactive={true} on:selected={selectionHandler} />
+	{:else}
+		<div class="justify-center items-center text-center">
+			<div class="mx-auto w-min">
+				<Web size={48} />
+			</div>
+			<h3 class="mt-2 text-sm font-semibold text-token">No worlds</h3>
+			<p class="mt-1 text-sm text-surface-500-400-token">Get started by creating a new world.</p>
+			<div class="mt-6">
+				<a href="worlds/create" class="btn btn-sm variant-soft-primary">
+					<WebPlus size={24} />
+					New World
+				</a>
+			</div>
+		</div>
+	{/if}
+</section>
