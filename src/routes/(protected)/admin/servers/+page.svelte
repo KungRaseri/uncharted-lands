@@ -10,10 +10,13 @@
 	let tableSimple: TableSource;
 
 	if (data.servers.length) {
+		const keys = Object.keys(data.servers[0]).filter(
+			(key) => key !== 'worlds' && key !== 'players'
+		);
 		tableSimple = {
-			head: Object.keys(data.servers[0]),
-			body: tableMapperValues(data.servers, Object.keys(data.servers[0])),
-			meta: tableMapperValues(data.servers, Object.keys(data.servers[0])),
+			head: keys,
+			body: tableMapperValues(data.servers, keys),
+			meta: tableMapperValues(data.servers, keys),
 			foot: ['Total Servers', data.servers.length.toString()]
 		};
 	}

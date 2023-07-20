@@ -10,10 +10,11 @@
 	let tableSimple: TableSource;
 
 	if (data.worlds.length) {
+		const filteredKeys = Object.keys(data.worlds[0]).filter((key) => key !== 'regions' && key !== 'server');
 		tableSimple = {
-			head: Object.keys(data.worlds[0]),
-			body: tableMapperValues(data.worlds, Object.keys(data.worlds[0])),
-			meta: tableMapperValues(data.worlds, Object.keys(data.worlds[0])),
+			head: filteredKeys,
+			body: tableMapperValues(data.worlds, filteredKeys),
+			meta: tableMapperValues(data.worlds, filteredKeys),
 			foot: ['Total Worlds', data.worlds.length.toString()]
 		};
 	}

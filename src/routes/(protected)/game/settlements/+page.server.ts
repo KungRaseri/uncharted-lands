@@ -8,9 +8,6 @@ export const load = (async ({ locals }) => {
                 profileId: locals.account.profile.id,
                 serverId: (await db.server.findFirst())?.id //TODO: update when server swapping is available
             },
-        },
-        include: {
-            Storage: true
         }
     })
 

@@ -13,12 +13,6 @@ export const load = (async ({ params }) => {
                     Settlement: true,
                     Tile: true
                 }
-            },
-            Storage: true,
-            Structures: {
-                include: {
-                    modifiers: true
-                }
             }
         }
     })

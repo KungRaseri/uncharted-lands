@@ -6,28 +6,12 @@
 
 <div class="card p-4 m-5">
 	<header class="card-header">
-		<h2>{data.settlement.name}</h2>
-		<span class="text-xs">{data.settlement.id}</span>
+		<h2>
+			{data.settlement.name} <span class="text-xs align-middle">{`<${data.settlement.id}>`}</span>
+		</h2>
 	</header>
 
 	<div class="p-4 space-y-5">
-		<div class="card p-4">
-			<h3>Structures</h3>
-			{#each data.settlement.Structures as structure}
-				<div class="badge variant-ghost-secondary">
-					{structure.name}
-					{structure.description}
-
-					{#each structure.modifiers as modifier}
-						{modifier.description}
-						<div class="badge variant-ghost-secondary">
-							{modifier.name}
-							{modifier.value}
-						</div>
-					{/each}
-				</div>
-			{/each}
-		</div>
 		<div class="card">
 			<header class="card-header">
 				<h3>
