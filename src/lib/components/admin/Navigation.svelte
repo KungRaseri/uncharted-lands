@@ -26,10 +26,10 @@
 			icon: Web
 		},
 		{
-			label: 'Players',
-			title: 'Players',
-			href: '/admin/players',
-			value: '/admin/players',
+			label: 'Accounts',
+			title: 'Accounts',
+			href: '/admin/accounts',
+			value: '/admin/accounts',
 			icon: AccountGroup
 		},
 		{

@@ -10,7 +10,14 @@
 	let tableSimple: TableSource;
 
 	if (data.worlds.length) {
-		const filteredKeys = Object.keys(data.worlds[0]).filter((key) => key !== 'regions' && key !== 'server');
+		const filteredKeys = Object.keys(data.worlds[0]).filter(
+			(key) =>
+				key !== 'regions' &&
+				key !== 'server' &&
+				key !== 'elevationSettings' &&
+				key !== 'precipitationSettings' &&
+				key !== 'temperatureSettings'
+		);
 		tableSimple = {
 			head: filteredKeys,
 			body: tableMapperValues(data.worlds, filteredKeys),
