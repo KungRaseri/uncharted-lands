@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
-
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 import { sveltekit } from '@sveltejs/kit/vite';
 import dotenv from "dotenv";
 
@@ -19,7 +19,8 @@ const config = defineConfig({
 			project: "browser-game",
 			include: './build',
 			authToken: process.env.SENTRY_AUTH_TOKEN
-		})
+		}),
+		purgeCss()
 	],
 	server: {
 		port: 3000
