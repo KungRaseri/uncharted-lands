@@ -1,32 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Table, tableMapperValues, type TableSource } from '@skeletonlabs/skeleton';
+	import { DataHandler, Datatable, Th, ThFilter } from '@vincjo/datatables';
 
 	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
 	import Web from 'svelte-material-icons/Web.svelte';
 
 	export let data: PageData;
 
-	let tableSimple: TableSource;
-
-	if (data.worlds.length) {
-		const filteredKeys = Object.keys(data.worlds[0]).filter(
-			(key) =>
-				key !== 'regions' &&
-				key !== 'server' &&
-				key !== 'elevationSettings' &&
-				key !== 'precipitationSettings' &&
-				key !== 'temperatureSettings'
-		);
-		tableSimple = {
-			head: filteredKeys,
-			body: tableMapperValues(data.worlds, filteredKeys),
-			meta: tableMapperValues(data.worlds, filteredKeys),
-			foot: ['Total Worlds', data.worlds.length.toString()]
-		};
-	}
-
-	function selectionHandler(e: any) {}
+	const worldsDataHandler = new DataHandler(data.worlds, { rowsPerPage: 10 });
+	const worlds = worldsDataHandler.getRows();
 </script>
 
 <div class="grid grid-cols-2 p-4">
@@ -43,7 +25,32 @@
 <hr class="mx-2" />
 <section class="p-4">
 	{#if data.worlds.length}
-		<Table source={tableSimple} interactive={true} on:selected={selectionHandler} />
+		<Datatable handler={worldsDataHandler}>
+			<table aria-describedby="worlds-header" class="table table-hover">
+				<thead>
+					<tr>
+						<Th handler={worldsDataHandler} orderBy="id">ID</Th>
+						<Th handler={worldsDataHandler} orderBy="name">Name</Th>
+						<Th handler={worldsDataHandler} orderBy="serverId">Server ID</Th>
+						<Th handler={worldsDataHandler} orderBy="createdAt">Created At</Th>
+						<Th handler={worldsDataHandler} orderBy="updatedAt">Updated At</Th>
+					</tr>
+				</thead>
+				<tbody>
+					{#if $worlds}
+						{#each $worlds as world}
+							<tr>
+								<td><a href="/admin/worlds/{world.id}">{world.id}</a></td>
+								<td>{world.name}</td>
+								<td>{world.serverId}</td>
+								<td>{world.createdAt.toDateString()}</td>
+								<td>{world.updatedAt.toDateString()}</td>
+							</tr>
+						{/each}
+					{/if}
+				</tbody>
+			</table>
+		</Datatable>
 	{:else}
 		<div class="justify-center items-center text-center">
 			<div class="mx-auto w-min">

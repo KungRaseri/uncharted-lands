@@ -1,27 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Table, tableMapperValues, type TableSource } from '@skeletonlabs/skeleton';
+	import { DataHandler, Datatable, Th, ThFilter } from '@vincjo/datatables';
 
 	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
 	import ServerNetwork from 'svelte-material-icons/ServerNetwork.svelte';
 
 	export let data: PageData;
 
-	let tableSimple: TableSource;
-
-	if (data.servers.length) {
-		const filteredKeys = Object.keys(data.servers[0]).filter(
-			(key) => key !== 'worlds' && key !== 'players'
-		);
-		tableSimple = {
-			head: filteredKeys,
-			body: tableMapperValues(data.servers, filteredKeys),
-			meta: tableMapperValues(data.servers, filteredKeys),
-			foot: ['Total Servers', data.servers.length.toString()]
-		};
-	}
-
-	function selectionHandler(e: any) {}
+	const serversDataHandler = new DataHandler(data.servers, { rowsPerPage: 10 });
+	const servers = serversDataHandler.getRows();
 </script>
 
 <div class="grid grid-cols-2 p-4">
@@ -38,7 +25,34 @@
 <hr class="mx-2" />
 <section class="p-4">
 	{#if data.servers.length}
-		<Table source={tableSimple} interactive={true} on:selected={selectionHandler} />
+		<Datatable handler={serversDataHandler}>
+			<table aria-describedby="servers-header" class="table table-hover">
+				<thead>
+					<tr>
+						<Th handler={serversDataHandler} orderBy="id">ID</Th>
+						<Th handler={serversDataHandler} orderBy="name">Name</Th>
+						<Th handler={serversDataHandler} orderBy="hostname">Hostname</Th>
+						<Th handler={serversDataHandler} orderBy="port">Port</Th>
+						<Th handler={serversDataHandler} orderBy="createdAt">Created At</Th>
+						<Th handler={serversDataHandler} orderBy="updatedAt">Updated At</Th>
+					</tr>
+				</thead>
+				<tbody>
+					{#if $servers}
+						{#each $servers as server}
+							<tr>
+								<td><a href="/admin/servers/{server.id}">{server.id}</a></td>
+								<td>{server.name}</td>
+								<td>{server.hostname}</td>
+								<td>{server.port}</td>
+								<td>{server.createdAt.toDateString()}</td>
+								<td>{server.updatedAt.toDateString()}</td>
+							</tr>
+						{/each}
+					{/if}
+				</tbody>
+			</table>
+		</Datatable>
 	{:else}
 		<div class="justify-center items-center text-center">
 			<div class="mx-auto w-min">
