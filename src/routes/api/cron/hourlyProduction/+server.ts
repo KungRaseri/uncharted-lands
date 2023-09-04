@@ -4,9 +4,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 export const GET: RequestHandler = async () => {
     const settlements = await db.settlement.findMany({
         include: {
-            Plot: true,
-            Storage: true,
-            Structures: true
+            Plot: true
         }
     })
     for (const settlement of settlements) {

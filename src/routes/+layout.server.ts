@@ -10,8 +10,8 @@ const mainMenuLinks = [
 		href: '/wiki'
 	},
 	{
-		name: 'Forum',
-		href: '/forum',
+		name: 'Forums',
+		href: '/forums',
 	},
 	{
 		name: 'Game',

@@ -64,8 +64,6 @@
 
 	<svelte:fragment>
 		<LightSwitch
-			width="w-6"
-			height="h-6"
 			bgDark="bg-surface-800"
 			bgLight="bg-surface-100"
 			fillDark="fill-surface-800"

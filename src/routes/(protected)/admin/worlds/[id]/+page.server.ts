@@ -1,4 +1,3 @@
-import { fail } from "@sveltejs/kit"
 import { db } from "$lib/db"
 import type { PageServerLoad, Actions, Action } from "./$types"
 import { TileType } from "@prisma/client";
@@ -33,6 +32,7 @@ export const load: PageServerLoad = async ({ params }) => {
         }),
         db.biome.findMany()
     ]);
+
     const [landTiles, oceanTiles, settlements] = await db.$transaction([
         db.tile.count({
             where: {
