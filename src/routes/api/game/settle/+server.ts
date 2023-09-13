@@ -2,40 +2,6 @@ import { db } from '$lib/db';
 import type { Profile, Server, World } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
 
-
-async function getRandomPlot(worldId: string) {
-
-    const potentialTiles = await db.tile.findMany({
-        where: {
-            elevation: {
-                gt: 0,
-                lt: 0.8
-            },
-            precipitation: {
-                gt: -0.5,
-                lt: 1
-            },
-            temperature: {
-                gt: -0.5,
-                lt: 0.5
-            },
-            Region: {
-                worldId: worldId
-            }
-        },
-        include: {
-            Plots: true
-        }
-    })
-
-    const randomTileIndex = Math.floor(Math.random() * potentialTiles.length)
-    const randomTile = potentialTiles[randomTileIndex];
-
-    const randomPlot = randomTile.Plots[Math.floor(Math.random() * randomTile.Plots.length)]
-
-    return randomPlot;
-}
-
 export async function POST({ request, locals }): Promise<Response> {
     const data = await request.formData();
 
@@ -50,7 +16,18 @@ export async function POST({ request, locals }): Promise<Response> {
     }
 
     // choose a random tile to settle in for now
-    const chosenPlot = await getRandomPlot(worldData.id);
+    const chosenPlot = await db.plot.findFirst({
+        where: {
+            Settlement: {
+                is: undefined
+            },
+            Tile: {
+                Region: {
+                    worldId: worldData.id
+                }
+            }
+        }
+    })
 
     await db.$transaction(async (tx) => {
         const profile = await tx.profile.create({
@@ -83,6 +60,16 @@ export async function POST({ request, locals }): Promise<Response> {
             }
         })
 
+        const resources = await tx.resources.create({
+            data: {
+                water: 5,
+                food: 5,
+                wood: 10,
+                stone: 0,
+                ore: 0
+            }
+        })
+
         await tx.settlement.create({
             data: {
                 name: "Home Settlement",
@@ -93,9 +80,15 @@ export async function POST({ request, locals }): Promise<Response> {
                 },
                 Plot: {
                     connect: {
-                        id: chosenPlot.id
+                        id: chosenPlot?.id
+                    }
+                },
+                Resources: {
+                    connect: {
+                        id: resources.id
                     }
                 }
+
             }
         })
     })

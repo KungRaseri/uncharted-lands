@@ -13,7 +13,8 @@ export const load = (async ({ params }) => {
                     Settlement: true,
                     Tile: true
                 }
-            }
+            },
+            Resources: true
         }
     })
 

@@ -63,10 +63,17 @@
 			</p>
 
 			<div class="flex gap-4">
-				<a href="/register" class="btn variant-filled-primary">
-					<span>Get Settled</span>
-					<Campfire />
-				</a>
+				{#if !$page.data.account}
+					<a href="/register" class="btn variant-filled-primary">
+						<span>Get Settled</span>
+						<Campfire />
+					</a>
+				{:else}
+					<a href="/game/getting-started" class="btn variant-ghost-secondary">
+						<span>Get Settled</span>
+						<Campfire />
+					</a>
+				{/if}
 				<a href="/wiki/introduction" class="btn variant-soft-primary">Learn More</a>
 			</div>
 		</div>

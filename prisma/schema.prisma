@@ -136,15 +136,28 @@ model Plot {
 }
 
 model Settlement {
-  id                  String                @id @default(cuid())
-  name                String                @default("Home Settlement")
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  playerProfileId     String
-  plotId              String                @unique
-  PlayerProfile       ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
-  Plot                Plot                  @relation(fields: [plotId], references: [id], onDelete: Cascade)
-  SettlementStructure SettlementStructure[]
+  id              String                @id @default(cuid())
+  name            String                @default("Home Settlement")
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  playerProfileId String
+  plotId          String                @unique
+  resourcesId     String                @unique
+  PlayerProfile   ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
+  Plot            Plot                  @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  Resources       Resources?
+  Structures      SettlementStructure[]
+}
+
+model Resources {
+  id           String     @id @default(cuid())
+  water        Int        @default(5)
+  food         Int        @default(5)
+  wood         Int        @default(10)
+  stone        Int        @default(0)
+  ore          Int        @default(0)
+  Settlement   Settlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  settlementId String     @unique
 }
 
 model Structure {
@@ -161,13 +174,6 @@ model SettlementStructure {
   structureId  String
   Settlement   Settlement @relation(fields: [settlementId], references: [id])
   Structure    Structure  @relation(fields: [structureId], references: [id])
-}
-
-model diesel_schema_migrations {
-  version String   @id @db.VarChar(50)
-  run_on  DateTime @default(now()) @db.Timestamp(6)
-
-  @@map("__diesel_schema_migrations")
 }
 
 enum AccountRole {
