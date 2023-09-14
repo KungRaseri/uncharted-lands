@@ -21,6 +21,7 @@
 				<tr>
 					<Th handler={settlementsDataHandler} orderBy="id">ID</Th>
 					<Th handler={settlementsDataHandler} orderBy="name">Name</Th>
+					<Th handler={settlementsDataHandler} orderBy="resourcesId">Resources</Th>
 					<Th handler={settlementsDataHandler} orderBy="plotId">Plot</Th>
 				</tr>
 			</thead>
@@ -30,6 +31,23 @@
 						<tr>
 							<td><a href="/game/settlements/{settlement.id}">{settlement.id}</a></td>
 							<td>{settlement.name}</td>
+							<td>
+								<span class="badge variant-filled-surface">
+									Food: {settlement.Resources?.food}
+								</span>
+								<span class="badge variant-filled-surface">
+									Water: {settlement.Resources?.water}
+								</span>
+								<span class="badge variant-filled-surface">
+									Wood: {settlement.Resources?.wood}
+								</span>
+								<span class="badge variant-filled-surface">
+									Stone: {settlement.Resources?.stone}
+								</span>
+								<span class="badge variant-filled-surface">
+									Ore: {settlement.Resources?.ore}
+								</span>
+							</td>
 							<td>
 								<span class="badge variant-filled-surface">Area: {settlement.Plot.area}</span>
 								<span class="badge variant-filled-surface">Solar: {settlement.Plot.solar}</span>

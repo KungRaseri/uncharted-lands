@@ -19,7 +19,7 @@
 			content:
 				'Welcome to Uncharted Lands, where you must settle in a harsh and unforgiving land. Gather resources, build shelter, and survive the dangers that await you.',
 			image: {
-				src: 'settlers-feature-survival.png',
+				src: 'https://via.placeholder.com/1280x720?text=Survival',
 				alt: 'settlers feature survival'
 			}
 		},
@@ -28,7 +28,7 @@
 			content:
 				'Explore, expand and establish your settlements across uncharted territories as you make a name for yourself in a vast and unknown world.',
 			image: {
-				src: 'settlers-feature-expansion.png',
+				src: 'https://via.placeholder.com/1280x720?text=Expansion',
 				alt: 'settlers feature expansion'
 			}
 		},
@@ -37,7 +37,7 @@
 			content:
 				'In Uncharted Lands, trade is the lifeblood of society. Seek out valuable resources and forge relationships with other settlements to build a thriving economy.',
 			image: {
-				src: 'settlers-feature-trade.png',
+				src: 'https://via.placeholder.com/1280x720?text=Trade',
 				alt: 'settlers feature trade'
 			}
 		}

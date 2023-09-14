@@ -11,7 +11,8 @@ export const load = (async ({ locals }) => {
         },
         include: {
             Plot: true,
-            SettlementStructure: true
+            Resources: true,
+            Structures: true
         }
     })
 
