@@ -145,19 +145,18 @@ model Settlement {
   resourcesId     String                @unique
   PlayerProfile   ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
   Plot            Plot                  @relation(fields: [plotId], references: [id], onDelete: Cascade)
-  Resources       Resources?
+  Resources       Resources?            @relation(fields: [resourcesId], references: [id])
   Structures      SettlementStructure[]
 }
 
 model Resources {
-  id           String     @id @default(cuid())
-  water        Int        @default(5)
-  food         Int        @default(5)
-  wood         Int        @default(10)
-  stone        Int        @default(0)
-  ore          Int        @default(0)
-  Settlement   Settlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
-  settlementId String     @unique
+  id         String      @id @default(cuid())
+  water      Int         @default(5)
+  food       Int         @default(5)
+  wood       Int         @default(10)
+  stone      Int         @default(0)
+  ore        Int         @default(0)
+  Settlement Settlement?
 }
 
 model Structure {

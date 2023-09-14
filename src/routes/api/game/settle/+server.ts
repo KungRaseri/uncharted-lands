@@ -88,7 +88,6 @@ export async function POST({ request, locals }): Promise<Response> {
                         id: resources.id
                     }
                 }
-
             }
         })
     })

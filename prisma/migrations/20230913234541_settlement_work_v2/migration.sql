@@ -16,16 +16,12 @@ CREATE TABLE "Resources" (
     "wood" INTEGER NOT NULL DEFAULT 10,
     "stone" INTEGER NOT NULL DEFAULT 0,
     "ore" INTEGER NOT NULL DEFAULT 0,
-    "settlementId" TEXT NOT NULL,
 
     CONSTRAINT "Resources_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Resources_settlementId_key" ON "Resources"("settlementId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Settlement_resourcesId_key" ON "Settlement"("resourcesId");
 
 -- AddForeignKey
-ALTER TABLE "Resources" ADD CONSTRAINT "Resources_settlementId_fkey" FOREIGN KEY ("settlementId") REFERENCES "Settlement"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_resourcesId_fkey" FOREIGN KEY ("resourcesId") REFERENCES "Resources"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -28,7 +28,7 @@ export async function POST({ request }): Promise<Response> {
     const data = await request.formData();
 
     console.log(data)
-    
+
     const mapOptions = data.get("MapOptions");
     const biomesData = data.get("Biomes");
     const elevationOptions = data.get("ElevationOptions");
