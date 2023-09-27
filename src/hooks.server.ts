@@ -22,7 +22,7 @@ export const handle: Handle = (async ({ event, resolve }) => {
 export const handleError: HandleServerError = (async ({ error, event }) => {
     const errorId = crypto.randomUUID();
 
-    let errorResponse = {
+    const errorResponse = {
         message: `${event.url.search} at ${event.url.pathname} failed.`,
         error,
         errorId
