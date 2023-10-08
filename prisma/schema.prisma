@@ -136,17 +136,30 @@ model Plot {
 }
 
 model Settlement {
-  id              String                @id @default(cuid())
-  name            String                @default("Home Settlement")
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  id              String   @id @default(cuid())
+  name            String   @default("Home Settlement")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   playerProfileId String
-  plotId          String                @unique
-  resourcesId     String                @unique
-  PlayerProfile   ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
-  Plot            Plot                  @relation(fields: [plotId], references: [id], onDelete: Cascade)
-  Resources       Resources?            @relation(fields: [resourcesId], references: [id])
-  Structures      SettlementStructure[]
+  plotId          String   @unique
+  resourcesId     String   @unique
+
+  PlayerProfile                        ProfileServerData                      @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
+  Plot                                 Plot                                   @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  Resources                            Resources?                             @relation(fields: [resourcesId], references: [id])
+  Structures                           SettlementStructure[]
+  ConstructionQueue SettlementStructureConstructionQueue[]
+}
+
+model SettlementStructureConstructionQueue {
+  id           String   @id @default(cuid())
+  start        DateTime
+  end          DateTime
+  settlementId String?
+  structureId  String?
+
+  Structure  Structure?  @relation(fields: [structureId], references: [id])
+  Settlement Settlement? @relation(fields: [settlementId], references: [id])
 }
 
 model Resources {
@@ -160,11 +173,12 @@ model Resources {
 }
 
 model Structure {
-  id                  String                @id @default(cuid())
-  name                String
-  description         String
-  image               String                @default("https://via.placeholder.com/128x128")
-  SettlementStructure SettlementStructure[]
+  id                                   String                                 @id @default(cuid())
+  name                                 String
+  description                          String
+  image                                String                                 @default("https://via.placeholder.com/128x128")
+  SettlementStructure                  SettlementStructure[]
+  SettlementStructureConstructionQueue SettlementStructureConstructionQueue[]
 }
 
 model SettlementStructure {
