@@ -10,18 +10,25 @@ export const load = (async ({ params }) => {
         include: {
             Plot: {
                 include: {
-                    Settlement: true,
                     Tile: true
                 }
             },
-            Resources: true
+            Resources: true,
+            Structures: {
+                include: {
+                    Structure: true
+                }
+            }
         }
     })
 
     if (!settlement)
         throw fail(404, { invalid: true, params: params.id })
 
+    const structures = await db.structure.findMany();
+
     return {
-        settlement
+        settlement,
+        structures
     }
 }) satisfies PageServerLoad;

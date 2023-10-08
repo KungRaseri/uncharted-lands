@@ -331,13 +331,27 @@ const biomes: Biome[] = [
 const structures: Structure[] = [
     {
         id: cuid(),
-        name: 'Housing',
-        description: 'Provides living space for settlers, increases population capacity of the settlement.'
+        name: 'House',
+        description: 'Provides living space for settlers, increases population capacity of the settlement.',
+        image: `https://via.placeholder.com/128x128?text=House`,
     },
     {
         id: cuid(),
         name: 'Farm',
-        description: 'Allows settlers to grow crops and produce food.'
+        description: 'Allows settlers to grow crops and produce food.',
+        image: `https://via.placeholder.com/128x128?text=Farm`,
+    },
+    {
+        id: cuid(),
+        name: 'Well',
+        description: 'Allows settlers to collect and store water',
+        image: `https://via.placeholder.com/128x128?text=Well`
+    },
+    {
+        id: cuid(),
+        name:'Lumber Mill',
+        description: 'Allows settlers to collect and store lumber',
+        image: `https://via.placeholder.com/128x128?text=Lumber%20Mill`
     }
 ]
 
@@ -358,18 +372,18 @@ async function main() {
         console.log(`Biome ${resultBiome.name} with ID[${resultBiome.id}] created`)
     })
 
-    // console.log(`Seeding [${settlementStructures.length}] Structures`)
-    // settlementStructures.forEach(async (settlementStructure) => {
-    //     const resultStructure = await prisma.settlementStructure.upsert({
-    //         where: {
-    //             id: settlementStructure.id
-    //         },
-    //         create: settlementStructure,
-    //         update: settlementStructure
-    //     })
+    console.log(`Seeding [${structures.length}] Structures`)
+    structures.forEach(async (structure) => {
+        const resultStructure = await prisma.structure.upsert({
+            where: {
+                id: structure.id
+            },
+            create: structure,
+            update: structure
+        })
 
-    //     console.log(`Structure ${resultStructure.name} with ID[${resultStructure.id}] created`)
-    // })
+        console.log(`Structure ${resultStructure.name} with ID[${resultStructure.id}] created`)
+    })
 
     console.log(`Seeding finished.`)
 }

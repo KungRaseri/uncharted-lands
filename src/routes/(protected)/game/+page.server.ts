@@ -20,7 +20,9 @@ export const load: PageServerLoad = async ({ locals }) => {
                     Settlement: true,
                     Tile: true
                 }
-            }
+            },
+            Resources: true,
+            Structures: true,
         }
     })
 

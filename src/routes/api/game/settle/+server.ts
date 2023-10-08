@@ -1,5 +1,6 @@
+import SettlementDetails from '$lib/components/admin/SettlementDetails.svelte';
 import { db } from '$lib/db';
-import type { Profile, Server, World } from '@prisma/client';
+import type { Profile, Server, World, Prisma } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
 
 export async function POST({ request, locals }): Promise<Response> {
@@ -70,7 +71,7 @@ export async function POST({ request, locals }): Promise<Response> {
             }
         })
 
-        await tx.settlement.create({
+        const settlement = await tx.settlement.create({
             data: {
                 name: "Home Settlement",
                 PlayerProfile: {
@@ -89,6 +90,21 @@ export async function POST({ request, locals }): Promise<Response> {
                     }
                 }
             }
+        })
+
+        const structs = await tx.structure.findMany();
+
+        await tx.settlementStructure.createMany({
+            data: [{
+                level: 1,
+                structureId: structs[0].id,
+                settlementId: settlement.id
+            },
+            {
+                level: 1,
+                structureId: structs[1].id,
+                settlementId: settlement.id
+            }]
         })
     })
 

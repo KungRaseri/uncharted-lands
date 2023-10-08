@@ -163,6 +163,7 @@ model Structure {
   id                  String                @id @default(cuid())
   name                String
   description         String
+  image               String                @default("https://via.placeholder.com/128x128")
   SettlementStructure SettlementStructure[]
 }
 
@@ -171,7 +172,7 @@ model SettlementStructure {
   settlementId String
   level        Int
   structureId  String
-  Settlement   Settlement @relation(fields: [settlementId], references: [id])
+  Settlement   Settlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
   Structure    Structure  @relation(fields: [structureId], references: [id])
 }
 
