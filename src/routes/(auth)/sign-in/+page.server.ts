@@ -1,7 +1,7 @@
 import { db } from "$lib/db";
 import { fail, redirect } from "@sveltejs/kit";
 import type { Action, Actions, PageServerLoad } from "./$types";
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { TimeSpan } from "$lib/timespan";
 
 export const load: PageServerLoad = async ({ locals, url }) => {

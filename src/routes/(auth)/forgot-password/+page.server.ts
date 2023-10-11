@@ -26,6 +26,9 @@ const resetPassword: Action = async ({ request }) => {
         return fail(400, { invalid: true })
     }
 
+    //TODO: reset password
+
+
     throw redirect(302, '/')
 }
 

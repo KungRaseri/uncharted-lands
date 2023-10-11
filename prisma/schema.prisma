@@ -121,16 +121,17 @@ model Biome {
 }
 
 model Plot {
-  id         String      @id @default(cuid())
-  tileId     String
-  area       Int         @default(30)
-  food       Int         @default(1)
-  ore        Int         @default(1)
-  solar      Int         @default(1)
-  stone      Int         @default(1)
-  water      Int         @default(1)
-  wind       Int         @default(1)
-  wood       Int         @default(1)
+  id     String @id @default(cuid())
+  tileId String
+  area   Int    @default(30)
+  food   Int    @default(1)
+  ore    Int    @default(1)
+  solar  Int    @default(1)
+  stone  Int    @default(1)
+  water  Int    @default(1)
+  wind   Int    @default(1)
+  wood   Int    @default(1)
+
   Tile       Tile        @relation(fields: [tileId], references: [id], onDelete: Cascade)
   Settlement Settlement?
 }
@@ -144,17 +145,18 @@ model Settlement {
   plotId          String   @unique
   resourcesId     String   @unique
 
-  PlayerProfile                        ProfileServerData                      @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
-  Plot                                 Plot                                   @relation(fields: [plotId], references: [id], onDelete: Cascade)
-  Resources                            Resources?                             @relation(fields: [resourcesId], references: [id])
-  Structures                           SettlementStructure[]
+  PlayerProfile     ProfileServerData                      @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
+  Plot              Plot                                   @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  Resources         Resources?                             @relation(fields: [resourcesId], references: [id])
+  Structures        SettlementStructure[]
   ConstructionQueue SettlementStructureConstructionQueue[]
 }
 
 model SettlementStructureConstructionQueue {
-  id           String   @id @default(cuid())
-  start        DateTime
-  end          DateTime
+  id           String    @id @default(cuid())
+  start        DateTime?
+  paused       DateTime?
+  duration     Int
   settlementId String?
   structureId  String?
 
@@ -163,31 +165,34 @@ model SettlementStructureConstructionQueue {
 }
 
 model Resources {
-  id         String      @id @default(cuid())
-  water      Int         @default(5)
-  food       Int         @default(5)
-  wood       Int         @default(10)
-  stone      Int         @default(0)
-  ore        Int         @default(0)
+  id    String @id @default(cuid())
+  water Int    @default(5)
+  food  Int    @default(5)
+  wood  Int    @default(10)
+  stone Int    @default(0)
+  ore   Int    @default(0)
+
   Settlement Settlement?
 }
 
 model Structure {
-  id                                   String                                 @id @default(cuid())
-  name                                 String
-  description                          String
-  image                                String                                 @default("https://via.placeholder.com/128x128")
+  id          String @id @default(cuid())
+  name        String
+  description String
+  image       String @default("https://via.placeholder.com/128x128")
+
   SettlementStructure                  SettlementStructure[]
   SettlementStructureConstructionQueue SettlementStructureConstructionQueue[]
 }
 
 model SettlementStructure {
-  id           String     @id @default(cuid())
+  id           String @id @default(cuid())
   settlementId String
   level        Int
   structureId  String
-  Settlement   Settlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
-  Structure    Structure  @relation(fields: [structureId], references: [id])
+
+  Settlement Settlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  Structure  Structure  @relation(fields: [structureId], references: [id])
 }
 
 enum AccountRole {
