@@ -24,8 +24,9 @@ services:
   #     - '6379:6379'
   postgres:
     image: postgres
+    restart: always
     ports:
-      - 5432
+      - 6543:5432
     environment:
       POSTGRES_USER: postgres # The PostgreSQL user (useful to connect to the database)
       POSTGRES_PASSWORD: 1234 # The PostgreSQL password (useful to connect to the database)

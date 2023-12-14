@@ -12,7 +12,7 @@ const config = defineConfig({
 		sourcemap: true
 	},
 	plugins: [
-		sveltekit({ hot: !process.env.VITEST }),
+		sveltekit(),
 		purgeCss()
 	],
 	server: {
