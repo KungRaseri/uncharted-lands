@@ -110,5 +110,5 @@ export async function POST({ request, locals }): Promise<Response> {
 
     // update the player profile and connect it to the server
 
-    throw redirect(302, '/game')
+    redirect(302, '/game');
 }

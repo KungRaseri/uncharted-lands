@@ -34,7 +34,7 @@
 
 			<div class="space-y-1">
 				{#if form?.invalid}
-					<div transition:slide>
+					<div transition:slide|global>
 						<div class="alert variant-ghost-error mx-5 mt-5">
 							<div class="alert-message text-primary-50">
 								<Information size={24} />

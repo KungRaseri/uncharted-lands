@@ -152,7 +152,7 @@
 <!-- Mobile menu, show/hide based on menu state. -->
 {#if isMainMenuOpen}
 	<div
-		transition:slide
+		transition:slide|global
 		class="xs:hidden"
 		id="mobile-menu"
 		role="menu"

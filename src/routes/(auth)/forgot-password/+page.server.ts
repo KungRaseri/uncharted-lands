@@ -5,7 +5,7 @@ import type { Action, Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (locals.account) {
-        throw redirect(302, '/')
+        redirect(302, '/');
     }
 }
 
@@ -29,7 +29,7 @@ const resetPassword: Action = async ({ request }) => {
     //TODO: reset password
 
 
-    throw redirect(302, '/')
+    redirect(302, '/');
 }
 
 export const actions: Actions = { resetPassword }

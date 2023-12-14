@@ -54,7 +54,7 @@
 			</label>
 
 			{#if form?.invalid}
-				<div transition:slide>
+				<div transition:slide|global>
 					<div class="alert variant-ghost-error mx-5 mt-5">
 						<div class="alert-message text-token">
 							<Information size={24} />

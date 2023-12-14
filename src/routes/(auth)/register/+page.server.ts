@@ -7,7 +7,7 @@ import { AccountRole } from '@prisma/client';
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (locals.account) {
-        throw redirect(302, '/')
+        redirect(302, '/');
     }
 }
 
@@ -52,7 +52,7 @@ const register: Action = async ({ cookies, request }) => {
         maxAge: 60 * 60 * 6 // 30 days if remember me is checked, otherwise it's 6 hours
     })
 
-    throw redirect(302, '/')
+    redirect(302, '/');
 }
 
 export const actions: Actions = { register }

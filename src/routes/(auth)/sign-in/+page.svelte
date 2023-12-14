@@ -71,7 +71,7 @@
 			</div>
 
 			{#if form?.email}
-				<div transition:slide class="hidden lg:block">
+				<div transition:slide|global class="hidden lg:block">
 					<div class="alert variant-ghost-error mx-5 mt-5">
 						<div class="alert-message text-token justify-center items-center">
 							<Information size={24} />

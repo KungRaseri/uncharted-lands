@@ -119,7 +119,7 @@
 				src={featureImages[tabSet].image.src}
 				alt={featureImages[tabSet].image.alt}
 				class="rounded-b-2xl lg:rounded-2xl lg:rounded-l-none shadow-lg aspect-[16/9] sm:max-w-xl lg:max-w-full"
-				transition:fade
+				transition:fade|global
 			/>
 		</div>
 	</div>

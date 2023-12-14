@@ -27,11 +27,11 @@ export const handle: Handle = (async ({ event, resolve }) => {
 
         if (!user) {
             if (event.route.id?.includes('(protected)'))
-                throw redirect(307, `/sign-in?redirectTo=${event.url.pathname}`)
+                redirect(307, `/sign-in?redirectTo=${event.url.pathname}`);
 
         } else {
             if (user && user.role !== "ADMINISTRATOR" && event.route.id?.includes('(protected)/admin'))
-                throw redirect(307, `/sign-in?redirectTo=${event.url.pathname}`)
+                redirect(307, `/sign-in?redirectTo=${event.url.pathname}`);
 
             event.locals.account = user;
         }
