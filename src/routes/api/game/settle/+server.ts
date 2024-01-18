@@ -1,7 +1,7 @@
 import SettlementDetails from '$lib/components/admin/SettlementDetails.svelte';
 import { db } from '$lib/db';
 import type { Profile, Server, World, Prisma } from '@prisma/client';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, json, redirect } from '@sveltejs/kit';
 
 export async function POST({ request, locals }): Promise<Response> {
     const data = await request.formData();
@@ -108,7 +108,5 @@ export async function POST({ request, locals }): Promise<Response> {
         })
     })
 
-    // update the player profile and connect it to the server
-
-    redirect(302, '/game');
+    return json({ result: true }, { status: 200 });
 }

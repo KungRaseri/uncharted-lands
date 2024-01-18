@@ -13,9 +13,9 @@
 </svelte:head>
 
 <div class="container m-auto mt-10">
-	{#each data.forums as forum}
+	{#each data.forums as forum, index}
 		<TreeView>
-			<TreeViewItem>
+			<TreeViewItem open={index === 0}>
 				{forum.name}
 				<svelte:fragment slot="children">
 					{#each forum.sub_forums as sub_forum}
