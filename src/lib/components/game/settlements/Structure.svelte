@@ -11,8 +11,10 @@
 <div>
 	<img class="btn-icon rounded-full" src={structure.image} alt={structure.name} />
 	<span class="flex-auto">
-		<dt>{structure.name}</dt>
-		<dd>{structure.description}</dd>
+		<dl>
+			<dt>{structure.name}</dt>
+			<dd>{structure.description}</dd>
+		</dl>
 	</span>
 	<span class="badge variant-soft-tertiary">
 		{settlementStructures.find((ss) => ss.structureId == structure.id)?.level ?? 0}
