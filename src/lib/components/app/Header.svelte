@@ -3,10 +3,10 @@
 
 	import { AppBar, popup, LightSwitch, type PopupSettings } from '@skeletonlabs/skeleton';
 
-	import MenuIcon from 'svelte-material-icons/Menu.svelte';
-	import Account from 'svelte-material-icons/Account.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import BellOutline from 'svelte-material-icons/BellOutline.svelte';
+	import MenuIcon from 'svelte-material-icons-generator/svelte-material-icons/Menu.svelte';
+	import Account from 'svelte-material-icons-generator/svelte-material-icons/Account.svelte';
+	import Close from 'svelte-material-icons-generator/svelte-material-icons/Close.svelte';
+	import BellOutline from 'svelte-material-icons-generator/svelte-material-icons/BellOutline.svelte';
 	import { slide } from 'svelte/transition';
 
 	const MenuOptions: PopupSettings = {

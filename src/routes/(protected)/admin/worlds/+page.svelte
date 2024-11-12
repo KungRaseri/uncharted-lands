@@ -2,8 +2,8 @@
 	import type { PageData } from './$types';
 	import { DataHandler, Datatable, Th, ThFilter } from '@vincjo/datatables';
 
-	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
-	import Web from 'svelte-material-icons/Web.svelte';
+	import WebPlus from 'svelte-material-icons-generator/svelte-material-icons/WebPlus.svelte';
+	import Web from 'svelte-material-icons-generator/svelte-material-icons/Web.svelte';
 
 	export let data: PageData;
 

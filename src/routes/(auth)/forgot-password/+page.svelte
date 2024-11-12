@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Information from 'svelte-material-icons/Information.svelte';
-	import LockQuestion from 'svelte-material-icons/LockQuestion.svelte';
+	import Information from 'svelte-material-icons-generator/svelte-material-icons/Information.svelte';
+	import LockQuestion from 'svelte-material-icons-generator/svelte-material-icons/LockQuestion.svelte';
 
 	import type { ActionData } from './$types';
 	import { applyAction, enhance } from '$app/forms';

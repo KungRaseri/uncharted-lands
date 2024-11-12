@@ -2,8 +2,8 @@
 	import type { PageData } from './$types';
 	import { DataHandler, Datatable, Th, ThFilter } from '@vincjo/datatables';
 
-	import AccountPlus from 'svelte-material-icons/AccountPlus.svelte';
-	import Account from 'svelte-material-icons/Account.svelte';
+	import AccountPlus from 'svelte-material-icons-generator/svelte-material-icons/AccountPlus.svelte';
+	import Account from 'svelte-material-icons-generator/svelte-material-icons/Account.svelte';
 
 	export let data: PageData;
 

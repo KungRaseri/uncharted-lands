@@ -4,11 +4,11 @@
 	import { ListBox, ListBoxItem, Tab, TabGroup } from '@skeletonlabs/skeleton';
 	import { fade } from 'svelte/transition';
 
-	import Discord from 'svelte-material-icons/Discord.svelte';
-	import Github from 'svelte-material-icons/Github.svelte';
-	import Twitter from 'svelte-material-icons/Twitter.svelte';
-	import Earth from 'svelte-material-icons/Earth.svelte';
-	import Campfire from 'svelte-material-icons/Campfire.svelte';
+	import Discord from 'svelte-material-icons-generator/svelte-material-icons/Discord.svelte';
+	import Github from 'svelte-material-icons-generator/svelte-material-icons/Github.svelte';
+	import Twitter from 'svelte-material-icons-generator/svelte-material-icons/Twitter.svelte';
+	import Earth from 'svelte-material-icons-generator/svelte-material-icons/Earth.svelte';
+	import Campfire from 'svelte-material-icons-generator/svelte-material-icons/Campfire.svelte';
 
 	let featureListSelection: string = 'Survival';
 	let tabSet: number = 0;

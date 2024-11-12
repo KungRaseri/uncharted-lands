@@ -3,12 +3,12 @@
 	import { writable, type Writable } from 'svelte/store';
 	import { page } from '$app/stores';
 
-	import ViewDashboard from 'svelte-material-icons/ViewDashboard.svelte';
-	import Server from 'svelte-material-icons/Server.svelte';
-	import Web from 'svelte-material-icons/Web.svelte';
-	import AccountGroup from 'svelte-material-icons/AccountGroup.svelte';
-	import FolderSearchOutline from 'svelte-material-icons/FolderSearchOutline.svelte';
-	import Github from 'svelte-material-icons/Github.svelte';
+	import ViewDashboard from 'svelte-material-icons-generator/svelte-material-icons/ViewDashboard.svelte';
+	import Server from 'svelte-material-icons-generator/svelte-material-icons/Server.svelte';
+	import Web from 'svelte-material-icons-generator/svelte-material-icons/Web.svelte';
+	import AccountGroup from 'svelte-material-icons-generator/svelte-material-icons/AccountGroup.svelte';
+	import FolderSearchOutline from 'svelte-material-icons-generator/svelte-material-icons/FolderSearchOutline.svelte';
+	import Github from 'svelte-material-icons-generator/svelte-material-icons/Github.svelte';
 
 	let railTiles: Array<any> = [
 		{

@@ -4,7 +4,7 @@
 	import type { Prisma, Region, Tile, World, Plot } from '@prisma/client';
 	import { RangeSlider, Stepper, Step, ProgressRadial } from '@skeletonlabs/skeleton';
 
-	import Information from 'svelte-material-icons/Information.svelte';
+	import Information from 'svelte-material-icons-generator/svelte-material-icons/Information.svelte';
 	import WorldComponent from '$lib/components/game/map/World.svelte';
 	import type { ErrorResponse } from '$lib/types';
 

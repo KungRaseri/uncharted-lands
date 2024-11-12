@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Information from 'svelte-material-icons/Information.svelte';
-	import LoginVariant from 'svelte-material-icons/LoginVariant.svelte';
+	import Information from 'svelte-material-icons-generator/svelte-material-icons/Information.svelte';
+	import LoginVariant from 'svelte-material-icons-generator/svelte-material-icons/LoginVariant.svelte';
 
 	import type { ActionData, PageData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
@@ -62,7 +62,7 @@
 						name="remember_me"
 						type="checkbox"
 						class="checkbox"
-						bind:value={isRememberMeChecked}
+						bind:checked={isRememberMeChecked}
 					/>
 					<span class="">Remember me</span>
 				</label>

@@ -2,8 +2,8 @@
 	import type { PageData } from './$types';
 	import { DataHandler, Datatable, Th, ThFilter } from '@vincjo/datatables';
 
-	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
-	import ServerNetwork from 'svelte-material-icons/ServerNetwork.svelte';
+	import ServerPlus from 'svelte-material-icons-generator/svelte-material-icons/ServerPlus.svelte';
+	import ServerNetwork from 'svelte-material-icons-generator/svelte-material-icons/ServerNetwork.svelte';
 
 	export let data: PageData;
 

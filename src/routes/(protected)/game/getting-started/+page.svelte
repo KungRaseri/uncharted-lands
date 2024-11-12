@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
 
-	import Campfire from 'svelte-material-icons/Campfire.svelte';
-	import Information from 'svelte-material-icons/Information.svelte';
+	import Campfire from 'svelte-material-icons-generator/svelte-material-icons/Campfire.svelte';
+	import Information from 'svelte-material-icons-generator/svelte-material-icons/Information.svelte';
 
 	import { applyAction, enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
