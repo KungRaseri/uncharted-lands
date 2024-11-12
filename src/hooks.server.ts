@@ -20,7 +20,7 @@ export const handle: Handle = (async ({ event, resolve }) => {
     // if not, start initialization process
     // redirect to
     IsDatabaseInitialized = true;
-    
+
     //if so, continue is usual...
     if (IsDatabaseInitialized) {
         const user = await AuthenticateUser(event.cookies);
