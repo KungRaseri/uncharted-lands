@@ -4,10 +4,7 @@
 	import { AppBar, popup, LightSwitch } from '@skeletonlabs/skeleton';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 
-	import MenuIcon from 'svelte-material-icons/Menu.svelte';
-	import Account from 'svelte-material-icons/Account.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import BellOutline from 'svelte-material-icons/BellOutline.svelte';
+	import { Menu, User, X, Bell } from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
 
 	const MenuOptions: PopupSettings = {
@@ -38,9 +35,9 @@
 				}}
 			>
 				{#if !isMainMenuOpen}
-					<MenuIcon size={24} />
+					<Menu size={24} />
 				{:else}
-					<Close size={24} />
+					<X size={24} />
 				{/if}
 			</button>
 		</div>
@@ -109,7 +106,7 @@
 			{:else}
 				<div>
 					<button type="button" class="btn-icon bg-surface-200-700-token m-0 p-0">
-						<BellOutline size={24} />
+						<Bell size={24} />
 					</button>
 
 					<button
@@ -124,7 +121,7 @@
 							<img class="w-6 rounded-full" src={$page.data.account.profile.picture} alt="" />
 						{:else}
 							<div class="w-6 items-center justify-center mx-auto">
-								<Account size={24} />
+								<User size={24} />
 							</div>
 						{/if}
 					</button>
