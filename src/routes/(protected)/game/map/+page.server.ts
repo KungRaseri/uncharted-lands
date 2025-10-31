@@ -2,24 +2,37 @@ import { db } from '$lib/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async () => {
+    const server = await db.server.findFirst();
+    
+    if (!server) {
+        throw new Error('No server found');
+    }
+
     const world = await db.world.findUnique({
         where: {
             name_serverId: {
                 name: "World 4",
-                serverId: (await db.server.findFirst())?.id
+                serverId: server.id
             }
         },
         include: {
             server: true,
             regions: {
                 include: {
-                    tiles: true
+                    tiles: {
+                        include: {
+                            Biome: true,
+                            Plots: true
+                        }
+                    }
                 }
             }
         }
     })
 
-    if (world === null || world === undefined) throw Error();
+    if (!world) {
+        throw new Error('World not found');
+    }
 
     return {
         world

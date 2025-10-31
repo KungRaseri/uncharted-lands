@@ -5,7 +5,7 @@
 		include: {
 			tiles: { include: { Biome: true; Plots: true } };
 		};
-	}>;
+	}>[];
 </script>
 
 {#each regions as region}

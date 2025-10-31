@@ -1,8 +1,17 @@
 <script lang="ts">
-	import type { Region, Prisma } from '@prisma/client';
+	import type { Prisma } from '@prisma/client';
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
 
-	export let regions: Region[];
+	export let regions: Prisma.RegionGetPayload<{
+		include: {
+			tiles: {
+				include: {
+					Biome: true;
+					Plots: true;
+				};
+			};
+		};
+	}>[];
 </script>
 
 <div class="grid grid-cols-10 p-0 border-token w-full xl:w-1/2 mx-auto">

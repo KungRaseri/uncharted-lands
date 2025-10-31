@@ -14,7 +14,7 @@
 
 	let regions: Prisma.RegionGetPayload<{
 		include: { tiles: { include: { Biome: true; Plots: true } } };
-	}>[];
+	}>[] = [];
 
 	let elevationOptions = {
 		scale: 1,
@@ -51,8 +51,6 @@
 	};
 
 	async function generate() {}
-
-	$: regions;
 </script>
 
 <div class="w-full h-full p-5 space-y-5">

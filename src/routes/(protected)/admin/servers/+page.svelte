@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Table, tableMapperValues } from '@skeletonlabs/skeleton';
+	import { Table, tableMapperValues, type TableSource } from '@skeletonlabs/skeleton';
 
 	import ServerPlus from 'svelte-material-icons/ServerPlus.svelte';
 
