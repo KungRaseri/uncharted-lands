@@ -7,7 +7,7 @@
 		<div class="absolute inset-0">
 			<div
 				class="absolute inset-0 bg-gradient-to-r from-0% to-100% via-50% from-primary-600 to-secondary-600 via-surface-900 mix-blend-color"
-			/>
+			></div>
 		</div>
 		<div class="relative p-5">
 			<h1 class="text-center text-3xl font-bold tracking-tight md:text-4xl">

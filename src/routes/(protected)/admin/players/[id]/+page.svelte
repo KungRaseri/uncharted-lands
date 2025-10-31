@@ -9,9 +9,9 @@
 
 <ol class="breadcrumb">
 	<li class="crumb"><a href="/admin/">Dashboard</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
 	<li class="crumb"><a href="/admin/accounts">Accounts</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
 	<li>Account [{data.account.id}]</li>
 </ol>
 

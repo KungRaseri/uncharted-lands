@@ -31,7 +31,7 @@
 			</dl>
 		</div>
 		<div class="m-3 pb-3">
-			<div class="card variant-filled-secondary" />
+			<div class="card variant-filled-secondary"></div>
 		</div>
 	</div>
 </div>

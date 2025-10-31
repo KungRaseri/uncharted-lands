@@ -46,7 +46,7 @@
 			</header>
 
 			<hr class="my-2" />
-			<section class="p-4" />
+			<section class="p-4"></section>
 
 			<footer class="card-footer">
 				<div class="badge variant-ghost-secondary">

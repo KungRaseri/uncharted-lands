@@ -7,9 +7,9 @@
 
 <ol class="breadcrumb">
 	<li class="crumb"><a href="/admin/">Dashboard</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
 	<li class="crumb"><a href="/admin/regions/{data.tile.regionId}">Region</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
 	<li>Tile [{data.tile.id}]</li>
 </ol>
 

@@ -8,9 +8,9 @@
 
 <ol class="breadcrumb">
 	<li class="crumb"><a href="/admin/">Dashboard</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
 	<li class="crumb"><a href="/admin/tiles/{data.plot.tileId}">Tile</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
 	<li>Plot [{data.plot.id}]</li>
 </ol>
 

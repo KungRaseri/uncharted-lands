@@ -6,9 +6,9 @@
 
 <ol class="breadcrumb">
 	<li class="crumb"><a href="/admin/">Dashboard</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
 	<li class="crumb"><a href="/admin/worlds/{data.region.worldId}/">World</a></li>
-	<li class="crumb-separator" aria-hidden>&rsaquo;</li>
+	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
 	<li>{data.region.name} [{data.region.id}]</li>
 </ol>
 
