@@ -6,9 +6,10 @@ This document explains the current Tailwind v4 and Skeleton v4 configuration set
 
 ### ✅ Required Files
 
-1. **`postcss.config.cjs`**
-   - PostCSS configuration for Vite
-   - Uses `@tailwindcss/postcss` plugin (Tailwind 4 requirement)
+1. **`vite.config.js`**
+   - Vite configuration with Tailwind plugin
+   - Uses `@tailwindcss/vite` plugin (Tailwind 4 + recommended by Skeleton)
+   - Plugin MUST be above SvelteKit plugin
    - Location: Root directory
 
 2. **`src/app.postcss`**
@@ -23,19 +24,32 @@ This document explains the current Tailwind v4 and Skeleton v4 configuration set
 ### ❌ NOT Needed
 
 - **`tailwind.config.ts`** / **`tailwind.config.js`** - Tailwind 4 doesn't use external config files
+- **`postcss.config.cjs`** - Not needed when using Vite plugin
 - All configuration is done inline in CSS using `@theme`, `@plugin`, etc.
 
 ## Current Setup
 
-### postcss.config.cjs
+### vite.config.js
 ```javascript
-module.exports = {
-	plugins: {
-		'@tailwindcss/postcss': {},  // Tailwind 4 PostCSS plugin
-		autoprefixer: {},
+import { defineConfig } from 'vite'
+import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';  // Tailwind 4 Vite plugin
+
+const config = defineConfig({
+	build: {
+		sourcemap: true
 	},
-}
+	plugins: [
+		tailwindcss(),  // MUST be above sveltekit()
+		sveltekit()
+	],
+	// ... other config
+})
+
+export default config;
 ```
+
+**Important**: The `tailwindcss()` plugin MUST be placed ABOVE the `sveltekit()` plugin.
 
 ### src/app.postcss
 ```css

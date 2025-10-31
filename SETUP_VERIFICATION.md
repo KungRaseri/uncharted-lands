@@ -35,11 +35,12 @@ Based on the official Skeleton LLM documentation for Svelte projects:
 - ✅ `@skeletonlabs/skeleton-svelte@4.2.2` - Skeleton Svelte components
 
 #### Tailwind Plugins
-- ✅ `@tailwindcss/postcss@4.1.16` - PostCSS plugin for Tailwind 4
+- ✅ `@tailwindcss/vite@4.1.16` - Vite plugin for Tailwind 4 (recommended)
 - ✅ `@tailwindcss/forms@0.5.9` - Form styling plugin
 - ✅ `@tailwindcss/typography@0.5.15` - Typography plugin
-- ✅ `autoprefixer@10.4.20` - CSS vendor prefixing
-- ✅ `postcss@8.4.47` - PostCSS itself
+- ~~`@tailwindcss/postcss`~~ - Removed (using Vite plugin instead)
+- ~~`postcss`~~ - Removed (not needed with Vite plugin)
+- ~~`autoprefixer`~~ - Removed (Tailwind includes vendor prefixing)
 
 #### Build Tools
 - ✅ `vite@6.0.3` - Vite bundler (latest)
@@ -53,9 +54,14 @@ Based on the official Skeleton LLM documentation for Svelte projects:
 
 ### 1. PostCSS Configuration ✅
 
-**File**: `postcss.config.cjs`
+**File**: ~~`postcss.config.cjs`~~ **DELETED** (No longer needed)
 
-**Expected**:
+**Why Deleted**: 
+- Migrated from PostCSS plugin to Vite plugin (per official v2→v3 guide)
+- Tailwind Vite plugin handles CSS processing directly
+- No PostCSS config needed when using Vite plugin
+
+**Previous Config** (for reference):
 ```javascript
 module.exports = {
   plugins: {
@@ -65,17 +71,7 @@ module.exports = {
 }
 ```
 
-**Our Config**:
-```javascript
-module.exports = {
-  plugins: {
-    '@tailwindcss/postcss': {},
-    autoprefixer: {},
-  },
-}
-```
-
-**Status**: ✅ Perfect match - Using Tailwind 4 PostCSS plugin
+**Status**: ✅ Correctly removed per migration guide
 
 ---
 
@@ -148,18 +144,21 @@ body {
 **File**: `vite.config.js`
 
 **Required**:
+- Tailwind Vite plugin (ABOVE SvelteKit plugin)
 - SvelteKit Vite plugin
 
 **Our Config**:
 ```javascript
 import { defineConfig } from 'vite'
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 
 const config = defineConfig({
   build: {
     sourcemap: true
   },
   plugins: [
+    tailwindcss(),  // MUST be above sveltekit()
     sveltekit()
   ],
   // ... other config
@@ -168,12 +167,12 @@ const config = defineConfig({
 export default config;
 ```
 
-**Status**: ✅ Properly configured
+**Status**: ✅ Properly configured per official migration guide
 
 **Notes**:
-- Using PostCSS plugin route (via postcss.config.cjs)
-- Alternative would be `@tailwindcss/vite` plugin (not required, both valid)
-- Our approach is more traditional and widely documented
+- Using Tailwind Vite plugin (recommended approach)
+- Plugin order matters: tailwindcss() MUST be above sveltekit()
+- No PostCSS config needed with Vite plugin
 
 ---
 
@@ -191,6 +190,23 @@ export default config;
 - Tailwind v4 eliminated external config files
 - All configuration now in CSS via `@theme` directive
 - We correctly removed old tailwind.config.ts file
+
+---
+
+### 6. PostCSS Config ✅
+
+**File**: `postcss.config.cjs` - **NONE** (Correct!)
+
+**Expected**: No PostCSS config needed when using Vite plugin
+
+**Our State**: ✅ No postcss.config.* files present
+
+**Status**: ✅ Correctly removed per v2→v3 migration guide
+
+**Notes**:
+- Migrated from PostCSS plugin to Vite plugin (recommended)
+- Vite plugin handles CSS processing directly
+- Simpler setup with fewer configuration files
 
 ---
 
@@ -228,14 +244,13 @@ We're still importing from the OLD package path:
 
 ## 🧪 Build System Verification
 
-### PostCSS Processing Chain
+### Vite + Tailwind Processing Chain
 
-1. ✅ Vite reads `postcss.config.cjs`
-2. ✅ PostCSS loads `@tailwindcss/postcss` plugin
-3. ✅ Tailwind processes `src/app.postcss`
-4. ✅ Imports resolved (tailwindcss, skeleton, skeleton-svelte, theme)
-5. ✅ Plugins registered (@tailwindcss/forms, @tailwindcss/typography)
-6. ❌ **FAILS** at Skeleton CSS processing (@variant bug)
+1. ✅ Vite loads `@tailwindcss/vite` plugin
+2. ✅ Tailwind Vite plugin processes `src/app.postcss`
+3. ✅ Imports resolved (tailwindcss, skeleton, skeleton-svelte, theme)
+4. ✅ Plugins registered (@tailwindcss/forms, @tailwindcss/typography)
+5. ❌ **FAILS** at Skeleton CSS processing (@variant bug)
 
 ### Build Commands
 
@@ -365,7 +380,8 @@ Use this checklist to verify setup on any Skeleton + Svelte project:
 - [ ] `postcss` and `autoprefixer` installed
 
 ### Configuration Files
-- [ ] `postcss.config.cjs` exists with correct plugin
+- [ ] No `postcss.config.*` file (removed when using Vite plugin)
+- [ ] `vite.config` has `@tailwindcss/vite` plugin ABOVE framework plugin
 - [ ] `src/app.postcss` (or .css) exists with imports
 - [ ] `@import "tailwindcss"` present (Tailwind v4 syntax)
 - [ ] `@import "@skeletonlabs/skeleton"` present
