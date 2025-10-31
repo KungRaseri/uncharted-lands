@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "@tailwindcss/forms";
+@import "@tailwindcss/typography";
+
+@theme {
+  --color-* initial;
+}
