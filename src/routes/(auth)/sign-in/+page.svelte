@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Information from 'svelte-material-icons/Information.svelte';
+	import { Info } from 'lucide-svelte';
 
 	import type { ActionData, PageData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
@@ -75,7 +75,7 @@
 				<div transition:slide class="hidden lg:block">
 					<div class="alert variant-ghost-error mx-5 mt-5">
 						<div class="alert-message text-token justify-center items-center">
-							<Information size={24} />
+							<Info size={24} />
 							<div class="grid grid-cols-1">
 								<span>{form?.incorrect ? 'Information is incorrect' : ''}</span>
 							</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Information from 'svelte-material-icons/Information.svelte';
+	import { Info } from 'lucide-svelte';
 
 	import type { ActionData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
@@ -62,7 +62,7 @@
 				<div transition:slide>
 					<div class="alert variant-ghost-error mx-5 mt-5">
 						<div class="alert-message text-token">
-							<Information size={24} />
+							<Info size={24} />
 							<div class="grid grid-cols-1">Form information is invalid</div>
 							{#if form?.length}
 								Password must be 16 or more characters in length
