@@ -1,32 +1,16 @@
 import adapter from '@sveltejs/adapter-vercel';
-import preprocess from 'svelte-preprocess';
-import { withSentryConfig } from '@sentry/svelte';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	compilerOptions: {
-		enableSourcemap: true
-	},
-	// Consult https://github.com/sveltejs/svelte-preprocess
-	// for more information about preprocessors
-	preprocess: [preprocess({
-		postcss: true,
-		sourceMap: true,
-		typescript: {
-			tsconfigFile: false,
-			compilerOptions: {
-				target: 'esnext',
-				module: 'esnext',
-				moduleResolution: 'bundler'
-			}
-		}
-	})],
+	// Svelte 5 uses vitePreprocess by default
+	preprocess: vitePreprocess(),
 
 	kit: {
 		adapter: adapter({
-			runtime: 'nodejs18.x'
+			runtime: 'nodejs20.x'
 		})
 	}
 };
 
-export default withSentryConfig(config);
+export default config;
