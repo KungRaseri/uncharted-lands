@@ -8,7 +8,7 @@ export default mergeConfig(viteConfig, defineConfig({
         environment: "jsdom",
         include: ['src/**/*.test.{js,ts}'],
         coverage: {
-            provider: 'c8',
+            provider: 'v8',
             all: true,
             reporter: ['text', 'json', 'html'],
             include: ['src']

@@ -1,11 +1,9 @@
 import { redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { AuthenticateUser } from "$lib/auth";
 import * as Sentry from '@sentry/node';
-import { BrowserTracing } from '@sentry/browser';
 
 Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    integrations: [new BrowserTracing()],
     tracesSampleRate: 1.0,
     environment: process.env.NODE_ENV
 })
