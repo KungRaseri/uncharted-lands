@@ -63,15 +63,20 @@ export default config;
 
 html,
 body {
-    @apply h-full overflow-hidden;
+    height: 100%;
+    overflow: hidden;
     font-family: 'Titillium Web', sans-serif;
 }
 ```
 
+**✅ Updated**: Replaced `@apply` with standard CSS per Tailwind v4 best practices.
+
 ### src/app.html
 ```html
-<body data-theme="cerberus" data-sveltekit-preload-data="hover">
+<html lang="en" data-theme="cerberus">
 ```
+
+**✅ Updated**: Moved `data-theme` from `<body>` to `<html>` tag per Skeleton v4 requirements.
 
 ## Package Versions
 

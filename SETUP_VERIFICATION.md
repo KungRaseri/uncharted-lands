@@ -99,7 +99,8 @@ module.exports = {
 
 html,
 body {
-    @apply h-full overflow-hidden;
+    height: 100%;
+    overflow: hidden;
     font-family: 'Titillium Web', sans-serif;
 }
 ```
@@ -111,6 +112,7 @@ body {
 - Includes both Skeleton packages (core + svelte)
 - Loads cerberus theme
 - Properly registers Tailwind plugins
+- ✅ Replaced `@apply` with standard CSS (per Tailwind v4 best practices)
 
 ---
 
@@ -123,19 +125,17 @@ body {
 
 **Our Config**:
 ```html
-<body data-theme="cerberus" data-sveltekit-preload-data="hover">
-  <div style="display: contents" class="h-full overflow-hidden">
-    %sveltekit.body%
-  </div>
-</body>
+<html lang="en" data-theme="cerberus">
+  <!-- head content -->
+</html>
 ```
 
-**Status**: ✅ Theme properly configured
+**Status**: ✅ Theme properly configured per Skeleton v4 requirements
 
 **Notes**:
 - Theme set to "cerberus" preset
-- Located on `<body>` tag (works, but Skeleton v4 recommends `<html>`)
-- Consider moving to `<html data-theme="cerberus">` in future
+- Located on `<html>` tag (Skeleton v4 requirement)
+- Moved from `<body>` per official Tailwind v4 Changes guide
 
 ---
 

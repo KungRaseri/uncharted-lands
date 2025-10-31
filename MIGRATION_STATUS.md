@@ -138,19 +138,21 @@ node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
 
 ## 🔄 Manual Migration Tasks
 
-### 1. Replace @apply Usage ⚠️
+### 1. Replace @apply Usage ✅
 
-**Current Usage**:
-- `src/app.postcss`: Line 11 uses `@apply h-full overflow-hidden;`
+**Status**: ✅ **COMPLETE**
 
-**Recommended Fix**:
+**Previous Usage**:
+- `src/app.postcss`: Line 11 used `@apply h-full overflow-hidden;`
+
+**Fixed**:
 ```css
 /* Before */
 html, body {
     @apply h-full overflow-hidden;
 }
 
-/* After */
+/* After (Current) */
 html, body {
     height: 100%;
     overflow: hidden;
@@ -159,20 +161,25 @@ html, body {
 
 **Reasoning**: 
 - Tailwind v4 discourages `@apply` usage
-- New CSS custom properties and directives available
-- More explicit and performant
+- Standard CSS is more explicit and performant
+- Follows official Tailwind v4 best practices
 
-**Priority**: Medium (works but not best practice)
+**Completed**: October 31, 2025
 
-### 2. Move data-theme to <html> Tag 🔍
+### 2. Move data-theme to <html> Tag ✅
 
-**Current**: `<body data-theme="cerberus">`
+**Status**: ✅ **COMPLETE**
 
-**Recommended**: `<html lang="en" data-theme="cerberus">`
+**Previous**: `<body data-theme="cerberus">`
+
+**Current**: `<html lang="en" data-theme="cerberus">`
 
 **File**: `src/app.html`
 
-**Priority**: Low (current implementation works)
+**Reasoning**: Per official Skeleton v2→v3 Tailwind v4 Changes guide:
+> "The Skeleton `data-theme` attribute has moved from `<body>` to `<html>`"
+
+**Completed**: October 31, 2025
 
 ### 3. Component Migration 📦
 
@@ -227,7 +234,7 @@ html, body {
 | **Package Updates** | ✅ Complete | All dependencies updated |
 | **Config Files** | ✅ Complete | All properly configured |
 | **Theme Setup** | ✅ Complete | Cerberus preset active |
-| **@apply Cleanup** | 🔄 Pending | 1 usage in app.postcss |
+| **@apply Cleanup** | ✅ Complete | Replaced with standard CSS |
 | **Component Migration** | 🔍 Unknown | Needs audit |
 | **Feature Audit** | 🔍 Unknown | Check for removed features |
 | **Build Status** | ❌ Failing | @variant bug in Skeleton |
@@ -238,6 +245,11 @@ html, body {
 - 🔄 In progress / Action needed
 - 🔍 Needs investigation
 - ❌ Failing
+
+**Recent Updates (Oct 31, 2025)**:
+- ✅ Migrated from PostCSS plugin to Vite plugin
+- ✅ Moved `data-theme` from `<body>` to `<html>` tag
+- ✅ Replaced `@apply` with standard CSS properties
 
 ---
 
