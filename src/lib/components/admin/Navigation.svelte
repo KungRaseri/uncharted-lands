@@ -3,12 +3,7 @@
 	import { writable, type Writable } from 'svelte/store';
 	import { page } from '$app/stores';
 
-	import ViewDashboard from 'svelte-material-icons/ViewDashboard.svelte';
-	import Server from 'svelte-material-icons/Server.svelte';
-	import Web from 'svelte-material-icons/Web.svelte';
-	import AccountGroup from 'svelte-material-icons/AccountGroup.svelte';
-	import FolderSearchOutline from 'svelte-material-icons/FolderSearchOutline.svelte';
-	import Github from 'svelte-material-icons/Github.svelte';
+	import { LayoutDashboard, Server, Globe, Users, FolderSearch, Github } from 'lucide-svelte';
 
 	let railTiles: Array<any> = [
 		{
@@ -23,21 +18,21 @@
 			title: 'Worlds',
 			href: '/admin/worlds',
 			value: '/admin/worlds',
-			icon: Web
+			icon: Globe
 		},
 		{
 			label: 'Players',
 			title: 'Players',
 			href: '/admin/players',
 			value: '/admin/players',
-			icon: AccountGroup
+			icon: Users
 		},
 		{
 			label: 'Reports',
 			title: 'Reports',
 			href: '/admin/reports',
 			value: '/admin/reports',
-			icon: FolderSearchOutline
+			icon: FolderSearch
 		}
 	];
 	$: isActive = (href: string) => (href === $page.url.pathname ? '!bg-primary-active-token' : '');
@@ -57,7 +52,7 @@
 				hover:variant-ghost-secondary 
 				rounded-none"
 		>
-			<ViewDashboard width="100%" size={36} />
+			<LayoutDashboard size={36} />
 			<span class="text-xs">Dashboard</span>
 		</AppRailTile>
 	</svelte:fragment>
@@ -82,7 +77,7 @@
 			href="https://github.com/RedSyndicate/browser-game"
 			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
 		>
-			<Github width="100%" size={36} />
+			<Github size={36} />
 			<span class="text-xs">src</span>
 		</AppRailTile>
 	</svelte:fragment>

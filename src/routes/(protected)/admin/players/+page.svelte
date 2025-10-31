@@ -4,7 +4,7 @@
 
 	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
 
-	import AccountEdit from 'svelte-material-icons/AccountEdit.svelte';
+	import { UserCog } from 'lucide-svelte';
 
 	export let data: PageData;
 
@@ -33,7 +33,7 @@
 				class="input"
 			/>
 			<a href="/admin/servers/create" class="btn bg-primary-400-500-token">
-				<span class="mx-1 px-0 py-3 text-token"><AccountEdit /></span>
+				<span class="mx-1 px-0 py-3 text-token"><UserCog /></span>
 				<span class="mx-1 px-0 py-2 text-token">Edit</span>
 			</a>
 		</div>
