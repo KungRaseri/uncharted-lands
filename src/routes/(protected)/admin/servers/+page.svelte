@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { Table, tableMapperValues, type TableSource } from '@skeletonlabs/skeleton';
 
-	import { ServerCog } from 'lucide-svelte';
+	import { Server } from 'lucide-svelte';
 
 	export let data: PageData;
 

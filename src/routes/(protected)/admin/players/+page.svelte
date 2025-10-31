@@ -2,24 +2,21 @@
 	import type { PageData } from './$types';
 	import type { Account } from 'prisma/prisma-client';
 
-	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
-
 	import { UserCog } from 'lucide-svelte';
 
 	export let data: PageData;
 
-	let accountsTableStore = createDataTableStore(data.accounts, {
-		search: '',
-		sort: '',
-		pagination: {
-			offset: 0,
-			limit: 5,
-			size: 0,
-			amounts: [1, 2, 5, 10]
-		}
+	let searchTerm = '';
+	
+	$: filteredAccounts = data.accounts.filter(account => {
+		if (!searchTerm) return true;
+		const search = searchTerm.toLowerCase();
+		return (
+			account.id.toLowerCase().includes(search) ||
+			account.email.toLowerCase().includes(search) ||
+			account.role.toLowerCase().includes(search)
+		);
 	});
-
-	accountsTableStore.subscribe((model) => dataTableHandler(model));
 </script>
 
 <div class="m-1">
@@ -27,7 +24,7 @@
 	<div class="table-container">
 		<div class="p-0 m-3 w-11/12 flex space-x-3">
 			<input
-				bind:value={$accountsTableStore.search}
+				bind:value={searchTerm}
 				type="search"
 				placeholder="Search..."
 				class="input"
@@ -37,20 +34,20 @@
 				<span class="mx-1 px-0 py-2 text-token">Edit</span>
 			</a>
 		</div>
-		<table aria-describedby="accounts-header" class="table table-hover" use:tableInteraction>
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Email</th>
-					<th>Role</th>
-					<th>Profile</th>
-					<th>Created At</th>
-					<th>Updated At</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if $accountsTableStore}
-					{#each $accountsTableStore.filtered as account, index}
+		<div class="table-wrap">
+			<table aria-describedby="accounts-header" class="table caption-bottom">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Email</th>
+						<th>Role</th>
+						<th>Profile</th>
+						<th>Created At</th>
+						<th>Updated At</th>
+					</tr>
+				</thead>
+				<tbody class="[&>tr]:hover:preset-tonal-primary">
+					{#each filteredAccounts as account}
 						<tr>
 							<td>
 								<a href="/admin/accounts/{account.id}/">{account.id}</a>
@@ -62,8 +59,8 @@
 							<td>{account.updatedAt}</td>
 						</tr>
 					{/each}
-				{/if}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>

@@ -1,23 +1,19 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
 
 	export let data: PageData;
 
-	let plotsTableStore = createDataTableStore(data.plots, {
-		search: '',
-		sort: '',
-		pagination: {
-			offset: 0,
-			limit: 15,
-			size: 0,
-			amounts: [5, 15, 25]
-		}
+	let searchTerm = '';
+	
+	$: filteredPlots = data.plots.filter(plot => {
+		if (!searchTerm) return true;
+		const search = searchTerm.toLowerCase();
+		return (
+			plot.id.toLowerCase().includes(search) ||
+			plot.tileId.toLowerCase().includes(search) ||
+			(plot.Settlement?.id && plot.Settlement.id.toLowerCase().includes(search))
+		);
 	});
-
-	plotsTableStore.subscribe((model) => dataTableHandler(model));
-
-	$: plotsTableStore.updateSource(data.plots);
 </script>
 
 <div class="m-1">
@@ -25,24 +21,24 @@
 	<div class="table-container">
 		<div class="p-0 m-3 w-11/12 flex space-x-3">
 			<input
-				bind:value={$plotsTableStore.search}
+				bind:value={searchTerm}
 				type="search"
 				placeholder="Search..."
 				class="input"
 			/>
 		</div>
-		<table aria-describedby="plots-header" class="table table-hover" use:tableInteraction>
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Settlement ID</th>
-					<th>Tile ID</th>
-					<th>Resources</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if $plotsTableStore}
-					{#each $plotsTableStore.filtered as plot, index}
+		<div class="table-wrap">
+			<table aria-describedby="plots-header" class="table caption-bottom">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Settlement ID</th>
+						<th>Tile ID</th>
+						<th>Resources</th>
+					</tr>
+				</thead>
+				<tbody class="[&>tr]:hover:preset-tonal-primary">
+					{#each filteredPlots as plot}
 						<tr>
 							<td><a href="/admin/plots/{plot.id}">{plot.id}</a></td>
 							<td>{plot.Settlement?.id}</td>
@@ -50,8 +46,8 @@
 							<td>{plot.area}</td>
 						</tr>
 					{/each}
-				{/if}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
