@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { createDataTableStore, dataTableHandler, tableInteraction } from '@skeletonlabs/skeleton';
 
-	import WebPlus from 'svelte-material-icons/WebPlus.svelte';
+	import { GlobeCog } from 'lucide-svelte';
 
 	export let data: PageData;
 
@@ -31,7 +31,7 @@
 				class="input"
 			/>
 			<a href="/admin/worlds/create" class="btn bg-primary-400-500-token">
-				<span class="mx-1 px-0 py-3 text-token"><WebPlus /></span>
+				<span class="mx-1 px-0 py-3 text-token"><GlobeCog /></span>
 				<span class="mx-1 px-0 py-2 text-token">Create</span>
 			</a>
 		</div>

@@ -6,7 +6,7 @@
 	import type { Prisma } from '@prisma/client';
 	import { generateMap } from '$lib/game/world-generator';
 
-	import Information from 'svelte-material-icons/Information.svelte';
+	import { Info } from 'lucide-svelte';
 	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
 
 	export let data: PageData;
@@ -437,7 +437,7 @@
 			/>
 			{#if form?.invalid}
 				<div class="alert variant-ghost-error w-11/12 mx-auto m-5">
-					<div class="alert-message"><Information />{form?.message}</div>
+					<div class="alert-message"><Info />{form?.message}</div>
 				</div>
 			{/if}
 			<button class="btn bg-primary-400-500-token rounded-md" disabled={!mapOptions.worldName}>

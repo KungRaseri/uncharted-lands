@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData } from './$types';
 
-	import Information from 'svelte-material-icons/Information.svelte';
+	import { Info } from 'lucide-svelte';
 
 	export let form: ActionData;
 </script>
@@ -56,7 +56,7 @@
 			{#if form?.invalid}
 				<div class="alert variant-ghost-error">
 					<div class="alert-message">
-						<Information size={24} />
+						<Info size={24} />
 						{form.message ?? 'Unknown Error'}
 					</div>
 				</div>
