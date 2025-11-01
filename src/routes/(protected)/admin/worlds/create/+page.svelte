@@ -2,7 +2,7 @@
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
-	import { RangeSlider } from '@skeletonlabs/skeleton';
+	import { Slider } from '@skeletonlabs/skeleton-svelte';
 	import type { Prisma } from '@prisma/client';
 	import { generateMap } from '$lib/game/world-generator';
 
@@ -99,7 +99,7 @@
 				/>
 			</label>
 
-			<RangeSlider
+			<Slider
 				id="elevation-octaves"
 				name="elevation-octaves"
 				label="elevation-octaves"
@@ -117,9 +117,9 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{elevationOptions.octaves}
 				</span>
-			</RangeSlider>
+			</Slider>
 
-			<RangeSlider
+			<Slider
 				id="elevations-amplitude"
 				name="elevations-amplitude"
 				label="elevations-amplitude"
@@ -137,9 +137,9 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{elevationOptions.amplitude}
 				</span>
-			</RangeSlider>
+			</Slider>
 
-			<RangeSlider
+			<Slider
 				id="elevation-frequency"
 				name="elevation-frequency"
 				label="elevation-frequency"
@@ -157,9 +157,9 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{elevationOptions.frequency}
 				</span>
-			</RangeSlider>
+			</Slider>
 
-			<RangeSlider
+			<Slider
 				id="elevation-persistence"
 				name="elevation-persistence"
 				label="elevation-persistence"
@@ -177,7 +177,7 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{elevationOptions.persistence}
 				</span>
-			</RangeSlider>
+			</Slider>
 		</div>
 
 		<h2>Precipitation</h2>
@@ -195,7 +195,7 @@
 					}}
 				/>
 			</label>
-			<RangeSlider
+			<Slider
 				id="precipitation-scale"
 				name="precipitation-scale"
 				label="precipitation-scale"
@@ -213,8 +213,8 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{precipitationOptions.scale}
 				</span>
-			</RangeSlider>
-			<RangeSlider
+			</Slider>
+			<Slider
 				id="precipitation-octaves"
 				name="precipitation-octaves"
 				label="precipitation-octaves"
@@ -232,8 +232,8 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{precipitationOptions.octaves}
 				</span>
-			</RangeSlider>
-			<RangeSlider
+			</Slider>
+			<Slider
 				id="precipitation-amplitude"
 				name="precipitation-amplitude"
 				label="precipitation-amplitude"
@@ -251,8 +251,8 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{precipitationOptions.amplitude}
 				</span>
-			</RangeSlider>
-			<RangeSlider
+			</Slider>
+			<Slider
 				id="precipitation-frequency"
 				name="precipitation-frequency"
 				label="precipitation-frequency"
@@ -270,8 +270,8 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{precipitationOptions.frequency}
 				</span>
-			</RangeSlider>
-			<RangeSlider
+			</Slider>
+			<Slider
 				id="precipitation-persistence"
 				name="precipitation-persistence"
 				label="precipitation-persistence"
@@ -289,7 +289,7 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{precipitationOptions.persistence}
 				</span>
-			</RangeSlider>
+			</Slider>
 		</div>
 
 		<h2>Temperature</h2>
@@ -307,7 +307,7 @@
 					}}
 				/>
 			</label>
-			<RangeSlider
+			<Slider
 				id="temperature-scale"
 				name="temperature-scale"
 				label="temperature-scale"
@@ -325,8 +325,8 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{temperatureOptions.scale}
 				</span>
-			</RangeSlider>
-			<RangeSlider
+			</Slider>
+			<Slider
 				id="temperature-octaves"
 				name="temperature-octaves"
 				label="temperature-octaves"
@@ -344,8 +344,8 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{temperatureOptions.octaves}
 				</span>
-			</RangeSlider>
-			<RangeSlider
+			</Slider>
+			<Slider
 				id="temperature-amplitude"
 				name="temperature-amplitude"
 				label="temperature-amplitude"
@@ -363,8 +363,8 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{temperatureOptions.amplitude}
 				</span>
-			</RangeSlider>
-			<RangeSlider
+			</Slider>
+			<Slider
 				id="temperature-frequency"
 				name="temperature-frequency"
 				label="temperature-frequency"
@@ -382,8 +382,8 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{temperatureOptions.frequency}
 				</span>
-			</RangeSlider>
-			<RangeSlider
+			</Slider>
+			<Slider
 				id="temperature-persistence"
 				name="temperature-persistence"
 				label="temperature-persistence"
@@ -401,7 +401,7 @@
 				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
 					{temperatureOptions.persistence}
 				</span>
-			</RangeSlider>
+			</Slider>
 		</div>
 
 		<form
@@ -450,3 +450,4 @@
 		<WorldMapPreview {regions} />
 	{/if}
 </div>
+

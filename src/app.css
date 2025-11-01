@@ -1,7 +1,16 @@
 @import "tailwindcss";
-@import "@tailwindcss/forms";
-@import "@tailwindcss/typography";
+@import "@skeletonlabs/skeleton";
+@import "@skeletonlabs/skeleton/themes/cerberus";
 
-@theme {
-  --color-* initial;
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+/* Custom dark mode variant for manual control */
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Titillium Web', sans-serif;
 }

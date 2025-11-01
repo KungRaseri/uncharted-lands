@@ -1,17 +1,9 @@
 <script lang="ts">
-	import { AppBar } from '@skeletonlabs/skeleton';
+	import { AppBar } from '@skeletonlabs/skeleton-svelte';
 </script>
 
-<AppBar
-	gridColumns="grid-cols-3"
-	slotLead="place-self-start"
-	slotDefault="place-self-center"
-	slotTrail="place-self-end"
-	padding="px-3 py-0"
-	background="bg-surface-200-700-token"
-	shadow="shadow-md"
->
-	<svelte:fragment slot="lead">
+<AppBar class="bg-surface-200 dark:bg-surface-700 shadow-md px-3 py-0">
+	<AppBar.Lead class="place-self-start">
 		<div class="btn-group rounded-none variant-filled-secondary text-secondary-50-900-token">
 			<a
 				href="/game"
@@ -38,9 +30,9 @@
 				Wardens
 			</a>
 		</div>
-	</svelte:fragment>
+	</AppBar.Lead>
 
-	<svelte:fragment slot="trail">
+	<AppBar.Trail class="place-self-end">
 		<div class="btn-group rounded-none variant-filled-secondary text-secondary-50-900-token">
 			<a
 				href="/game/profile"
@@ -68,5 +60,5 @@
 				>Guild</a
 			>
 		</div>
-	</svelte:fragment>
+	</AppBar.Trail>
 </AppBar>

@@ -1,36 +1,25 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	import { AppBar, popup, LightSwitch } from '@skeletonlabs/skeleton';
-	import type { PopupSettings } from '@skeletonlabs/skeleton';
+	import LightSwitch from './LightSwitch.svelte';
 
 	import { Menu, User, X, Bell } from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
 
-	const MenuOptions: PopupSettings = {
-		placement: 'bottom',
-		event: 'click',
-		target: 'userMenu'
-	};
-
-	export let isMainMenuOpen = false;
+	let { isMainMenuOpen = $bindable(false) }: { isMainMenuOpen?: boolean } = $props();
+	let userMenuOpen = $state(false);
 </script>
 
-<AppBar
-	gridColumns="grid-cols-3"
-	slotDefault="place-self-center"
-	slotTrail="place-content-end"
-	background="bg-surface-100-800-token"
-	shadow="shadow-md"
->
-	<svelte:fragment slot="lead">
+<header class="bg-surface-100 dark:bg-surface-800 shadow-md">
+	<div class="grid grid-cols-3 items-center gap-4 p-4">
+		<!-- Lead slot -->
 		<div class="block sm:hidden">
 			<button
 				type="button"
 				class="px-1.5 py-0 btn-icon variant-soft-surface justify-center items-center"
 				aria-controls="mobile-menu"
-				aria-expanded="false"
-				on:click={() => {
+				aria-expanded={isMainMenuOpen}
+				onclick={() => {
 					isMainMenuOpen = !isMainMenuOpen;
 				}}
 			>
@@ -41,7 +30,7 @@
 				{/if}
 			</button>
 		</div>
-		<div class="hidden sm:block">
+		<div class="hidden sm:flex gap-2">
 			{#each $page.data.mainMenuLinks as link}
 				{#if link.requiredRole}
 					{#if $page.data.account}
@@ -77,10 +66,9 @@
 				{/if}
 			{/each}
 		</div>
-	</svelte:fragment>
 
-	<svelte:fragment slot="trail">
-		<div class="flex space-x-2">
+		<!-- Trail slot -->
+		<div class="flex items-center justify-end gap-2">
 			<LightSwitch />
 			{#if !$page.data.account}
 				<a
@@ -113,9 +101,9 @@
 						type="button"
 						class="btn-icon bg-surface-200-700-token m-0 p-0"
 						id="user-menu-button"
-						aria-expanded="false"
+						aria-expanded={userMenuOpen}
 						aria-haspopup="true"
-						use:popup={MenuOptions}
+						onclick={() => { userMenuOpen = !userMenuOpen; }}
 					>
 						{#if $page.data.account.profile?.picture}
 							<img class="w-6 rounded-full" src={$page.data.account.profile.picture} alt="" />
@@ -125,14 +113,14 @@
 							</div>
 						{/if}
 					</button>
-					<span class="relative rounded-md">
+					
+					{#if userMenuOpen}
 						<nav
-							class="list-nav card p-3 -ml-5 mt-1 rounded-md"
+							class="list-nav card p-3 absolute right-0 mt-1 rounded-md z-10"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="user-menu-button"
 							tabindex="-1"
-							data-popup="userMenu"
 						>
 							{#each $page.data.userMenuLinks as link}
 								<div
@@ -159,12 +147,12 @@
 								</button>
 							</form>
 						</nav>
-					</span>
+					{/if}
 				</div>
 			{/if}
 		</div>
-	</svelte:fragment>
-</AppBar>
+	</div>
+</header>
 
 <!-- Mobile menu, show/hide based on menu state. -->
 {#if isMainMenuOpen}
@@ -188,7 +176,7 @@
 						? 'bg-primary-active-token'
 						: ''}
 						"
-					on:click={() => {
+					onclick={() => {
 						isMainMenuOpen = false;
 					}}
 					aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
