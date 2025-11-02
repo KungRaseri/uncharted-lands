@@ -28,9 +28,9 @@
 				placeholder="Search..."
 				class="input"
 			/>
-			<a href="/admin/worlds/create" class="btn bg-primary-400-500-token">
-				<span class="mx-1 px-0 py-3 text-token"><Globe /></span>
-				<span class="mx-1 px-0 py-2 text-token">Create</span>
+			<a href="/admin/worlds/create" class="btn preset-filled-primary-500">
+				<span class="mx-1 px-0 py-3 "><Globe /></span>
+				<span class="mx-1 px-0 py-2 ">Create</span>
 			</a>
 		</div>
 		<div class="table-wrap">

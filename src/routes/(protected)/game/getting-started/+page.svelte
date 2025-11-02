@@ -10,7 +10,7 @@
 	export let data: PageData;
 </script>
 
-<div class="bg-surface-200-700-token mt-10 p-5 w-full md:w-1/2 mx-auto">
+<div class="bg-surface-200 dark:bg-surface-700 mt-10 p-5 w-full md:w-1/2 mx-auto">
 	<form
 		action="?/settle"
 		method="POST"

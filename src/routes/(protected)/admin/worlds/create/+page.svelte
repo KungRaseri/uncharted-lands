@@ -114,7 +114,7 @@
 				}}
 			>
 				<span> Octaves </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{elevationOptions.octaves}
 				</span>
 			</Slider>
@@ -134,7 +134,7 @@
 				}}
 			>
 				<span> Amplitude </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{elevationOptions.amplitude}
 				</span>
 			</Slider>
@@ -154,7 +154,7 @@
 				}}
 			>
 				<span> Frequency </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{elevationOptions.frequency}
 				</span>
 			</Slider>
@@ -174,7 +174,7 @@
 				}}
 			>
 				<span> Persistence </span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{elevationOptions.persistence}
 				</span>
 			</Slider>
@@ -210,7 +210,7 @@
 				}}
 			>
 				<span>Scale</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{precipitationOptions.scale}
 				</span>
 			</Slider>
@@ -229,7 +229,7 @@
 				}}
 			>
 				<span>Octaves</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{precipitationOptions.octaves}
 				</span>
 			</Slider>
@@ -248,7 +248,7 @@
 				}}
 			>
 				<span>Amplitude</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{precipitationOptions.amplitude}
 				</span>
 			</Slider>
@@ -267,7 +267,7 @@
 				}}
 			>
 				<span>Frequency</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{precipitationOptions.frequency}
 				</span>
 			</Slider>
@@ -286,7 +286,7 @@
 				}}
 			>
 				<span>Persistence</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{precipitationOptions.persistence}
 				</span>
 			</Slider>
@@ -322,7 +322,7 @@
 				}}
 			>
 				<span>Scale</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{temperatureOptions.scale}
 				</span>
 			</Slider>
@@ -341,7 +341,7 @@
 				}}
 			>
 				<span>Octaves</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{temperatureOptions.octaves}
 				</span>
 			</Slider>
@@ -360,7 +360,7 @@
 				}}
 			>
 				<span>Amplitude</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{temperatureOptions.amplitude}
 				</span>
 			</Slider>
@@ -379,7 +379,7 @@
 				}}
 			>
 				<span>Frequency</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{temperatureOptions.frequency}
 				</span>
 			</Slider>
@@ -398,7 +398,7 @@
 				}}
 			>
 				<span>Persistence</span>
-				<span class="rounded-md bg-surface-backdrop-token py-0.5 px-1">
+				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
 					{temperatureOptions.persistence}
 				</span>
 			</Slider>
@@ -440,7 +440,7 @@
 					<div class="alert-message"><Info />{form?.message}</div>
 				</div>
 			{/if}
-			<button class="btn bg-primary-400-500-token rounded-md" disabled={!mapOptions.worldName}>
+			<button class="btn preset-filled-primary-500 rounded-md" disabled={!mapOptions.worldName}>
 				Save
 			</button>
 		</form>

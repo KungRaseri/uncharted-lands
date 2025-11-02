@@ -27,19 +27,19 @@
 		{/each}
 	</section>
 	<footer class="card-footer">
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Food Storage: {settlement.Storage.food}
 		</span>
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Water Storage: {settlement.Storage.water}
 		</span>
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Wood Storage: {settlement.Storage.wood}
 		</span>
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Stone Storage: {settlement.Storage.stone}
 		</span>
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Ore Storage: {settlement.Storage.ore}
 		</span>
 	</footer>

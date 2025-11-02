@@ -9,7 +9,7 @@
 </script>
 
 <div class="mx-auto w-96 m-1">
-	<div class="card p-3 rounded-md bg-surface-200-700-token">
+	<div class="card p-3 rounded-md bg-surface-200 dark:bg-surface-700">
 		<h2 class="px-3">New Server</h2>
 		<form
 			action="?/createServer"
@@ -62,7 +62,7 @@
 				</div>
 			{/if}
 
-			<button class="w-full p-2 btn bg-primary-400-500-token rounded-md">Create</button>
+			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md">Create</button>
 		</form>
 	</div>
 </div>

@@ -12,11 +12,11 @@
 	export let form: ActionData;
 </script>
 
-<div class="mx-auto w-full md:w-96 mt-2 lg:mt-5 bg-surface-200-700-token">
+<div class="mx-auto w-full md:w-96 mt-2 lg:mt-5 bg-surface-200 dark:bg-surface-700">
 	<div class="mx-auto w-full px-5 py-3">
 		<div class="flex">
 			<img class="w-20 py-5 mr-2" src="logo.png" alt="Workflow" />
-			<h1 class="mt-6 text-2xl tracking-tight font-bold text-token">
+			<h1 class="mt-6 text-2xl tracking-tight font-bold ">
 				Sign into your account
 			</h1>
 		</div>
@@ -74,7 +74,7 @@
 			{#if form?.email}
 				<div transition:slide class="hidden lg:block">
 					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
-						<div class="alert-message text-token justify-center items-center">
+						<div class="alert-message  justify-center items-center">
 							<Info size={24} />
 							<div class="grid grid-cols-1">
 								<span>{form?.incorrect ? 'Information is incorrect' : ''}</span>
@@ -84,7 +84,7 @@
 				</div>
 			{/if}
 
-			<button class="w-full p-2 btn bg-primary-400-500-token rounded-md"> Login </button>
+			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md"> Login </button>
 		</form>
 	</div>
 </div>

@@ -29,9 +29,9 @@
 				placeholder="Search..."
 				class="input"
 			/>
-			<a href="/admin/servers/create" class="btn bg-primary-400-500-token">
-				<span class="mx-1 px-0 py-3 text-token"><UserCog /></span>
-				<span class="mx-1 px-0 py-2 text-token">Edit</span>
+			<a href="/admin/servers/create" class="btn preset-filled-primary-500">
+				<span class="mx-1 px-0 py-3 "><UserCog /></span>
+				<span class="mx-1 px-0 py-2 ">Edit</span>
 			</a>
 		</div>
 		<div class="table-wrap">

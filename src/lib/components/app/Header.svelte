@@ -37,12 +37,12 @@
 						<a
 							href={link.route}
 							class="btn rounded-md
-								{link.isActive ? 'bg-primary-active-token' : ''}
+								{link.isActive ? 'bg-primary-600' : ''}
 								{$page.data.account.role !== link.requiredRole ? 'hidden' : ''}
-								bg-primary-hover-token
+								hover:bg-primary-500
 								"
 						>
-							<span class="text-token">
+							<span class="">
 								{link.name}
 							</span>
 						</a>
@@ -51,15 +51,15 @@
 					<a
 						href={link.route}
 						class="btn rounded-md
-							{link.isActive ? 'bg-primary-active-token' : ''}
+							{link.isActive ? 'bg-primary-600' : ''}
 							{$page.data.account && link.requiredRole && $page.data.account.role !== link.requiredRole
 							? 'hidden'
 							: ''}
-							bg-primary-hover-token
+							hover:bg-primary-500
 							"
 						aria-current={link.isActive ? 'page' : undefined}
 					>
-						<span class="text-token">
+						<span class="">
 							{link.name}
 						</span>
 					</a>
@@ -73,33 +73,33 @@
 			{#if !$page.data.account}
 				<a
 					href="/sign-in"
-					class="btn rounded-md text-token
-						bg-primary-hover-token
-						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-active-token' : ''}
+					class="btn rounded-md 
+						hover:bg-primary-500
+						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-600' : ''}
 						"
 					data-testid="header-signin"
 				>
-					<span class="text-token"> Sign in </span>
+					<span class=""> Sign in </span>
 				</a>
 				<a
 					href="/register"
 					class="btn rounded-md
-						{$page.route.id === '/(auth)/register' ? 'bg-primary-active-token' : ''}
-						bg-primary-hover-token
+						{$page.route.id === '/(auth)/register' ? 'bg-primary-600' : ''}
+						hover:bg-primary-500
 						"
 					data-testid="header-register"
 				>
-					<span class="text-token"> Register </span>
+					<span class=""> Register </span>
 				</a>
 			{:else}
 				<div>
-					<button type="button" class="btn-icon bg-surface-200-700-token m-0 p-0">
+					<button type="button" class="btn-icon bg-surface-200 dark:bg-surface-700 m-0 p-0">
 						<Bell size={24} />
 					</button>
 
 					<button
 						type="button"
-						class="btn-icon bg-surface-200-700-token m-0 p-0"
+						class="btn-icon bg-surface-200 dark:bg-surface-700 m-0 p-0"
 						id="user-menu-button"
 						aria-expanded={userMenuOpen}
 						aria-haspopup="true"
@@ -131,11 +131,11 @@
 									<a
 										href={link.route}
 										class="btn
-									{link.isActive ? 'bg-primary-active-token' : ''}
+									{link.isActive ? 'bg-primary-600' : ''}
 									"
 										aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
 									>
-										<span class="text-token">
+										<span class="">
 											{link.name}
 										</span>
 									</a>
@@ -143,7 +143,7 @@
 							{/each}
 							<form method="POST" action="/auth?/signout">
 								<button class="btn">
-									<span class="text-token"> Sign out </span>
+									<span class=""> Sign out </span>
 								</button>
 							</form>
 						</nav>
@@ -169,11 +169,11 @@
 				<a
 					href={link.route}
 					class="btn rounded-none
-						bg-primary-hover-token
+						hover:bg-primary-500
 						{$page.route.id === link.route ||
 					$page.route.id === `/(protected)${link.route}` ||
 					$page.route.id === `/(auth)${link.route}`
-						? 'bg-primary-active-token'
+						? 'bg-primary-600'
 						: ''}
 						"
 					onclick={() => {
@@ -181,7 +181,7 @@
 					}}
 					aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
 				>
-					<span class="text-token">
+					<span class="">
 						{link.name}
 					</span>
 				</a>

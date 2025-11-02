@@ -14,9 +14,9 @@
 	}>[];
 </script>
 
-<div class="grid grid-cols-10 p-0 border-token w-full xl:w-1/2 mx-auto">
+<div class="grid grid-cols-10 p-0 border-surface-300 dark:border-surface-600 w-full xl:w-1/2 mx-auto">
 	{#each regions as region}
-		<div class="p-0 border-token">
+		<div class="p-0 border-surface-300 dark:border-surface-600">
 			<div class="grid grid-cols-10 p-0">
 				<RegionComponent {region} />
 			</div>
