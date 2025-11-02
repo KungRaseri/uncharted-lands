@@ -19,11 +19,11 @@
 		error: 'bg-error-500/10 text-error-500'
 	};
 
-	const Component = href ? 'a' : 'div';
+	const ElementType = href ? 'a' : 'div';
 </script>
 
 <svelte:element
-	this={Component}
+	this={ElementType}
 	{href}
 	class="card preset-filled-surface-100-900 p-6 {href ? 'hover:preset-tonal-primary-500 transition-colors' : ''}"
 >
