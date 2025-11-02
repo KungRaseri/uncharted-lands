@@ -23,10 +23,12 @@
 
 <div class="card preset-filled-surface-100-900 p-6">
 	<div class="flex items-start gap-6">
-		<div class="flex-none w-16 h-16 rounded-full {colorClasses[iconColor]} flex items-center justify-center">
+		{#if icon}
 			{@const IconComponent = icon}
-			<IconComponent size={32} />
-		</div>
+			<div class="flex-none w-16 h-16 rounded-full {colorClasses[iconColor]} flex items-center justify-center">
+				<IconComponent size={32} />
+			</div>
+		{/if}
 
 		<div class="flex-1">
 			<h1 class="text-3xl font-bold mb-2">{title}</h1>

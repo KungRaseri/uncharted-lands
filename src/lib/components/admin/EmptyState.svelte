@@ -14,8 +14,10 @@
 </script>
 
 <div class="p-12 text-center">
-	{@const IconComponent = icon}
-	<IconComponent size={48} class="mx-auto mb-4 text-surface-400" />
+	{#if icon}
+		{@const IconComponent = icon}
+		<IconComponent size={48} class="mx-auto mb-4 text-surface-400" />
+	{/if}
 	<h3 class="text-xl font-semibold mb-2">{title}</h3>
 	<p class="text-surface-600 dark:text-surface-400 mb-4">{message}</p>
 	{#if actionHref && actionText}

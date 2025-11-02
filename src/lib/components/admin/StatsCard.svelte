@@ -32,9 +32,11 @@
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">{label}</p>
 			<p class="text-3xl font-bold">{value}</p>
 		</div>
-		<div class="p-3 {colorClasses[iconColor]} rounded-lg">
+		{#if icon}
 			{@const IconComponent = icon}
-			<IconComponent size={24} />
-		</div>
+			<div class="p-3 {colorClasses[iconColor]} rounded-lg">
+				<IconComponent size={24} />
+			</div>
+		{/if}
 	</div>
 </svelte:element>
