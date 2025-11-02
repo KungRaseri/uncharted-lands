@@ -2,9 +2,9 @@
 	import { arrows, Arrow } from '$lib/stores/game/arrows';
 	import ArrowComponent from '$lib/components/game/entities/Arrow.svelte';
 
-	let animState: string = 'idle';
+	let animState = $state<string>('idle');
 
-	let isAttacking = false;
+	let isAttacking = $state(false);
 
 	function handleAttack(type: string) {
 		animState = `attack-${type}`;
@@ -28,7 +28,6 @@
 			$arrows = $arrows.filter((t) => t.id !== id);
 		}, 500);
 	}
-	$: arrows;
 </script>
 
 <div class="p-2">
@@ -44,7 +43,7 @@
 		<button
 			disabled={isAttacking}
 			class="mb-2"
-			on:click={() => {
+			onclick={() => {
 				handleAttack('melee');
 			}}>Melee</button
 		>
@@ -52,7 +51,7 @@
 		<button
 			disabled={isAttacking}
 			class="mb-2"
-			on:click={() => {
+			onclick={() => {
 				handleAttack('ranged');
 			}}>Ranged</button
 		>

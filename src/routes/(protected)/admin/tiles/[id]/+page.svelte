@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import TileDetails from '$lib/components/admin/TileDetails.svelte';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 </script>
 
 <ol class="breadcrumb">

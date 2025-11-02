@@ -3,11 +3,11 @@
 
 	import { Globe } from 'lucide-svelte';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	let searchTerm = '';
+	let searchTerm = $state('');
 	
-	$: filteredWorlds = data.worlds.filter(world => {
+	let filteredWorlds = $derived(data.worlds.filter(world => {
 		if (!searchTerm) return true;
 		const search = searchTerm.toLowerCase();
 		return (
@@ -15,7 +15,7 @@
 			world.name.toLowerCase().includes(search) ||
 			world.server.name.toLowerCase().includes(search)
 		);
-	});
+	}));
 </script>
 
 <div class="m-1">

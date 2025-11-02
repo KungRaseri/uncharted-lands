@@ -5,7 +5,7 @@
 
 	import { Info } from 'lucide-svelte';
 
-	export let form: ActionData;
+	let { form }: { form: ActionData } = $props();
 </script>
 
 <div class="mx-auto w-96 m-1">

@@ -9,8 +9,7 @@
 	import { Info } from 'lucide-svelte';
 	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
 
-	export let data: PageData;
-	export let form: ActionData;
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let regions: Prisma.RegionGetPayload<{
 		include: { tiles: { include: { Biome: true; Plots: true } } };
@@ -68,7 +67,7 @@
 					class="input"
 					bind:value={mapOptions.worldName}
 					required
-					on:change={async () => {
+					onchange={async () => {
 						await generate();
 					}}
 				/>
@@ -93,7 +92,7 @@
 					type="number"
 					class="input"
 					bind:value={mapOptions.elevationSeed}
-					on:change={async () => {
+					onchange={async () => {
 						await generate();
 					}}
 				/>
@@ -109,7 +108,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={elevationOptions.octaves}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -129,7 +128,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={elevationOptions.amplitude}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -149,7 +148,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={elevationOptions.frequency}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -169,7 +168,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={elevationOptions.persistence}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -190,7 +189,7 @@
 					type="number"
 					class="input"
 					bind:value={mapOptions.precipitationSeed}
-					on:change={async () => {
+					onchange={async () => {
 						await generate();
 					}}
 				/>
@@ -205,7 +204,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.scale}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -224,7 +223,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.octaves}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -243,7 +242,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.amplitude}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -262,7 +261,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.frequency}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -281,7 +280,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={precipitationOptions.persistence}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -302,7 +301,7 @@
 					type="number"
 					class="input"
 					bind:value={mapOptions.temperatureSeed}
-					on:change={async () => {
+					onchange={async () => {
 						await generate();
 					}}
 				/>
@@ -317,7 +316,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.scale}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -336,7 +335,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.octaves}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -355,7 +354,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.amplitude}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -374,7 +373,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.frequency}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>
@@ -393,7 +392,7 @@
 				ticked
 				accent="accent-primary-500"
 				bind:value={temperatureOptions.persistence}
-				on:change={async () => {
+				onchange={async () => {
 					await generate();
 				}}
 			>

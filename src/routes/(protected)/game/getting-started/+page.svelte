@@ -7,7 +7,7 @@
 	import { invalidateAll } from '$app/navigation';
 
 	let selectedServer: string, selectedWorld: string, username: string;
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 </script>
 
 <div class="bg-surface-200 dark:bg-surface-700 mt-10 p-5 w-full md:w-1/2 mx-auto">

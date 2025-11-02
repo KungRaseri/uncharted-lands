@@ -1,18 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	let searchTerm = '';
+	let searchTerm = $state('');
 	
-	$: filteredTiles = data.tiles.filter(tile => {
+	let filteredTiles = $derived(data.tiles.filter(tile => {
 		if (!searchTerm) return true;
 		const search = searchTerm.toLowerCase();
 		return (
 			tile.id.toLowerCase().includes(search) ||
 			tile.type.toLowerCase().includes(search)
 		);
-	});
+	}));
 </script>
 
 <div class="m-1">

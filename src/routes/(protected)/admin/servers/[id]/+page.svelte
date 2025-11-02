@@ -2,7 +2,7 @@
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 </script>
 
 <div class="card p-4">

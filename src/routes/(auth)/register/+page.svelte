@@ -7,7 +7,7 @@
 
 	import { slide } from 'svelte/transition';
 
-	export let form: ActionData;
+	let { form }: { form: ActionData } = $props();
 </script>
 
 <div class="container mx-auto max-w-md mt-8 p-6">

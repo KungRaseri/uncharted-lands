@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	let searchTerm = '';
+	let searchTerm = $state('');
 	
-	$: filteredPlots = data.plots.filter(plot => {
+	let filteredPlots = $derived(data.plots.filter(plot => {
 		if (!searchTerm) return true;
 		const search = searchTerm.toLowerCase();
 		return (
@@ -13,7 +13,7 @@
 			plot.tileId.toLowerCase().includes(search) ||
 			(plot.Settlement?.id && plot.Settlement.id.toLowerCase().includes(search))
 		);
-	});
+	}));
 </script>
 
 <div class="m-1">

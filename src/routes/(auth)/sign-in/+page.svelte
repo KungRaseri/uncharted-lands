@@ -6,10 +6,9 @@
 	import { invalidateAll } from '$app/navigation';
 	import { slide } from 'svelte/transition';
 
-	let isRememberMeChecked = false;
+	let isRememberMeChecked = $state(false);
 
-	export let data: PageData;
-	export let form: ActionData;
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
 <div class="container mx-auto max-w-md mt-8 p-6">

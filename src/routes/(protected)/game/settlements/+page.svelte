@@ -1,18 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	let searchTerm = '';
+	let searchTerm = $state('');
 	
-	$: filteredSettlements = data.settlements.filter(settlement => {
+	let filteredSettlements = $derived(data.settlements.filter(settlement => {
 		if (!searchTerm) return true;
 		const search = searchTerm.toLowerCase();
 		return (
 			settlement.id.toLowerCase().includes(search) ||
 			settlement.name.toLowerCase().includes(search)
 		);
-	});
+	}));
 </script>
 
 <div class="m-1">

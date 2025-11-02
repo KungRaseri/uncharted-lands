@@ -4,11 +4,11 @@
 
 	import { UserCog } from 'lucide-svelte';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	let searchTerm = '';
+	let searchTerm = $state('');
 	
-	$: filteredAccounts = data.accounts.filter(account => {
+	let filteredAccounts = $derived(data.accounts.filter(account => {
 		if (!searchTerm) return true;
 		const search = searchTerm.toLowerCase();
 		return (
@@ -16,7 +16,7 @@
 			account.email.toLowerCase().includes(search) ||
 			account.role.toLowerCase().includes(search)
 		);
-	});
+	}));
 </script>
 
 <div class="m-1">

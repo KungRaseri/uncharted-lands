@@ -3,7 +3,7 @@
 	import TileDetails from '$lib/components/admin/TileDetails.svelte';
 	import SettlementDetails from '$lib/components/admin/SettlementDetails.svelte';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 </script>
 
 <ol class="breadcrumb">

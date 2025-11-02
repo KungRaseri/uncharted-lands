@@ -2,9 +2,9 @@
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	$: profile = data.account.profile;
+	let profile = $derived(data.account.profile);
 </script>
 
 <ol class="breadcrumb">

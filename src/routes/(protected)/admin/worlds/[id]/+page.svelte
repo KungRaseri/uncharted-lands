@@ -2,7 +2,7 @@
 	import WorldDetails from '$lib/components/admin/WorldDetails.svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 </script>
 
 <ol class="breadcrumb m-1">
