@@ -2,17 +2,21 @@
 	import type { Prisma, Settlement } from '@prisma/client';
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
 
-	export let settlement: Prisma.SettlementGetPayload<{
-		include: {
-			PlayerProfile: {
-				include: {
-					profile: true;
+	type Props = {
+		settlement: Prisma.SettlementGetPayload<{
+			include: {
+				PlayerProfile: {
+					include: {
+						profile: true;
+					};
 				};
+				Storage: true;
+				Structures: true;
 			};
-			Storage: true;
-			Structures: true;
-		};
-	}>;
+		}>;
+	};
+
+	let { settlement }: Props = $props();
 </script>
 
 <div class="card">

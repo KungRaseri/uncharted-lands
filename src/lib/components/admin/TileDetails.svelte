@@ -2,7 +2,11 @@
 	import type { Prisma, Tile } from '@prisma/client';
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
 
-	export let tile: Prisma.TileGetPayload<{ include: { Biome: true } }>;
+	type Props = {
+		tile: Prisma.TileGetPayload<{ include: { Biome: true } }>;
+	};
+
+	let { tile }: Props = $props();
 </script>
 
 <div class="card">

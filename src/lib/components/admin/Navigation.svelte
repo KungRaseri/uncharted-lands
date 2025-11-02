@@ -33,7 +33,10 @@
 			icon: FolderSearch
 		}
 	];
-	$: isActive = (href: string) => (href === $page.url.pathname ? 'bg-primary-500 dark:bg-primary-600' : '');
+	
+	let isActive = $derived.by(() => {
+		return (href: string) => (href === $page.url.pathname ? 'bg-primary-500 dark:bg-primary-600' : '');
+	});
 </script>
 
 <nav class="flex flex-col w-16 sm:w-20 bg-surface-100 dark:bg-surface-800 h-full">
