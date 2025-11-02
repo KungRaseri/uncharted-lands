@@ -12,11 +12,11 @@
 	export let form: ActionData;
 </script>
 
-<div class="mx-auto w-full md:w-96 mt-2 lg:mt-5 bg-surface-200 dark:bg-surface-700">
-	<div class="mx-auto w-full px-5 py-3">
-		<div class="flex">
-			<img class="w-20 py-5 mr-2" src="logo.png" alt="Workflow" />
-			<h1 class="mt-6 text-2xl tracking-tight font-bold ">
+<div class="container mx-auto max-w-md mt-8 p-6">
+	<div class="card preset-filled-surface-100-900 p-8 space-y-6">
+		<div class="flex items-center gap-4">
+			<img class="w-20" src="/logo.png" alt="Uncharted Lands" />
+			<h1 class="text-2xl font-bold">
 				Sign into your account
 			</h1>
 		</div>
