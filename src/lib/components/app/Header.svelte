@@ -89,7 +89,7 @@
 			{#if !$page.data?.account}
 				<a
 					href="/sign-in"
-					class="btn rounded-md 
+					class="btn rounded-md
 						hover:bg-primary-500
 						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-600' : ''}
 						"
@@ -109,7 +109,7 @@
 				</a>
 			{:else}
 				<!-- Notifications Button -->
-				<button type="button" class="btn-icon preset-filled-surface-500 w-10 h-10 p-2">
+				<button type="button" class="btn-icon preset-filled-surface-500 rounded-full">
 					<Bell size={20} />
 				</button>
 
@@ -117,19 +117,25 @@
 				<div class="relative" bind:this={userMenuRef}>
 					<button
 						type="button"
-						class="btn-icon preset-filled-surface-500 w-10 h-10 p-2"
+						class="btn-icon preset-filled-surface-500 rounded-full"
 						id="user-menu-button"
 						aria-expanded={userMenuOpen}
 						aria-haspopup="true"
-						onclick={() => { userMenuOpen = !userMenuOpen; }}
+						onclick={() => {
+							userMenuOpen = !userMenuOpen;
+						}}
 					>
 						{#if $page.data?.account?.profile?.picture}
-							<img class="w-6 h-6 rounded-full object-cover" src={$page.data.account.profile.picture} alt="Profile" />
+							<img
+								class="w-6 h-6 rounded-full object-cover"
+								src={$page.data.account.profile.picture}
+								alt="Profile"
+							/>
 						{:else}
 							<User size={20} />
 						{/if}
 					</button>
-					
+
 					{#if userMenuOpen}
 						<div
 							transition:slide
@@ -149,7 +155,9 @@
 													{link.isActive ? 'preset-filled-primary-500' : 'hover:preset-tonal-surface-500'}
 												"
 												aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
-												onclick={() => { userMenuOpen = false; }}
+												onclick={() => {
+													userMenuOpen = false;
+												}}
 											>
 												{link.name}
 											</a>
@@ -161,7 +169,10 @@
 								</li>
 								<li>
 									<form method="POST" action="/auth?/signout">
-										<button type="submit" class="btn w-full justify-start rounded-md hover:preset-tonal-error-500">
+										<button
+											type="submit"
+											class="btn w-full justify-start rounded-md hover:preset-tonal-error-500"
+										>
 											Sign out
 										</button>
 									</form>
