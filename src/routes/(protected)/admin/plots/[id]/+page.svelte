@@ -37,28 +37,28 @@
 
 			<div class="card m-0 p-3">
 				<div class="">
-					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+					<span class="badge preset-filled-secondary-500">
 						Area: {data.plot.area}
 					</span>
-					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+					<span class="badge preset-filled-secondary-500">
 						Solar: {data.plot.solar}
 					</span>
-					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+					<span class="badge preset-filled-secondary-500">
 						Wind: {data.plot.wind}
 					</span>
-					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+					<span class="badge preset-filled-secondary-500">
 						Food: {data.plot.food}
 					</span>
-					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+					<span class="badge preset-filled-secondary-500">
 						Water: {data.plot.water}
 					</span>
-					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+					<span class="badge preset-filled-secondary-500">
 						Wood: {data.plot.wood}
 					</span>
-					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+					<span class="badge preset-filled-secondary-500">
 						Stone: {data.plot.stone}
 					</span>
-					<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+					<span class="badge preset-filled-secondary-500">
 						Ore: {data.plot.ore}
 					</span>
 				</div>

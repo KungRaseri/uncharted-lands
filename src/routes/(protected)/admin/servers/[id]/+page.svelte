@@ -27,7 +27,7 @@
 					<h2 class="text-2xl">
 						<a href="/admin/worlds/{world.id}/">{world.name}</a>
 					</h2>
-					<span class="text-xs py-2 text-token">{world.id}</span>
+					<span class="text-xs py-2">{world.id}</span>
 				</header>
 				<hr class="m-2" />
 				<div class="p-4 grid grid-cols-1">
@@ -49,7 +49,7 @@
 					<h2 class="text-2xl">
 						<a href="/admin/accounts/{player.profile.accountId}/">{player.profile.username}</a>
 					</h2>
-					<span class="text-xs py-2 text-token">{player.profileId}</span>
+					<span class="text-xs py-2">{player.profileId}</span>
 				</header>
 				<hr class="m-2" />
 			</div>
