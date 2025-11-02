@@ -57,18 +57,18 @@
 			</label>
 
 			<div class="flex justify-around items-center">
-				<label for="remember_me" class="label">
+				<label for="remember_me" class="label flex-row items-center gap-2">
 					<input
 						id="remember_me"
 						name="remember_me"
 						type="checkbox"
 						class="checkbox"
-						bind:value={isRememberMeChecked}
+						bind:checked={isRememberMeChecked}
 					/>
-					<span class="">Remember me</span>
+					<span>Remember me</span>
 				</label>
 
-				<a href="forgot-password" class="font-medium">Forgot your password?</a>
+				<a href="forgot-password" class="font-medium hover:underline">Forgot your password?</a>
 			</div>
 
 			{#if form?.email}
