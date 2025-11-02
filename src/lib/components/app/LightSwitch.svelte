@@ -4,11 +4,14 @@
 	import { onMount } from 'svelte';
 
 	let checked = $state(false);
+	let mounted = $state(false);
 
 	// Initialize from localStorage on mount
 	onMount(() => {
 		const mode = localStorage.getItem('mode') || 'light';
 		checked = mode === 'dark';
+		document.documentElement.setAttribute('data-mode', mode);
+		mounted = true;
 	});
 
 	// Handle theme change
@@ -23,8 +26,11 @@
 <!-- Script to run before hydration to prevent flash -->
 <svelte:head>
 	<script>
-		const mode = localStorage.getItem('mode') || 'light';
-		document.documentElement.setAttribute('data-mode', mode);
+		// Initialize theme immediately to prevent flash
+		(function() {
+			const mode = localStorage.getItem('mode') || 'light';
+			document.documentElement.setAttribute('data-mode', mode);
+		})();
 	</script>
 </svelte:head>
 

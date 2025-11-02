@@ -14,3 +14,20 @@ body {
     overflow: hidden;
     font-family: 'Titillium Web', sans-serif;
 }
+
+/* Apply theme background and text colors */
+html {
+    background-color: var(--color-surface-50);
+    color: var(--color-surface-950);
+}
+
+html[data-mode="dark"] {
+    background-color: var(--color-surface-950);
+    color: var(--color-surface-50);
+}
+
+/* Ensure body inherits properly */
+body {
+    background-color: inherit;
+    color: inherit;
+}
