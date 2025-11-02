@@ -3,18 +3,17 @@ import { db } from "$lib/db"
 
 export const load: PageServerLoad = async () => {
     return {
-        servers: db.server.findMany({
+        servers: await db.server.findMany({
             include: {
-                worlds: {
-                    include: {
-                        regions: true
-                    }
-                },
-                players: {
-                    include: {
-                        settlements: true
+                _count: {
+                    select: {
+                        worlds: true,
+                        players: true
                     }
                 }
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         })
     }
