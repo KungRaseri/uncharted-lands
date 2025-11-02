@@ -66,6 +66,7 @@
     "prettier-plugin-svelte": "^3.2.7",
     "prisma": "^4.13.0",
     "redis": "^4.7.0",
+    "sass-embedded": "^1.93.3",
     "simplex-noise": "^4.0.3",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
