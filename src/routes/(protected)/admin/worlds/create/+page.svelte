@@ -94,69 +94,117 @@
 				/>
 			</label>
 
-			<Slider
-				step={1}
-				min={1}
-				max={16}
-				value={[elevationOptions.octaves]}
-				onValueChange={(details) => {
-					elevationOptions.octaves = details.value[0];
-					generate();
-				}}
-			>
-				<span> Octaves </span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{elevationOptions.octaves}
-				</span>
-			</Slider>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Octaves</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{elevationOptions.octaves}
+					</span>
+				</div>
+				<Slider
+					step={1}
+					min={1}
+					max={16}
+					value={[elevationOptions.octaves]}
+					onValueChange={(details) => {
+						elevationOptions.octaves = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
 
-			<Slider
-				step={0.1}
-				min={1}
-				max={5}
-				value={[elevationOptions.amplitude]}
-				onValueChange={(details) => {
-					elevationOptions.amplitude = details.value[0];
-					generate();
-				}}
-			>
-				<span> Amplitude </span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{elevationOptions.amplitude}
-				</span>
-			</Slider>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Amplitude</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{elevationOptions.amplitude}
+					</span>
+				</div>
+				<Slider
+					step={0.1}
+					min={1}
+					max={5}
+					value={[elevationOptions.amplitude]}
+					onValueChange={(details) => {
+						elevationOptions.amplitude = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
 
-			<Slider
-				step={0.01}
-				min={0.01}
-				max={1}
-				value={[elevationOptions.frequency]}
-				onValueChange={(details) => {
-					elevationOptions.frequency = details.value[0];
-					generate();
-				}}
-			>
-				<span> Frequency </span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{elevationOptions.frequency}
-				</span>
-			</Slider>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Frequency</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{elevationOptions.frequency}
+					</span>
+				</div>
+				<Slider
+					step={0.01}
+					min={0.01}
+					max={1}
+					value={[elevationOptions.frequency]}
+					onValueChange={(details) => {
+						elevationOptions.frequency = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
 
-			<Slider
-				step={0.01}
-				min={0.01}
-				max={1}
-				value={[elevationOptions.persistence]}
-				onValueChange={(details) => {
-					elevationOptions.persistence = details.value[0];
-					generate();
-				}}
-			>
-				<span> Persistence </span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{elevationOptions.persistence}
-				</span>
-			</Slider>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Persistence</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{elevationOptions.persistence}
+					</span>
+				</div>
+				<Slider
+					step={0.01}
+					min={0.01}
+					max={1}
+					value={[elevationOptions.persistence]}
+					onValueChange={(details) => {
+						elevationOptions.persistence = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
 		</div>
 
 		<h2>Precipitation</h2>
@@ -172,81 +220,141 @@
 					}}
 				/>
 			</label>
-			<Slider
-				step={0.01}
-				min={0.01}
-				max={1}
-				value={[precipitationOptions.scale]}
-				onValueChange={(details) => {
-					precipitationOptions.scale = details.value[0];
-					generate();
-				}}
-			>
-				<span>Scale</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{precipitationOptions.scale}
-				</span>
-			</Slider>
-			<Slider
-				step={1}
-				min={1}
-				max={16}
-				value={[precipitationOptions.octaves]}
-				onValueChange={(details) => {
-					precipitationOptions.octaves = details.value[0];
-					generate();
-				}}
-			>
-				<span>Octaves</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{precipitationOptions.octaves}
-				</span>
-			</Slider>
-			<Slider
-				step={0.1}
-				min={1}
-				max={5}
-				value={[precipitationOptions.amplitude]}
-				onValueChange={(details) => {
-					precipitationOptions.amplitude = details.value[0];
-					generate();
-				}}
-			>
-				<span>Amplitude</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{precipitationOptions.amplitude}
-				</span>
-			</Slider>
-			<Slider
-				step={0.01}
-				min={0.01}
-				max={1}
-				value={[precipitationOptions.frequency]}
-				onValueChange={(details) => {
-					precipitationOptions.frequency = details.value[0];
-					generate();
-				}}
-			>
-				<span>Frequency</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{precipitationOptions.frequency}
-				</span>
-			</Slider>
-			<Slider
-				step={0.01}
-				min={0.01}
-				max={1}
-				value={[precipitationOptions.persistence]}
-				onValueChange={(details) => {
-					precipitationOptions.persistence = details.value[0];
-					generate();
-				}}
-			>
-				<span>Persistence</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{precipitationOptions.persistence}
-				</span>
-			</Slider>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Scale</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{precipitationOptions.scale}
+					</span>
+				</div>
+				<Slider
+					step={0.01}
+					min={0.01}
+					max={1}
+					value={[precipitationOptions.scale]}
+					onValueChange={(details) => {
+						precipitationOptions.scale = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Octaves</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{precipitationOptions.octaves}
+					</span>
+				</div>
+				<Slider
+					step={1}
+					min={1}
+					max={16}
+					value={[precipitationOptions.octaves]}
+					onValueChange={(details) => {
+						precipitationOptions.octaves = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Amplitude</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{precipitationOptions.amplitude}
+					</span>
+				</div>
+				<Slider
+					step={0.1}
+					min={1}
+					max={5}
+					value={[precipitationOptions.amplitude]}
+					onValueChange={(details) => {
+						precipitationOptions.amplitude = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Frequency</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{precipitationOptions.frequency}
+					</span>
+				</div>
+				<Slider
+					step={0.01}
+					min={0.01}
+					max={1}
+					value={[precipitationOptions.frequency]}
+					onValueChange={(details) => {
+						precipitationOptions.frequency = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Persistence</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{precipitationOptions.persistence}
+					</span>
+				</div>
+				<Slider
+					step={0.01}
+					min={0.01}
+					max={1}
+					value={[precipitationOptions.persistence]}
+					onValueChange={(details) => {
+						precipitationOptions.persistence = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
 		</div>
 
 		<h2>Temperature</h2>
@@ -262,81 +370,141 @@
 					}}
 				/>
 			</label>
-			<Slider
-				step={0.01}
-				min={0.01}
-				max={1}
-				value={[temperatureOptions.scale]}
-				onValueChange={(details) => {
-					temperatureOptions.scale = details.value[0];
-					generate();
-				}}
-			>
-				<span>Scale</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{temperatureOptions.scale}
-				</span>
-			</Slider>
-			<Slider
-				step={1}
-				min={1}
-				max={16}
-				value={[temperatureOptions.octaves]}
-				onValueChange={(details) => {
-					temperatureOptions.octaves = details.value[0];
-					generate();
-				}}
-			>
-				<span>Octaves</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{temperatureOptions.octaves}
-				</span>
-			</Slider>
-			<Slider
-				step={0.1}
-				min={1}
-				max={5}
-				value={[temperatureOptions.amplitude]}
-				onValueChange={(details) => {
-					temperatureOptions.amplitude = details.value[0];
-					generate();
-				}}
-			>
-				<span>Amplitude</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{temperatureOptions.amplitude}
-				</span>
-			</Slider>
-			<Slider
-				step={0.01}
-				min={0.01}
-				max={1}
-				value={[temperatureOptions.frequency]}
-				onValueChange={(details) => {
-					temperatureOptions.frequency = details.value[0];
-					generate();
-				}}
-			>
-				<span>Frequency</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{temperatureOptions.frequency}
-				</span>
-			</Slider>
-			<Slider
-				step={0.01}
-				min={0.01}
-				max={1}
-				value={[temperatureOptions.persistence]}
-				onValueChange={(details) => {
-					temperatureOptions.persistence = details.value[0];
-					generate();
-				}}
-			>
-				<span>Persistence</span>
-				<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-					{temperatureOptions.persistence}
-				</span>
-			</Slider>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Scale</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{temperatureOptions.scale}
+					</span>
+				</div>
+				<Slider
+					step={0.01}
+					min={0.01}
+					max={1}
+					value={[temperatureOptions.scale]}
+					onValueChange={(details) => {
+						temperatureOptions.scale = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Octaves</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{temperatureOptions.octaves}
+					</span>
+				</div>
+				<Slider
+					step={1}
+					min={1}
+					max={16}
+					value={[temperatureOptions.octaves]}
+					onValueChange={(details) => {
+						temperatureOptions.octaves = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Amplitude</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{temperatureOptions.amplitude}
+					</span>
+				</div>
+				<Slider
+					step={0.1}
+					min={1}
+					max={5}
+					value={[temperatureOptions.amplitude]}
+					onValueChange={(details) => {
+						temperatureOptions.amplitude = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Frequency</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{temperatureOptions.frequency}
+					</span>
+				</div>
+				<Slider
+					step={0.01}
+					min={0.01}
+					max={1}
+					value={[temperatureOptions.frequency]}
+					onValueChange={(details) => {
+						temperatureOptions.frequency = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span>Persistence</span>
+					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
+						{temperatureOptions.persistence}
+					</span>
+				</div>
+				<Slider
+					step={0.01}
+					min={0.01}
+					max={1}
+					value={[temperatureOptions.persistence]}
+					onValueChange={(details) => {
+						temperatureOptions.persistence = details.value[0];
+						generate();
+					}}
+				>
+					<Slider.Control>
+						<Slider.Track>
+							<Slider.Range />
+						</Slider.Track>
+						<Slider.Thumb index={0}>
+							<Slider.HiddenInput />
+						</Slider.Thumb>
+					</Slider.Control>
+				</Slider>
+			</div>
 		</div>
 
 		<form
