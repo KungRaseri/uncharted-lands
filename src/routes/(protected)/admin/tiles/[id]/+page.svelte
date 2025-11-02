@@ -10,9 +10,17 @@
 	<div class="flex items-center gap-2 text-sm">
 		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Dashboard</a>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/tiles" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Tiles</a>
+		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Worlds</a>
 		<span class="text-surface-400">/</span>
-		<span class="font-semibold">Tile Details</span>
+		<a href="/admin/worlds/{data.tile.Region.world.id}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.tile.Region.world.name}</a>
+		<span class="text-surface-400">/</span>
+		<span class="text-surface-600 dark:text-surface-400">Regions</span>
+		<span class="text-surface-400">/</span>
+		<a href="/admin/regions/{data.tile.Region.id}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.tile.Region.name}</a>
+		<span class="text-surface-400">/</span>
+		<span class="text-surface-600 dark:text-surface-400">Tiles</span>
+		<span class="text-surface-400">/</span>
+		<span class="font-semibold">{data.tile.type} Tile</span>
 	</div>
 
 	<!-- Tile Header -->
@@ -112,9 +120,9 @@
 
 	<!-- Back Button -->
 	<div>
-		<a href="/admin/tiles" class="btn preset-tonal-surface-500 rounded-md">
+		<a href="/admin/regions/{data.tile.Region.id}" class="btn preset-tonal-surface-500 rounded-md">
 			<ArrowLeft size={20} />
-			<span>Back to Tiles</span>
+			<span>Back to {data.tile.Region.name}</span>
 		</a>
 	</div>
 </div>

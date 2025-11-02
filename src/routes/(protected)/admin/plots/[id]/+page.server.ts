@@ -23,7 +23,11 @@ export const load: PageServerLoad = async ({ params }) => {
             Tile: {
                 include: {
                     Biome: true,
-                    Region: true
+                    Region: {
+                        include: {
+                            world: true
+                        }
+                    }
                 }
             }
         }

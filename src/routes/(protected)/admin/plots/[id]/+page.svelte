@@ -21,9 +21,21 @@
 	<div class="flex items-center gap-2 text-sm">
 		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Dashboard</a>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/plots" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Plots</a>
+		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Worlds</a>
 		<span class="text-surface-400">/</span>
-		<span class="font-semibold">Plot Details</span>
+		<a href="/admin/worlds/{data.plot.Tile.Region.world.id}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.plot.Tile.Region.world.name}</a>
+		<span class="text-surface-400">/</span>
+		<span class="text-surface-600 dark:text-surface-400">Regions</span>
+		<span class="text-surface-400">/</span>
+		<a href="/admin/regions/{data.plot.Tile.Region.id}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.plot.Tile.Region.name}</a>
+		<span class="text-surface-400">/</span>
+		<span class="text-surface-600 dark:text-surface-400">Tiles</span>
+		<span class="text-surface-400">/</span>
+		<a href="/admin/tiles/{data.plot.Tile.id}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.plot.Tile.type} Tile</a>
+		<span class="text-surface-400">/</span>
+		<span class="text-surface-600 dark:text-surface-400">Plots</span>
+		<span class="text-surface-400">/</span>
+		<span class="font-semibold">Plot</span>
 	</div>
 
 	<!-- Plot Header -->
@@ -60,85 +72,27 @@
 		<h2 class="text-xl font-bold mb-4">Resources</h2>
 		
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-			<div class="card preset-tonal-surface-500 p-4">
-				<div class="flex items-center gap-3 mb-2">
-					<div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
-						<svelte:component this={resourceIcons.area} size={16} class="text-primary-500" />
+			{#each [
+				{ key: 'area', label: 'Area', value: data.plot.area, color: 'primary' },
+				{ key: 'solar', label: 'Solar', value: data.plot.solar, color: 'warning' },
+				{ key: 'wind', label: 'Wind', value: data.plot.wind, color: 'primary' },
+				{ key: 'food', label: 'Food', value: data.plot.food, color: 'success' },
+				{ key: 'water', label: 'Water', value: data.plot.water, color: 'primary' },
+				{ key: 'wood', label: 'Wood', value: data.plot.wood, color: 'success' },
+				{ key: 'stone', label: 'Stone', value: data.plot.stone, color: 'surface' },
+				{ key: 'ore', label: 'Ore', value: data.plot.ore, color: 'warning' }
+			] as resource}
+				{@const IconComponent = resourceIcons[resource.key]}
+				<div class="card preset-tonal-surface-500 p-4">
+					<div class="flex items-center gap-3 mb-2">
+						<div class="w-8 h-8 rounded-lg bg-{resource.color}-500/10 flex items-center justify-center">
+							<IconComponent size={16} class="text-{resource.color}-500" />
+						</div>
+						<span class="text-sm font-semibold">{resource.label}</span>
 					</div>
-					<span class="text-sm font-semibold">Area</span>
+					<p class="text-xl font-bold">{resource.value}</p>
 				</div>
-				<p class="text-xl font-bold">{data.plot.area}</p>
-			</div>
-
-			<div class="card preset-tonal-surface-500 p-4">
-				<div class="flex items-center gap-3 mb-2">
-					<div class="w-8 h-8 rounded-lg bg-warning-500/10 flex items-center justify-center">
-						<svelte:component this={resourceIcons.solar} size={16} class="text-warning-500" />
-					</div>
-					<span class="text-sm font-semibold">Solar</span>
-				</div>
-				<p class="text-xl font-bold">{data.plot.solar}</p>
-			</div>
-
-			<div class="card preset-tonal-surface-500 p-4">
-				<div class="flex items-center gap-3 mb-2">
-					<div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
-						<svelte:component this={resourceIcons.wind} size={16} class="text-primary-500" />
-					</div>
-					<span class="text-sm font-semibold">Wind</span>
-				</div>
-				<p class="text-xl font-bold">{data.plot.wind}</p>
-			</div>
-
-			<div class="card preset-tonal-surface-500 p-4">
-				<div class="flex items-center gap-3 mb-2">
-					<div class="w-8 h-8 rounded-lg bg-success-500/10 flex items-center justify-center">
-						<svelte:component this={resourceIcons.food} size={16} class="text-success-500" />
-					</div>
-					<span class="text-sm font-semibold">Food</span>
-				</div>
-				<p class="text-xl font-bold">{data.plot.food}</p>
-			</div>
-
-			<div class="card preset-tonal-surface-500 p-4">
-				<div class="flex items-center gap-3 mb-2">
-					<div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
-						<svelte:component this={resourceIcons.water} size={16} class="text-primary-500" />
-					</div>
-					<span class="text-sm font-semibold">Water</span>
-				</div>
-				<p class="text-xl font-bold">{data.plot.water}</p>
-			</div>
-
-			<div class="card preset-tonal-surface-500 p-4">
-				<div class="flex items-center gap-3 mb-2">
-					<div class="w-8 h-8 rounded-lg bg-success-500/10 flex items-center justify-center">
-						<svelte:component this={resourceIcons.wood} size={16} class="text-success-500" />
-					</div>
-					<span class="text-sm font-semibold">Wood</span>
-				</div>
-				<p class="text-xl font-bold">{data.plot.wood}</p>
-			</div>
-
-			<div class="card preset-tonal-surface-500 p-4">
-				<div class="flex items-center gap-3 mb-2">
-					<div class="w-8 h-8 rounded-lg bg-surface-500/10 flex items-center justify-center">
-						<svelte:component this={resourceIcons.stone} size={16} class="text-surface-500" />
-					</div>
-					<span class="text-sm font-semibold">Stone</span>
-				</div>
-				<p class="text-xl font-bold">{data.plot.stone}</p>
-			</div>
-
-			<div class="card preset-tonal-surface-500 p-4">
-				<div class="flex items-center gap-3 mb-2">
-					<div class="w-8 h-8 rounded-lg bg-warning-500/10 flex items-center justify-center">
-						<svelte:component this={resourceIcons.ore} size={16} class="text-warning-500" />
-					</div>
-					<span class="text-sm font-semibold">Ore</span>
-				</div>
-				<p class="text-xl font-bold">{data.plot.ore}</p>
-			</div>
+			{/each}
 		</div>
 	</div>
 
@@ -212,9 +166,9 @@
 
 	<!-- Back Button -->
 	<div>
-		<a href="/admin/plots" class="btn preset-tonal-surface-500 rounded-md">
+		<a href="/admin/tiles/{data.plot.Tile.id}" class="btn preset-tonal-surface-500 rounded-md">
 			<ArrowLeft size={20} />
-			<span>Back to Plots</span>
+			<span>Back to {data.plot.Tile.type} Tile</span>
 		</a>
 	</div>
 </div>

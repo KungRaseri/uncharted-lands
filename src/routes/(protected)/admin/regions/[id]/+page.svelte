@@ -10,7 +10,11 @@
 	<div class="flex items-center gap-2 text-sm">
 		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Dashboard</a>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/regions" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Regions</a>
+		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Worlds</a>
+		<span class="text-surface-400">/</span>
+		<a href="/admin/worlds/{data.region.worldId}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.region.world.name}</a>
+		<span class="text-surface-400">/</span>
+		<span class="text-surface-600 dark:text-surface-400">Regions</span>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">{data.region.name || 'Region'}</span>
 	</div>
@@ -89,9 +93,9 @@
 
 	<!-- Back Button -->
 	<div>
-		<a href="/admin/regions" class="btn preset-tonal-surface-500 rounded-md">
+		<a href="/admin/worlds/{data.region.worldId}" class="btn preset-tonal-surface-500 rounded-md">
 			<ArrowLeft size={20} />
-			<span>Back to Regions</span>
+			<span>Back to {data.region.world.name}</span>
 		</a>
 	</div>
 </div>
