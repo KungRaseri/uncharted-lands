@@ -31,14 +31,14 @@
 			</button>
 		</div>
 		<div class="hidden sm:flex gap-2">
-			{#each $page.data.mainMenuLinks as link}
+			{#each $page.data?.mainMenuLinks ?? [] as link}
 				{#if link.requiredRole}
-					{#if $page.data.account}
+					{#if $page.data?.account}
 						<a
 							href={link.route}
 							class="btn rounded-md
 								{link.isActive ? 'bg-primary-600' : ''}
-								{$page.data.account.role !== link.requiredRole ? 'hidden' : ''}
+								{$page.data?.account?.role !== link.requiredRole ? 'hidden' : ''}
 								hover:bg-primary-500
 								"
 						>
@@ -52,7 +52,7 @@
 						href={link.route}
 						class="btn rounded-md
 							{link.isActive ? 'bg-primary-600' : ''}
-							{$page.data.account && link.requiredRole && $page.data.account.role !== link.requiredRole
+							{$page.data?.account && link.requiredRole && $page.data?.account?.role !== link.requiredRole
 							? 'hidden'
 							: ''}
 							hover:bg-primary-500
@@ -70,7 +70,7 @@
 		<!-- Trail slot -->
 		<div class="flex items-center justify-end gap-2">
 			<LightSwitch />
-			{#if !$page.data.account}
+			{#if !$page.data?.account}
 				<a
 					href="/sign-in"
 					class="btn rounded-md 
@@ -105,7 +105,7 @@
 						aria-haspopup="true"
 						onclick={() => { userMenuOpen = !userMenuOpen; }}
 					>
-						{#if $page.data.account.profile?.picture}
+						{#if $page.data?.account?.profile?.picture}
 							<img class="w-6 rounded-full" src={$page.data.account.profile.picture} alt="" />
 						{:else}
 							<div class="w-6 items-center justify-center mx-auto">
@@ -122,9 +122,9 @@
 							aria-labelledby="user-menu-button"
 							tabindex="-1"
 						>
-							{#each $page.data.userMenuLinks as link}
+							{#each $page.data?.userMenuLinks ?? [] as link}
 								<div
-									class="{link.requiredRole && link.requiredRole !== $page.data.account.role
+									class="{link.requiredRole && link.requiredRole !== $page.data?.account?.role
 										? 'hidden'
 										: ''}							"
 								>
@@ -165,7 +165,7 @@
 		aria-labelledby="main-menu-button"
 	>
 		<div class="m-0 p-0 space-y-0 btn-group-vertical w-full rounded-none">
-			{#each $page.data.mainMenuLinks as link}
+			{#each $page.data?.mainMenuLinks ?? [] as link}
 				<a
 					href={link.route}
 					class="btn rounded-none
