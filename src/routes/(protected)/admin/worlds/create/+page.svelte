@@ -11,43 +11,43 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	let regions: Prisma.RegionGetPayload<{
+	let regions = $state<Prisma.RegionGetPayload<{
 		include: { tiles: { include: { Biome: true; Plots: true } } };
-	}>[] = [];
+	}>[]>([]);
 
-	let elevationOptions = {
+	let elevationOptions = $state({
 		scale: 1,
 		octaves: 8,
 		amplitude: 1,
 		frequency: 0.05,
 		persistence: 0.5
-	};
+	});
 
-	let precipitationOptions = {
+	let precipitationOptions = $state({
 		scale: 1,
 		octaves: 8,
 		amplitude: 1,
 		frequency: 0.05,
 		persistence: 0.5
-	};
+	});
 
-	let temperatureOptions = {
+	let temperatureOptions = $state({
 		scale: 1,
 		octaves: 8,
 		amplitude: 1,
 		frequency: 0.05,
 		persistence: 0.5
-	};
+	});
 
-	let mapOptions = {
-		serverId: data.servers[0].id,
+	let mapOptions = $state({
+		serverId: data.servers[0]?.id || '',
 		worldName: '',
 		width: 100,
 		height: 100,
 		elevationSeed: Date.now(),
 		precipitationSeed: Date.now(),
 		temperatureSeed: Date.now()
-	};
+	});
 
 	async function generate() {}
 </script>
@@ -61,8 +61,6 @@
 			<label for="world-name" class="label">
 				<span>World Name</span>
 				<input
-					id="world-name"
-					name="world-name"
 					type="text"
 					class="input"
 					bind:value={mapOptions.worldName}
@@ -74,7 +72,7 @@
 			</label>
 			<label for="server-id" class="label">
 				<span>Server ID</span>
-				<select id="server-id" name="server-id" class="select" bind:value={mapOptions.serverId}>
+				<select class="select" bind:value={mapOptions.serverId}>
 					{#each data.servers as server, i}
 						<option value={server.id}> {server.name}</option>
 					{/each}
@@ -87,8 +85,6 @@
 			<label for="elevation-seed" class="label">
 				<span>Seed</span>
 				<input
-					id="elevation-seed"
-					name="elevation-seed"
 					type="number"
 					class="input"
 					bind:value={mapOptions.elevationSeed}
@@ -99,17 +95,13 @@
 			</label>
 
 			<Slider
-				id="elevation-octaves"
-				name="elevation-octaves"
-				label="elevation-octaves"
 				step={1}
 				min={1}
 				max={16}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.octaves}
-				onchange={async () => {
-					await generate();
+				value={[elevationOptions.octaves]}
+				onValueChange={(details) => {
+					elevationOptions.octaves = details.value[0];
+					generate();
 				}}
 			>
 				<span> Octaves </span>
@@ -119,17 +111,13 @@
 			</Slider>
 
 			<Slider
-				id="elevations-amplitude"
-				name="elevations-amplitude"
-				label="elevations-amplitude"
 				step={0.1}
 				min={1}
 				max={5}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.amplitude}
-				onchange={async () => {
-					await generate();
+				value={[elevationOptions.amplitude]}
+				onValueChange={(details) => {
+					elevationOptions.amplitude = details.value[0];
+					generate();
 				}}
 			>
 				<span> Amplitude </span>
@@ -139,17 +127,13 @@
 			</Slider>
 
 			<Slider
-				id="elevation-frequency"
-				name="elevation-frequency"
-				label="elevation-frequency"
 				step={0.01}
 				min={0.01}
 				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.frequency}
-				onchange={async () => {
-					await generate();
+				value={[elevationOptions.frequency]}
+				onValueChange={(details) => {
+					elevationOptions.frequency = details.value[0];
+					generate();
 				}}
 			>
 				<span> Frequency </span>
@@ -159,17 +143,13 @@
 			</Slider>
 
 			<Slider
-				id="elevation-persistence"
-				name="elevation-persistence"
-				label="elevation-persistence"
 				step={0.01}
 				min={0.01}
 				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={elevationOptions.persistence}
-				onchange={async () => {
-					await generate();
+				value={[elevationOptions.persistence]}
+				onValueChange={(details) => {
+					elevationOptions.persistence = details.value[0];
+					generate();
 				}}
 			>
 				<span> Persistence </span>
@@ -184,8 +164,6 @@
 			<label for="precipitation-seed" class="label">
 				<span>Seed</span>
 				<input
-					id="precipitation-seed"
-					name="precipitation-seed"
 					type="number"
 					class="input"
 					bind:value={mapOptions.precipitationSeed}
@@ -195,17 +173,13 @@
 				/>
 			</label>
 			<Slider
-				id="precipitation-scale"
-				name="precipitation-scale"
-				label="precipitation-scale"
 				step={0.01}
 				min={0.01}
 				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.scale}
-				onchange={async () => {
-					await generate();
+				value={[precipitationOptions.scale]}
+				onValueChange={(details) => {
+					precipitationOptions.scale = details.value[0];
+					generate();
 				}}
 			>
 				<span>Scale</span>
@@ -214,17 +188,13 @@
 				</span>
 			</Slider>
 			<Slider
-				id="precipitation-octaves"
-				name="precipitation-octaves"
-				label="precipitation-octaves"
 				step={1}
 				min={1}
 				max={16}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.octaves}
-				onchange={async () => {
-					await generate();
+				value={[precipitationOptions.octaves]}
+				onValueChange={(details) => {
+					precipitationOptions.octaves = details.value[0];
+					generate();
 				}}
 			>
 				<span>Octaves</span>
@@ -233,17 +203,13 @@
 				</span>
 			</Slider>
 			<Slider
-				id="precipitation-amplitude"
-				name="precipitation-amplitude"
-				label="precipitation-amplitude"
 				step={0.1}
 				min={1}
 				max={5}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.amplitude}
-				onchange={async () => {
-					await generate();
+				value={[precipitationOptions.amplitude]}
+				onValueChange={(details) => {
+					precipitationOptions.amplitude = details.value[0];
+					generate();
 				}}
 			>
 				<span>Amplitude</span>
@@ -252,17 +218,13 @@
 				</span>
 			</Slider>
 			<Slider
-				id="precipitation-frequency"
-				name="precipitation-frequency"
-				label="precipitation-frequency"
 				step={0.01}
 				min={0.01}
 				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.frequency}
-				onchange={async () => {
-					await generate();
+				value={[precipitationOptions.frequency]}
+				onValueChange={(details) => {
+					precipitationOptions.frequency = details.value[0];
+					generate();
 				}}
 			>
 				<span>Frequency</span>
@@ -271,17 +233,13 @@
 				</span>
 			</Slider>
 			<Slider
-				id="precipitation-persistence"
-				name="precipitation-persistence"
-				label="precipitation-persistence"
 				step={0.01}
 				min={0.01}
 				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={precipitationOptions.persistence}
-				onchange={async () => {
-					await generate();
+				value={[precipitationOptions.persistence]}
+				onValueChange={(details) => {
+					precipitationOptions.persistence = details.value[0];
+					generate();
 				}}
 			>
 				<span>Persistence</span>
@@ -296,8 +254,6 @@
 			<label for="temperature-seed" class="label">
 				<span>Seed</span>
 				<input
-					id="temperature-seed"
-					name="temperature-seed"
 					type="number"
 					class="input"
 					bind:value={mapOptions.temperatureSeed}
@@ -307,17 +263,13 @@
 				/>
 			</label>
 			<Slider
-				id="temperature-scale"
-				name="temperature-scale"
-				label="temperature-scale"
 				step={0.01}
 				min={0.01}
 				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.scale}
-				onchange={async () => {
-					await generate();
+				value={[temperatureOptions.scale]}
+				onValueChange={(details) => {
+					temperatureOptions.scale = details.value[0];
+					generate();
 				}}
 			>
 				<span>Scale</span>
@@ -326,17 +278,13 @@
 				</span>
 			</Slider>
 			<Slider
-				id="temperature-octaves"
-				name="temperature-octaves"
-				label="temperature-octaves"
 				step={1}
 				min={1}
 				max={16}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.octaves}
-				onchange={async () => {
-					await generate();
+				value={[temperatureOptions.octaves]}
+				onValueChange={(details) => {
+					temperatureOptions.octaves = details.value[0];
+					generate();
 				}}
 			>
 				<span>Octaves</span>
@@ -345,17 +293,13 @@
 				</span>
 			</Slider>
 			<Slider
-				id="temperature-amplitude"
-				name="temperature-amplitude"
-				label="temperature-amplitude"
 				step={0.1}
 				min={1}
 				max={5}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.amplitude}
-				onchange={async () => {
-					await generate();
+				value={[temperatureOptions.amplitude]}
+				onValueChange={(details) => {
+					temperatureOptions.amplitude = details.value[0];
+					generate();
 				}}
 			>
 				<span>Amplitude</span>
@@ -364,17 +308,13 @@
 				</span>
 			</Slider>
 			<Slider
-				id="temperature-frequency"
-				name="temperature-frequency"
-				label="temperature-frequency"
 				step={0.01}
 				min={0.01}
 				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.frequency}
-				onchange={async () => {
-					await generate();
+				value={[temperatureOptions.frequency]}
+				onValueChange={(details) => {
+					temperatureOptions.frequency = details.value[0];
+					generate();
 				}}
 			>
 				<span>Frequency</span>
@@ -383,17 +323,13 @@
 				</span>
 			</Slider>
 			<Slider
-				id="temperature-persistence"
-				name="temperature-persistence"
-				label="temperature-persistence"
 				step={0.01}
 				min={0.01}
 				max={1}
-				ticked
-				accent="accent-primary-500"
-				bind:value={temperatureOptions.persistence}
-				onchange={async () => {
-					await generate();
+				value={[temperatureOptions.persistence]}
+				onValueChange={(details) => {
+					temperatureOptions.persistence = details.value[0];
+					generate();
 				}}
 			>
 				<span>Persistence</span>
@@ -414,24 +350,18 @@
 				};
 			}}
 		>
-			<input type="hidden" name="map" id="map" value={JSON.stringify(regions)} />
-			<input type="hidden" name="map-options" id="map-options" value={JSON.stringify(mapOptions)} />
+			<input type="hidden" value={JSON.stringify(regions)} />
+			<input type="hidden" value={JSON.stringify(mapOptions)} />
 			<input
 				type="hidden"
-				name="elevation-options"
-				id="elevation-options"
 				value={JSON.stringify(elevationOptions)}
 			/>
 			<input
 				type="hidden"
-				name="precipitation-options"
-				id="precipitation-options"
 				value={JSON.stringify(precipitationOptions)}
 			/>
 			<input
 				type="hidden"
-				name="temperature-options"
-				id="temperature-options"
 				value={JSON.stringify(temperatureOptions)}
 			/>
 			{#if form?.invalid}
