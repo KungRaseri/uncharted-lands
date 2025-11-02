@@ -1,68 +1,220 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import TileDetails from '$lib/components/admin/TileDetails.svelte';
-	import SettlementDetails from '$lib/components/admin/SettlementDetails.svelte';
+	import { Grid3x3, Layers, Home, Sun, Wind, Beef, Droplet, Trees, Mountain as Rock, Gem, ArrowLeft, Globe, MapPin, Thermometer } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
+
+	const resourceIcons = {
+		area: Grid3x3,
+		solar: Sun,
+		wind: Wind,
+		food: Beef,
+		water: Droplet,
+		wood: Trees,
+		stone: Rock,
+		ore: Gem
+	};
 </script>
 
-<ol class="breadcrumb">
-	<li class="crumb"><a href="/admin/">Dashboard</a></li>
-	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
-	<li class="crumb"><a href="/admin/tiles/{data.plot.tileId}">Tile</a></li>
-	<li class="crumb-separator" aria-hidden="true">&rsaquo;</li>
-	<li>Plot [{data.plot.id}]</li>
-</ol>
+<div class="space-y-6">
+	<!-- Breadcrumb -->
+	<div class="flex items-center gap-2 text-sm">
+		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Dashboard</a>
+		<span class="text-surface-400">/</span>
+		<a href="/admin/plots" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Plots</a>
+		<span class="text-surface-400">/</span>
+		<span class="font-semibold">Plot Details</span>
+	</div>
 
-<div class="card">
-	<header class="card-header">
-		<h2>{data.plot.id}</h2>
-	</header>
-
-	<section class="p-4 grid grid-cols-1 space-y-2">
-		<TileDetails tile={data.plot.Tile} />
-		{#if data.plot.Settlement}
-			<SettlementDetails settlement={data.plot.Settlement} />
-		{:else}
-			<div class="card">
-				<section class="p-4">
-					<h3>No Settlement Found</h3>
-				</section>
+	<!-- Plot Header -->
+	<div class="card preset-filled-surface-100-900 p-6">
+		<div class="flex items-start gap-6">
+			<div class="flex-none w-16 h-16 rounded-full bg-warning-500/10 flex items-center justify-center">
+				<Grid3x3 size={32} class="text-warning-500" />
 			</div>
-		{/if}
-	</section>
-	<section class="px-6 py-1 w-full">
-		<div class="w-full p-0 m-0">
-			<h3>Attributes</h3>
 
-			<div class="card m-0 p-3">
-				<div class="">
-					<span class="badge preset-filled-secondary-500">
-						Area: {data.plot.area}
-					</span>
-					<span class="badge preset-filled-secondary-500">
-						Solar: {data.plot.solar}
-					</span>
-					<span class="badge preset-filled-secondary-500">
-						Wind: {data.plot.wind}
-					</span>
-					<span class="badge preset-filled-secondary-500">
-						Food: {data.plot.food}
-					</span>
-					<span class="badge preset-filled-secondary-500">
-						Water: {data.plot.water}
-					</span>
-					<span class="badge preset-filled-secondary-500">
-						Wood: {data.plot.wood}
-					</span>
-					<span class="badge preset-filled-secondary-500">
-						Stone: {data.plot.stone}
-					</span>
-					<span class="badge preset-filled-secondary-500">
-						Ore: {data.plot.ore}
-					</span>
+			<div class="flex-1">
+				<h1 class="text-3xl font-bold mb-2">Plot</h1>
+				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{data.plot.id}</p>
+				
+				<div class="flex flex-wrap gap-4">
+					<div class="flex items-center gap-2">
+						<Layers size={16} class="text-surface-400" />
+						<a href="/admin/tiles/{data.plot.tileId}" class="text-primary-500 hover:underline text-sm">
+							View Tile
+						</a>
+					</div>
+					{#if data.plot.Settlement}
+						<div class="flex items-center gap-2">
+							<Home size={16} class="text-surface-400" />
+							<span class="text-sm">Has Settlement</span>
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>
-	</section>
+	</div>
+
+	<!-- Resources Grid -->
+	<div class="card preset-filled-surface-100-900 p-6">
+		<h2 class="text-xl font-bold mb-4">Resources</h2>
+		
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+			<div class="card preset-tonal-surface-500 p-4">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+						<svelte:component this={resourceIcons.area} size={16} class="text-primary-500" />
+					</div>
+					<span class="text-sm font-semibold">Area</span>
+				</div>
+				<p class="text-xl font-bold">{data.plot.area}</p>
+			</div>
+
+			<div class="card preset-tonal-surface-500 p-4">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-8 h-8 rounded-lg bg-warning-500/10 flex items-center justify-center">
+						<svelte:component this={resourceIcons.solar} size={16} class="text-warning-500" />
+					</div>
+					<span class="text-sm font-semibold">Solar</span>
+				</div>
+				<p class="text-xl font-bold">{data.plot.solar}</p>
+			</div>
+
+			<div class="card preset-tonal-surface-500 p-4">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+						<svelte:component this={resourceIcons.wind} size={16} class="text-primary-500" />
+					</div>
+					<span class="text-sm font-semibold">Wind</span>
+				</div>
+				<p class="text-xl font-bold">{data.plot.wind}</p>
+			</div>
+
+			<div class="card preset-tonal-surface-500 p-4">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-8 h-8 rounded-lg bg-success-500/10 flex items-center justify-center">
+						<svelte:component this={resourceIcons.food} size={16} class="text-success-500" />
+					</div>
+					<span class="text-sm font-semibold">Food</span>
+				</div>
+				<p class="text-xl font-bold">{data.plot.food}</p>
+			</div>
+
+			<div class="card preset-tonal-surface-500 p-4">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+						<svelte:component this={resourceIcons.water} size={16} class="text-primary-500" />
+					</div>
+					<span class="text-sm font-semibold">Water</span>
+				</div>
+				<p class="text-xl font-bold">{data.plot.water}</p>
+			</div>
+
+			<div class="card preset-tonal-surface-500 p-4">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-8 h-8 rounded-lg bg-success-500/10 flex items-center justify-center">
+						<svelte:component this={resourceIcons.wood} size={16} class="text-success-500" />
+					</div>
+					<span class="text-sm font-semibold">Wood</span>
+				</div>
+				<p class="text-xl font-bold">{data.plot.wood}</p>
+			</div>
+
+			<div class="card preset-tonal-surface-500 p-4">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-8 h-8 rounded-lg bg-surface-500/10 flex items-center justify-center">
+						<svelte:component this={resourceIcons.stone} size={16} class="text-surface-500" />
+					</div>
+					<span class="text-sm font-semibold">Stone</span>
+				</div>
+				<p class="text-xl font-bold">{data.plot.stone}</p>
+			</div>
+
+			<div class="card preset-tonal-surface-500 p-4">
+				<div class="flex items-center gap-3 mb-2">
+					<div class="w-8 h-8 rounded-lg bg-warning-500/10 flex items-center justify-center">
+						<svelte:component this={resourceIcons.ore} size={16} class="text-warning-500" />
+					</div>
+					<span class="text-sm font-semibold">Ore</span>
+				</div>
+				<p class="text-xl font-bold">{data.plot.ore}</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tile Information -->
+	<div class="card preset-filled-surface-100-900 p-6">
+		<h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+			<Layers size={24} />
+			Tile Information
+		</h2>
+		
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div>
+				<label class="text-sm text-surface-600 dark:text-surface-400">Biome</label>
+				<p class="font-semibold flex items-center gap-2">
+					<Globe size={16} />
+					{data.plot.Tile.Biome.name}
+				</p>
+			</div>
+
+			<div>
+				<label class="text-sm text-surface-600 dark:text-surface-400">Type</label>
+				<p class="font-semibold capitalize">{data.plot.Tile.type}</p>
+			</div>
+
+			<div>
+				<label class="text-sm text-surface-600 dark:text-surface-400">Elevation</label>
+				<p class="font-semibold">{(data.plot.Tile.elevation * 100).toPrecision(3)}</p>
+			</div>
+
+			<div>
+				<label class="text-sm text-surface-600 dark:text-surface-400">Precipitation</label>
+				<p class="font-semibold">{data.plot.Tile.precipitation.toPrecision(3)}</p>
+			</div>
+
+			<div>
+				<label class="text-sm text-surface-600 dark:text-surface-400">Temperature</label>
+				<p class="font-semibold">{data.plot.Tile.temperature.toPrecision(3)}</p>
+			</div>
+
+			<div>
+				<label class="text-sm text-surface-600 dark:text-surface-400">Tile ID</label>
+				<p class="font-mono text-xs">{data.plot.Tile.id}</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Settlement Information -->
+	{#if data.plot.Settlement}
+		<div class="card preset-filled-surface-100-900 p-6">
+			<h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+				<Home size={24} />
+				Settlement Information
+			</h2>
+			
+			<div class="space-y-2">
+				<div>
+					<label class="text-sm text-surface-600 dark:text-surface-400">Settlement ID</label>
+					<p class="font-mono text-sm">{data.plot.Settlement.id}</p>
+				</div>
+			</div>
+		</div>
+	{:else}
+		<div class="card preset-filled-surface-100-900 p-6">
+			<div class="p-8 text-center">
+				<Home size={48} class="mx-auto mb-4 text-surface-400" />
+				<h3 class="text-xl font-semibold mb-2">No Settlement</h3>
+				<p class="text-surface-600 dark:text-surface-400">This plot does not have a settlement</p>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Back Button -->
+	<div>
+		<a href="/admin/plots" class="btn preset-tonal-surface-500 rounded-md">
+			<ArrowLeft size={20} />
+			<span>Back to Plots</span>
+		</a>
+	</div>
 </div>
