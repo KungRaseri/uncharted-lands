@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
 	import LightSwitch from './LightSwitch.svelte';
 
@@ -8,6 +9,21 @@
 
 	let { isMainMenuOpen = $bindable(false) }: { isMainMenuOpen?: boolean } = $props();
 	let userMenuOpen = $state(false);
+	let userMenuRef: HTMLDivElement | undefined = $state();
+
+	// Close menu when clicking outside
+	onMount(() => {
+		function handleClickOutside(event: MouseEvent) {
+			if (userMenuRef && !userMenuRef.contains(event.target as Node)) {
+				userMenuOpen = false;
+			}
+		}
+
+		document.addEventListener('click', handleClickOutside);
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
 </script>
 
 <header class="bg-surface-100 dark:bg-surface-800 shadow-md">
@@ -92,61 +108,66 @@
 					<span class=""> Register </span>
 				</a>
 			{:else}
-				<div>
-					<button type="button" class="btn-icon bg-surface-200 dark:bg-surface-700 m-0 p-0">
-						<Bell size={24} />
-					</button>
+				<!-- Notifications Button -->
+				<button type="button" class="btn-icon preset-filled-surface-500 w-10 h-10 p-2">
+					<Bell size={20} />
+				</button>
 
+				<!-- User Menu -->
+				<div class="relative" bind:this={userMenuRef}>
 					<button
 						type="button"
-						class="btn-icon bg-surface-200 dark:bg-surface-700 m-0 p-0"
+						class="btn-icon preset-filled-surface-500 w-10 h-10 p-2"
 						id="user-menu-button"
 						aria-expanded={userMenuOpen}
 						aria-haspopup="true"
 						onclick={() => { userMenuOpen = !userMenuOpen; }}
 					>
 						{#if $page.data?.account?.profile?.picture}
-							<img class="w-6 rounded-full" src={$page.data.account.profile.picture} alt="" />
+							<img class="w-6 h-6 rounded-full object-cover" src={$page.data.account.profile.picture} alt="Profile" />
 						{:else}
-							<div class="w-6 items-center justify-center mx-auto">
-								<User size={24} />
-							</div>
+							<User size={20} />
 						{/if}
 					</button>
 					
 					{#if userMenuOpen}
-						<nav
-							class="list-nav card p-3 absolute right-0 mt-1 rounded-md z-10"
+						<div
+							transition:slide
+							class="list-nav card preset-filled-surface-100-900 p-2 absolute right-0 mt-2 rounded-md shadow-lg z-50 min-w-[200px]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="user-menu-button"
 							tabindex="-1"
 						>
-							{#each $page.data?.userMenuLinks ?? [] as link}
-								<div
-									class="{link.requiredRole && link.requiredRole !== $page.data?.account?.role
-										? 'hidden'
-										: ''}							"
-								>
-									<a
-										href={link.route}
-										class="btn
-									{link.isActive ? 'bg-primary-600' : ''}
-									"
-										aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
-									>
-										<span class="">
-											{link.name}
-										</span>
-									</a>
-								</div>
-							{/each}
-							<form method="POST" action="/auth?/signout">
-								<button class="btn">
-									<span class=""> Sign out </span>
-								</button>
-							</form>
-						</nav>
+							<ul class="space-y-1">
+								{#each $page.data?.userMenuLinks ?? [] as link}
+									{#if !link.requiredRole || link.requiredRole === $page.data?.account?.role}
+										<li>
+											<a
+												href={link.route}
+												class="btn w-full justify-start rounded-md
+													{link.isActive ? 'preset-filled-primary-500' : 'hover:preset-tonal-surface-500'}
+												"
+												aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+												onclick={() => { userMenuOpen = false; }}
+											>
+												{link.name}
+											</a>
+										</li>
+									{/if}
+								{/each}
+								<li>
+									<hr class="my-2" />
+								</li>
+								<li>
+									<form method="POST" action="/auth?/signout">
+										<button type="submit" class="btn w-full justify-start rounded-md hover:preset-tonal-error-500">
+											Sign out
+										</button>
+									</form>
+								</li>
+							</ul>
+						</div>
 					{/if}
 				</div>
 			{/if}
