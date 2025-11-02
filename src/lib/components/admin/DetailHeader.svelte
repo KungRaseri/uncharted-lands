@@ -24,7 +24,8 @@
 <div class="card preset-filled-surface-100-900 p-6">
 	<div class="flex items-start gap-6">
 		<div class="flex-none w-16 h-16 rounded-full {colorClasses[iconColor]} flex items-center justify-center">
-			<svelte:component this={icon} size={32} />
+			{@const IconComponent = icon}
+			<IconComponent size={32} />
 		</div>
 
 		<div class="flex-1">

@@ -33,7 +33,8 @@
 			<p class="text-3xl font-bold">{value}</p>
 		</div>
 		<div class="p-3 {colorClasses[iconColor]} rounded-lg">
-			<svelte:component this={icon} size={24} />
+			{@const IconComponent = icon}
+			<IconComponent size={24} />
 		</div>
 	</div>
 </svelte:element>

@@ -69,12 +69,13 @@
 	<!-- Main items -->
 	<div class="flex-1">
 		{#each railTiles as railTile}
+			{@const IconComponent = railTile.icon}
 			<a
 				href={railTile.href}
 				title={railTile.title}
 				class="flex flex-col items-center justify-center py-2 px-0 btn btn-sm w-full {isActive(railTile.href)} hover:bg-surface-200 dark:hover:bg-surface-700 rounded-none"
 			>
-				<svelte:component this={railTile.icon} size={36} />
+				<IconComponent size={36} />
 				<span class="text-xs mt-1">{railTile.label}</span>
 			</a>
 		{/each}

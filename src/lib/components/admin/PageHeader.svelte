@@ -16,7 +16,8 @@
 	<div>
 		<h1 class="text-2xl font-bold flex items-center gap-2">
 			{#if icon}
-				<svelte:component this={icon} size={28} />
+				{@const IconComponent = icon}
+				<IconComponent size={28} />
 			{/if}
 			{title}
 		</h1>
