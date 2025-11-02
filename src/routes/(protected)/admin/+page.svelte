@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { Server, Globe, Users, MapPin, Grid3x3, LayoutGrid } from 'lucide-svelte';
+	import StatsCard from '$lib/components/admin/StatsCard.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -17,83 +18,50 @@
 
 	<!-- Stats Grid -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-		<!-- Servers Card -->
-		<a href="/admin/servers" class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors">
-			<div class="flex items-start justify-between">
-				<div>
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Servers</p>
-					<p class="text-3xl font-bold">{data.stats.totalServers}</p>
-				</div>
-				<div class="p-3 bg-primary-500/10 rounded-lg">
-					<Server size={24} class="text-primary-500" />
-				</div>
-			</div>
-		</a>
+		<StatsCard 
+			label="Total Servers" 
+			value={data.stats.totalServers} 
+			icon={Server} 
+			href="/admin/servers" 
+		/>
 
-		<!-- Worlds Card -->
-		<a href="/admin/worlds" class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors">
-			<div class="flex items-start justify-between">
-				<div>
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Worlds</p>
-					<p class="text-3xl font-bold">{data.stats.totalWorlds}</p>
-				</div>
-				<div class="p-3 bg-primary-500/10 rounded-lg">
-					<Globe size={24} class="text-primary-500" />
-				</div>
-			</div>
-		</a>
+		<StatsCard 
+			label="Total Worlds" 
+			value={data.stats.totalWorlds} 
+			icon={Globe} 
+			href="/admin/worlds" 
+		/>
 
-		<!-- Players Card -->
-		<a href="/admin/players" class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors">
-			<div class="flex items-start justify-between">
-				<div>
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Players</p>
-					<p class="text-3xl font-bold">{data.stats.totalPlayers}</p>
-				</div>
-				<div class="p-3 bg-primary-500/10 rounded-lg">
-					<Users size={24} class="text-primary-500" />
-				</div>
-			</div>
-		</a>
+		<StatsCard 
+			label="Total Players" 
+			value={data.stats.totalPlayers} 
+			icon={Users} 
+			href="/admin/players" 
+		/>
 
-		<!-- Regions Card -->
-		<a href="/admin/regions" class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors">
-			<div class="flex items-start justify-between">
-				<div>
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Regions</p>
-					<p class="text-3xl font-bold">{data.stats.totalRegions}</p>
-				</div>
-				<div class="p-3 bg-secondary-500/10 rounded-lg">
-					<MapPin size={24} class="text-secondary-500" />
-				</div>
-			</div>
-		</a>
+		<StatsCard 
+			label="Total Regions" 
+			value={data.stats.totalRegions} 
+			icon={MapPin} 
+			iconColor="secondary"
+			href="/admin/regions" 
+		/>
 
-		<!-- Tiles Card -->
-		<a href="/admin/tiles" class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors">
-			<div class="flex items-start justify-between">
-				<div>
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Tiles</p>
-					<p class="text-3xl font-bold">{data.stats.totalTiles}</p>
-				</div>
-				<div class="p-3 bg-secondary-500/10 rounded-lg">
-					<Grid3x3 size={24} class="text-secondary-500" />
-				</div>
-			</div>
-		</a>
+		<StatsCard 
+			label="Total Tiles" 
+			value={data.stats.totalTiles} 
+			icon={Grid3x3} 
+			iconColor="secondary"
+			href="/admin/tiles" 
+		/>
 
-		<!-- Plots Card -->
-		<a href="/admin/plots" class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors">
-			<div class="flex items-start justify-between">
-				<div>
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Plots</p>
-					<p class="text-3xl font-bold">{data.stats.totalPlots}</p>
-				</div>
-				<div class="p-3 bg-secondary-500/10 rounded-lg">
-					<LayoutGrid size={24} class="text-secondary-500" />
-				</div>
-			</div>
-		</a>
+		<StatsCard 
+			label="Total Plots" 
+			value={data.stats.totalPlots} 
+			icon={LayoutGrid} 
+			iconColor="secondary"
+			href="/admin/plots" 
+		/>
 	</div>
 
 	<!-- Quick Actions -->

@@ -1,42 +1,38 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Server, Plus, ExternalLink } from 'lucide-svelte';
+	import PageHeader from '$lib/components/admin/PageHeader.svelte';
+	import EmptyState from '$lib/components/admin/EmptyState.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
 
 <div class="space-y-4">
 	<!-- Header -->
-	<div class="flex items-center justify-between">
-		<div>
-			<h1 class="text-2xl font-bold flex items-center gap-2">
-				<Server size={28} />
-				Servers
-			</h1>
-			<p class="text-sm text-surface-600 dark:text-surface-400 mt-1">
-				Manage game servers and their configurations
-			</p>
-		</div>
-		<a href="/admin/servers/create" class="btn preset-filled-primary-500 rounded-md">
-			<Plus size={20} />
-			<span>Create Server</span>
-		</a>
-	</div>
+	<PageHeader 
+		title="Servers" 
+		description="Manage game servers and their configurations"
+		icon={Server}
+	>
+		{#snippet actions()}
+			<a href="/admin/servers/create" class="btn preset-filled-primary-500 rounded-md">
+				<Plus size={20} />
+				<span>Create Server</span>
+			</a>
+		{/snippet}
+	</PageHeader>
 
 	<!-- Servers List -->
 	<div class="card preset-filled-surface-100-900">
 		{#if data.servers.length === 0}
-			<div class="p-12 text-center">
-				<Server size={48} class="mx-auto mb-4 text-surface-400" />
-				<h3 class="text-xl font-semibold mb-2">No servers yet</h3>
-				<p class="text-surface-600 dark:text-surface-400 mb-4">
-					Create your first server to get started
-				</p>
-				<a href="/admin/servers/create" class="btn preset-filled-primary-500 rounded-md">
-					<Plus size={20} />
-					<span>Create Server</span>
-				</a>
-			</div>
+			<EmptyState 
+				icon={Server}
+				title="No servers yet"
+				message="Create your first server to get started"
+				actionHref="/admin/servers/create"
+				actionText="Create Server"
+				actionIcon={Plus}
+			/>
 		{:else}
 			<div class="table-container">
 				<table class="table" aria-describedby="servers-header">
