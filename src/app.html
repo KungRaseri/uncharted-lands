@@ -12,6 +12,19 @@
 
 	<meta name="viewport" content="width=device-width" />
 	<title>Uncharted Lands</title>
+
+	<!-- Initialize theme before page load to prevent flash -->
+	<script>
+		(function () {
+			try {
+				const mode = localStorage.getItem('mode') || 'light';
+				document.documentElement.setAttribute('data-mode', mode);
+			} catch (e) {
+				// Ignore errors (e.g., if localStorage is not available)
+			}
+		})();
+	</script>
+
 	%sveltekit.head%
 </head>
 
