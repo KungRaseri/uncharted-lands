@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	import { LayoutDashboard, Server, Globe, Users, FolderSearch, Github } from 'lucide-svelte';
+	import { LayoutDashboard, Server, Globe, Users, MapPin, Layers, Grid3x3, Github } from 'lucide-svelte';
 
 	let railTiles: Array<any> = [
 		{
@@ -19,18 +19,32 @@
 			icon: Globe
 		},
 		{
+			label: 'Regions',
+			title: 'Regions',
+			href: '/admin/regions',
+			value: '/admin/regions',
+			icon: MapPin
+		},
+		{
+			label: 'Tiles',
+			title: 'Tiles',
+			href: '/admin/tiles',
+			value: '/admin/tiles',
+			icon: Layers
+		},
+		{
+			label: 'Plots',
+			title: 'Plots',
+			href: '/admin/plots',
+			value: '/admin/plots',
+			icon: Grid3x3
+		},
+		{
 			label: 'Players',
 			title: 'Players',
 			href: '/admin/players',
 			value: '/admin/players',
 			icon: Users
-		},
-		{
-			label: 'Reports',
-			title: 'Reports',
-			href: '/admin/reports',
-			value: '/admin/reports',
-			icon: FolderSearch
 		}
 	];
 	
