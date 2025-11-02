@@ -6,18 +6,18 @@
 	<title>Portal | Uncharted Lands</title>
 </svelte:head>
 
-<header id="hero" class="hero-gradient items-center text-center h-full">
-	<div class="grid grid-cols-1 space-y-10 gap-10">
-		<div class="flex flex-col items-center xl:items-start text-center xl:text-left space-y-6">
-			<div class="mt-10 h-[72px] md:h-24">
+<div class="hero-gradient h-full flex items-center justify-center text-center p-8">
+	<div class="max-w-4xl space-y-10">
+		<div class="flex flex-col items-center space-y-6">
+			<div class="h-[72px] md:h-24">
 				<Globe size={96} />
 			</div>
-			<h1 class="text-5xl! md:text-6xl! max-w-[600px]">Uncharted Lands</h1>
-			<p class="text-xl! max-w-[475px]">
+			<h1 class="text-5xl md:text-6xl font-bold">Uncharted Lands</h1>
+			<p class="text-xl max-w-[600px]">
 				Utilize the resources around you to build a strong community and ward against the dangers of
 				wildlife and the environment
 			</p>
-			<div class="flex gap-4">
+			<div class="flex gap-4 flex-wrap justify-center">
 				<a href="/introduction" class="btn preset-filled-primary-500">
 					<span>Get Settled</span>
 					<Flame size={20} />
@@ -26,7 +26,7 @@
 			</div>
 		</div>
 	</div>
-</header>
+</div>
 
 <style lang="scss">
 	.hero-gradient {

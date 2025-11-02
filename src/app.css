@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@import "@skeletonlabs/skeleton";
-@import "@skeletonlabs/skeleton/themes/cerberus";
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton/themes/cerberus';
 
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
@@ -11,23 +11,12 @@
 html,
 body {
     height: 100%;
-    overflow: hidden;
     font-family: 'Titillium Web', sans-serif;
+    background-color: var(--body-background-color);
+    color: var(--base-font-color);
 }
 
-/* Apply theme background and text colors */
-html {
-    background-color: var(--color-surface-50);
-    color: var(--color-surface-950);
-}
-
-html[data-mode="dark"] {
-    background-color: var(--color-surface-950);
-    color: var(--color-surface-50);
-}
-
-/* Ensure body inherits properly */
-body {
-    background-color: inherit;
-    color: inherit;
+html[data-mode="dark"] body {
+    background-color: var(--body-background-color-dark);
+    color: var(--base-font-color-dark);
 }
