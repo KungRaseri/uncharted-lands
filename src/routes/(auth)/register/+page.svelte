@@ -60,7 +60,7 @@
 
 			{#if form?.invalid}
 				<div transition:slide>
-					<div class="alert variant-ghost-error mx-5 mt-5">
+					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
 						<div class="alert-message text-token">
 							<Info size={24} />
 							<div class="grid grid-cols-1">Form information is invalid</div>

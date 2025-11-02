@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Earth from 'svelte-material-icons/Earth.svelte';
-	import Campfire from 'svelte-material-icons/Campfire.svelte';
+	import { Globe, Flame } from 'lucide-svelte';
 </script>
 
 <svelte:head>
@@ -10,16 +9,18 @@
 <header id="hero" class="hero-gradient items-center text-center h-full">
 	<div class="grid grid-cols-1 space-y-10 gap-10">
 		<div class="flex flex-col items-center xl:items-start text-center xl:text-left space-y-6">
-			<div class="mt-10 h-[72px] md:h-[96px]"><Earth size="96" /></div>
-			<h1 class="!text-5xl md:!text-6xl max-w-[600px]">Uncharted Lands</h1>
-			<p class="!text-xl max-w-[475px]">
+			<div class="mt-10 h-[72px] md:h-24">
+				<Globe size={96} />
+			</div>
+			<h1 class="text-5xl! md:text-6xl! max-w-[600px]">Uncharted Lands</h1>
+			<p class="text-xl! max-w-[475px]">
 				Utilize the resources around you to build a strong community and ward against the dangers of
 				wildlife and the environment
 			</p>
 			<div class="flex gap-4">
 				<a href="/introduction" class="btn preset-filled-primary-500">
 					<span>Get Settled</span>
-					<Campfire />
+					<Flame size={20} />
 				</a>
 				<a href="/introduction" class="btn preset-tonal-primary-500">Learn More</a>
 			</div>

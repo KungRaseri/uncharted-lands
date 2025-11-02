@@ -54,7 +54,7 @@
 			</label>
 
 			{#if form?.invalid}
-				<div class="alert variant-ghost-error">
+				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50">
 					<div class="alert-message">
 						<Info size={24} />
 						{form.message ?? 'Unknown Error'}

@@ -4,7 +4,7 @@
 
 <AppBar class="bg-surface-200 dark:bg-surface-700 shadow-md px-3 py-0">
 	<AppBar.Lead class="place-self-start">
-		<div class="btn-group rounded-none variant-filled-secondary text-secondary-50-900-token">
+		<div class="btn-group rounded-none preset-filled-secondary-500 text-secondary-50-900-token">
 			<a
 				href="/game"
 				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"
@@ -33,7 +33,7 @@
 	</AppBar.Lead>
 
 	<AppBar.Trail class="place-self-end">
-		<div class="btn-group rounded-none variant-filled-secondary text-secondary-50-900-token">
+		<div class="btn-group rounded-none preset-filled-secondary-500 text-secondary-50-900-token">
 			<a
 				href="/game/profile"
 				class="btn btn-sm rounded-none hover:bg-primary-hover-token hover:text-primary-50-900-token"

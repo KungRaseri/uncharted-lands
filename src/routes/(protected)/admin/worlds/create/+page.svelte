@@ -436,7 +436,7 @@
 				value={JSON.stringify(temperatureOptions)}
 			/>
 			{#if form?.invalid}
-				<div class="alert variant-ghost-error w-11/12 mx-auto m-5">
+				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 w-11/12 mx-auto m-5">
 					<div class="alert-message"><Info />{form?.message}</div>
 				</div>
 			{/if}

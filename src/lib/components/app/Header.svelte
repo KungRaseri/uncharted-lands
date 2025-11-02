@@ -16,7 +16,7 @@
 		<div class="block sm:hidden">
 			<button
 				type="button"
-				class="px-1.5 py-0 btn-icon variant-soft-surface justify-center items-center"
+				class="px-1.5 py-0 btn-icon preset-tonal-surface-500 justify-center items-center"
 				aria-controls="mobile-menu"
 				aria-expanded={isMainMenuOpen}
 				onclick={() => {
