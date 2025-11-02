@@ -14,13 +14,13 @@
 		<div class="card p-4">
 			<h3>Structures</h3>
 			{#each data.settlement.Structures as structure}
-				<div class="badge variant-ghost-secondary">
+				<div class="badge preset-outlined-secondary-500">
 					{structure.name}
 					{structure.description}
 
 					{#each structure.modifiers as modifier}
 						{modifier.description}
-						<div class="badge variant-ghost-secondary">
+						<div class="badge preset-outlined-secondary-500">
 							{modifier.name}
 							{modifier.value}
 						</div>
@@ -32,13 +32,13 @@
 			<header class="card-header">
 				<h3>
 					Plot
-					<div class="badge variant-ghost-secondary">
+					<div class="badge preset-outlined-secondary-500">
 						Area: {data.settlement.Plot.area}
 					</div>
-					<div class="badge variant-ghost-secondary">
+					<div class="badge preset-outlined-secondary-500">
 						Solar: {data.settlement.Plot.solar}
 					</div>
-					<div class="badge variant-ghost-secondary">
+					<div class="badge preset-outlined-secondary-500">
 						Wind: {data.settlement.Plot.wind}
 					</div>
 				</h3>
@@ -49,19 +49,19 @@
 			<section class="p-4"></section>
 
 			<footer class="card-footer">
-				<div class="badge variant-ghost-secondary">
+				<div class="badge preset-outlined-secondary-500">
 					Food: {data.settlement.Plot.food}
 				</div>
-				<div class="badge variant-ghost-secondary">
+				<div class="badge preset-outlined-secondary-500">
 					Water: {data.settlement.Plot.water}
 				</div>
-				<div class="badge variant-ghost-secondary">
+				<div class="badge preset-outlined-secondary-500">
 					Wood: {data.settlement.Plot.wood}
 				</div>
-				<div class="badge variant-ghost-secondary">
+				<div class="badge preset-outlined-secondary-500">
 					Stone: {data.settlement.Plot.stone}
 				</div>
-				<div class="badge variant-ghost-secondary">
+				<div class="badge preset-outlined-secondary-500">
 					Ore: {data.settlement.Plot.ore}
 				</div>
 			</footer>

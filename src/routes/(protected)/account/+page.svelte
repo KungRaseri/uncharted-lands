@@ -12,7 +12,7 @@
 	<div class="card bg-surface-400-500-token p-0 rounded-none sm:rounded-3xl">
 		<header class="w-full p-4 card-header flex border-b border-b-surface-50 justify-between">
 			<h2 class="text-primary-900-50-token">Account</h2>
-			<button type="button" class="btn btn-small variant-soft-primary" disabled>Edit</button>
+			<button type="button" class="btn btn-small preset-tonal-primary-500" disabled>Edit</button>
 		</header>
 		<div class="m-3 pb-5">
 			<dl class="grid grid-cols-1">
@@ -31,7 +31,7 @@
 			</dl>
 		</div>
 		<div class="m-3 pb-3">
-			<div class="card variant-filled-secondary"></div>
+			<div class="card preset-filled-secondary-500"></div>
 		</div>
 	</div>
 </div>

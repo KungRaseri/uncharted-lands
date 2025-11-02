@@ -10,8 +10,8 @@
 		<h1 class="text-xl">{data.server.name}</h1>
 		<span
 			class="badge {data.server.status === 'ONLINE'
-				? 'variant-ghost-success'
-				: 'variant-ghost-error'}"
+				? 'bg-success-500/10 text-success-900 dark:text-success-50'
+				: 'bg-error-500/10 text-error-900 dark:text-error-50'}"
 		>
 			{data.server.status}
 		</span>

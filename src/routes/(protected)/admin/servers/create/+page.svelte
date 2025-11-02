@@ -26,7 +26,7 @@
 			<label for="name" class="label">
 				<span>Server Name</span>
 				<input
-					class="input {form?.invalid ? 'input-error' : 'variant-ghost-surface'}"
+					class="input {form?.invalid ? 'input-error' : 'preset-outlined-surface-500'}"
 					id="name"
 					name="name"
 					type="text"
@@ -35,7 +35,7 @@
 			<label for="hostname" class="label">
 				<span>Hostname</span>
 				<input
-					class="input {form?.invalid ? 'input-error' : 'variant-ghost-surface'}"
+					class="input {form?.invalid ? 'input-error' : 'preset-outlined-surface-500'}"
 					id="hostname"
 					name="hostname"
 					type="text"
@@ -44,7 +44,7 @@
 			<label for="port" class="label">
 				<span>Port</span>
 				<input
-					class="input {form?.invalid ? 'input-error' : 'variant-ghost-surface'}"
+					class="input {form?.invalid ? 'input-error' : 'preset-outlined-surface-500'}"
 					id="port"
 					name="port"
 					min="5000"

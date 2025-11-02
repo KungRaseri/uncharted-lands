@@ -43,11 +43,11 @@
 							<td>
 								<div class="card w-fit">
 									<section class="p-1">
-										<span class="badge variant-ghost-surface">Food: {settlement.Storage.food}</span>
-										<span class="badge variant-ghost-surface">Water: {settlement.Storage.water}</span>
-										<span class="badge variant-ghost-surface">Wood: {settlement.Storage.wood}</span>
-										<span class="badge variant-ghost-surface">Stone: {settlement.Storage.stone}</span>
-										<span class="badge variant-ghost-surface">Ore: {settlement.Storage.ore}</span>	
+										<span class="badge preset-outlined-surface-500">Food: {settlement.Storage.food}</span>
+										<span class="badge preset-outlined-surface-500">Water: {settlement.Storage.water}</span>
+										<span class="badge preset-outlined-surface-500">Wood: {settlement.Storage.wood}</span>
+										<span class="badge preset-outlined-surface-500">Stone: {settlement.Storage.stone}</span>
+										<span class="badge preset-outlined-surface-500">Ore: {settlement.Storage.ore}</span>	
 									</section>
 								</div>
 							</td>

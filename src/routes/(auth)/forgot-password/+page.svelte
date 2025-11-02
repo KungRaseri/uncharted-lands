@@ -60,7 +60,7 @@
 					</div>
 				{/if}
 			</div>
-			<button class="w-full p-2 btn btn-base variant-ghost-primary">Reset Password</button>
+			<button class="w-full p-2 btn btn-base preset-outlined-primary-500">Reset Password</button>
 		</form>
 	</div>
 </div>
