@@ -18,11 +18,13 @@ async function checkMigrationStatus() {
     try {
         const { stdout, stderr } = await execAsync('npx prisma migrate status');
         console.log(stdout);
-        return { output: stdout, hasError: false };
+        if (stderr) console.log(stderr);
+        return { output: stdout + '\n' + stderr, hasError: false };
     } catch (error) {
         // migrate status exits with code 1 if there are issues
         console.warn('⚠️  Migration status check found issues');
-        const output = error.stdout || error.stderr || '';
+        // Combine stdout and stderr as the error message might be in either
+        const output = (error.stdout || '') + '\n' + (error.stderr || '');
         console.log(output);
         return { output, hasError: true };
     }
@@ -49,10 +51,11 @@ async function deployMigrations() {
         const { stdout } = await execAsync('npx prisma migrate deploy');
         console.log(stdout);
         console.log('✅ Migrations deployed');
-        return true;
+        return { success: true, error: null };
     } catch (error) {
         console.error('❌ Migration deployment failed:', error.message);
-        throw error;
+        const output = (error.stdout || '') + '\n' + (error.stderr || '') + '\n' + error.message;
+        return { success: false, error: output };
     }
 }
 
@@ -64,14 +67,20 @@ async function main() {
         // Step 1: Check migration status
         const statusResult = await checkMigrationStatus();
         
-        // Step 2: If there's an error, check for known failed migrations
-        if (statusResult.hasError) {
+        // Step 2: Try to deploy migrations
+        console.log('');
+        const deployResult = await deployMigrations();
+        
+        // Step 3: If deployment failed, check for known failed migrations
+        if (!deployResult.success) {
+            console.log('\n⚠️  Deployment failed, checking for known failed migrations...\n');
+            
             let resolved = false;
             
             for (const migration of KNOWN_FAILED_MIGRATIONS) {
                 // Check if this migration is mentioned in the error
-                if (statusResult.output.includes(migration)) {
-                    console.log(`\n⚠️  Found known failed migration: ${migration}`);
+                if (deployResult.error.includes(migration)) {
+                    console.log(`⚠️  Found known failed migration: ${migration}`);
                     console.log('This migration does not exist in the current codebase.');
                     console.log('Marking it as rolled back to allow new migrations...\n');
                     
@@ -84,25 +93,31 @@ async function main() {
                     }
                     
                     resolved = true;
+                    
+                    // Try deploying again after resolving
+                    console.log('\n🔄 Retrying migration deployment...\n');
+                    const retryResult = await deployMigrations();
+                    
+                    if (!retryResult.success) {
+                        console.error('❌ Migration deployment still failing after resolution');
+                        console.error(retryResult.error);
+                        console.error('\nManual intervention required.');
+                        console.error('See: docs/migration/PRODUCTION_MIGRATION_FIX.md');
+                        process.exit(1);
+                    }
+                    
                     break; // Only resolve one migration at a time
                 }
             }
             
             if (!resolved) {
-                console.error('❌ Found failed migrations that are not in the known list');
-                console.error('Manual intervention required.');
+                console.error('❌ Deployment failed with an unknown error');
+                console.error(deployResult.error);
+                console.error('\nManual intervention required.');
                 console.error('See: docs/migration/PRODUCTION_MIGRATION_FIX.md');
                 process.exit(1);
             }
-            
-            // Recheck status after resolving
-            console.log('\n📋 Rechecking migration status...');
-            await checkMigrationStatus();
         }
-
-        // Step 3: Deploy current migrations
-        console.log('');
-        await deployMigrations();
 
         console.log('\n✅ Pre-build migration check completed successfully!\n');
         process.exit(0);
