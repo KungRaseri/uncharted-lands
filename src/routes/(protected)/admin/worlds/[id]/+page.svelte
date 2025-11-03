@@ -1,9 +1,47 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Globe, Server, MapPin, Home, Mountain, Waves, ArrowLeft } from 'lucide-svelte';
-	import World from '$lib/components/game/map/World.svelte';
+	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
 
 	let { data }: { data: PageData } = $props();
+
+	// Transform database regions into preview format
+	const previewRegions = $derived(
+		data.world.regions.map((region) => {
+			// Group tiles into a 10x10 grid for elevation, precipitation, and temperature
+			const elevationMap: number[][] = Array.from({ length: 10 }, () => Array(10).fill(0));
+			const precipitationMap: number[][] = Array.from({ length: 10 }, () => Array(10).fill(0));
+			const temperatureMap: number[][] = Array.from({ length: 10 }, () => Array(10).fill(0));
+
+			// Sort tiles to ensure correct positioning
+			const sortedTiles = [...region.tiles].sort((a, b) => {
+				// Assuming tiles are stored in row-major order
+				return a.id.localeCompare(b.id);
+			});
+
+			// Fill the maps with tile data
+			sortedTiles.forEach((tile, index) => {
+				const row = Math.floor(index / 10);
+				const col = index % 10;
+				if (row < 10 && col < 10) {
+					elevationMap[row][col] = tile.elevation;
+					precipitationMap[row][col] = tile.precipitation;
+					temperatureMap[row][col] = tile.temperature;
+				}
+			});
+
+			return {
+				id: region.id,
+				worldId: region.worldId,
+				xCoord: region.xCoord,
+				yCoord: region.yCoord,
+				name: region.name,
+				elevationMap,
+				precipitationMap,
+				temperatureMap
+			};
+		})
+	);
 </script>
 
 <div class="space-y-6">
@@ -95,36 +133,128 @@
 	</div>
 
 	<!-- World Map -->
-	{#if data.world.regions && data.world.regions.length > 0}
-		<div class="card preset-filled-surface-100-900 p-6">
-			<h2 class="text-xl font-bold mb-4">World Map</h2>
-			<World regions={data.world.regions} />
-		</div>
+	{#if previewRegions && previewRegions.length > 0}
+		<WorldMapPreview regions={previewRegions} />
 	{/if}
 
 	<!-- Regions List -->
 	{#if data.world.regions && data.world.regions.length > 0}
 		<div class="card preset-filled-surface-100-900 p-6">
-			<h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-				<MapPin size={24} />
-				Regions ({data.world.regions.length})
-			</h2>
+			<div class="flex items-center justify-between mb-4">
+				<h2 class="text-xl font-bold flex items-center gap-2">
+					<MapPin size={24} />
+					Regions ({data.world.regions.length})
+				</h2>
+				<div class="text-sm text-surface-600 dark:text-surface-400">
+					Click a region to view details
+				</div>
+			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-				{#each data.world.regions as region}
-					<a
-						href="/admin/regions/{region.id}"
-						class="card preset-tonal-surface-500 p-4 hover:preset-filled-primary-500 transition-colors"
-					>
-						<div class="flex items-start justify-between">
-							<div>
-								<p class="font-semibold mb-1">{region.name || 'Unnamed Region'}</p>
-								<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">{region.id}</p>
-							</div>
-							<MapPin size={20} class="text-surface-400" />
-						</div>
-					</a>
-				{/each}
+			<div class="overflow-x-auto">
+				<table class="table-auto w-full">
+					<thead>
+						<tr class="border-b border-surface-300 dark:border-surface-600">
+							<th class="text-left p-3 font-semibold text-sm">Region</th>
+							<th class="text-center p-3 font-semibold text-sm">Coordinates</th>
+							<th class="text-center p-3 font-semibold text-sm">Land Tiles</th>
+							<th class="text-center p-3 font-semibold text-sm">Ocean Tiles</th>
+							<th class="text-center p-3 font-semibold text-sm">Avg Elevation</th>
+							<th class="text-center p-3 font-semibold text-sm">Settlements</th>
+							<th class="text-right p-3 font-semibold text-sm">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each data.world.regions as region}
+							{@const landTiles = region.tiles.filter((t) => t.type === 'LAND').length}
+							{@const oceanTiles = region.tiles.filter((t) => t.type === 'OCEAN').length}
+							{@const avgElevation = region.tiles.reduce((sum, t) => sum + t.elevation, 0) / region.tiles.length}
+							{@const settlements = region.tiles.flatMap((t) => t.Plots).filter((p) => p.Settlement).length}
+							{@const elevationClass =
+								avgElevation < 0
+									? 'bg-primary-500/10 text-primary-500'
+									: avgElevation < 0.5
+										? 'bg-success-500/10 text-success-500'
+										: avgElevation < 0.8
+											? 'bg-warning-500/10 text-warning-500'
+											: 'bg-error-500/10 text-error-500'}
+							<tr
+								class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+							>
+								<td class="p-3">
+									<div class="flex items-center gap-3">
+										<div
+											class="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold"
+											style="background-color: {avgElevation < 0
+												? '#003d66'
+												: avgElevation < 0.3
+													? '#7cb342'
+													: avgElevation < 0.7
+														? '#8d6e63'
+														: '#757575'}"
+										>
+											{region.xCoord}:{region.yCoord}
+										</div>
+										<div>
+											<p class="font-semibold">{region.name || 'Unnamed Region'}</p>
+											<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">
+												{region.id.substring(0, 8)}...
+											</p>
+										</div>
+									</div>
+								</td>
+								<td class="p-3 text-center">
+									<span class="font-mono text-sm">{region.xCoord}, {region.yCoord}</span>
+								</td>
+								<td class="p-3 text-center">
+									<div class="flex items-center justify-center gap-1">
+										<Mountain size={14} class="text-success-500" />
+										<span class="font-semibold">{landTiles}</span>
+									</div>
+								</td>
+								<td class="p-3 text-center">
+									<div class="flex items-center justify-center gap-1">
+										<Waves size={14} class="text-primary-500" />
+										<span class="font-semibold">{oceanTiles}</span>
+									</div>
+								</td>
+								<td class="p-3 text-center">
+									<span class="px-2 py-1 rounded text-xs font-semibold {elevationClass}">
+										{avgElevation.toFixed(2)}
+									</span>
+								</td>
+								<td class="p-3 text-center">
+									{#if settlements > 0}
+										<div class="flex items-center justify-center gap-1">
+											<Home size={14} class="text-warning-500" />
+											<span class="font-semibold">{settlements}</span>
+										</div>
+									{:else}
+										<span class="text-surface-400">—</span>
+									{/if}
+								</td>
+								<td class="p-3 text-right">
+									<a
+										href="/admin/regions/{region.id}"
+										class="btn btn-sm preset-filled-primary-500 rounded-md inline-flex items-center gap-1"
+									>
+										<span>View</span>
+										<ArrowLeft size={14} class="rotate-180" />
+									</a>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Grid view toggle option (optional) -->
+			<div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
+				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
+					Showing {data.world.regions.length} regions with {data.world.regions.reduce(
+						(sum, r) => sum + r.tiles.length,
+						0
+					)} total tiles
+				</p>
 			</div>
 		</div>
 	{/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { MapPin, Globe, Layers, ArrowLeft, Mountain, Droplets, Thermometer } from 'lucide-svelte';
+	import { MapPin, Globe, Layers, ArrowLeft, Mountain, Droplets, Thermometer, Home } from 'lucide-svelte';
+	import RegionMapPreview from '$lib/components/admin/RegionMapPreview.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -40,12 +41,22 @@
 		</div>
 	</div>
 
-	<!-- Tiles Section -->
+	<!-- Region Map Preview -->
+	{#if data.region.tiles.length > 0}
+		<RegionMapPreview tiles={data.region.tiles} regionName={data.region.name || 'Region'} />
+	{/if}
+
+	<!-- Tiles Table -->
 	<div class="card preset-filled-surface-100-900 p-6">
-		<h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-			<Layers size={24} />
-			Tiles ({data.region.tiles.length})
-		</h2>
+		<div class="flex items-center justify-between mb-4">
+			<h2 class="text-xl font-bold flex items-center gap-2">
+				<Layers size={24} />
+				Tiles ({data.region.tiles.length})
+			</h2>
+			<div class="text-sm text-surface-600 dark:text-surface-400">
+				Click a tile to view details
+			</div>
+		</div>
 
 		{#if data.region.tiles.length === 0}
 			<div class="p-8 text-center">
@@ -53,40 +64,98 @@
 				<p class="text-surface-600 dark:text-surface-400">No tiles in this region</p>
 			</div>
 		{:else}
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-				{#each data.region.tiles as tile}
-					<a
-						href="/admin/tiles/{tile.id}"
-						class="card preset-tonal-surface-500 p-4 hover:preset-filled-primary-500 transition-colors"
-					>
-						<div class="space-y-2">
-							<div class="flex items-center justify-between">
-								<span class="badge preset-filled-surface-500 text-xs capitalize">
-									{tile.type}
-								</span>
-							</div>
-							
-							<div class="space-y-1 text-xs">
-								<div class="flex items-center gap-1">
-									<Mountain size={12} class="text-surface-400" />
-									<span>E: {(tile.elevation * 100).toPrecision(3)}</span>
-								</div>
-								<div class="flex items-center gap-1">
-									<Droplets size={12} class="text-surface-400" />
-									<span>P: {tile.precipitation.toPrecision(3)}</span>
-								</div>
-								<div class="flex items-center gap-1">
-									<Thermometer size={12} class="text-surface-400" />
-									<span>T: {tile.temperature.toPrecision(3)}</span>
-								</div>
-							</div>
-							
-							<p class="text-xs text-surface-600 dark:text-surface-400 font-mono truncate">
-								{tile.id.substring(0, 8)}...
-							</p>
-						</div>
-					</a>
-				{/each}
+			<div class="overflow-x-auto">
+				<table class="table-auto w-full">
+					<thead>
+						<tr class="border-b border-surface-300 dark:border-surface-600">
+							<th class="text-left p-3 font-semibold text-sm">Tile ID</th>
+							<th class="text-center p-3 font-semibold text-sm">Type</th>
+							<th class="text-center p-3 font-semibold text-sm">Biome</th>
+							<th class="text-center p-3 font-semibold text-sm">Elevation</th>
+							<th class="text-center p-3 font-semibold text-sm">Precipitation</th>
+							<th class="text-center p-3 font-semibold text-sm">Temperature</th>
+							<th class="text-center p-3 font-semibold text-sm">Plots</th>
+							<th class="text-center p-3 font-semibold text-sm">Settlements</th>
+							<th class="text-right p-3 font-semibold text-sm">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each data.region.tiles as tile}
+							{@const hasSettlement = tile.Plots?.some((p) => p.Settlement)}
+							{@const tileColor = tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
+							<tr class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
+								<td class="p-3">
+									<div class="flex items-center gap-2">
+										<div
+											class="w-8 h-8 rounded"
+											style="background-color: {tile.elevation < -0.3 ? '#001a33' : tile.elevation < 0 ? '#003d66' : tile.elevation < 0.3 ? '#7cb342' : tile.elevation < 0.7 ? '#8d6e63' : '#757575'}"
+											title="Elevation: {tile.elevation.toFixed(3)}"
+										></div>
+										<p class="font-mono text-xs">{tile.id.substring(0, 8)}...</p>
+									</div>
+								</td>
+								<td class="p-3 text-center">
+									<span class="px-2 py-1 rounded text-xs font-semibold {tileColor} bg-current/10 capitalize">
+										{tile.type.toLowerCase()}
+									</span>
+								</td>
+								<td class="p-3 text-center">
+									<span class="text-sm">{tile.Biome?.name || 'Unknown'}</span>
+								</td>
+								<td class="p-3 text-center">
+									<div class="flex items-center justify-center gap-1">
+										<Mountain size={14} class="text-surface-400" />
+										<span class="font-mono text-sm">{tile.elevation.toFixed(3)}</span>
+									</div>
+								</td>
+								<td class="p-3 text-center">
+									<div class="flex items-center justify-center gap-1">
+										<Droplets size={14} class="text-surface-400" />
+										<span class="font-mono text-sm">{tile.precipitation.toFixed(3)}</span>
+									</div>
+								</td>
+								<td class="p-3 text-center">
+									<div class="flex items-center justify-center gap-1">
+										<Thermometer size={14} class="text-surface-400" />
+										<span class="font-mono text-sm">{tile.temperature.toFixed(3)}</span>
+									</div>
+								</td>
+								<td class="p-3 text-center">
+									<span class="font-semibold">{tile.Plots?.length || 0}</span>
+								</td>
+								<td class="p-3 text-center">
+									{#if hasSettlement}
+										<div class="flex items-center justify-center gap-1">
+											<Home size={14} class="text-warning-500" />
+											<span class="font-semibold text-warning-500">Yes</span>
+										</div>
+									{:else}
+										<span class="text-surface-400">—</span>
+									{/if}
+								</td>
+								<td class="p-3 text-right">
+									<a
+										href="/admin/tiles/{tile.id}"
+										class="btn btn-sm preset-filled-primary-500 rounded-md inline-flex items-center gap-1"
+									>
+										<span>View</span>
+										<ArrowLeft size={14} class="rotate-180" />
+									</a>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Summary Footer -->
+			<div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
+				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
+					Showing {data.region.tiles.length} tiles
+					{#if data.region.tiles.some((t) => t.Plots?.some((p) => p.Settlement))}
+						• {data.region.tiles.filter((t) => t.Plots?.some((p) => p.Settlement)).length} with settlements
+					{/if}
+				</p>
 			</div>
 		{/if}
 	</div>

@@ -9,10 +9,19 @@ export const load: PageServerLoad = async ({ params }) => {
         },
         include: {
             Biome: true,
-            Plots: true,
+            Plots: {
+                include: {
+                    Settlement: true
+                }
+            },
             Region: {
                 include: {
-                    world: true
+                    world: true,
+                    tiles: {
+                        include: {
+                            Biome: true
+                        }
+                    }
                 }
             }
         }
@@ -22,7 +31,15 @@ export const load: PageServerLoad = async ({ params }) => {
         throw fail(404, { success: false, id: params.id })
     }
 
+    // Calculate tile position within region (10x10 grid)
+    const tileIndex = tile.Region.tiles.findIndex(t => t.id === tile.id);
+    const tileX = tileIndex % 10;
+    const tileY = Math.floor(tileIndex / 10);
+
     return {
-        tile
+        tile,
+        regionTiles: tile.Region.tiles,
+        tileX,
+        tileY
     }
 }
