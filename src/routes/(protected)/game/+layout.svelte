@@ -2,18 +2,27 @@
 	import type { PageData } from './$types';
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
+	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	let serverTime = $state('...');
 	let localTime = $state('...');
 
-	async function updateServerTime(time: string) {
-		serverTime = time;
-	}
-	async function updateLocalTime(time: string) {
-		localTime = time;
-	}
+	// Update times periodically
+	onMount(() => {
+		const updateTimes = () => {
+			const now = new Date();
+			localTime = now.toLocaleTimeString();
+			// For now, assume server time is same as local (update when server API available)
+			serverTime = now.toUTCString().split(' ')[4] + ' UTC';
+		};
+
+		updateTimes();
+		const interval = setInterval(updateTimes, 1000);
+
+		return () => clearInterval(interval);
+	});
 </script>
 
 <svelte:head>

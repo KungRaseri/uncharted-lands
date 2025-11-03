@@ -2,6 +2,7 @@ import { db } from '$lib/db';
 import { TileType } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
+import { getStructureDefinition } from '$lib/game/structures';
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (locals.account.profile) {
@@ -98,7 +99,7 @@ const settle: Action = async ({ request, locals }) => {
             }
         })
 
-        await tx.settlement.create({
+        const settlement = await tx.settlement.create({
             data: {
                 name: "Home Settlement",
                 Storage: {
@@ -122,6 +123,52 @@ const settle: Action = async ({ request, locals }) => {
                 }
             }
         })
+
+        // Create initial tent structure for new settlement
+        const tentDefinition = getStructureDefinition('tent');
+        if (tentDefinition) {
+            // Create structure requirements
+            const requirements = await tx.structureRequirements.create({
+                data: {
+                    area: tentDefinition.requirements.area,
+                    solar: tentDefinition.requirements.solar,
+                    wind: tentDefinition.requirements.wind,
+                    food: tentDefinition.requirements.food,
+                    water: tentDefinition.requirements.water,
+                    wood: tentDefinition.requirements.wood,
+                    stone: tentDefinition.requirements.stone,
+                    ore: tentDefinition.requirements.ore
+                }
+            });
+
+            // Create the structure instance
+            const structure = await tx.settlementStructure.create({
+                data: {
+                    name: tentDefinition.name,
+                    description: tentDefinition.description,
+                    buildRequirements: {
+                        connect: { id: requirements.id }
+                    },
+                    settlement: {
+                        connect: { id: settlement.id }
+                    }
+                }
+            });
+
+            // Create structure modifiers
+            for (const modifier of tentDefinition.modifiers) {
+                await tx.structureModifier.create({
+                    data: {
+                        name: modifier.name,
+                        description: modifier.description,
+                        value: modifier.value,
+                        settlementStructure: {
+                            connect: { id: structure.id }
+                        }
+                    }
+                });
+            }
+        }
     })
 
     // update the player profile and connect it to the server
