@@ -4,6 +4,7 @@ import type { Prisma, Region, Plot, Biome, Tile, World } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 import { normalizeValue } from '$lib/game/world-generator'
+import { generatePlotResources, determinePlotsTotal } from '$lib/game/resource-generator'
 
 import cuid from 'cuid';
 
@@ -167,11 +168,15 @@ function createPlots() {
         const biome = biomes.find(biome => biome.id === tile.biomeId)
         if (biome === undefined) return;
 
-        const plotsTotal = determinePlotsTotal(tile.elevation, biome);
+        const plotsTotal = determinePlotsTotal(tile, biome);
 
         for (let i = 0; i < plotsTotal; i++) {
-            const plotData: Plot = determinePlotData(tile, biome);
-            plots.push(plotData);
+            const resources = generatePlotResources(tile, biome);
+            plots.push({
+                id: cuid(),
+                tileId: tile.id,
+                ...resources
+            });
         }
     }
 }
@@ -201,89 +206,6 @@ async function finishWorldCreation() {
             data: plots as Prisma.Enumerable<Prisma.PlotCreateManyInput>
         })
     ])
-}
-
-function determinePlotsTotal(elevation: number, biome: Biome) {
-    if (elevation <= 0) return 0; // make sure to return 0 plots for oceanic tiles.
-
-    return Math.floor(Math.random() * (biome.plotsMax - biome.plotsMin + 1)) + biome.plotsMin;
-}
-
-function determinePlotData(tile: Tile, biome: Biome) {
-    const area = Math.floor(Math.random() * (biome.plotAreaMax - biome.plotAreaMin + 1)) + biome.plotAreaMin;
-
-    const solar = Math.floor(biome.solarModifier + ((tile.elevation + 1) * 2) + ((tile.temperature + 1) * 2) - ((tile.precipitation + 1) * 2))
-    const wind = Math.floor(biome.windModifier + ((tile.temperature + 1) * 1.5) + ((tile.precipitation + 1) * 1.5))
-
-    const food = determineFood(tile.elevation, tile.precipitation, tile.temperature, solar, wind);
-    const water = determineWater(tile.elevation, tile.precipitation, tile.temperature, solar, wind);
-
-    const wood = Math.round((tile.elevation + tile.precipitation + tile.temperature + solar) / 4)
-    const stone = Math.round((tile.elevation + tile.precipitation + tile.temperature + wind) / 4)
-    const ore = Math.round((tile.elevation + tile.precipitation + tile.temperature + solar + wind) / 5)
-
-    return { id: cuid(), tileId: tile.id, area, solar, wind, food, water, wood, stone, ore }
-}
-
-function determineSolar(elevation: number, precipitation: number, temperature: number) {
-    // Determine base solar value based on elevation
-    let solar = 1;
-
-    if (elevation > 0) {
-        solar += elevation / 10000;
-        if (solar > 5) solar = 5;
-    } else {
-        solar -= Math.abs(elevation) / 10000;
-        if (solar < 1) solar = 1;
-    }
-
-    // Adjust solar based on precipitation
-    solar -= precipitation / 150;
-    if (solar < 1) solar = 1;
-
-    // Adjust solar based on temperature
-    solar += temperature / 20;
-    if (solar > 5) solar = 5;
-
-    return Math.round(solar);
-}
-
-function determineWind(elevation: number, precipitation: number, temperature: number) {
-    // Determine base wind value based on elevation
-    let wind = 5;
-    if (elevation > 0) {
-        wind -= elevation / 10000;
-        if (wind < 1) wind = 1;
-    } else {
-        wind += Math.abs(elevation) / 10000;
-        if (wind > 5) wind = 5;
-    }
-
-    // Adjust wind based on precipitation
-    wind += precipitation / 150;
-    if (wind > 5) wind = 5;
-
-    // Adjust wind based on temperature
-    wind -= temperature / 20;
-    if (wind < 1) wind = 1;
-
-    return Math.round(wind);
-}
-
-function determineFood(elevation: number, precipitation: number, temperature: number, solar: number, wind: number) {
-    let food = (elevation + precipitation + temperature) / 3
-
-    food += (solar - wind) / 10;
-
-    return Math.round(Math.max(1, Math.min(5, food)))
-}
-
-function determineWater(elevation: number, precipitation: number, temperature: number, solar: number, wind: number) {
-    let water = (elevation + precipitation + temperature) / 3
-
-    water += (solar + wind) / 10;
-
-    return Math.round(Math.max(1, Math.min(5, water)))
 }
 
 async function determineBiome(precipitation: number, temperature: number) {

@@ -1,8 +1,9 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { Globe, Plus, Search, ExternalLink, Server } from 'lucide-svelte';
+	import type { PageData, ActionData } from './$types';
+	import { Globe, Plus, Search, ExternalLink, Server, Pencil, Trash2 } from 'lucide-svelte';
+	import { enhance } from '$app/forms';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let searchTerm = $state('');
 	
@@ -15,6 +16,23 @@
 			world.server.name.toLowerCase().includes(search)
 		);
 	}));
+
+	// State for delete confirmation modal
+	let deleteModalOpen = $state(false);
+	let worldToDelete = $state<typeof data.worlds[0] | null>(null);
+	let isDeleting = $state(false);
+
+	function openDeleteModal(world: typeof data.worlds[0]) {
+		worldToDelete = world;
+		deleteModalOpen = true;
+	}
+
+	function closeDeleteModal() {
+		if (!isDeleting) {
+			deleteModalOpen = false;
+			worldToDelete = null;
+		}
+	}
 </script>
 
 <div class="space-y-4">
@@ -34,6 +52,21 @@
 			<span>Create World</span>
 		</a>
 	</div>
+
+	<!-- Success/Error Messages -->
+	{#if form?.success}
+		<aside class="alert preset-filled-success-500 rounded-md">
+			<div class="alert-message">
+				<p>{form.message}</p>
+			</div>
+		</aside>
+	{:else if form?.success === false}
+		<aside class="alert preset-filled-error-500 rounded-md">
+			<div class="alert-message">
+				<p>{form.message}</p>
+			</div>
+		</aside>
+	{/if}
 
 	<!-- Search Bar -->
 	<div class="card preset-filled-surface-100-900 p-4">
@@ -95,7 +128,7 @@
 								</td>
 								<td>{world.regions.length}</td>
 								<td class="font-mono text-xs">{world.id}</td>
-								<td class="text-right">
+								<td class="text-right space-x-2">
 									<a
 										href="/admin/worlds/{world.id}"
 										class="btn btn-sm preset-tonal-primary-500 rounded-md"
@@ -103,6 +136,21 @@
 										<ExternalLink size={16} />
 										<span>View</span>
 									</a>
+									<a
+										href="/admin/worlds/{world.id}?edit=true"
+										class="btn btn-sm preset-tonal-secondary-500 rounded-md"
+									>
+										<Pencil size={16} />
+										<span>Edit</span>
+									</a>
+									<button
+										type="button"
+										class="btn btn-sm preset-filled-error-500 rounded-md"
+										onclick={() => openDeleteModal(world)}
+									>
+										<Trash2 size={16} />
+										<span>Delete</span>
+									</button>
 								</td>
 							</tr>
 						{/each}
@@ -122,3 +170,110 @@
 		{/if}
 	</div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+{#if deleteModalOpen && worldToDelete}
+	{@const regionCount = worldToDelete.regions.length}
+	{@const tileCount = regionCount * 100}
+	{@const plotCount = tileCount * 5}
+	
+	<div class="modal-backdrop" onclick={closeDeleteModal}>
+		<div class="modal preset-filled-surface-50-950 w-full max-w-md" onclick={(e) => e.stopPropagation()}>
+			<header class="modal-header">
+				<h3 class="h3">Delete World</h3>
+			</header>
+			<section class="modal-body space-y-4">
+				<p>Are you sure you want to delete the world <strong>{worldToDelete.name}</strong>?</p>
+				
+				<aside class="alert preset-filled-warning-500 rounded-md">
+					<div class="alert-message">
+						<p class="font-semibold">⚠️ Cascade Delete Warning</p>
+						<p class="text-sm">This will permanently delete:</p>
+						<ul class="text-sm list-disc list-inside mt-2 space-y-1">
+							<li>{regionCount} region{regionCount === 1 ? '' : 's'}</li>
+							<li>~{tileCount.toLocaleString()} tiles</li>
+							<li>~{plotCount.toLocaleString()} plots</li>
+							<li>All associated settlements and resources</li>
+						</ul>
+					</div>
+				</aside>
+
+				<aside class="alert preset-filled-error-500 rounded-md">
+					<div class="alert-message">
+						<p class="font-semibold">This action cannot be undone!</p>
+					</div>
+				</aside>
+			</section>
+			<footer class="modal-footer">
+				<button 
+					type="button" 
+					class="btn preset-tonal-surface-500 rounded-md" 
+					onclick={closeDeleteModal}
+					disabled={isDeleting}
+				>
+					Cancel
+				</button>
+				<form 
+					method="POST" 
+					action="?/delete"
+					use:enhance={() => {
+						isDeleting = true;
+						return async ({ update }) => {
+							await update();
+							isDeleting = false;
+							closeDeleteModal();
+						};
+					}}
+				>
+					<input type="hidden" name="worldId" value={worldToDelete.id} />
+					<button 
+						type="submit" 
+						class="btn preset-filled-error-500 rounded-md"
+						disabled={isDeleting}
+					>
+						{#if isDeleting}
+							<span>Deleting...</span>
+						{:else}
+							<Trash2 size={16} />
+							<span>Delete World</span>
+						{/if}
+					</button>
+				</form>
+			</footer>
+		</div>
+	</div>
+{/if}
+
+<style>
+	.modal-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.7);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 999;
+	}
+
+	.modal {
+		border-radius: 0.5rem;
+		padding: 1.5rem;
+	}
+
+	.modal-header {
+		margin-bottom: 1rem;
+	}
+
+	.modal-body {
+		margin-bottom: 1.5rem;
+	}
+
+	.modal-footer {
+		display: flex;
+		gap: 0.75rem;
+		justify-content: flex-end;
+	}
+</style>

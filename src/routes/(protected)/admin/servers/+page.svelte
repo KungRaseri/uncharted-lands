@@ -1,10 +1,28 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { Server, Plus, ExternalLink } from 'lucide-svelte';
+	import type { PageData, ActionData } from './$types';
+	import { Server, Plus, ExternalLink, Pencil, Trash2 } from 'lucide-svelte';
 	import PageHeader from '$lib/components/admin/PageHeader.svelte';
 	import EmptyState from '$lib/components/admin/EmptyState.svelte';
+	import { enhance } from '$app/forms';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
+
+	// State for delete confirmation modal
+	let deleteModalOpen = $state(false);
+	let serverToDelete = $state<typeof data.servers[0] | null>(null);
+	let isDeleting = $state(false);
+
+	function openDeleteModal(server: typeof data.servers[0]) {
+		serverToDelete = server;
+		deleteModalOpen = true;
+	}
+
+	function closeDeleteModal() {
+		if (!isDeleting) {
+			deleteModalOpen = false;
+			serverToDelete = null;
+		}
+	}
 </script>
 
 <div class="space-y-4">
@@ -21,6 +39,21 @@
 			</a>
 		{/snippet}
 	</PageHeader>
+
+	<!-- Success/Error Messages -->
+	{#if form?.success}
+		<aside class="alert preset-filled-success-500 rounded-md">
+			<div class="alert-message">
+				<p>{form.message}</p>
+			</div>
+		</aside>
+	{:else if form?.success === false}
+		<aside class="alert preset-filled-error-500 rounded-md">
+			<div class="alert-message">
+				<p>{form.message}</p>
+			</div>
+		</aside>
+	{/if}
 
 	<!-- Servers List -->
 	<div class="card preset-filled-surface-100-900">
@@ -52,13 +85,15 @@
 							<tr class="hover:preset-tonal-surface-500">
 								<td class="font-mono text-xs">{server.id}</td>
 								<td class="font-semibold">{server.name}</td>
-								<td>{server.host || 'N/A'}</td>
+								<td>{server.hostname || 'N/A'}</td>
 								<td>{server.port || 'N/A'}</td>
 								<td>
-									<span class="badge preset-filled-success-500">Active</span>
+									<span class="badge {server.status === 'ONLINE' ? 'preset-filled-success-500' : server.status === 'MAINTENANCE' ? 'preset-filled-warning-500' : 'preset-filled-error-500'}">
+										{server.status}
+									</span>
 								</td>
 								<td>{server._count?.worlds || 0}</td>
-								<td class="text-right">
+								<td class="text-right space-x-2">
 									<a
 										href="/admin/servers/{server.id}"
 										class="btn btn-sm preset-tonal-primary-500 rounded-md"
@@ -66,6 +101,21 @@
 										<ExternalLink size={16} />
 										<span>View</span>
 									</a>
+									<a
+										href="/admin/servers/{server.id}?edit=true"
+										class="btn btn-sm preset-tonal-secondary-500 rounded-md"
+									>
+										<Pencil size={16} />
+										<span>Edit</span>
+									</a>
+									<button
+										type="button"
+										class="btn btn-sm preset-filled-error-500 rounded-md"
+										onclick={() => openDeleteModal(server)}
+									>
+										<Trash2 size={16} />
+										<span>Delete</span>
+									</button>
 								</td>
 							</tr>
 						{/each}
@@ -82,3 +132,102 @@
 		{/if}
 	</div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+{#if deleteModalOpen && serverToDelete}
+	<div class="modal-backdrop" onclick={closeDeleteModal}>
+		<div class="modal preset-filled-surface-50-950 w-full max-w-md" onclick={(e) => e.stopPropagation()}>
+			<header class="modal-header">
+				<h3 class="h3">Delete Server</h3>
+			</header>
+			<section class="modal-body space-y-4">
+				<p>Are you sure you want to delete the server <strong>{serverToDelete.name}</strong>?</p>
+				
+				{#if serverToDelete._count && serverToDelete._count.worlds > 0}
+					<aside class="alert preset-filled-warning-500 rounded-md">
+						<div class="alert-message">
+							<p class="font-semibold">Warning: This server has {serverToDelete._count.worlds} world(s)</p>
+							<p class="text-sm">You must delete or reassign all worlds before deleting this server.</p>
+						</div>
+					</aside>
+				{:else}
+					<aside class="alert preset-filled-error-500 rounded-md">
+						<div class="alert-message">
+							<p class="font-semibold">This action cannot be undone!</p>
+						</div>
+					</aside>
+				{/if}
+			</section>
+			<footer class="modal-footer">
+				<button 
+					type="button" 
+					class="btn preset-tonal-surface-500 rounded-md" 
+					onclick={closeDeleteModal}
+					disabled={isDeleting}
+				>
+					Cancel
+				</button>
+				<form 
+					method="POST" 
+					action="?/delete"
+					use:enhance={() => {
+						isDeleting = true;
+						return async ({ update }) => {
+							await update();
+							isDeleting = false;
+							closeDeleteModal();
+						};
+					}}
+				>
+					<input type="hidden" name="serverId" value={serverToDelete.id} />
+					<button 
+						type="submit" 
+						class="btn preset-filled-error-500 rounded-md"
+						disabled={isDeleting || (serverToDelete._count && serverToDelete._count.worlds > 0)}
+					>
+						{#if isDeleting}
+							<span>Deleting...</span>
+						{:else}
+							<Trash2 size={16} />
+							<span>Delete Server</span>
+						{/if}
+					</button>
+				</form>
+			</footer>
+		</div>
+	</div>
+{/if}
+
+<style>
+	.modal-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.7);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 999;
+	}
+
+	.modal {
+		border-radius: 0.5rem;
+		padding: 1.5rem;
+	}
+
+	.modal-header {
+		margin-bottom: 1rem;
+	}
+
+	.modal-body {
+		margin-bottom: 1.5rem;
+	}
+
+	.modal-footer {
+		display: flex;
+		gap: 0.75rem;
+		justify-content: flex-end;
+	}
+</style>

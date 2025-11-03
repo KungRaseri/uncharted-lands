@@ -1,9 +1,37 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Globe, Server, MapPin, Home, Mountain, Waves, ArrowLeft } from 'lucide-svelte';
+	import { Globe, Server, MapPin, Home, Mountain, Waves, ArrowLeft, Edit, Trash2, Save, X } from 'lucide-svelte';
 	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
+	import { enhance } from '$app/forms';
+	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: any } = $props();
+	
+	let isEditing = $state(false);
+	let showDeleteConfirm = $state(false);
+	let isDeleting = $state(false);
+	
+	// Edit form state
+	let editName = $state(data.world.name);
+	let editServerId = $state(data.world.serverId);
+	
+	// Auto-enable edit mode if ?edit=true in URL
+	onMount(() => {
+		if ($page.url.searchParams.get('edit') === 'true') {
+			startEdit();
+		}
+	});
+	
+	function startEdit() {
+		editName = data.world.name;
+		editServerId = data.world.serverId;
+		isEditing = true;
+	}
+	
+	function cancelEdit() {
+		isEditing = false;
+	}
 
 	// Transform database regions into preview format
 	const previewRegions = $derived(
@@ -60,26 +88,179 @@
 
 	<!-- World Header -->
 	<div class="card preset-filled-surface-100-900 p-6">
-		<div class="flex items-start gap-6">
-			<div
-				class="flex-none w-16 h-16 rounded-full bg-primary-500/10 flex items-center justify-center"
-			>
-				<Globe size={32} class="text-primary-500" />
-			</div>
+		{#if !isEditing}
+			<!-- View Mode -->
+			<div class="flex items-start gap-6">
+				<div
+					class="flex-none w-16 h-16 rounded-full bg-primary-500/10 flex items-center justify-center"
+				>
+					<Globe size={32} class="text-primary-500" />
+				</div>
 
-			<div class="flex-1">
-				<h1 class="text-3xl font-bold mb-2">{data.world.name}</h1>
-				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{data.world.id}</p>
+				<div class="flex-1">
+					<h1 class="text-3xl font-bold mb-2">{data.world.name}</h1>
+					<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{data.world.id}</p>
+
+					<div class="flex items-center gap-2">
+						<Server size={16} class="text-surface-400" />
+						<a href="/admin/servers/{data.world.serverId}" class="text-primary-500 hover:underline">
+							{data.world.server.name}
+						</a>
+					</div>
+				</div>
 
 				<div class="flex items-center gap-2">
-					<Server size={16} class="text-surface-400" />
-					<a href="/admin/servers/{data.world.serverId}" class="text-primary-500 hover:underline">
-						{data.world.server.name}
-					</a>
+					<button onclick={startEdit} class="btn btn-sm preset-filled-primary-500 rounded-md">
+						<Edit size={16} />
+						<span>Edit</span>
+					</button>
+					<button 
+						onclick={() => showDeleteConfirm = true} 
+						class="btn btn-sm preset-filled-error-500 rounded-md"
+					>
+						<Trash2 size={16} />
+						<span>Delete</span>
+					</button>
+				</div>
+			</div>
+
+			<!-- Success/Error Messages -->
+			{#if form?.success}
+				<div class="mt-4 p-4 bg-success-500/10 border border-success-500 rounded-lg text-success-500">
+					{form.message}
+				</div>
+			{:else if form?.message}
+				<div class="mt-4 p-4 bg-error-500/10 border border-error-500 rounded-lg text-error-500">
+					{form.message}
+				</div>
+			{/if}
+		{:else}
+			<!-- Edit Mode -->
+			<form method="POST" action="?/update" use:enhance={() => {
+				return async ({ update }) => {
+					await update();
+					isEditing = false;
+				};
+			}}>
+				<div class="flex items-start gap-6">
+					<div
+						class="flex-none w-16 h-16 rounded-full bg-primary-500/10 flex items-center justify-center"
+					>
+						<Globe size={32} class="text-primary-500" />
+					</div>
+
+					<div class="flex-1 space-y-4">
+						<div>
+							<h1 class="text-2xl font-bold mb-2">Edit World</h1>
+							<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">{data.world.id}</p>
+						</div>
+
+						<label class="label">
+							<span class="label-text">World Name *</span>
+							<input 
+								type="text" 
+								name="name" 
+								bind:value={editName}
+								class="input preset-filled-surface-200-700" 
+								required 
+							/>
+						</label>
+
+						<label class="label">
+							<span class="label-text flex items-center gap-2">
+								<Server size={16} />
+								Server *
+							</span>
+							<select 
+								name="serverId" 
+								bind:value={editServerId}
+								class="select preset-filled-surface-200-700"
+								required
+							>
+								{#each data.servers as server}
+									<option value={server.id}>
+										{server.name} ({server.hostname}:{server.port})
+									</option>
+								{/each}
+							</select>
+							<p class="text-xs text-surface-500 dark:text-surface-400 mt-1">
+								Reassign this world to a different server
+							</p>
+						</label>
+					</div>
+
+					<div class="flex items-center gap-2">
+						<button type="submit" class="btn btn-sm preset-filled-success-500 rounded-md">
+							<Save size={16} />
+							<span>Save</span>
+						</button>
+						<button type="button" onclick={cancelEdit} class="btn btn-sm preset-tonal-surface-500 rounded-md">
+							<X size={16} />
+							<span>Cancel</span>
+						</button>
+					</div>
+				</div>
+			</form>
+		{/if}
+	</div>
+
+	<!-- Delete Confirmation Modal -->
+	{#if showDeleteConfirm}
+		<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+			<div class="card preset-filled-surface-100-900 p-6 max-w-md w-full">
+				<h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-error-500">
+					<Trash2 size={24} />
+					Delete World?
+				</h3>
+				<p class="mb-4 text-surface-600 dark:text-surface-400">
+					Are you sure you want to delete <strong>{data.world.name}</strong>?
+				</p>
+				<div class="mb-4 p-3 bg-warning-500/10 border border-warning-500 rounded-lg text-warning-500">
+					<p class="font-semibold">⚠️ Warning</p>
+					<p class="text-sm mt-1">This will permanently delete:</p>
+					<ul class="text-sm mt-2 list-disc list-inside">
+						<li>{data.world.regions.length} regions</li>
+						<li>{data.worldInfo.landTiles + data.worldInfo.oceanTiles} tiles</li>
+						<li>All plots on those tiles</li>
+						<li>{data.worldInfo.settlements} settlements</li>
+					</ul>
+				</div>
+				<p class="mb-6 text-sm text-error-500">
+					This action cannot be undone!
+				</p>
+
+				<div class="flex gap-3 justify-end">
+					<button 
+						onclick={() => showDeleteConfirm = false} 
+						class="btn preset-tonal-surface-500 rounded-md"
+						disabled={isDeleting}
+					>
+						Cancel
+					</button>
+					<form method="POST" action="?/delete" use:enhance={() => {
+						isDeleting = true;
+						return async ({ update }) => {
+							await update();
+							isDeleting = false;
+						};
+					}}>
+						<button 
+							type="submit" 
+							class="btn preset-filled-error-500 rounded-md"
+							disabled={isDeleting}
+						>
+							{#if isDeleting}
+								Deleting...
+							{:else}
+								<Trash2 size={16} />
+								<span>Delete World</span>
+							{/if}
+						</button>
+					</form>
 				</div>
 			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Stats Cards -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
