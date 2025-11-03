@@ -9,6 +9,7 @@
     "build:no-migrate": "prisma generate && vite build",
     "migrate": "prisma migrate deploy",
     "migrate:fix": "node scripts/pre-build-migrations.js",
+    "migrate:resolve": "node scripts/resolve-failed-migration.js",
     "preview": "vite preview",
     "test": "playwright test",
     "test:unit": "vitest",

@@ -8,7 +8,18 @@ The `20231007173937_settlement_work_v3` migration started at 2023-10-11 03:18:51
 
 ## Immediate Solution
 
-### Option 1: Let the Build Script Handle It (Recommended)
+### Option 1: Use the Simple Resolve Script (Easiest)
+```bash
+npm run migrate:resolve
+```
+
+This will:
+1. Mark the failed migration as rolled back
+2. Tell you to run `npm run build` next
+
+Then commit and push to trigger deployment.
+
+### Option 2: Let the Build Script Handle It (Automatic)
 The build script will now automatically detect and resolve this failed migration.
 
 Just redeploy:
@@ -22,7 +33,7 @@ The build will automatically:
 3. Deploy current migrations
 4. Continue with the build
 
-### Option 2: Manual Fix (If build script doesn't work)
+### Option 3: Manual Fix (If scripts don't work)
 
 **Step 1:** Connect to production database
 Make sure your `DATABASE_URL` in `.env` points to production.
