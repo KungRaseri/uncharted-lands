@@ -17,6 +17,58 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ---
 
+## Documentation Policy
+
+**⚠️ CRITICAL: ALL project documentation MUST be placed in the `docs/` directory.**
+
+### Documentation Rules
+
+1. **Location**: ALL `.md` documentation files go in `docs/` directory
+   - ✅ CORRECT: `docs/WORLD_GENERATION_GUIDE.md`
+   - ❌ WRONG: `WORLD_GENERATION_GUIDE.md` (root level)
+   - ❌ WRONG: `src/docs/guide.md` (inside src)
+   
+2. **Root-Level Exceptions**: Only these files are allowed in the project root:
+   - `README.md` - Project overview and getting started
+   - `LICENSE` - License file
+   - `CHANGELOG.md` - Version history (if needed)
+   
+3. **Migration Documentation**: Temporary migration docs (e.g., `MIGRATION_STATUS.md`, `SKELETON_V4_MIGRATION_COMPLETE.md`) should be:
+   - Moved to `docs/migration/` once completed
+   - Deleted if no longer relevant
+   - Never created in root going forward
+
+4. **When Creating Documentation**:
+   - **Always** check if `docs/` directory exists
+   - **Always** create new docs in `docs/`
+   - Use subdirectories for organization: `docs/guides/`, `docs/api/`, `docs/migration/`, etc.
+   - **Never** create documentation in the project root (except README.md)
+
+5. **Existing Root-Level Docs**: If you find documentation in the root:
+   - Move it to `docs/` with appropriate subdirectory
+   - Update any references to the old location
+   - Notify the user of the move
+
+### Documentation Organization
+
+```
+docs/
+├── Home.md                          # Wiki home page
+├── guides/                          # User guides
+│   ├── world-generation.md          # World generation guide
+│   └── getting-started.md           # Getting started guide
+├── api/                             # API documentation
+│   └── endpoints.md                 # API endpoint docs
+├── migration/                       # Migration documentation
+│   ├── skeleton-v4-migration.md     # Skeleton v4 migration
+│   └── tailwind-v4-compliance.md    # Tailwind v4 compliance
+└── development/                     # Developer documentation
+    ├── architecture.md              # System architecture
+    └── contributing.md              # Contribution guidelines
+```
+
+---
+
 ## Official Documentation References
 
 ### Skeleton Labs Documentation
@@ -55,45 +107,47 @@ Always consult these official Skeleton LLM documentation files when working with
 
 ## Project-Specific Documentation
 
+### World Generation Guide
+
+**📍 Location**: `docs/WORLD_GENERATION_GUIDE.md`
+
+Complete technical documentation on the world generation system:
+- How simple sliders map to Open Simplex Noise parameters
+- Technical parameter explanations (octaves, frequency, amplitude, persistence, scale)
+- Preset recommendations for different world types
+- Troubleshooting common issues
+- Technical implementation details
+
 ### Migration Documentation (Start Here!)
+
+**📍 Location**: `docs/migration/`
 
 Our project is in active migration from Skeleton v2 to v4 with Tailwind v4. Read these files to understand current state:
 
-1. **README_MIGRATION.md** - Start here for overview
-   - Current migration status
-   - Known issues (Skeleton v4.2.2 @variant bug)
-   - Decision matrix for path forward
-   - Quick commands
+1. **docs/migration/MIGRATION_COMPLETE_SUMMARY.md** - Migration overview
+   - Summary of completed migration work
+   - What was changed and why
+   - Current status
 
-2. **SETUP_VERIFICATION.md** - Configuration verification
-   - Verified against official Skeleton docs
-   - Package versions and compliance
-   - Configuration file validation
-   - 8/9 score (blocked by upstream bug)
+2. **docs/migration/SKELETON_V4_MIGRATION_COMPLETE.md** - Core migration details
+   - Skeleton v2 → v4 migration steps
+   - Component changes
+   - Breaking changes addressed
 
-3. **TAILWIND_V4_COMPLIANCE.md** - Tailwind v4 requirements
-   - 100% compliant with official requirements
-   - CSS-first configuration explained
-   - @apply replacement guide
-   - Unsupported features list
+3. **docs/migration/SKELETON_MIGRATION_REMAINING.md** - Remaining work
+   - Outstanding migration tasks
+   - Known issues to address
+   - Next steps
 
-4. **TAILWIND_V4_CONFIG.md** - Configuration guide
-   - How Tailwind v4 works
-   - All config files explained
-   - Theme customization
-   - Verification commands
+4. **docs/migration/SKELETON_V4_THEME_MIGRATION.md** - Theme system
+   - Theme configuration migration
+   - CSS variable setup
+   - Dark mode implementation
 
-5. **MIGRATION_STATUS.md** - Progress tracking
-   - Completed steps checklist
-   - Pending tasks with priorities
-   - Known issues and workarounds
-   - Next steps plan
-
-6. **COMPONENT_MIGRATION_AUDIT.md** - Component migration plan
-   - 10 files with Skeleton components
-   - Component-by-component migration instructions
-   - Code examples
-   - Effort estimates (10-23 hours)
+5. **docs/migration/LAYOUT_THEME_VERIFICATION.md** - Verification
+   - Configuration verification results
+   - Theme system validation
+   - Testing checklist
 
 ---
 
