@@ -5,8 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "vite dev",
-    "build": "prisma generate && vite build",
+    "build": "node scripts/pre-build-migrations.js && prisma generate && vite build",
+    "build:no-migrate": "prisma generate && vite build",
     "migrate": "prisma migrate deploy",
+    "migrate:fix": "node scripts/pre-build-migrations.js",
     "preview": "vite preview",
     "test": "playwright test",
     "test:unit": "vitest",
