@@ -21,6 +21,10 @@
     "postinstall": "node scripts/patch-skeleton.js",
     "seed": "node scripts/seed.js"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "prisma": {
     "seed": "tsx prisma/seed/index.ts"
   },
