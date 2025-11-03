@@ -94,13 +94,7 @@
 				/>
 			</label>
 
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Octaves</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{elevationOptions.octaves}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={1}
 					min={1}
@@ -111,24 +105,24 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{elevationOptions.octaves}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
 
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Amplitude</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{elevationOptions.amplitude}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.1}
 					min={1}
@@ -139,24 +133,24 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{elevationOptions.amplitude}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
 
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Frequency</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{elevationOptions.frequency}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.01}
 					min={0.01}
@@ -167,24 +161,24 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{elevationOptions.frequency}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
 
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Persistence</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{elevationOptions.persistence}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.01}
 					min={0.01}
@@ -195,11 +189,17 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{elevationOptions.persistence}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
@@ -220,13 +220,7 @@
 					}}
 				/>
 			</label>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Scale</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{precipitationOptions.scale}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.01}
 					min={0.01}
@@ -237,23 +231,23 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Scale</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{precipitationOptions.scale}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Octaves</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{precipitationOptions.octaves}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={1}
 					min={1}
@@ -264,23 +258,23 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{precipitationOptions.octaves}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Amplitude</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{precipitationOptions.amplitude}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.1}
 					min={1}
@@ -291,23 +285,23 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{precipitationOptions.amplitude}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Frequency</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{precipitationOptions.frequency}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.01}
 					min={0.01}
@@ -318,23 +312,23 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{precipitationOptions.frequency}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Persistence</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{precipitationOptions.persistence}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.01}
 					min={0.01}
@@ -345,11 +339,17 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{precipitationOptions.persistence}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
@@ -370,13 +370,7 @@
 					}}
 				/>
 			</label>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Scale</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{temperatureOptions.scale}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.01}
 					min={0.01}
@@ -387,23 +381,23 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Scale</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{temperatureOptions.scale}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Octaves</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{temperatureOptions.octaves}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={1}
 					min={1}
@@ -414,23 +408,23 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{temperatureOptions.octaves}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Amplitude</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{temperatureOptions.amplitude}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.1}
 					min={1}
@@ -441,23 +435,23 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{temperatureOptions.amplitude}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Frequency</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{temperatureOptions.frequency}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.01}
 					min={0.01}
@@ -468,23 +462,23 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{temperatureOptions.frequency}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
 				</Slider>
 			</div>
-			<div class="flex flex-col gap-2">
-				<div class="flex items-center justify-between">
-					<span>Persistence</span>
-					<span class="rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-1">
-						{temperatureOptions.persistence}
-					</span>
-				</div>
+			<div class="flex flex-col gap-2 min-w-40">
 				<Slider
 					step={0.01}
 					min={0.01}
@@ -495,11 +489,17 @@
 						generate();
 					}}
 				>
-					<Slider.Control>
-						<Slider.Track>
-							<Slider.Range />
+					<div class="flex items-center justify-between mb-2">
+						<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
+						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							{temperatureOptions.persistence}
+						</span>
+					</div>
+					<Slider.Control class="relative flex items-center w-full h-2">
+						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 						</Slider.Track>
-						<Slider.Thumb index={0}>
+						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
 							<Slider.HiddenInput />
 						</Slider.Thumb>
 					</Slider.Control>
