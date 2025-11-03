@@ -1,8 +1,13 @@
 <script lang="ts">
-	import type { PageData, ActionData } from './$types';
+	import type { PageData, ActionData as GeneratedActionData } from './$types';
 	import { Building2, Home, MapPin, Package, Sun, Wind, ArrowLeft, Droplet, Trees, Mountain, Pickaxe, Plus, X, ShieldAlert, Warehouse, Hammer } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import { STRUCTURE_DEFINITIONS, getStructureCategories, getStructuresByCategory, canBuildStructure, type StructureDefinition } from '$lib/game/structures';
+
+	// Extended ActionData type to include optional reasons array
+	type ActionData = GeneratedActionData & {
+		reasons?: string[];
+	};
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
