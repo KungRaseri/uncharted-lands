@@ -1,62 +1,64 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
-	import { AppBar, popup, LightSwitch } from '@skeletonlabs/skeleton';
-	import type { PopupSettings } from '@skeletonlabs/skeleton';
+	import LightSwitch from './LightSwitch.svelte';
 
-	import MenuIcon from 'svelte-material-icons/Menu.svelte';
-	import Account from 'svelte-material-icons/Account.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import BellOutline from 'svelte-material-icons/BellOutline.svelte';
+	import { Menu, User, X, Bell } from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
 
-	const MenuOptions: PopupSettings = {
-		placement: 'bottom',
-		event: 'click',
-		target: 'userMenu'
-	};
+	let { isMainMenuOpen = $bindable(false) }: { isMainMenuOpen?: boolean } = $props();
+	let userMenuOpen = $state(false);
+	let userMenuRef: HTMLDivElement | undefined = $state();
 
-	export let isMainMenuOpen = false;
+	// Close menu when clicking outside
+	onMount(() => {
+		function handleClickOutside(event: MouseEvent) {
+			if (userMenuRef && !userMenuRef.contains(event.target as Node)) {
+				userMenuOpen = false;
+			}
+		}
+
+		document.addEventListener('click', handleClickOutside);
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
 </script>
 
-<AppBar
-	gridColumns="grid-cols-3"
-	slotDefault="place-self-center"
-	slotTrail="place-content-end"
-	background="bg-surface-100-800-token"
-	shadow="shadow-md"
->
-	<svelte:fragment slot="lead">
+<header class="bg-surface-100 dark:bg-surface-800 shadow-md">
+	<div class="grid grid-cols-3 items-center gap-4 p-4">
+		<!-- Lead slot -->
 		<div class="block sm:hidden">
 			<button
 				type="button"
-				class="px-1.5 py-0 btn-icon variant-soft-surface justify-center items-center"
+				class="px-1.5 py-0 btn-icon preset-tonal-surface-500 justify-center items-center"
 				aria-controls="mobile-menu"
-				aria-expanded="false"
-				on:click={() => {
+				aria-expanded={isMainMenuOpen}
+				onclick={() => {
 					isMainMenuOpen = !isMainMenuOpen;
 				}}
 			>
 				{#if !isMainMenuOpen}
-					<MenuIcon size={24} />
+					<Menu size={24} />
 				{:else}
-					<Close size={24} />
+					<X size={24} />
 				{/if}
 			</button>
 		</div>
-		<div class="hidden sm:block">
-			{#each $page.data.mainMenuLinks as link}
+		<div class="hidden sm:flex gap-2">
+			{#each $page.data?.mainMenuLinks ?? [] as link}
 				{#if link.requiredRole}
-					{#if $page.data.account}
+					{#if $page.data?.account}
 						<a
 							href={link.route}
 							class="btn rounded-md
-								{link.isActive ? 'bg-primary-active-token' : ''}
-								{$page.data.account.role !== link.requiredRole ? 'hidden' : ''}
-								bg-primary-hover-token
+								{link.isActive ? 'bg-primary-600' : ''}
+								{$page.data?.account?.role !== link.requiredRole ? 'hidden' : ''}
+								hover:bg-primary-500
 								"
 						>
-							<span class="text-token">
+							<span class="">
 								{link.name}
 							</span>
 						</a>
@@ -65,109 +67,124 @@
 					<a
 						href={link.route}
 						class="btn rounded-md
-							{link.isActive ? 'bg-primary-active-token' : ''}
-							{$page.data.account && link.requiredRole && $page.data.account.role !== link.requiredRole
+							{link.isActive ? 'bg-primary-600' : ''}
+							{$page.data?.account && link.requiredRole && $page.data?.account?.role !== link.requiredRole
 							? 'hidden'
 							: ''}
-							bg-primary-hover-token
+							hover:bg-primary-500
 							"
 						aria-current={link.isActive ? 'page' : undefined}
 					>
-						<span class="text-token">
+						<span class="">
 							{link.name}
 						</span>
 					</a>
 				{/if}
 			{/each}
 		</div>
-	</svelte:fragment>
 
-	<svelte:fragment slot="trail">
-		<div class="flex space-x-2">
+		<!-- Trail slot -->
+		<div class="flex items-center justify-end gap-2">
 			<LightSwitch />
-			{#if !$page.data.account}
+			{#if !$page.data?.account}
 				<a
 					href="/sign-in"
-					class="btn rounded-md text-token
-						bg-primary-hover-token
-						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-active-token' : ''}
+					class="btn rounded-md
+						hover:bg-primary-500
+						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-600' : ''}
 						"
 					data-testid="header-signin"
 				>
-					<span class="text-token"> Sign in </span>
+					<span class=""> Sign in </span>
 				</a>
 				<a
 					href="/register"
 					class="btn rounded-md
-						{$page.route.id === '/(auth)/register' ? 'bg-primary-active-token' : ''}
-						bg-primary-hover-token
+						{$page.route.id === '/(auth)/register' ? 'bg-primary-600' : ''}
+						hover:bg-primary-500
 						"
 					data-testid="header-register"
 				>
-					<span class="text-token"> Register </span>
+					<span class=""> Register </span>
 				</a>
 			{:else}
-				<div>
-					<button type="button" class="btn-icon bg-surface-200-700-token m-0 p-0">
-						<BellOutline size={24} />
-					</button>
+				<!-- Notifications Button -->
+				<button type="button" class="btn-icon preset-filled-surface-500 rounded-full">
+					<Bell size={20} />
+				</button>
 
+				<!-- User Menu -->
+				<div class="relative" bind:this={userMenuRef}>
 					<button
 						type="button"
-						class="btn-icon bg-surface-200-700-token m-0 p-0"
+						class="btn-icon preset-filled-surface-500 rounded-full"
 						id="user-menu-button"
-						aria-expanded="false"
+						aria-expanded={userMenuOpen}
 						aria-haspopup="true"
-						use:popup={MenuOptions}
+						onclick={() => {
+							userMenuOpen = !userMenuOpen;
+						}}
 					>
-						{#if $page.data.account.profile?.picture}
-							<img class="w-6 rounded-full" src={$page.data.account.profile.picture} alt="" />
+						{#if $page.data?.account?.profile?.picture}
+							<img
+								class="w-6 h-6 rounded-full object-cover"
+								src={$page.data.account.profile.picture}
+								alt="Profile"
+							/>
 						{:else}
-							<div class="w-6 items-center justify-center mx-auto">
-								<Account size={24} />
-							</div>
+							<User size={20} />
 						{/if}
 					</button>
-					<span class="relative rounded-md">
-						<nav
-							class="list-nav card p-3 -ml-5 mt-1 rounded-md"
+
+					{#if userMenuOpen}
+						<div
+							transition:slide
+							class="list-nav card preset-filled-surface-100-900 p-2 absolute right-0 mt-2 rounded-md shadow-lg z-50 min-w-[200px]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="user-menu-button"
 							tabindex="-1"
-							data-popup="userMenu"
 						>
-							{#each $page.data.userMenuLinks as link}
-								<div
-									class="{link.requiredRole && link.requiredRole !== $page.data.account.role
-										? 'hidden'
-										: ''}							"
-								>
-									<a
-										href={link.route}
-										class="btn
-									{link.isActive ? 'bg-primary-active-token' : ''}
-									"
-										aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
-									>
-										<span class="text-token">
-											{link.name}
-										</span>
-									</a>
-								</div>
-							{/each}
-							<form method="POST" action="/auth?/signout">
-								<button class="btn">
-									<span class="text-token"> Sign out </span>
-								</button>
-							</form>
-						</nav>
-					</span>
+							<ul class="space-y-1">
+								{#each $page.data?.userMenuLinks ?? [] as link}
+									{#if !link.requiredRole || link.requiredRole === $page.data?.account?.role}
+										<li>
+											<a
+												href={link.route}
+												class="btn w-full justify-start rounded-md
+													{link.isActive ? 'preset-filled-primary-500' : 'hover:preset-tonal-surface-500'}
+												"
+												aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+												onclick={() => {
+													userMenuOpen = false;
+												}}
+											>
+												{link.name}
+											</a>
+										</li>
+									{/if}
+								{/each}
+								<li>
+									<hr class="my-2" />
+								</li>
+								<li>
+									<form method="POST" action="/auth?/signout">
+										<button
+											type="submit"
+											class="btn w-full justify-start rounded-md hover:preset-tonal-error-500"
+										>
+											Sign out
+										</button>
+									</form>
+								</li>
+							</ul>
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>
-	</svelte:fragment>
-</AppBar>
+	</div>
+</header>
 
 <!-- Mobile menu, show/hide based on menu state. -->
 {#if isMainMenuOpen}
@@ -180,23 +197,23 @@
 		aria-labelledby="main-menu-button"
 	>
 		<div class="m-0 p-0 space-y-0 btn-group-vertical w-full rounded-none">
-			{#each $page.data.mainMenuLinks as link}
+			{#each $page.data?.mainMenuLinks ?? [] as link}
 				<a
 					href={link.route}
 					class="btn rounded-none
-						bg-primary-hover-token
+						hover:bg-primary-500
 						{$page.route.id === link.route ||
 					$page.route.id === `/(protected)${link.route}` ||
 					$page.route.id === `/(auth)${link.route}`
-						? 'bg-primary-active-token'
+						? 'bg-primary-600'
 						: ''}
 						"
-					on:click={() => {
+					onclick={() => {
 						isMainMenuOpen = false;
 					}}
 					aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
 				>
-					<span class="text-token">
+					<span class="">
 						{link.name}
 					</span>
 				</a>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Information from 'svelte-material-icons/Information.svelte';
+	import { Info } from 'lucide-svelte';
 
 	import type { ActionData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
@@ -7,18 +7,14 @@
 
 	import { slide } from 'svelte/transition';
 
-	export let form: ActionData;
+	let { form }: { form: ActionData } = $props();
 </script>
 
-<div class="mx-auto w-full md:w-96 mt-2 lg:mt-5 bg-surface-700">
-	<div class="mx-auto w-full px-5 py-3">
-		<div class="flex">
-			<img
-				class="w-10 py-5 mr-2"
-				src="logo.png"
-				alt="Workflow"
-			/>
-			<h1 class="mt-6 text-xl lg:text-3xl tracking-tight font-bold text-primary-50">
+<div class="container mx-auto max-w-md mt-8 p-6">
+	<div class="card preset-filled-surface-100-900 p-8 space-y-6">
+		<div class="flex items-center gap-4">
+			<img class="w-20" src="/logo.png" alt="Uncharted Lands" />
+			<h1 class="text-2xl font-bold">
 				Forgot your password?
 			</h1>
 		</div>
@@ -26,7 +22,7 @@
 		<form
 			action="?/resetPassword"
 			method="POST"
-			class="space-y-2"
+			class="space-y-4"
 			use:enhance={() => {
 				return async ({ result }) => {
 					invalidateAll();
@@ -34,33 +30,31 @@
 				};
 			}}
 		>
-			<div>
-				<label for="email" class="block text-md font-medium text-primary-50"> Email address </label>
-				<div class="mt-1">
-					<input
-						id="email"
-						name="email"
-						type="email"
-						autocomplete="email"
-						required
-						class="rounded-sm"
-					/>
-				</div>
-			</div>
+			<label for="email" class="label">
+				<span>Email address</span>
+				<input
+					id="email"
+					name="email"
+					type="email"
+					autocomplete="email"
+					required
+					class="input"
+				/>
+			</label>
 
 			<div class="space-y-1">
 				{#if form?.invalid}
 					<div transition:slide>
-						<div class="alert variant-ghost-error mx-5 mt-5">
+						<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
 							<div class="alert-message text-primary-50">
-								<Information size={24} />
+								<Info size={24} />
 								<div class="grid grid-cols-1">Form information is invalid</div>
 							</div>
 						</div>
 					</div>
 				{/if}
 			</div>
-			<button class="w-full p-2 btn btn-base variant-ghost-primary">Reset Password</button>
+			<button class="w-full p-2 btn btn-base preset-outlined-primary-500">Reset Password</button>
 		</form>
 	</div>
 </div>

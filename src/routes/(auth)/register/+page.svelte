@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Information from 'svelte-material-icons/Information.svelte';
+	import { Info } from 'lucide-svelte';
 
 	import type { ActionData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
@@ -7,18 +7,14 @@
 
 	import { slide } from 'svelte/transition';
 
-	export let form: ActionData;
+	let { form }: { form: ActionData } = $props();
 </script>
 
-<div class="mx-auto w-full md:w-96 mt-2 lg:mt-5 bg-surface-200-700-token rounded-md">
-	<div class="mx-auto w-full px-5 py-3">
-		<div class="flex">
-			<img
-				class="w-10 py-5 mr-2"
-				src="logo.png"
-				alt="Workflow"
-			/>
-			<h1 class="mt-6 text-xl lg:text-2xl tracking-tight font-bold text-token">
+<div class="container mx-auto max-w-md mt-8 p-6">
+	<div class="card preset-filled-surface-100-900 p-8 space-y-6">
+		<div class="flex items-center gap-4">
+			<img class="w-20" src="/logo.png" alt="Uncharted Lands" />
+			<h1 class="text-2xl font-bold">
 				Register your account
 			</h1>
 		</div>
@@ -60,9 +56,9 @@
 
 			{#if form?.invalid}
 				<div transition:slide>
-					<div class="alert variant-ghost-error mx-5 mt-5">
-						<div class="alert-message text-token">
-							<Information size={24} />
+					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
+						<div class="alert-message ">
+							<Info size={24} />
 							<div class="grid grid-cols-1">Form information is invalid</div>
 							{#if form?.length}
 								Password must be 16 or more characters in length
@@ -75,7 +71,7 @@
 				</div>
 			{/if}
 
-			<button class="w-full p-2 btn bg-primary-400-500-token rounded-md">Register</button>
+			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md">Register</button>
 		</form>
 	</div>
 </div>

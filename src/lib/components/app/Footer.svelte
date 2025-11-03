@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Github from 'svelte-material-icons/Github.svelte';
+	import { Github } from 'lucide-svelte';
 </script>
 
-<footer class="hidden sm:block p-5 space-y-3 justify-center items-center bg-surface-100-800-token">
+<footer class="hidden sm:block p-5 space-y-3 justify-center items-center bg-surface-100 dark:bg-surface-800">
 	<div class="w-fit mx-auto">
-		<a href="https://github.com/redsyndicate/browser-game" class="text-token">
+		<a href="https://github.com/redsyndicate/browser-game" class="">
 			<span class="sr-only">GitHub</span>
 			<Github size={24} />
 		</a>
@@ -16,7 +16,7 @@
 				href="/game"
 				class="
 					btn rounded-md 
-					bg-primary-hover-token
+					hover:bg-primary-500
 					"
 			>
 				Game
@@ -28,7 +28,7 @@
 				href="/forum"
 				class="
 					btn rounded-md 
-					bg-primary-hover-token
+					hover:bg-primary-500
 					"
 			>
 				Forum
@@ -40,7 +40,7 @@
 				href="/kb"
 				class="
 					btn rounded-md 
-					bg-primary-hover-token
+					hover:bg-primary-500
 					"
 			>
 				Knowledgebase
@@ -52,7 +52,7 @@
 				href="/support"
 				class="
 					btn rounded-md 
-					bg-primary-hover-token
+					hover:bg-primary-500
 					"
 			>
 				Support

@@ -1,26 +1,20 @@
 <script lang="ts">
-	import '@skeletonlabs/skeleton/themes/theme-crimson.css';
-	import '@skeletonlabs/skeleton/styles/all.css';
-	import '../app.postcss';
-
-	import { AppShell } from '@skeletonlabs/skeleton';
-	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
-
-	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
+	import '../app.css';
 
 	import Header from '$lib/components/app/Header.svelte';
 	import Footer from '$lib/components/app/Footer.svelte';
 </script>
 
-<AppShell>
-	<svelte:fragment slot="header">
+<div class="flex flex-col h-screen">
+	<header class="flex-none">
 		<Header />
-	</svelte:fragment>
+	</header>
 
-	<slot />
+	<main class="flex-1 overflow-y-auto">
+		<slot />
+	</main>
 
-	<svelte:fragment slot="footer">
+	<footer class="flex-none">
 		<Footer />
-	</svelte:fragment>
-</AppShell>
+	</footer>
+</div>

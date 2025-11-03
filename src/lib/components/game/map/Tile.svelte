@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { Prisma, Tile } from '@prisma/client';
 
-	export let tile: Prisma.TileGetPayload<{ include: { Biome: true; Plots: true } }>;
+	type Props = {
+		tile: Prisma.TileGetPayload<{ include: { Biome: true; Plots: true } }>;
+	};
+
+	let { tile }: Props = $props();
 </script>
 
 <div

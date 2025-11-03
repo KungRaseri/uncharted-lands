@@ -1,21 +1,22 @@
 <script lang="ts">
 	import type { Prisma, Settlement } from '@prisma/client';
-	import ElevationRise from 'svelte-material-icons/ElevationRise.svelte';
-	import Earth from 'svelte-material-icons/Earth.svelte';
-	import WeatherPouring from 'svelte-material-icons/WeatherPouring.svelte';
-	import ThermometerLines from 'svelte-material-icons/ThermometerLines.svelte';
+	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
 
-	export let settlement: Prisma.SettlementGetPayload<{
-		include: {
-			PlayerProfile: {
-				include: {
-					profile: true;
+	type Props = {
+		settlement: Prisma.SettlementGetPayload<{
+			include: {
+				PlayerProfile: {
+					include: {
+						profile: true;
+					};
 				};
+				Storage: true;
+				Structures: true;
 			};
-			Storage: true;
-			Structures: true;
-		};
-	}>;
+		}>;
+	};
+
+	let { settlement }: Props = $props();
 </script>
 
 <div class="card">
@@ -30,19 +31,19 @@
 		{/each}
 	</section>
 	<footer class="card-footer">
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Food Storage: {settlement.Storage.food}
 		</span>
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Water Storage: {settlement.Storage.water}
 		</span>
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Wood Storage: {settlement.Storage.wood}
 		</span>
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Stone Storage: {settlement.Storage.stone}
 		</span>
-		<span class="badge bg-secondary-700-200-token text-secondary-200-700-token">
+		<span class="badge preset-filled-secondary-500">
 			Ore Storage: {settlement.Storage.ore}
 		</span>
 	</footer>

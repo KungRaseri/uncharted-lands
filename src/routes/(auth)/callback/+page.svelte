@@ -1,7 +1,6 @@
 <script lang="ts">
-	import Discord from 'svelte-material-icons/Discord.svelte';
-	import Github from 'svelte-material-icons/Github.svelte';
-	import Google from 'svelte-material-icons/Google.svelte';
+	import { CircleUser } from 'lucide-svelte';
+	import { Github } from 'lucide-svelte';
 	import house from '$lib/images/house-foggy-bg.jpg';
 </script>
 
@@ -43,9 +42,7 @@
 									class="w-full inline-flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 								>
 									<span class="sr-only">Sign in with Discord</span>
-									<div class="w-6 h-6 block">
-										<Discord width="100%" height="100%" />
-									</div>
+									<CircleUser class="w-6 h-6" />
 								</a>
 							</div>
 							<div>
@@ -54,9 +51,7 @@
 									class="w-full inline-flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 								>
 									<span class="sr-only">Sign in with Github</span>
-									<div class="w-6 h-6 block">
-										<Github width="100%" height="100%" />
-									</div>
+									<Github class="w-6 h-6" />
 								</a>
 							</div>
 						</div>
@@ -64,7 +59,7 @@
 
 					<div class="mt-6 relative">
 						<div class="absolute inset-0 flex items-center" aria-hidden="true">
-							<div class="w-full border-t border-gray-300" />
+							<div class="w-full border-t border-gray-300"></div>
 						</div>
 						<div class="relative flex justify-center text-sm">
 							<span class="px-2 bg-white text-gray-500"> Or continue with </span>

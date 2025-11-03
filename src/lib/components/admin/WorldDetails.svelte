@@ -2,14 +2,17 @@
 	import type { Prisma } from '@prisma/client';
 	import World from '$lib/components/game/map/World.svelte';
 
-	export let world: Prisma.WorldGetPayload<{
-		include: {
-			regions: true;
-			server: true;
-		};
-	}>;
+	type Props = {
+		world: Prisma.WorldGetPayload<{
+			include: {
+				regions: true;
+				server: true;
+			};
+		}>;
+		worldInfo: { landTiles: number; oceanTiles: number; settlements: number };
+	};
 
-	export let worldInfo: { landTiles: number; oceanTiles: number; settlements: number };
+	let { world, worldInfo }: Props = $props();
 </script>
 
 <div class="card">

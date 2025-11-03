@@ -3,7 +3,7 @@ import { db } from "$lib/db"
 
 export const load: PageServerLoad = async () => {
     return {
-        accounts: db.account.findMany({
+        accounts: await db.account.findMany({
             include: {
                 profile: {
                     include: {

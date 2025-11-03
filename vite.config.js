@@ -1,11 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
-
-import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { sveltekit } from '@sveltejs/kit/vite';
-import dotenv from "dotenv";
-
-dotenv.config();
+import tailwindcss from '@tailwindcss/vite';
 
 /** @type {import('vite').UserConfig} */
 const config = defineConfig({
@@ -13,13 +9,8 @@ const config = defineConfig({
 		sourcemap: true
 	},
 	plugins: [
-		sveltekit({ hot: !process.env.VITEST }),
-		sentryVitePlugin({
-			org: "red-syndicate",
-			project: "browser-game",
-			include: './build',
-			authToken: process.env.SENTRY_AUTH_TOKEN
-		})
+		tailwindcss(),
+		sveltekit()
 	],
 	server: {
 		port: 3000
@@ -27,11 +18,8 @@ const config = defineConfig({
 	preview: {
 		port: 4173
 	},
-	optimizeDeps: {
-		include: [
-			'@mdi/js', 
-			'@skeletonlabs/skeleton'
-		]
+	test: {
+		include: ['src/**/*.{test,spec}.{js,ts}']
 	}
 })
 

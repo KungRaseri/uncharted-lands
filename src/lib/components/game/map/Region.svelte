@@ -2,16 +2,20 @@
 	import type { Prisma } from '@prisma/client';
 	import TileComponent from './Tile.svelte';
 
-	export let region: Prisma.RegionGetPayload<{
-		include: {
-			tiles: {
-				include: {
-					Biome: true;
-					Plots: true;
+	type Props = {
+		region: Prisma.RegionGetPayload<{
+			include: {
+				tiles: {
+					include: {
+						Biome: true;
+						Plots: true;
+					};
 				};
 			};
-		};
-	}>;
+		}>;
+	};
+
+	let { region }: Props = $props();
 </script>
 
 {#each region.tiles as tile}

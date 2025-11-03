@@ -1,8 +1,8 @@
 import { makeNoise2D } from 'open-simplex-noise';
 import { makeRectangle, type Options } from 'fractal-noise';
 
-function chunks(heightMap: number[][], chunkSize: number) {
-    const splitChunks: number[][][] = [];
+function chunks(heightMap: number[][], chunkSize: number): number[][][][] {
+    const splitChunks: number[][][][] = [];
 
     if (chunkSize === 0)
         return splitChunks;
@@ -11,9 +11,9 @@ function chunks(heightMap: number[][], chunkSize: number) {
     const width = heightMap[0].length;
 
     for (let i = 0; i < height; i += chunkSize) {
-        const rowChunks = []
+        const rowChunks: number[][][] = []
         for (let j = 0; j < width; j += chunkSize) {
-            const chunk = [];
+            const chunk: number[][] = [];
 
             for (let y = i; y < i + chunkSize; y++) {
                 if (y >= height) break;

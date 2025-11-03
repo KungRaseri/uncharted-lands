@@ -1,22 +1,21 @@
 <script lang="ts">
-	import Information from 'svelte-material-icons/Information.svelte';
+	import { Info } from 'lucide-svelte';
 
 	import type { ActionData, PageData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { slide } from 'svelte/transition';
 
-	let isRememberMeChecked = false;
+	let isRememberMeChecked = $state(false);
 
-	export let data: PageData;
-	export let form: ActionData;
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
-<div class="mx-auto w-full md:w-96 mt-2 lg:mt-5 bg-surface-200-700-token">
-	<div class="mx-auto w-full px-5 py-3">
-		<div class="flex">
-			<img class="w-20 py-5 mr-2" src="logo.png" alt="Workflow" />
-			<h1 class="mt-6 text-2xl tracking-tight font-bold text-token">
+<div class="container mx-auto max-w-md mt-8 p-6">
+	<div class="card preset-filled-surface-100-900 p-8 space-y-6">
+		<div class="flex items-center gap-4">
+			<img class="w-20" src="/logo.png" alt="Uncharted Lands" />
+			<h1 class="text-2xl font-bold">
 				Sign into your account
 			</h1>
 		</div>
@@ -57,25 +56,25 @@
 			</label>
 
 			<div class="flex justify-around items-center">
-				<label for="remember_me" class="label">
+				<label for="remember_me" class="label flex-row items-center gap-2">
 					<input
 						id="remember_me"
 						name="remember_me"
 						type="checkbox"
 						class="checkbox"
-						bind:value={isRememberMeChecked}
+						bind:checked={isRememberMeChecked}
 					/>
-					<span class="">Remember me</span>
+					<span>Remember me</span>
 				</label>
 
-				<a href="forgot-password" class="font-medium">Forgot your password?</a>
+				<a href="forgot-password" class="font-medium hover:underline">Forgot your password?</a>
 			</div>
 
 			{#if form?.email}
 				<div transition:slide class="hidden lg:block">
-					<div class="alert variant-ghost-error mx-5 mt-5">
-						<div class="alert-message text-token justify-center items-center">
-							<Information size={24} />
+					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
+						<div class="alert-message  justify-center items-center">
+							<Info size={24} />
 							<div class="grid grid-cols-1">
 								<span>{form?.incorrect ? 'Information is incorrect' : ''}</span>
 							</div>
@@ -84,7 +83,7 @@
 				</div>
 			{/if}
 
-			<button class="w-full p-2 btn bg-primary-400-500-token rounded-md"> Login </button>
+			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md"> Login </button>
 		</form>
 	</div>
 </div>

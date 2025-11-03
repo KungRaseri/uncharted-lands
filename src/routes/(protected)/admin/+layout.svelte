@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { AppShell } from '@skeletonlabs/skeleton';
-	import { writable, type Writable } from 'svelte/store';
 	import Navigation from '$lib/components/admin/Navigation.svelte';
 </script>
 
@@ -8,9 +6,14 @@
 	<title>Administration | Uncharted Lands</title>
 </svelte:head>
 
-<AppShell>
-	<svelte:fragment slot="sidebarLeft">
+<div class="flex h-full">
+	<!-- Sidebar -->
+	<aside class="flex-none">
 		<Navigation />
-	</svelte:fragment>
-	<slot />
-</AppShell>
+	</aside>
+
+	<!-- Main content -->
+	<main class="flex-1 overflow-y-auto p-4">
+		<slot />
+	</main>
+</div>

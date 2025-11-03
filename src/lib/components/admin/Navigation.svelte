@@ -1,14 +1,7 @@
 <script lang="ts">
-	import { AppRail, AppRailTile } from '@skeletonlabs/skeleton';
-	import { writable, type Writable } from 'svelte/store';
 	import { page } from '$app/stores';
 
-	import ViewDashboard from 'svelte-material-icons/ViewDashboard.svelte';
-	import Server from 'svelte-material-icons/Server.svelte';
-	import Web from 'svelte-material-icons/Web.svelte';
-	import AccountGroup from 'svelte-material-icons/AccountGroup.svelte';
-	import FolderSearchOutline from 'svelte-material-icons/FolderSearchOutline.svelte';
-	import Github from 'svelte-material-icons/Github.svelte';
+	import { LayoutDashboard, Server, Globe, Users, Github } from 'lucide-svelte';
 
 	let railTiles: Array<any> = [
 		{
@@ -23,67 +16,61 @@
 			title: 'Worlds',
 			href: '/admin/worlds',
 			value: '/admin/worlds',
-			icon: Web
+			icon: Globe
 		},
 		{
 			label: 'Players',
 			title: 'Players',
 			href: '/admin/players',
 			value: '/admin/players',
-			icon: AccountGroup
-		},
-		{
-			label: 'Reports',
-			title: 'Reports',
-			href: '/admin/reports',
-			value: '/admin/reports',
-			icon: FolderSearchOutline
+			icon: Users
 		}
 	];
-	$: isActive = (href: string) => (href === $page.url.pathname ? '!bg-primary-active-token' : '');
-
-	const storeValue: Writable<number> = writable(1);
+	
+	let isActive = $derived.by(() => {
+		return (href: string) => (href === $page.url.pathname ? 'bg-primary-500 dark:bg-primary-600' : '');
+	});
 </script>
 
-<AppRail selected={storeValue} class="w-16 sm:w-min text-center align-middle">
-	<svelte:fragment slot="lead">
-		<AppRailTile
-			title="Dashboard"
-			tag="a"
+<nav class="flex flex-col w-16 sm:w-20 bg-surface-100 dark:bg-surface-800 h-full">
+	<!-- Lead -->
+	<div class="flex-none">
+		<a
 			href="/admin"
-			value={'/admin'}
-			class="p-1 btn btn-sm w-16 
-				{isActive('/admin')} 
-				hover:variant-ghost-secondary 
-				rounded-none"
+			title="Dashboard"
+			class="flex flex-col items-center justify-center p-2 btn btn-sm w-full {isActive('/admin')} hover:bg-surface-200 dark:hover:bg-surface-700 rounded-none"
 		>
-			<ViewDashboard width="100%" size={36} />
-			<span class="text-xs">Dashboard</span>
-		</AppRailTile>
-	</svelte:fragment>
-	{#each railTiles as railTile}
-		<AppRailTile
-			title={railTile.title}
-			tag="a"
-			href={railTile.href}
-			value={railTile.value}
-			class="py-1 px-0 btn btn-sm w-16 
-				{isActive(railTile.href)} 
-				hover:variant-ghost-secondary 
-				rounded-none"
-		>
-			<div class="mx-auto w-fit"><svelte:component this={railTile.icon} size={36} /></div>
-			<span class="text-xs">{railTile.label}</span>
-		</AppRailTile>
-	{/each}
-	<svelte:fragment slot="trail">
-		<AppRailTile
-			tag="a"
+			<LayoutDashboard size={36} />
+			<span class="text-xs mt-1">Dashboard</span>
+		</a>
+	</div>
+
+	<!-- Main items -->
+	<div class="flex-1">
+		{#each railTiles as railTile}
+			{@const IconComponent = railTile.icon}
+			<a
+				href={railTile.href}
+				title={railTile.title}
+				class="flex flex-col items-center justify-center py-2 px-0 btn btn-sm w-full {isActive(railTile.href)} hover:bg-surface-200 dark:hover:bg-surface-700 rounded-none"
+			>
+				<IconComponent size={36} />
+				<span class="text-xs mt-1">{railTile.label}</span>
+			</a>
+		{/each}
+	</div>
+
+	<!-- Trail -->
+	<div class="flex-none">
+		<a
 			href="https://github.com/RedSyndicate/browser-game"
-			class="py-1 px-0 btn btn-sm w-16 variant-soft-surface hover:variant-ghost-secondary rounded-none"
+			target="_blank"
+			rel="noopener noreferrer"
+			title="Source Code"
+			class="flex flex-col items-center justify-center p-2 btn btn-sm w-full hover:bg-surface-200 dark:hover:bg-surface-700 rounded-none"
 		>
-			<Github width="100%" size={36} />
-			<span class="text-xs">src</span>
-		</AppRailTile>
-	</svelte:fragment>
-</AppRail>
+			<Github size={36} />
+			<span class="text-xs mt-1">src</span>
+		</a>
+	</div>
+</nav>

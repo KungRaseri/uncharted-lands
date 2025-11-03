@@ -1,5 +1,9 @@
 <script lang="ts">
-	export let arrow: any;
+	type Props = {
+		arrow: any;
+	};
+
+	let { arrow }: Props = $props();
 </script>
 
 <div id={arrow.id} class="arrow relative text-gray-800 text-xs">--></div>
