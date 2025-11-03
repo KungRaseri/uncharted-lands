@@ -18,7 +18,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write .",
-    "postinstall": "node scripts/patch-skeleton.js",
+    "postinstall": "node scripts/patch-skeleton.js || true",
     "seed": "node scripts/seed.js"
   },
   "prisma": {
@@ -85,6 +85,10 @@
     "typescript": "^5.6.3",
     "vite": "^6.0.3",
     "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "dependencies": {
     "@prisma/client": "^4.13.0",

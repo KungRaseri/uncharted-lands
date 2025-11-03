@@ -22,6 +22,13 @@ const skeletonCssPath = path.join(
 
 console.log('🔧 Patching Skeleton CSS for Tailwind v4 compatibility...');
 
+// Check if node_modules exists
+const nodeModulesPath = path.join(__dirname, '../node_modules');
+if (!fs.existsSync(nodeModulesPath)) {
+  console.log('⏭️  node_modules not found yet. Skipping patch.');
+  process.exit(0);
+}
+
 // Check if file exists
 if (!fs.existsSync(skeletonCssPath)) {
   console.warn('⚠️  Skeleton CSS file not found. Skipping patch.');
