@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "sveltekit",
+  "installCommand": "npm ci",
+  "devCommand": "npm run dev"
+}

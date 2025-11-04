@@ -13,14 +13,8 @@ declare namespace App {
 		errorId: string
 	}
 	interface Locals {
-		account: Account = {
-			id: string,
-			email: string,
-			role: Role,
-			userAuthToken: string,
-			Profile: Profile,
-			createdAt: Date,
-			updatedAt: Date
+		account: Account & {
+			profile: Profile | null
 		}
 	}
 	// interface Platform {}
