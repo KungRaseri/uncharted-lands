@@ -1,8 +1,29 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home } from 'lucide-svelte';
+	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home, RefreshCw } from 'lucide-svelte';
+	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
+	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
+	
+	// State for UI feedback
+	let isRefreshing = $state(false);
+	
+	// Manual refresh function
+	async function handleManualRefresh() {
+		isRefreshing = true;
+		refreshGameData('game:settlements');
+		// Give visual feedback
+		setTimeout(() => {
+			isRefreshing = false;
+		}, 500);
+	}
+	
+	onMount(() => {
+		// Auto-refresh every minute to catch tick updates
+		const cleanup = createGameRefreshInterval('game:settlements');
+		return cleanup;
+	});
 
 	// Calculate total resources across all settlements
 	let totalResources = $derived({
@@ -20,13 +41,24 @@
 
 <div class="max-w-7xl mx-auto p-6 space-y-6">
 	<!-- Header -->
-	<div>
-		<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2">
-			Game Overview
-		</h1>
-		<p class="text-surface-600 dark:text-surface-400">
-			Welcome back! Here's your empire at a glance.
-		</p>
+	<div class="flex items-start justify-between">
+		<div>
+			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2">
+				Game Overview
+			</h1>
+			<p class="text-surface-600 dark:text-surface-400">
+				Welcome back! Here's your empire at a glance.
+			</p>
+		</div>
+		<button
+			onclick={handleManualRefresh}
+			disabled={isRefreshing}
+			class="btn preset-tonal-surface-500 rounded-md"
+			title="Refresh data (auto-refreshes every minute)"
+		>
+			<RefreshCw size={16} class={isRefreshing ? 'animate-spin' : ''} />
+			<span class="hidden sm:inline">Refresh</span>
+		</button>
 	</div>
 
 	<!-- Stats Grid -->

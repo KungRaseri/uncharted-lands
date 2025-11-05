@@ -45,11 +45,15 @@ export async function runHourlyTick() {
 		const duration = Date.now() - startTime;
 		console.log(`[HOURLY TICK] Completed in ${duration}ms`);
 
+		// Note: In a production app, you might want to broadcast this via WebSocket/SSE
+		// For now, clients will poll periodically or use SvelteKit's invalidation system
+
 		return {
 			success: true,
 			settlementsProcessed: settlements.length,
 			totalResourcesWasted: totalWaste,
-			duration
+			duration,
+			timestamp: new Date().toISOString()
 		};
 	} catch (error) {
 		console.error('[HOURLY TICK] Error:', error);

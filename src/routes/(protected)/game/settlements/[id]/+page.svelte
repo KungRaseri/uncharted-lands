@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { PageData, ActionData as GeneratedActionData } from './$types';
-	import { Building2, Home, MapPin, Package, Sun, Wind, ArrowLeft, Droplet, Trees, Mountain, Pickaxe, Plus, X, ShieldAlert, Warehouse, Hammer } from 'lucide-svelte';
+	import { Building2, Home, MapPin, Package, Sun, Wind, ArrowLeft, Droplet, Trees, Mountain, Pickaxe, Plus, X, ShieldAlert, Warehouse, Hammer, RefreshCw } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import { STRUCTURE_DEFINITIONS, getStructureCategories, getStructuresByCategory, canBuildStructure, type StructureDefinition } from '$lib/game/structures';
+	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
+	import { onMount } from 'svelte';
 
 	// Extended ActionData type to include optional reasons array
 	type ActionData = GeneratedActionData & {
@@ -10,6 +12,23 @@
 	};
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	
+	// State for UI feedback
+	let isRefreshing = $state(false);
+	
+	async function handleManualRefresh() {
+		isRefreshing = true;
+		refreshGameData('game:settlement');
+		setTimeout(() => {
+			isRefreshing = false;
+		}, 500);
+	}
+	
+	onMount(() => {
+		// Auto-refresh every minute to catch tick updates
+		const cleanup = createGameRefreshInterval('game:settlement');
+		return cleanup;
+	});
 
 	// Build modal state
 	let buildModalOpen = $state(false);
@@ -75,7 +94,17 @@
 					<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">{data.settlement.id}</p>
 				</div>
 			</div>
-			<span class="badge preset-filled-success-500">Active</span>
+			<div class="flex items-center gap-2">
+				<button
+					onclick={handleManualRefresh}
+					disabled={isRefreshing}
+					class="btn btn-sm preset-tonal-surface-500 rounded-md"
+					title="Refresh data (auto-refreshes every minute)"
+				>
+					<RefreshCw size={16} class={isRefreshing ? 'animate-spin' : ''} />
+				</button>
+				<span class="badge preset-filled-success-500">Active</span>
+			</div>
 		</div>
 
 		<!-- Quick Stats -->

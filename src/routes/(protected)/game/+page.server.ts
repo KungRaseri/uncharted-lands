@@ -2,7 +2,12 @@ import { db } from "$lib/db"
 import { redirect } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, depends }) => {
+    // Mark this data as dependent on game state changes
+    // When tick occurs, calling invalidate('game:settlements') will refresh this
+    depends('game:settlements');
+    depends('game:data');
+
     if (!locals.account.profile) {
         throw redirect(302, '/game/getting-started')
     }
@@ -31,6 +36,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     })
 
     return {
-        settlements
+        settlements,
+        lastUpdate: new Date().toISOString()
     }
 }
