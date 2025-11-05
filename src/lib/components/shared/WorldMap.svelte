@@ -25,11 +25,11 @@
 	};
 	
 	type Props = {
-		/** Regions with full tile data (for player view) */
+		/** Regions with full tile data */
 		regions?: RegionWithTiles[];
-		/** Regions with elevation map data (for admin preview) */
+		/** Regions with elevation map data (ONLY for world creation preview) */
 		previewRegions?: RegionWithElevationMap[];
-		/** Display mode: 'admin' shows elevation data, 'player' shows biome-based tiles */
+		/** Display mode: affects tooltips and hover details */
 		mode?: 'admin' | 'player';
 		/** Show legend */
 		showLegend?: boolean;
@@ -45,9 +45,9 @@
 		showStats = false
 	}: Props = $props();
 	
-	// Determine which data set to use
-	const isAdminMode = $derived(mode === 'admin' || (previewRegions && !regions));
-	const displayRegions = $derived(isAdminMode ? previewRegions : regions);
+	// Preview mode is ONLY for world creation (before tiles exist)
+	const isPreviewMode = $derived(!!previewRegions && !regions);
+	const displayRegions = $derived(regions || previewRegions);
 	
 	// Sort regions by coordinates to ensure correct row-major order
 	// xCoord represents row (i from generation), yCoord represents column (j from generation)
@@ -62,8 +62,8 @@
 	const stats = $derived(() => {
 		if (!showStats || !displayRegions) return null;
 		
-		if (isAdminMode && previewRegions) {
-			// Admin mode: count based on elevation maps
+		if (isPreviewMode && previewRegions) {
+			// Preview mode: count based on elevation maps
 			let totalTiles = 0;
 			let landTiles = 0;
 			let oceanTiles = 0;
@@ -79,7 +79,7 @@
 			
 			return { totalTiles, landTiles, oceanTiles };
 		} else if (regions) {
-			// Player mode: count based on actual tiles
+			// Normal mode: count based on actual tiles
 			const totalTiles = regions.reduce((sum, r) => sum + r.tiles.length, 0);
 			const landTiles = regions.reduce((sum, r) => 
 				sum + r.tiles.filter(t => t.type === 'LAND').length, 0
@@ -95,15 +95,16 @@
 	});
 	
 	// Get elevation color (for admin mode)
+	// These colors should roughly correspond to common biomes at those elevations
 	function getElevationColor(value: number): string {
 		if (value < -0.3) return '#001a33'; // Deep ocean
-		if (value < 0) return '#003d66'; // Ocean
+		if (value < 0) return '#003d66'; // Shallow ocean
 		if (value < 0.1) return '#f4e4c1'; // Beach/Sand
-		if (value < 0.3) return '#7cb342'; // Plains
-		if (value < 0.5) return '#558b2f'; // Forest
+		if (value < 0.3) return '#78b450'; // Low grassland/plains
+		if (value < 0.5) return '#5a8232'; // Forest/woodland
 		if (value < 0.7) return '#8d6e63'; // Hills
-		if (value < 0.9) return '#757575'; // Mountains
-		return '#ffffff'; // Snow peaks
+		if (value < 0.9) return '#969696'; // Mountains
+		return '#dce1f0'; // Snow/tundra peaks
 	}
 	
 	// Get terrain type name (for tooltips)
@@ -155,8 +156,8 @@ Terrain: ${terrain}`;
 		<div class="bg-surface-200 dark:bg-surface-800 p-4 rounded-lg inline-block">
 			<!-- Set a specific size that's large and square. Max-w ensures it fits on smaller screens -->
 			<div class="grid grid-cols-10 gap-0 border-2 border-surface-400 dark:border-surface-500 w-[600px] h-[600px] max-w-[90vw] max-h-[90vw] aspect-square">
-				{#if isAdminMode && previewRegions}
-					<!-- Admin Mode: Show elevation data -->
+				{#if isPreviewMode && previewRegions}
+					<!-- Preview Mode (World Creation ONLY): Show elevation data -->
 					{#each previewRegions as region}
 						<div class="border border-surface-400 dark:border-surface-600 p-0 aspect-square">
 							<div class="grid grid-cols-10 gap-0 h-full w-full">
@@ -181,7 +182,7 @@ Terrain: ${terrain}`;
 						</div>
 					{/each}
 				{:else if regions}
-					<!-- Player Mode: Show biome-based tiles using Region component -->
+					<!-- Normal Mode: Show biome-based tiles using Region component (both admin & player) -->
 					{#each regions as region}
 						<div class="border border-surface-400 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 aspect-square" 
 						     title="Region {region.name} ({region.xCoord}, {region.yCoord})">
@@ -197,80 +198,127 @@ Terrain: ${terrain}`;
 	{#if showLegend}
 		<div class="flex justify-center">
 			<div class="bg-surface-200 dark:bg-surface-700 p-6 rounded-lg max-w-4xl">
-				{#if isAdminMode}
-					<!-- Admin Legend (Elevation-based) -->
+				{#if isPreviewMode}
+					<!-- Preview Legend (Elevation-based - World Creation Only) -->
 					<div class="text-sm text-surface-600 dark:text-surface-400">
 						<div class="flex items-center gap-3 flex-wrap justify-center">
-							<span class="font-semibold text-base mr-2">Elevation Legend:</span>
+							<span class="font-semibold text-base mr-2">Elevation Preview:</span>
 							<span class="flex items-center gap-1.5">
 								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #001a33"></span>
-								<span>Deep Ocean</span>
+								<span>Deep Ocean (&lt; -0.3)</span>
 							</span>
 							<span class="flex items-center gap-1.5">
 								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #003d66"></span>
-								<span>Ocean</span>
+								<span>Ocean (&lt; 0)</span>
 							</span>
 							<span class="flex items-center gap-1.5">
 								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #f4e4c1"></span>
-								<span>Beach</span>
+								<span>Beach (0-0.1)</span>
 							</span>
 							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #7cb342"></span>
-								<span>Plains</span>
+								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #78b450"></span>
+								<span>Plains (0.1-0.3)</span>
 							</span>
 							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #558b2f"></span>
-								<span>Forest</span>
+								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #5a8232"></span>
+								<span>Forest (0.3-0.5)</span>
 							</span>
 							<span class="flex items-center gap-1.5">
 								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #8d6e63"></span>
-								<span>Hills</span>
+								<span>Hills (0.5-0.7)</span>
 							</span>
 							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #757575"></span>
-								<span>Mountains</span>
+								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #969696"></span>
+								<span>Mountains (0.7-0.9)</span>
 							</span>
 							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #ffffff"></span>
-								<span>Snow Peaks</span>
+								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #dce1f0"></span>
+								<span>Snow Peaks (&gt; 0.9)</span>
 							</span>
 						</div>
 					</div>
 				{:else}
-					<!-- Player Legend (Biome-based) -->
-					<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+					<!-- Biome Legend (Both Admin & Player) -->
+					<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-sm">
+						<!-- Water & Coastal -->
 						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(30, 60, 150)"></div>
-							<span>Ocean/Water</span>
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(0, 26, 51)"></div>
+							<span>Deep Ocean</span>
 						</div>
 						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(238, 214, 175)"></div>
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(0, 61, 102)"></div>
+							<span>Ocean</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(244, 228, 193)"></div>
 							<span>Beach</span>
 						</div>
+						
+						<!-- Cold Biomes -->
 						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(60, 150, 40)"></div>
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(220, 225, 240)"></div>
+							<span>Tundra</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(45, 100, 60)"></div>
+							<span>Boreal Forest</span>
+						</div>
+						
+						<!-- Temperate Biomes -->
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(60, 130, 50)"></div>
+							<span>Temperate Forest</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(120, 180, 80)"></div>
 							<span>Grassland</span>
 						</div>
 						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(34, 120, 34)"></div>
-							<span>Forest</span>
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(90, 140, 70)"></div>
+							<span>Woodland</span>
 						</div>
 						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(220, 180, 100)"></div>
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(140, 160, 90)"></div>
+							<span>Shrubland</span>
+						</div>
+						
+						<!-- Tropical Biomes -->
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(50, 140, 70)"></div>
+							<span>Tropical Forest</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(30, 130, 60)"></div>
+							<span>Rainforest</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(200, 170, 80)"></div>
+							<span>Savanna</span>
+						</div>
+						
+						<!-- Deserts -->
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(190, 180, 160)"></div>
+							<span>Cold Desert</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(230, 200, 140)"></div>
 							<span>Desert</span>
 						</div>
+						
+						<!-- Mountains -->
 						<div class="flex items-center gap-2">
 							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(150, 150, 150)"></div>
-							<span>Mountain</span>
+							<span>Mountains</span>
 						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(220, 220, 255)"></div>
-							<span>Tundra/Snow</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-3 h-3 bg-warning-400 rounded-full border border-surface-900 shadow-[0_0_3px_rgba(251,191,36,1)]"></div>
-							<span>Settled Plots</span>
-						</div>
+						
+						<!-- Settlement Marker (Player Mode Only) -->
+						{#if mode === 'player'}
+							<div class="flex items-center gap-2">
+								<div class="w-3 h-3 bg-warning-400 rounded-full border border-surface-900 shadow-[0_0_3px_rgba(251,191,36,1)]"></div>
+								<span>Settled Plots</span>
+							</div>
+						{/if}
 					</div>
 				{/if}
 			</div>

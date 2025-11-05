@@ -9,59 +9,73 @@
 
 	let { tile, mode = 'player' }: Props = $props();
 
-	// Get color based on biome and elevation
+	// Get color based on biome type and elevation
 	function getTileColor(tile: Props['tile']): string {
 		const elevation = tile.elevation;
-		const biomeName = tile.Biome.name.toLowerCase();
-		
-		// Water/Ocean (very low elevation)
-		if (elevation < 0.3) {
-			const blue = Math.floor(100 + elevation * 400);
-			return `rgb(30, 60, ${blue})`;
+		const biomeName = tile.Biome.name;
+		const type = tile.type;
+
+		// Ocean/Water - differentiate by depth
+		if (type === 'OCEAN' || elevation < 0) {
+			if (elevation < -0.35) {
+				return 'rgb(0, 26, 51)'; // Deep ocean - #001a33
+			}
+			return 'rgb(0, 61, 102)'; // Shallow ocean - #003d66
 		}
-		
-		// Beach/Sand (low elevation)
-		if (elevation < 0.35) {
-			return `rgb(238, 214, 175)`;
+
+		// Beach/Coastal (low elevation land)
+		if (elevation >= 0 && elevation < 0.15) {
+			return 'rgb(244, 228, 193)'; // Sandy beach color - #f4e4c1
 		}
-		
-		// Grassland/Plains
-		if (biomeName.includes('grassland') || biomeName.includes('plain')) {
-			const green = Math.floor(100 + elevation * 100);
-			return `rgb(60, ${green}, 40)`;
+
+		// Biome-specific colors
+		switch (biomeName) {
+			case 'TUNDRA':
+				return 'rgb(220, 225, 240)'; // Pale blue-white
+
+			case 'FOREST_BOREAL':
+				return 'rgb(45, 100, 60)'; // Dark green
+
+			case 'FOREST_TEMPERATE_SEASONAL':
+				return 'rgb(60, 130, 50)'; // Medium green
+
+			case 'FOREST_TROPICAL_SEASONAL':
+				return 'rgb(50, 140, 70)'; // Tropical green
+
+			case 'RAINFOREST_TEMPERATE':
+				return 'rgb(40, 110, 55)'; // Deep green
+
+			case 'RAINFOREST_TROPICAL':
+				return 'rgb(30, 130, 60)'; // Lush green
+
+			case 'WOODLAND':
+				return 'rgb(90, 140, 70)'; // Light forest green
+
+			case 'SHRUBLAND':
+				return 'rgb(140, 160, 90)'; // Olive green
+
+			case 'SAVANNA':
+				return 'rgb(200, 170, 80)'; // Golden grassland
+
+			case 'GRASSLAND_TEMPERATE':
+				return 'rgb(120, 180, 80)'; // Bright grass green
+
+			case 'DESERT_COLD':
+				return 'rgb(190, 180, 160)'; // Gray-tan
+
+			case 'DESERT_SUBTROPICAL':
+				return 'rgb(230, 200, 140)'; // Sandy yellow
+
+			default:
+				// Fallback: elevation-based
+				if (elevation > 0.7) {
+					return 'rgb(150, 150, 150)'; // Mountain gray
+				}
+				
+				return 'rgb(100, 140, 80)'; // Default green
 		}
-		
-		// Forest
-		if (biomeName.includes('forest')) {
-			const green = Math.floor(80 + elevation * 60);
-			return `rgb(34, ${green}, 34)`;
-		}
-		
-		// Desert
-		if (biomeName.includes('desert')) {
-			const sand = Math.floor(200 + elevation * 40);
-			return `rgb(${sand}, ${sand - 40}, 100)`;
-		}
-		
-		// Tundra/Snow
-		if (biomeName.includes('tundra') || biomeName.includes('snow')) {
-			const white = Math.floor(200 + elevation * 50);
-			return `rgb(${white}, ${white}, 255)`;
-		}
-		
-		// Mountain (high elevation)
-		if (elevation > 0.7) {
-			const gray = Math.floor(100 + elevation * 100);
-			return `rgb(${gray}, ${gray}, ${gray})`;
-		}
-		
-		// Default: elevation-based green to brown gradient
-		const r = Math.floor(60 + elevation * 100);
-		const g = Math.floor(100 + elevation * 80);
-		const b = Math.floor(40 + elevation * 60);
-		return `rgb(${r}, ${g}, ${b})`;
 	}
-	
+
 	// Get tooltip content based on mode
 	function getTooltipContent(): string {
 		if (mode === 'admin') {
@@ -72,7 +86,7 @@ Precipitation: ${tile.precipitation.toFixed(3)}
 Temperature: ${tile.temperature.toFixed(3)}
 Plots: ${tile.Plots.length}`;
 		}
-		
+
 		// Player mode - more user-friendly
 		return `${tile.Biome.name}
 Elevation: ${(tile.elevation * 100).toFixed(1)}%
@@ -89,9 +103,9 @@ Precipitation: ${tile.precipitation.toFixed(1)}mm${tile.Plots.length > 0 ? '\n' 
 	aria-label="Tile: {tile.Biome.name}"
 	title={getTooltipContent()}
 >
-	{#if tile.Plots.length > 0}
+	<!-- {#if tile.Plots.length > 0}
 		<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
 			<div class="w-1.5 h-1.5 bg-warning-400 rounded-full shadow-[0_0_3px_rgba(251,191,36,1)]"></div>
 		</div>
-	{/if}
+	{/if} -->
 </div>
