@@ -19,73 +19,31 @@
 	
 	$effect(() => {
 		console.log('[WORLD] Total regions:', regions.length);
-		console.log('[WORLD] Region coordinates:', regions.map(r => `(${r.xCoord},${r.yCoord})`).join(', '));
-		
-		// Check coordinate ranges
-		const xCoords = regions.map(r => r.xCoord);
-		const yCoords = regions.map(r => r.yCoord);
-		console.log('[WORLD] X range:', Math.min(...xCoords), '-', Math.max(...xCoords));
-		console.log('[WORLD] Y range:', Math.min(...yCoords), '-', Math.max(...yCoords));
+		console.log('[WORLD] First few regions:', regions.slice(0, 5).map(r => `(${r.xCoord},${r.yCoord})`).join(', '));
 	});
 	
-	// Calculate actual grid dimensions from coordinates
-	const maxX = $derived(Math.max(...regions.map(r => r.xCoord)) + 1);
-	const maxY = $derived(Math.max(...regions.map(r => r.yCoord)) + 1);
-	const gridCols = $derived(maxX);
-	
-	// Create a 2D grid and place regions at their coordinates
-	const regionGrid = $derived(() => {
-		// Initialize empty grid
-		const grid: (typeof regions[0] | null)[][] = Array.from({ length: maxY }, () => 
-			Array(maxX).fill(null)
-		);
-		
-		console.log('[WORLD] Creating grid:', maxY, 'rows x', maxX, 'cols');
-		
-		// Place each region at its coordinate position
-		for (const region of regions) {
-			const x = region.xCoord;
-			const y = region.yCoord;
-			
-			if (y >= 0 && y < maxY && x >= 0 && x < maxX) {
-				grid[y][x] = region;
-				console.log('[WORLD] Placed', region.name, 'at grid[' + y + '][' + x + ']');
-			} else {
-				console.error('[WORLD] Region out of bounds!', region.name, 'coords:', x, y, 'grid:', maxX, 'x', maxY);
-			}
-		}
-		
-		// Log grid structure
-		console.log('[WORLD] Grid filled cells:', grid.flat().filter(r => r !== null).length, '/', maxX * maxY);
-		
-		// Log first row to verify
-		console.log('[WORLD] First row (y=0):', grid[0].map(r => r?.name || 'null').join(', '));
-		console.log('[WORLD] First column (x=0):', grid.map(row => row[0]?.name || 'null').join(', '));
-		
-		return grid;
-	});
+	// Sort regions by coordinates to ensure correct row-major order
+	// xCoord represents row (i from generation), yCoord represents column (j from generation)
+	// This matches how the admin preview displays regions in order
+	const sortedRegions = $derived(
+		[...regions].sort((a, b) => {
+			// Sort by row first (xCoord), then by column (yCoord)
+			if (a.xCoord !== b.xCoord) return a.xCoord - b.xCoord;
+			return a.yCoord - b.yCoord;
+		})
+	);
 </script>
 
 <div class="space-y-4">
 	<!-- Map Container -->
 	<div class="flex justify-center">
 		<div class="bg-surface-200 dark:bg-surface-800 p-4 rounded-lg">
-			<div class="inline-grid gap-0 border border-surface-300 dark:border-surface-600"
-			     style="grid-template-columns: repeat({gridCols}, minmax(0, 1fr))">
-				{#each regionGrid() as row}
-					{#each row as region}
-						{#if region}
-							<div class="border border-surface-300 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 aspect-square" 
-							     title="Region {region.name} ({region.xCoord}, {region.yCoord})">
-								<RegionComponent {region} />
-							</div>
-						{:else}
-							<div class="border border-surface-400 dark:border-surface-700 bg-surface-300 dark:bg-surface-800 aspect-square opacity-30"
-							     title="Empty region">
-								<div class="w-20 h-20"></div>
-							</div>
-						{/if}
-					{/each}
+			<div class="grid grid-cols-10 gap-0 border border-surface-300 dark:border-surface-600 w-full xl:w-1/2 mx-auto">
+				{#each sortedRegions as region}
+					<div class="border border-surface-300 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 aspect-square" 
+					     title="Region {region.name} ({region.xCoord}, {region.yCoord})">
+						<RegionComponent {region} />
+					</div>
 				{/each}
 			</div>
 		</div>
