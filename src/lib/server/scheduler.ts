@@ -6,6 +6,7 @@
  */
 
 import cron from 'node-cron';
+import { runHourlyTick } from '$lib/server/game-ticks';
 
 /**
  * Initialize development cron jobs
@@ -29,17 +30,20 @@ export function initializeDevScheduler() {
 		console.log('[DEV SCHEDULER] Triggering hourly production tick');
 		
 		try {
-			// Call the cron endpoint internally
-			const response = await fetch('http://localhost:5173/api/cron/hourlyProduction');
-			const result = await response.json();
+			// Call the tick logic directly (no HTTP request needed in dev)
+			const result = await runHourlyTick();
 			
 			if (result.success) {
-				console.log('[DEV SCHEDULER] Tick completed:', result);
+				console.log('[DEV SCHEDULER] Tick completed:', {
+					settlementsProcessed: result.settlementsProcessed,
+					totalResourcesWasted: result.totalResourcesWasted,
+					duration: result.duration
+				});
 			} else {
-				console.error('[DEV SCHEDULER] Tick failed:', result);
+				console.error('[DEV SCHEDULER] Tick failed');
 			}
 		} catch (error) {
-			console.error('[DEV SCHEDULER] Error calling tick endpoint:', error);
+			console.error('[DEV SCHEDULER] Error during tick:', error);
 		}
 	});
 
@@ -54,8 +58,7 @@ export async function triggerManualTick() {
 	console.log('[DEV SCHEDULER] Manual tick triggered');
 	
 	try {
-		const response = await fetch('http://localhost:5173/api/cron/hourlyProduction');
-		const result = await response.json();
+		const result = await runHourlyTick();
 		console.log('[DEV SCHEDULER] Manual tick result:', result);
 		return result;
 	} catch (error) {
