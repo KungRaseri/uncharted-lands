@@ -23,7 +23,7 @@ export function initializeDevScheduler() {
 	// Hourly production tick - runs every hour at minute 0
 	// In dev, you can change this to */5 * * * * for every 5 minutes for faster testing
 	const hourlySchedule = process.env.DEV_TICK_FAST === 'true' 
-		? '*/5 * * * *'  // Every 5 minutes (fast testing)
+		? '*/1 * * * *'  // Every 1 minute (fast testing)
 		: '0 * * * *';   // Every hour (normal)
 
 	cron.schedule(hourlySchedule, async () => {

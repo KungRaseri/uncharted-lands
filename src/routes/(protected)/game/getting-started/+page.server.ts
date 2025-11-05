@@ -1,5 +1,4 @@
 import { db } from '$lib/db';
-import { TileType } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
 import { getStructureDefinition } from '$lib/game/structures';
@@ -17,21 +16,31 @@ export const load: PageServerLoad = async ({ locals }) => {
     }
 }
 
-async function getRandomPlot(worldId: string) {
-
+/**
+ * Find a suitable starting plot for a new settlement
+ * 
+ * Ensures the plot has minimum viable resources:
+ * - At least 3 food (for initial survival)
+ * - At least 3 water (for hydration)
+ * - At least 3 wood (for basic construction)
+ * - Land tile (elevation > 0)
+ * - Moderate climate conditions
+ */
+async function getSuitableStartingPlot(worldId: string) {
+    // Query tiles with good starting conditions
     const potentialTiles = await db.tile.findMany({
         where: {
             elevation: {
-                gt: 0,
-                lt: 0.8
+                gt: 0,      // Must be land
+                lt: 25      // Not too mountainous (better for beginners)
             },
             precipitation: {
-                gt: -0.5,
-                lt: 1
+                gte: 150,   // Adequate rainfall for food and water
+                lte: 350    // Not too much (flooding)
             },
             temperature: {
-                gt: -0.5,
-                lt: 0.5
+                gte: 10,    // Warm enough for crops
+                lte: 28     // Not too hot
             },
             Region: {
                 worldId: worldId
@@ -40,14 +49,55 @@ async function getRandomPlot(worldId: string) {
         include: {
             Plots: true
         }
-    })
+    });
 
-    const randomTileIndex = Math.floor(Math.random() * potentialTiles.length)
-    const randomTile = potentialTiles[randomTileIndex];
+    // Filter plots by resource availability
+    const viablePlots = potentialTiles.flatMap(tile => 
+        tile.Plots.filter(plot => 
+            plot.food >= 3 && 
+            plot.water >= 3 && 
+            plot.wood >= 3
+        )
+    );
 
-    const randomPlot = randomTile.Plots[Math.floor(Math.random() * randomTile.Plots.length)]
+    if (viablePlots.length === 0) {
+        // Fallback: relax requirements if no perfect plots found
+        console.warn('[SETTLEMENT] No ideal starting plots found, using relaxed criteria');
+        const fallbackPlots = potentialTiles.flatMap(tile => 
+            tile.Plots.filter(plot => 
+                plot.food >= 2 && 
+                plot.water >= 2 && 
+                plot.wood >= 2
+            )
+        );
+        
+        if (fallbackPlots.length === 0) {
+            // Last resort: any land plot
+            console.warn('[SETTLEMENT] No viable plots found, using any available land plot');
+            const anyPlots = potentialTiles.flatMap(tile => tile.Plots);
+            if (anyPlots.length === 0) {
+                throw new Error('No available plots found in world for settlement');
+            }
+            return anyPlots[Math.floor(Math.random() * anyPlots.length)];
+        }
+        
+        return fallbackPlots[Math.floor(Math.random() * fallbackPlots.length)];
+    }
 
-    return randomPlot;
+    // Return a random viable plot
+    const randomIndex = Math.floor(Math.random() * viablePlots.length);
+    const chosenPlot = viablePlots[randomIndex];
+    
+    console.log('[SETTLEMENT] Chosen starting plot:', {
+        plotId: chosenPlot.id,
+        food: chosenPlot.food,
+        water: chosenPlot.water,
+        wood: chosenPlot.wood,
+        stone: chosenPlot.stone,
+        area: chosenPlot.area
+    });
+    
+    return chosenPlot;
 }
 
 const settle: Action = async ({ request, locals }) => {
@@ -65,8 +115,8 @@ const settle: Action = async ({ request, locals }) => {
         return fail(400, { invalid: true })
     }
 
-    // choose a random tile to settle in for now
-    const chosenPlot = await getRandomPlot(world);
+    // Find a suitable starting plot with good resources
+    const chosenPlot = await getSuitableStartingPlot(world);
 
     await db.$transaction(async (tx) => {
         const profile = await tx.profile.create({
