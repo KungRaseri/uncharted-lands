@@ -107,10 +107,29 @@ Plots: ${tile.Plots.length}`;
 		}
 
 		// Player mode - more user-friendly
-		return `${tile.Biome.name}
+		let tooltip = `${tile.Biome.name}
 Elevation: ${(tile.elevation * 100).toFixed(1)}%
 Temperature: ${tile.temperature.toFixed(1)}°C
-Precipitation: ${tile.precipitation.toFixed(1)}mm${tile.Plots.length > 0 ? '\n' + tile.Plots.length + ' ' + (tile.Plots.length === 1 ? 'Plot' : 'Plots') : ''}`;
+Precipitation: ${tile.precipitation.toFixed(1)}mm`;
+
+		// Add plot count if any
+		if (tile.Plots.length > 0) {
+			tooltip += `\n${tile.Plots.length} ${tile.Plots.length === 1 ? 'Plot' : 'Plots'}`;
+		}
+
+		// Add settlement name(s) if player owns any on this tile
+		if (mode === 'player' && currentPlayerProfileId) {
+			const playerSettlements = tile.Plots
+				.filter(plot => plot.Settlement?.playerProfileId === currentPlayerProfileId)
+				.map(plot => plot.Settlement?.name)
+				.filter(name => name);
+
+			if (playerSettlements.length > 0) {
+				tooltip += `\n\n🏘️ ${playerSettlements.join(', ')}`;
+			}
+		}
+
+		return tooltip;
 	}
 </script>
 
