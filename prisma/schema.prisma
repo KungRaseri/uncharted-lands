@@ -79,6 +79,8 @@ model Region {
   tiles            Tile[]
 
   @@unique([name, worldId])
+  @@index([worldId, xCoord, yCoord])
+  @@index([xCoord, yCoord])
 }
 
 model Tile {
@@ -93,6 +95,10 @@ model Tile {
   Plots  Plot[]
   Biome  Biome  @relation(fields: [biomeId], references: [id])
   Region Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@index([regionId])
+  @@index([biomeId])
+  @@index([type])
 }
 
 model Biome {
@@ -131,6 +137,8 @@ model Plot {
 
   Settlement Settlement?
   Tile       Tile        @relation(fields: [tileId], references: [id], onDelete: Cascade)
+
+  @@index([tileId])
 }
 
 model Settlement {
@@ -147,6 +155,9 @@ model Settlement {
   Plot          Plot                  @relation(fields: [plotId], references: [id], onDelete: Cascade)
   PlayerProfile ProfileServerData     @relation(fields: [playerProfileId], references: [profileId], onDelete: Cascade)
   Structures    SettlementStructure[]
+
+  @@index([playerProfileId])
+  @@index([plotId])
 }
 
 model SettlementStorage {

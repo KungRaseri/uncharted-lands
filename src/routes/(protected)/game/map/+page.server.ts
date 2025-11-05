@@ -64,20 +64,49 @@ export const load = (async ({ locals }) => {
             const worldId = settlement.Plot.Tile.Region.worldId;
             console.log('[MAP LOAD] Loading world for player settlement:', worldId);
             
+            const startTime = performance.now();
             const world = await db.world.findUnique({
                 where: {
                     id: worldId
                 },
-                include: {
-                    server: true,
+                select: {
+                    id: true,
+                    name: true,
+                    server: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
                     regions: {
-                        include: {
+                        select: {
+                            id: true,
+                            name: true,
+                            xCoord: true,
+                            yCoord: true,
                             tiles: {
-                                include: {
-                                    Biome: true,
+                                select: {
+                                    id: true,
+                                    elevation: true,
+                                    precipitation: true,
+                                    temperature: true,
+                                    type: true,
+                                    Biome: {
+                                        select: {
+                                            id: true,
+                                            name: true
+                                        }
+                                    },
                                     Plots: {
-                                        include: {
-                                            Settlement: true
+                                        select: {
+                                            id: true,
+                                            Settlement: {
+                                                select: {
+                                                    id: true,
+                                                    name: true,
+                                                    playerProfileId: true
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -86,6 +115,7 @@ export const load = (async ({ locals }) => {
                     }
                 }
             });
+            const loadTimeMs = Math.round(performance.now() - startTime);
 
             console.log('[MAP LOAD] World loaded:', {
                 found: !!world,
@@ -93,6 +123,7 @@ export const load = (async ({ locals }) => {
                 regionCount: world?.regions?.length,
                 serverName: world?.server?.name
             });
+            console.log('[MAP LOAD] ⏱️  Query time: ' + loadTimeMs + 'ms (Phase 1 optimized)');
 
             if (world) {
                 console.log('[MAP LOAD] SUCCESS - Returning player world with settlement');
@@ -125,20 +156,49 @@ export const load = (async ({ locals }) => {
             throw new Error('No server found. Please contact an administrator.');
         }
 
+        const startTime = performance.now();
         const world = await db.world.findFirst({
             where: {
                 serverId: server.id
             },
-            include: {
-                server: true,
+            select: {
+                id: true,
+                name: true,
+                server: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
                 regions: {
-                    include: {
+                    select: {
+                        id: true,
+                        name: true,
+                        xCoord: true,
+                        yCoord: true,
                         tiles: {
-                            include: {
-                                Biome: true,
+                            select: {
+                                id: true,
+                                elevation: true,
+                                precipitation: true,
+                                temperature: true,
+                                type: true,
+                                Biome: {
+                                    select: {
+                                        id: true,
+                                        name: true
+                                    }
+                                },
                                 Plots: {
-                                    include: {
-                                        Settlement: true
+                                    select: {
+                                        id: true,
+                                        Settlement: {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                playerProfileId: true
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -147,6 +207,7 @@ export const load = (async ({ locals }) => {
                 }
             }
         });
+        const loadTimeMs = Math.round(performance.now() - startTime);
 
         console.log('[MAP LOAD] Fallback world lookup:', {
             found: !!world,
@@ -154,6 +215,7 @@ export const load = (async ({ locals }) => {
             worldName: world?.name,
             regionCount: world?.regions?.length
         });
+        console.log('[MAP LOAD] ⏱️  Query time: ' + loadTimeMs + 'ms (Phase 1 optimized)');
 
         if (!world) {
             console.error('[MAP LOAD] FAILED - No world found');
@@ -168,9 +230,29 @@ export const load = (async ({ locals }) => {
         };
 
     } catch (error) {
-        console.error('[MAP LOAD] EXCEPTION:', error);
-        console.error('[MAP LOAD] Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
-        throw new Error(`Failed to load map: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.error('\n========================================');
+        console.error('🚨 MAP LOAD ERROR');
+        console.error('========================================');
+        console.error('[MAP LOAD] Exception caught:', error);
+        
+        if (error instanceof Error) {
+            console.error('[MAP LOAD] Error name:', error.name);
+            console.error('[MAP LOAD] Error message:', error.message);
+            console.error('[MAP LOAD] Stack trace:', error.stack);
+        } else {
+            console.error('[MAP LOAD] Non-Error object thrown:', typeof error, error);
+        }
+        
+        console.error('[MAP LOAD] Account details:', {
+            hasAccount: !!account,
+            accountId: account?.id,
+            hasProfile: !!account?.profile,
+            profileId: account?.profile?.id
+        });
+        console.error('========================================\n');
+        
+        // Re-throw with more context
+        throw new Error(`Failed to load map: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     }
 
 }) satisfies PageServerLoad;

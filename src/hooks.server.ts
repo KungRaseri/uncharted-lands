@@ -33,6 +33,31 @@ export const handle: Handle = (async ({ event, resolve }) => {
 export const handleError: HandleServerError = (async ({ error, event }) => {
     const errorId = crypto.randomUUID();
 
+    // Comprehensive error logging
+    console.error('\n========================================');
+    console.error('🚨 SERVER ERROR:', errorId);
+    console.error('========================================');
+    console.error('URL:', event.url.pathname);
+    console.error('Route:', event.route.id);
+    console.error('Method:', event.request.method);
+    console.error('Error:', error);
+    
+    if (error instanceof Error) {
+        console.error('Message:', error.message);
+        console.error('Stack:', error.stack);
+    }
+    
+    console.error('Event details:', {
+        url: event.url.href,
+        params: event.params,
+        locals: event.locals.account ? {
+            id: event.locals.account.id,
+            email: event.locals.account.email,
+            role: event.locals.account.role
+        } : 'No account'
+    });
+    console.error('========================================\n');
+
     Sentry.withScope((scope) => {
         scope.setTag("errorId", errorId)
         Sentry.captureException(error);
