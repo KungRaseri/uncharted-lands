@@ -1,0 +1,16 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "sveltekit",
+  "installCommand": "npm ci",
+  "devCommand": "npm run dev",
+  "crons": [
+    {
+      "path": "/api/cron/hourlyProduction",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/hourlyHalfHourProduction",
+      "schedule": "0 */30 * * *"
+    }
+  ]
+}
