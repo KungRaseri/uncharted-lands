@@ -22,7 +22,7 @@
 	const settledPlots = $derived(
 		data.world.regions?.reduce(
 			(sum, region) => sum + (region.tiles?.reduce(
-				(tileSum, tile) => tileSum + (tile.Plots?.length || 0), 0
+				(tileSum, tile) => tileSum + (tile.Plots?.filter(plot => plot.Settlement !== null).length || 0), 0
 			) || 0), 0
 		) || 0
 	);

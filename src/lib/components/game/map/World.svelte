@@ -17,48 +17,50 @@
 
 	let { regions }: Props = $props();
 	
-	console.log('[WORLD] Rendering world with regions:', {
-		regionCount: regions.length,
-		firstRegion: regions[0] ? {
-			id: regions[0].id,
-			coords: [regions[0].xCoord, regions[0].yCoord],
-			tileCount: regions[0].tiles?.length
-		} : null
+	$effect(() => {
+		console.log('[WORLD] Total regions:', regions.length);
+		console.log('[WORLD] Region coordinates:', regions.map(r => `(${r.xCoord},${r.yCoord})`).join(', '));
+		
+		// Check coordinate ranges
+		const xCoords = regions.map(r => r.xCoord);
+		const yCoords = regions.map(r => r.yCoord);
+		console.log('[WORLD] X range:', Math.min(...xCoords), '-', Math.max(...xCoords));
+		console.log('[WORLD] Y range:', Math.min(...yCoords), '-', Math.max(...yCoords));
 	});
 	
-	// Sort regions by coordinates for proper grid display
-	const sortedRegions = $derived(
-		[...regions].sort((a, b) => {
-			if (a.yCoord !== b.yCoord) return a.yCoord - b.yCoord;
-			return a.xCoord - b.xCoord;
-		})
-	);
-	
-	// Calculate grid dimensions based on actual region coordinates
+	// Calculate actual grid dimensions from coordinates
 	const maxX = $derived(Math.max(...regions.map(r => r.xCoord)) + 1);
 	const maxY = $derived(Math.max(...regions.map(r => r.yCoord)) + 1);
+	const gridCols = $derived(maxX);
 	
-	$effect(() => {
-		console.log('[WORLD] Grid dimensions:', { maxX, maxY, totalCells: maxX * maxY });
-		console.log('[WORLD] Region coordinates:', regions.map(r => ({ x: r.xCoord, y: r.yCoord, name: r.name })));
-	});
-	
-	// Create a 2D grid of regions for proper layout
+	// Create a 2D grid and place regions at their coordinates
 	const regionGrid = $derived(() => {
+		// Initialize empty grid
 		const grid: (typeof regions[0] | null)[][] = Array.from({ length: maxY }, () => 
 			Array(maxX).fill(null)
 		);
 		
-		console.log('[WORLD] Creating grid:', { rows: maxY, cols: maxX });
+		console.log('[WORLD] Creating grid:', maxY, 'rows x', maxX, 'cols');
 		
-		for (const region of sortedRegions) {
-			if (region.yCoord >= 0 && region.xCoord >= 0 && region.yCoord < maxY && region.xCoord < maxX) {
-				console.log('[WORLD] Placing region at:', { x: region.xCoord, y: region.yCoord, name: region.name });
-				grid[region.yCoord][region.xCoord] = region;
+		// Place each region at its coordinate position
+		for (const region of regions) {
+			const x = region.xCoord;
+			const y = region.yCoord;
+			
+			if (y >= 0 && y < maxY && x >= 0 && x < maxX) {
+				grid[y][x] = region;
+				console.log('[WORLD] Placed', region.name, 'at grid[' + y + '][' + x + ']');
 			} else {
-				console.warn('[WORLD] Region coordinates out of bounds:', { x: region.xCoord, y: region.yCoord, name: region.name });
+				console.error('[WORLD] Region out of bounds!', region.name, 'coords:', x, y, 'grid:', maxX, 'x', maxY);
 			}
 		}
+		
+		// Log grid structure
+		console.log('[WORLD] Grid filled cells:', grid.flat().filter(r => r !== null).length, '/', maxX * maxY);
+		
+		// Log first row to verify
+		console.log('[WORLD] First row (y=0):', grid[0].map(r => r?.name || 'null').join(', '));
+		console.log('[WORLD] First column (x=0):', grid.map(row => row[0]?.name || 'null').join(', '));
 		
 		return grid;
 	});
@@ -66,24 +68,26 @@
 
 <div class="space-y-4">
 	<!-- Map Container -->
-	<div class="flex justify-center items-start">
-		<div class="inline-grid gap-0.5 p-4 bg-surface-200 dark:bg-surface-800 rounded-lg border-2 border-surface-300 dark:border-surface-700"
-		     style="grid-template-columns: repeat({maxX}, minmax(0, 1fr))">
-			{#each regionGrid() as row, rowIndex}
-				{#each row as region, colIndex}
-					{#if region}
-						<div class="border border-surface-500 dark:border-surface-600 bg-surface-100 dark:bg-surface-900" 
-						     title="Region {region.name} ({region.xCoord}, {region.yCoord})">
-							<RegionComponent {region} />
-						</div>
-					{:else}
-						<div class="border border-surface-400 dark:border-surface-700 bg-surface-300 dark:bg-surface-800"
-						     title="Empty region ({colIndex}, {rowIndex})">
-							<div class="w-20 h-20"></div>
-						</div>
-					{/if}
+	<div class="flex justify-center">
+		<div class="bg-surface-200 dark:bg-surface-800 p-4 rounded-lg">
+			<div class="inline-grid gap-0 border border-surface-300 dark:border-surface-600"
+			     style="grid-template-columns: repeat({gridCols}, minmax(0, 1fr))">
+				{#each regionGrid() as row}
+					{#each row as region}
+						{#if region}
+							<div class="border border-surface-300 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 aspect-square" 
+							     title="Region {region.name} ({region.xCoord}, {region.yCoord})">
+								<RegionComponent {region} />
+							</div>
+						{:else}
+							<div class="border border-surface-400 dark:border-surface-700 bg-surface-300 dark:bg-surface-800 aspect-square opacity-30"
+							     title="Empty region">
+								<div class="w-20 h-20"></div>
+							</div>
+						{/if}
+					{/each}
 				{/each}
-			{/each}
+			</div>
 		</div>
 	</div>
 	
