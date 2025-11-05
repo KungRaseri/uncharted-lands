@@ -108,7 +108,8 @@ export const load = (async ({ locals }) => {
                             x: settlement.Plot.Tile.Region.xCoord,
                             y: settlement.Plot.Tile.Region.yCoord
                         }
-                    }
+                    },
+                    playerProfileId: settlement.playerProfileId
                 };
             }
         }
@@ -162,7 +163,8 @@ export const load = (async ({ locals }) => {
         console.log('[MAP LOAD] SUCCESS - Returning fallback world without settlement');
         return {
             world,
-            playerSettlement: null
+            playerSettlement: null,
+            playerProfileId: undefined
         };
 
     } catch (error) {

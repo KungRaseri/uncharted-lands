@@ -8,14 +8,19 @@
 				tiles: {
 					include: {
 						Biome: true;
-						Plots: true;
+						Plots: {
+							include: {
+								Settlement: true;
+							};
+						};
 					};
 				};
 			};
 		}>[];
+		playerProfileId?: string;
 	};
 
-	let { regions }: Props = $props();
+	let { regions, playerProfileId }: Props = $props();
 </script>
 
-<WorldMap {regions} mode="player" showLegend={true} />
+<WorldMap {regions} mode="player" currentPlayerProfileId={playerProfileId} showLegend={true} />

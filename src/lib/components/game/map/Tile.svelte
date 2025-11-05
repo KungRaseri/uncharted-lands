@@ -2,12 +2,31 @@
 	import type { Prisma } from '@prisma/client';
 
 	type Props = {
-		tile: Prisma.TileGetPayload<{ include: { Biome: true; Plots: true } }>;
+		tile: Prisma.TileGetPayload<{ include: { Biome: true; Plots: { include: { Settlement: true } } } }>;
 		/** Display mode - affects styling and interaction */
 		mode?: 'admin' | 'player';
+		/** Current player's profile ID (for player mode settlement filtering) */
+		currentPlayerProfileId?: string;
 	};
 
-	let { tile, mode = 'player' }: Props = $props();
+	let { tile, mode = 'player', currentPlayerProfileId }: Props = $props();
+	
+	// Check if tile has any settled plots
+	const hasSettlement = $derived(() => {
+		const settledPlots = tile.Plots.filter(plot => plot.Settlement);
+		
+		if (settledPlots.length === 0) {
+			return false;
+		}
+		
+		// In player mode, only show marker if player owns the settlement
+		if (mode === 'player' && currentPlayerProfileId) {
+			return settledPlots.some(plot => plot.Settlement?.playerProfileId === currentPlayerProfileId);
+		}
+		
+		// In admin mode, show marker if ANY settlement exists
+		return true;
+	});
 
 	// Get color based on biome type and elevation
 	function getTileColor(tile: Props['tile']): string {
@@ -71,7 +90,7 @@
 				if (elevation > 0.7) {
 					return 'rgb(150, 150, 150)'; // Mountain gray
 				}
-				
+
 				return 'rgb(100, 140, 80)'; // Default green
 		}
 	}
@@ -103,9 +122,11 @@ Precipitation: ${tile.precipitation.toFixed(1)}mm${tile.Plots.length > 0 ? '\n' 
 	aria-label="Tile: {tile.Biome.name}"
 	title={getTooltipContent()}
 >
-	<!-- {#if tile.Plots.length > 0}
+	{#if hasSettlement()}
 		<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-			<div class="w-1.5 h-1.5 bg-warning-400 rounded-full shadow-[0_0_3px_rgba(251,191,36,1)]"></div>
+			<div
+				class="w-1.5 h-1.5 bg-warning-400 rounded-full shadow-[0_0_3px_rgba(251,191,36,1)]"
+			></div>
 		</div>
-	{/if} -->
+	{/if}
 </div>

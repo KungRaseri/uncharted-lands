@@ -109,6 +109,6 @@
 
 	<!-- Map Container -->
 	<div class="card preset-filled-surface-100-900 p-6">
-		<World regions={data.world.regions ?? []} />
+		<World regions={data.world.regions ?? []} playerProfileId={data.playerProfileId} />
 	</div>
 </div>

@@ -8,16 +8,22 @@
 				tiles: {
 					include: {
 						Biome: true;
-						Plots: true;
+						Plots: {
+							include: {
+								Settlement: true;
+							};
+						};
 					};
 				};
 			};
 		}>;
 		/** Display mode - affects tile sizing and interaction */
 		mode?: 'admin' | 'player';
+		/** Current player's profile ID (for player mode settlement filtering) */
+		currentPlayerProfileId?: string;
 	};
 
-	let { region, mode = 'player' }: Props = $props();
+	let { region, mode = 'player', currentPlayerProfileId }: Props = $props();
 	
 	// Sort tiles by ID to ensure correct positioning (matching admin preview behavior)
 	// Tiles are created in row-major order during world generation
@@ -28,6 +34,6 @@
 
 <div class="grid grid-cols-10 gap-0 h-full w-full">
 	{#each sortedTiles as tile}
-		<TileComponent {tile} {mode} />
+		<TileComponent {tile} {mode} {currentPlayerProfileId} />
 	{/each}
 </div>

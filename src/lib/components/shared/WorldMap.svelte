@@ -7,7 +7,11 @@
 			tiles: {
 				include: {
 					Biome: true;
-					Plots: true;
+					Plots: {
+						include: {
+							Settlement: true;
+						};
+					};
 				};
 			};
 		};
@@ -31,6 +35,8 @@
 		previewRegions?: RegionWithElevationMap[];
 		/** Display mode: affects tooltips and hover details */
 		mode?: 'admin' | 'player';
+		/** Current player's profile ID (for player mode settlement filtering) */
+		currentPlayerProfileId?: string;
 		/** Show legend */
 		showLegend?: boolean;
 		/** Show stats */
@@ -41,6 +47,7 @@
 		regions, 
 		previewRegions, 
 		mode = 'player',
+		currentPlayerProfileId,
 		showLegend = true,
 		showStats = false
 	}: Props = $props();
@@ -186,7 +193,7 @@ Terrain: ${terrain}`;
 					{#each regions as region}
 						<div class="border border-surface-400 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 aspect-square" 
 						     title="Region {region.name} ({region.xCoord}, {region.yCoord})">
-							<RegionComponent {region} mode={mode} />
+							<RegionComponent {region} mode={mode} {currentPlayerProfileId} />
 						</div>
 					{/each}
 				{/if}
