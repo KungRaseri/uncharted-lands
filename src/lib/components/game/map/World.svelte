@@ -18,9 +18,10 @@
 			};
 		}>[];
 		playerProfileId?: string;
+		lazyLoadEnabled?: boolean;
 	};
 
-	let { regions, playerProfileId }: Props = $props();
+	let { regions, playerProfileId, lazyLoadEnabled = false }: Props = $props();
 </script>
 
-<WorldMap {regions} mode="player" currentPlayerProfileId={playerProfileId} showLegend={true} />
+<WorldMap {regions} mode="player" currentPlayerProfileId={playerProfileId} showLegend={true} {lazyLoadEnabled} />

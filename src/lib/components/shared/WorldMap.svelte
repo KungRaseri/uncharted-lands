@@ -41,6 +41,8 @@
 		showLegend?: boolean;
 		/** Show stats */
 		showStats?: boolean;
+		/** Lazy load mode: adjust grid size based on loaded regions */
+		lazyLoadEnabled?: boolean;
 	};
 
 	let { 
@@ -49,7 +51,8 @@
 		mode = 'player',
 		currentPlayerProfileId,
 		showLegend = true,
-		showStats = false
+		showStats = false,
+		lazyLoadEnabled = false
 	}: Props = $props();
 	
 	// Preview mode is ONLY for world creation (before tiles exist)
@@ -64,6 +67,54 @@
 			return a.yCoord - b.yCoord;
 		}) : []
 	);
+	
+	// Calculate grid dimensions dynamically
+	const gridDimensions = $derived(() => {
+		if (!displayRegions || displayRegions.length === 0) {
+			return { cols: 10, rows: 10 }; // Default 10x10
+		}
+		
+		if (lazyLoadEnabled) {
+			// For lazy loading, calculate actual bounds from loaded regions
+			const xCoords = displayRegions.map(r => r.xCoord);
+			const yCoords = displayRegions.map(r => r.yCoord);
+			const minX = Math.min(...xCoords);
+			const maxX = Math.max(...xCoords);
+			const minY = Math.min(...yCoords);
+			const maxY = Math.max(...yCoords);
+			const cols = maxY - minY + 1;
+			const rows = maxX - minX + 1;
+			
+			console.log('[WORLDMAP] Lazy load grid dimensions:', {
+				regionCount: displayRegions.length,
+				xRange: [minX, maxX],
+				yRange: [minY, maxY],
+				cols,
+				rows
+			});
+			
+			return { cols, rows };
+		}
+		
+		// Full world mode: assume 10x10
+		return { cols: 10, rows: 10 };
+	});
+	
+	// Get grid CSS class based on column count
+	const gridColsClass = $derived(() => {
+		const cols = gridDimensions().cols;
+		switch(cols) {
+			case 3: return 'grid-cols-3';
+			case 4: return 'grid-cols-4';
+			case 5: return 'grid-cols-5';
+			case 6: return 'grid-cols-6';
+			case 7: return 'grid-cols-7';
+			case 8: return 'grid-cols-8';
+			case 9: return 'grid-cols-9';
+			case 10: return 'grid-cols-10';
+			default: return 'grid-cols-10';
+		}
+	});
 	
 	// Calculate stats if needed
 	const stats = $derived(() => {
@@ -161,8 +212,8 @@ Terrain: ${terrain}`;
 	<!-- Map Container -->
 	<div class="flex justify-center">
 		<div class="bg-surface-200 dark:bg-surface-800 p-4 rounded-lg inline-block">
-			<!-- Set a specific size that's large and square. Max-w ensures it fits on smaller screens -->
-			<div class="grid grid-cols-10 gap-0 border-2 border-surface-400 dark:border-surface-500 w-[600px] h-[600px] max-w-[90vw] max-h-[90vw] aspect-square">
+			<!-- Dynamic grid size based on loaded regions -->
+			<div class="grid {gridColsClass()} gap-0 border-2 border-surface-400 dark:border-surface-500 w-[600px] h-[600px] max-w-[90vw] max-h-[90vw]">
 				{#if isPreviewMode && previewRegions}
 					<!-- Preview Mode (World Creation ONLY): Show elevation data -->
 					{#each previewRegions as region}
@@ -191,7 +242,7 @@ Terrain: ${terrain}`;
 				{:else if regions}
 					<!-- Normal Mode: Show biome-based tiles using Region component (both admin & player) -->
 					{#each regions as region}
-						<div class="border border-surface-400 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 aspect-square" 
+						<div class="border border-surface-400 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 w-full h-full" 
 						     title="Region {region.name} ({region.xCoord}, {region.yCoord})">
 							<RegionComponent {region} mode={mode} {currentPlayerProfileId} />
 						</div>
