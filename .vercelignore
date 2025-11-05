@@ -1,0 +1,26 @@
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+**/tests/
+**/test-results/
+**/*.spec.ts
+**/*.test.ts
+
+# Development files
+**/.vscode/
+**/.idea/
+**/*.log
+
+# Build artifacts (will be built during deployment)
+**/node_modules/
+**/dist/
+**/build/
+**/.svelte-kit/
+
+# Environment files (use Vercel environment variables)
+**/.env
+**/.env.*
+!**/.env.example

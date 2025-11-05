@@ -1,0 +1,197 @@
+{
+  "folders": [
+    {
+      "name": "🏠 Root",
+      "path": "."
+    },
+    {
+      "name": "🎮 Client",
+      "path": "client"
+    },
+    {
+      "name": "🔌 Server",
+      "path": "server"
+    },
+    {
+      "name": "📚 Documentation",
+      "path": "docs"
+    }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "files.associations": {
+      "*.css": "tailwindcss"
+    },
+    "tailwindCSS.experimental.configFile": "client/src/app.postcss",
+    "tailwindCSS.includeLanguages": {
+      "svelte": "html"
+    },
+    "svelte.enable-ts-plugin": true,
+    "[svelte]": {
+      "editor.defaultFormatter": "svelte.svelte-vscode"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[markdown]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/build": true,
+      "**/.svelte-kit": true,
+      "**/dist": true,
+      "**/.vercel": true,
+      "**/coverage": true,
+      "**/playwright-report": true,
+      "**/test-results": true
+    },
+    "files.exclude": {
+      "**/.git": false
+    },
+    "git.detectSubmodules": false,
+    "git.enabled": true,
+    "git.path": null,
+    "git.repositoryScanMaxDepth": 1
+  },
+  "extensions": {
+    "recommendations": [
+      "svelte.svelte-vscode",
+      "prisma.prisma",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "bradlc.vscode-tailwindcss",
+      "github.copilot",
+      "github.copilot-chat",
+      "ms-playwright.playwright",
+      "eamodio.gitlens"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "🎮 Client Dev",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder:🎮 Client}",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["run", "dev"],
+        "skipFiles": ["<node_internals>/**"]
+      },
+      {
+        "name": "🔌 Server Dev",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder:🔌 Server}",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["run", "dev"],
+        "skipFiles": ["<node_internals>/**"]
+      },
+      {
+        "name": "🧪 Client Tests",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder:🎮 Client}",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["test"],
+        "skipFiles": ["<node_internals>/**"]
+      }
+    ],
+    "compounds": [
+      {
+        "name": "🚀 Full Stack",
+        "configurations": ["🎮 Client Dev", "🔌 Server Dev"],
+        "stopAll": true
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Client: Dev",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": {
+          "cwd": "${workspaceFolder}/client"
+        },
+        "problemMatcher": [],
+        "isBackground": true,
+        "group": {
+          "kind": "build",
+          "isDefault": false
+        }
+      },
+      {
+        "label": "Client: Build",
+        "type": "shell",
+        "command": "npm run build",
+        "options": {
+          "cwd": "${workspaceFolder}/client"
+        },
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Client: Test",
+        "type": "shell",
+        "command": "npm test",
+        "options": {
+          "cwd": "${workspaceFolder}/client"
+        },
+        "problemMatcher": [],
+        "group": {
+          "kind": "test",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Server: Dev",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": {
+          "cwd": "${workspaceFolder}/server"
+        },
+        "problemMatcher": [],
+        "isBackground": true,
+        "group": {
+          "kind": "build",
+          "isDefault": false
+        }
+      },
+      {
+        "label": "DB: Migrate",
+        "type": "shell",
+        "command": "npm run migrate",
+        "options": {
+          "cwd": "${workspaceFolder}/client"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "DB: Studio",
+        "type": "shell",
+        "command": "npx prisma studio",
+        "options": {
+          "cwd": "${workspaceFolder}/client"
+        },
+        "problemMatcher": [],
+        "isBackground": true
+      }
+    ]
+  }
+}

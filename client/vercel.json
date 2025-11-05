@@ -1,8 +1,11 @@
 {
-  "buildCommand": "npm run build",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
   "framework": "sveltekit",
-  "installCommand": "npm ci",
-  "devCommand": "npm run dev",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev -- --port $PORT",
+  "installCommand": "npm install",
+  "outputDirectory": "build",
   "crons": [
     {
       "path": "/api/cron/hourlyProduction",
@@ -12,5 +15,11 @@
       "path": "/api/cron/hourlyHalfHourProduction",
       "schedule": "0 */30 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }

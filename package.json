@@ -1,0 +1,41 @@
+{
+  "name": "uncharted-lands-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Uncharted Lands - Monorepo workspace for client and server applications",
+  "packageManager": "npm@10.0.0",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=client",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build --workspace=client",
+    "build:client": "npm run build --workspace=client",
+    "build:server": "npm run build --workspace=server",
+    "build:all": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspace=client",
+    "test:client": "npm run test --workspace=client",
+    "test:server": "npm run test --workspace=server --if-present",
+    "test:all": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present",
+    "check": "npm run check --workspace=client",
+    "migrate": "npm run migrate --workspace=client",
+    "clean": "rimraf client/.svelte-kit client/build server/dist node_modules client/node_modules server/node_modules"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "game",
+    "sveltekit",
+    "websockets",
+    "monorepo"
+  ],
+  "author": "KungRaseri",
+  "license": "MIT"
+}
