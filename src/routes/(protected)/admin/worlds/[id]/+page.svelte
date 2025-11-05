@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Globe, Server, MapPin, Home, Mountain, Waves, ArrowLeft, Edit, Trash2, Save, X } from 'lucide-svelte';
-	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
+	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -315,7 +315,10 @@
 
 	<!-- World Map -->
 	{#if previewRegions && previewRegions.length > 0}
-		<WorldMapPreview regions={previewRegions} />
+		<div class="card preset-filled-surface-100-900 p-6">
+			<h2 class="text-xl font-bold mb-4">World Map (Elevation)</h2>
+			<WorldMap previewRegions={previewRegions} mode="admin" showLegend={true} />
+		</div>
 	{/if}
 
 	<!-- Regions List -->

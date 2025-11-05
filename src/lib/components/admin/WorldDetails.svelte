@@ -28,9 +28,20 @@
 
 		<div class="card">
 			<section class="p-4">
-				{worldInfo.landTiles}
-				{worldInfo.oceanTiles}
-				{worldInfo.settlements}
+				<div class="grid grid-cols-3 gap-4 text-center">
+					<div>
+						<p class="text-2xl font-bold text-success-500">{worldInfo.landTiles}</p>
+						<p class="text-sm">Land Tiles</p>
+					</div>
+					<div>
+						<p class="text-2xl font-bold text-primary-500">{worldInfo.oceanTiles}</p>
+						<p class="text-sm">Ocean Tiles</p>
+					</div>
+					<div>
+						<p class="text-2xl font-bold text-error-500">{worldInfo.settlements}</p>
+						<p class="text-sm">Settlements</p>
+					</div>
+				</div>
 			</section>
 		</div>
 
@@ -39,7 +50,10 @@
 		<hr class="m-2" />
 
 		{#if world.regions}
-			<World regions={world.regions} />
+			<!-- Note: This component needs regions with tiles included in the query -->
+			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
+				Map display requires detailed tile data. View full world details in the admin section.
+			</p>
 		{/if}
 	</section>
 </div>

@@ -3,9 +3,11 @@
 
 	type Props = {
 		tile: Prisma.TileGetPayload<{ include: { Biome: true; Plots: true } }>;
+		/** Display mode - affects styling and interaction */
+		mode?: 'admin' | 'player';
 	};
 
-	let { tile }: Props = $props();
+	let { tile, mode = 'player' }: Props = $props();
 
 	// Get color based on biome and elevation
 	function getTileColor(tile: Props['tile']): string {
@@ -59,61 +61,37 @@
 		const b = Math.floor(40 + elevation * 60);
 		return `rgb(${r}, ${g}, ${b})`;
 	}
-
-	let showTooltip = $state(false);
-	let tooltipX = $state(0);
-	let tooltipY = $state(0);
-
-	function handleMouseEnter(e: MouseEvent) {
-		showTooltip = true;
-		tooltipX = e.clientX;
-		tooltipY = e.clientY;
-	}
-
-	function handleMouseLeave() {
-		showTooltip = false;
-	}
-
-	function handleMouseMove(e: MouseEvent) {
-		tooltipX = e.clientX;
-		tooltipY = e.clientY;
+	
+	// Get tooltip content based on mode
+	function getTooltipContent(): string {
+		if (mode === 'admin') {
+			return `Biome: ${tile.Biome.name}
+Type: ${tile.type}
+Elevation: ${tile.elevation.toFixed(3)}
+Precipitation: ${tile.precipitation.toFixed(3)}
+Temperature: ${tile.temperature.toFixed(3)}
+Plots: ${tile.Plots.length}`;
+		}
+		
+		// Player mode - more user-friendly
+		return `${tile.Biome.name}
+Elevation: ${(tile.elevation * 100).toFixed(1)}%
+Temperature: ${tile.temperature.toFixed(1)}°C
+Precipitation: ${tile.precipitation.toFixed(1)}mm${tile.Plots.length > 0 ? '\n' + tile.Plots.length + ' ' + (tile.Plots.length === 1 ? 'Plot' : 'Plots') : ''}`;
 	}
 </script>
 
 <div
-	class="w-2 h-2 border-[0.5px] border-surface-400 dark:border-surface-600 hover:border-primary-400 hover:scale-150 hover:z-10 cursor-pointer transition-all relative"
+	class="w-full h-full cursor-help hover:shadow-[inset_0_0_0_2px_rgba(255,255,0,0.8)] hover:z-10 transition-shadow relative"
 	style="background-color: {getTileColor(tile)}"
-	onmouseenter={handleMouseEnter}
-	onmouseleave={handleMouseLeave}
-	onmousemove={handleMouseMove}
 	role="button"
 	tabindex="0"
 	aria-label="Tile: {tile.Biome.name}"
+	title={getTooltipContent()}
 >
 	{#if tile.Plots.length > 0}
-		<div class="absolute inset-0 flex items-center justify-center">
-			<div class="w-1 h-1 bg-warning-400 rounded-full shadow-[0_0_2px_rgba(251,191,36,1)]"></div>
+		<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+			<div class="w-1.5 h-1.5 bg-warning-400 rounded-full shadow-[0_0_3px_rgba(251,191,36,1)]"></div>
 		</div>
 	{/if}
 </div>
-
-{#if showTooltip}
-	<div
-		class="fixed z-50 pointer-events-none"
-		style="left: {tooltipX + 10}px; top: {tooltipY + 10}px"
-	>
-		<div class="card preset-filled-surface-50-950 p-3 text-xs shadow-xl max-w-xs">
-			<div class="font-bold mb-1">{tile.Biome.name}</div>
-			<div class="space-y-0.5 text-surface-600 dark:text-surface-400">
-				<div>Elevation: {(tile.elevation * 100).toFixed(1)}%</div>
-				<div>Temperature: {tile.temperature.toFixed(1)}°C</div>
-				<div>Precipitation: {tile.precipitation.toFixed(1)}mm</div>
-				{#if tile.Plots.length > 0}
-					<div class="text-warning-500 font-semibold mt-1">
-						{tile.Plots.length} {tile.Plots.length === 1 ? 'Plot' : 'Plots'}
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
-{/if}

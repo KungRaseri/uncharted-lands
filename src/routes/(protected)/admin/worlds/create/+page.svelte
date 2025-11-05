@@ -7,7 +7,7 @@
 	import { generateMap } from '$lib/game/world-generator';
 
 	import { Info } from 'lucide-svelte';
-	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
+	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -811,7 +811,10 @@
 	</div>
 
 	{#if regions}
-		<WorldMapPreview {regions} />
+		<div class="card p-4 rounded-md">
+			<h2 class="text-xl font-semibold mb-4">World Preview (Elevation)</h2>
+			<WorldMap previewRegions={regions} mode="admin" showLegend={true} showStats={true} />
+		</div>
 	{/if}
 </div>
 
