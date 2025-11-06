@@ -66,13 +66,15 @@ This file provides context and guidelines for GitHub Copilot when working on the
 docs/
 ├── Home.md                              # Wiki home page
 ├── README.md                            # Documentation index
-├── VERCEL_DEPLOYMENT.md                 # Vercel deployment guide
+├── WORLD_GENERATION_GUIDE.md            # World generation system
+├── RESOURCE_GENERATION_SYSTEM.md        # Resource management
+├── VERCEL_DEPLOYMENT.md                 # Complete Vercel deployment guide
+├── VERCEL_BUILD_SETTINGS.md             # Quick reference for Dashboard settings
 ├── VERCEL_BEST_PRACTICES.md             # Official Vercel best practices
+├── LOCAL_DEPLOYMENT_PREP.md             # Local preparation checklist
 ├── MONOREPO_STRUCTURE.md                # Monorepo structure and commands
 ├── MONOREPO_SETUP_SUMMARY.md            # Setup summary
 ├── MONOREPO_SETUP_COMPLETE.md           # Complete setup documentation
-├── WORLD_GENERATION_GUIDE.md            # World generation system
-├── RESOURCE_GENERATION_SYSTEM.md        # Resource management
 └── migration/                           # Migration documentation
     ├── SKELETON_V4_MIGRATION_COMPLETE.md
     ├── SKELETON_V4_THEME_MIGRATION.md

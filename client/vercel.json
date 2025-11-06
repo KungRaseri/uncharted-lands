@@ -2,20 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": "sveltekit",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev -- --port $PORT",
+  "buildCommand": "npm run build --workspace=client",
+  "devCommand": "npm run dev --workspace=client -- --port $PORT",
   "installCommand": "npm install",
-  "outputDirectory": "build",
-  "crons": [
-    {
-      "path": "/api/cron/hourlyProduction",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/hourlyHalfHourProduction",
-      "schedule": "0 */30 * * *"
-    }
-  ],
+  "ignoreCommand": "bash -c 'if [ -n \"$VERCEL_GIT_COMMIT_REF\" ] && [ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ] && [ \"$VERCEL_GIT_COMMIT_REF\" != \"development\" ]; then exit 1; else git diff --quiet HEAD^ HEAD -- client/; fi'",
   "functions": {
     "api/**/*.ts": {
       "memory": 1024,
