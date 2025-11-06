@@ -35,8 +35,8 @@
 			<!-- Avatar -->
 			<div class="flex-none">
 				{#if profile?.picture}
-					<Avatar size="xl" class="ring-4 ring-primary-500/20">
-						<img src={profile.picture} alt="{profile.username || 'User'} avatar" />
+					<Avatar class="ring-4 ring-primary-500/20">
+						<img src={profile.picture} alt="{profile.username || 'User'} avatar" class="w-24 h-24 rounded-full" />
 					</Avatar>
 				{:else}
 					<div class="w-24 h-24 rounded-full bg-primary-500/10 flex items-center justify-center ring-4 ring-primary-500/20">

@@ -1,22 +1,9 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 
+	// Regions can be full Prisma payloads or minimal server-returned shapes; accept any for flexibility
 	type Props = {
-		regions: Prisma.RegionGetPayload<{
-			include: {
-				tiles: {
-					include: {
-						Biome: true;
-						Plots: {
-							include: {
-								Settlement: true;
-							};
-						};
-					};
-				};
-			};
-		}>[];
+		regions: any[];
 		playerProfileId?: string;
 		lazyLoadEnabled?: boolean;
 	};

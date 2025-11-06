@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
+	import type { ComponentType } from 'svelte';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
 		title: string;
 		description?: string;
-		icon?: Component;
+		icon?: ComponentType;
 		actions?: Snippet;
 	};
 
