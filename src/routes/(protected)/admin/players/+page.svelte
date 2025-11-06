@@ -94,7 +94,9 @@
 								<td>
 									<div class="flex items-center gap-3">
 										{#if account.profile?.picture}
-											<Avatar src={account.profile.picture} size="sm" />
+											<Avatar size="sm">
+												<img src={account.profile.picture} alt="{account.profile.username || 'User'} avatar" />
+											</Avatar>
 										{:else}
 											<div class="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center">
 												<User size={20} class="text-primary-500" />

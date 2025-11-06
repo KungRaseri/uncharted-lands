@@ -35,7 +35,7 @@
 	
 	// Fetch regions from API and REPLACE the visible grid (not append)
 	async function fetchRegions(centerX: number, centerY: number, radius: number = 1) {
-		if (!data.world?.id) return;
+		if (!data.world) return;
 		
 		isLoading = true;
 		console.log('[MAP PAN] Fetching regions:', { centerX, centerY, radius });
@@ -160,10 +160,12 @@
 				World Map
 			</h1>
 			<div class="flex flex-wrap items-center justify-center gap-4 text-sm text-surface-600 dark:text-surface-400">
-				<div class="flex items-center gap-2">
-					<Globe size={16} />
-					<span class="font-semibold">{data.world.name}</span>
-				</div>
+				{#if data.world}
+					<div class="flex items-center gap-2">
+						<Globe size={16} />
+						<span class="font-semibold">{data.world.name}</span>
+					</div>
+				{/if}
 				<div class="flex items-center gap-2">
 					<Layers size={16} />
 					<span>{totalRegions} Regions ({worldWidth}×{worldHeight})</span>
@@ -247,10 +249,16 @@
 
 	<!-- Map Container -->
 	<div class="card preset-filled-surface-100-900 p-6">
-		<World 
-			{regions}
-			playerProfileId={data.playerProfileId}
-			lazyLoadEnabled={data.lazyLoadEnabled ?? false}
-		/>
+		{#if data.world}
+			<World 
+				{regions}
+				playerProfileId={data.playerProfileId}
+				lazyLoadEnabled={data.lazyLoadEnabled ?? false}
+			/>
+		{:else}
+			<div class="p-12 text-center">
+				<p class="text-lg text-surface-600 dark:text-surface-400">No world available</p>
+			</div>
+		{/if}
 	</div>
 </div>

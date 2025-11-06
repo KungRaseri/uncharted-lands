@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { CircleUser } from 'lucide-svelte';
-	import { Github } from 'lucide-svelte';
+	import { CircleUser, Github } from 'lucide-svelte';
 	import house from '$lib/images/house-foggy-bg.jpg';
 </script>
 
@@ -32,7 +31,7 @@
 								>
 									<span class="sr-only">Sign in with Google</span>
 									<div class="w-6 h-6 block">
-										<Google width="100%" height="100%" />
+										<CircleUser class="w-6 h-6" />
 									</div>
 								</a>
 							</div>

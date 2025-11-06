@@ -4,7 +4,7 @@
 
 	let { data }: { data: PageData } = $props();
 
-	const resourceIcons = {
+	const resourceIcons: Record<string, any> = {
 		area: Grid3x3,
 		solar: Sun,
 		wind: Wind,

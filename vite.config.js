@@ -17,9 +17,6 @@ const config = defineConfig({
 	},
 	preview: {
 		port: 4173
-	},
-	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}']
 	}
 })
 
