@@ -247,37 +247,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.7);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 999;
-	}
-
-	.modal {
-		border-radius: 0.5rem;
-		padding: 1.5rem;
-	}
-
-	.modal-header {
-		margin-bottom: 1rem;
-	}
-
-	.modal-body {
-		margin-bottom: 1.5rem;
-	}
-
-	.modal-footer {
-		display: flex;
-		gap: 0.75rem;
-		justify-content: flex-end;
-	}
-</style>

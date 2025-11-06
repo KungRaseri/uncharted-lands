@@ -149,7 +149,7 @@
 			
 			<div class="space-y-2">
 				<div>
-					<label class="text-sm text-surface-600 dark:text-surface-400">Settlement ID</label>
+					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Settlement ID</div>
 					<p class="font-mono text-sm">{data.plot.Settlement.id}</p>
 				</div>
 			</div>

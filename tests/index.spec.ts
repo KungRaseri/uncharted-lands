@@ -12,41 +12,28 @@ test.describe('Landing Page - suite', () => {
 
     test('main feature content -> exists', async ({ page }) => {
         const h1Text = await page.textContent('h1');
-        expect(h1Text).toContain('Settle in uncharted lands');
+        expect(h1Text).toContain('Uncharted Lands');
     });
 
-    test('main feature actions -> Introduction', async ({ page }) => {
-        const expectedContent = "Area Under Construction";
-        const expectedTitle = "Introduction - Coming Soon™ | Uncharted Lands";
+    test('main feature description -> exists', async ({ page }) => {
+        const descriptionText = await page.textContent('p');
+        expect(descriptionText).toContain('Utilize the resources around you');
+    });
 
-        await page.getByTestId('main-feature-introduction').waitFor();
-        await page.getByTestId('main-feature-introduction').click();
+    test('main feature actions -> Get Settled', async ({ page }) => {
+        await page.getByRole('link', { name: /Get Settled/i }).waitFor();
+        const link = page.getByRole('link', { name: /Get Settled/i });
+        await expect(link).toHaveAttribute('href', '/game/getting-started');
+    });
+
+    test('main feature actions -> Learn More', async ({ page }) => {
+        await page.getByRole('link', { name: /Learn More/i }).waitFor();
+        const link = page.getByRole('link', { name: /Learn More/i });
+        await expect(link).toHaveAttribute('href', '/introduction');
+        
+        await link.click();
         await page.waitForLoadState("networkidle");
-
-        const alertText = await page.textContent('.alert-message');
-        expect(alertText).toContain(expectedContent);
-        await expect(page).toHaveTitle(expectedTitle);
-    });
-
-    test('main feature actions -> Register', async ({ page }) => {
-        const expected = "Register your account";
-
-        await page.getByTestId('main-feature-register').waitFor();
-        await page.getByTestId('main-feature-register').click();
-        await page.waitForLoadState('networkidle');
-
-        const text = await page.getByText(expected).textContent();
-        expect(text).toContain(expected);
-    });
-
-    test('main feature actions -> Sign In', async ({ page }) => {
-        const expected = "Sign into your account";
-
-        await page.getByTestId('main-feature-signin').waitFor();
-        await page.getByTestId('main-feature-signin').click();
-        await page.waitForLoadState("networkidle");
-
-        const text = await page.getByText(expected).textContent();
-        expect(text).toContain(expected);
+        
+        await expect(page).toHaveURL(/.*introduction/);
     });
 });

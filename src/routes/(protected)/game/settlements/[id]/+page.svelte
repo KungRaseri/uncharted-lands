@@ -332,11 +332,15 @@
 
 <!-- Build Structure Modal -->
 {#if buildModalOpen}
-	<div class="modal-backdrop" onclick={closeBuildModal}>
-		<div class="modal preset-filled-surface-50-950 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onclick={(e) => e.stopPropagation()}>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="modal-backdrop" onclick={closeBuildModal} role="presentation">
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="modal preset-filled-surface-50-950 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="build-modal-title" tabindex="-1">
 			<header class="modal-header border-b border-surface-300 dark:border-surface-700 flex-none">
 				<div class="flex items-center justify-between">
-					<h3 class="h3">Build Structure</h3>
+					<h3 class="h3" id="build-modal-title">Build Structure</h3>
 					<button onclick={closeBuildModal} class="btn btn-sm preset-tonal-surface-500 rounded-md" disabled={isBuilding}>
 						<X size={16} />
 					</button>
@@ -502,25 +506,3 @@
 	</div>
 {/if}
 
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.7);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 999;
-	}
-
-	.modal {
-		border-radius: 0.5rem;
-	}
-
-	.modal-header {
-		padding: 1.5rem;
-	}
-</style>
