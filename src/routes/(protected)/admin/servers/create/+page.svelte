@@ -60,7 +60,7 @@
 					type="text"
 					placeholder="e.g., North America Server"
 					required
-					autofocus
+
 				/>
 				{#if form?.fieldErrors?.name}
 					<span class="text-sm text-error-500 mt-1">{form.fieldErrors.name}</span>

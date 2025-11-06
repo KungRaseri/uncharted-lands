@@ -112,16 +112,14 @@
 								<label for="remember-me" class="ml-2 block text-sm text-gray-900">
 									Remember me
 								</label>
-							</div>
-
-							<div class="text-sm">
-								<a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
-									Forgot your password?
-								</a>
-							</div>
 						</div>
 
-						<div>
+						<div class="text-sm">
+							<a href="/auth/forgot-password" class="font-medium text-indigo-600 hover:text-indigo-500">
+								Forgot your password?
+							</a>
+						</div>
+					</div>						<div>
 							<button
 								type="submit"
 								class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

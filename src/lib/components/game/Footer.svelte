@@ -25,11 +25,11 @@
 			<div class="flex items-center gap-2">
 				<Wifi 
 					size={14} 
-					class="{serverStatus === 'online' 
+					class={serverStatus === 'online' 
 						? 'text-success-500' 
 						: serverStatus === 'offline' 
 						? 'text-error-500' 
-						: 'text-warning-500'}"
+						: 'text-warning-500'}
 				/>
 				<span class="text-surface-600 dark:text-surface-400 capitalize">
 					{serverStatus}
