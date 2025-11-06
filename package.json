@@ -27,7 +27,7 @@
     "clean": "rimraf client/.svelte-kit client/build server/dist node_modules client/node_modules server/node_modules"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": "22.x",
     "npm": ">=9.0.0"
   },
   "keywords": [
