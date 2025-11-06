@@ -6,13 +6,7 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ## Project Overview
 
-**Uncharted Lands** is a monorepo containing a SvelteKit game application and a WebSocket server for real-time game features. Players build and manage settlements in a procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures while expanding settlements and improving technology.
-
-**Project Structure**:
-- **Monorepo**: npm workspaces with two deployable applications
-- **Client** (`client/`): SvelteKit game application
-- **Server** (`server/`): Node.js WebSocket server
-- **Documentation** (`docs/`): All project documentation
+**Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures while expanding settlements and improving technology.
 
 **Tech Stack**:
 - **Framework**: SvelteKit 2.48.4 + Svelte 5.43.2
@@ -20,8 +14,8 @@ This file provides context and guidelines for GitHub Copilot when working on the
 - **Database**: Prisma + PostgreSQL
 - **Build**: Vite 6.0.3
 - **Testing**: Vitest + Playwright
-- **Server**: Node.js + TypeScript + ws (WebSockets)
-- **Deployment**: Vercel (two separate projects)
+- **Deployment**: Vercel
+- **Node Version**: 22.x
 
 ---
 
@@ -40,7 +34,6 @@ This file provides context and guidelines for GitHub Copilot when working on the
    - `README.md` - Project overview and getting started
    - `LICENSE` - License file
    - `CHANGELOG.md` - Version history (if needed)
-   - `MONOREPO_READY.md` - Quick reference for monorepo setup
    
 3. **Summary Documents**: 
    - ⚠️ **DO NOT** create summary documents (e.g., `CHANGES_SUMMARY.md`, `MIGRATION_SUMMARY.md`) unless explicitly requested
@@ -68,13 +61,7 @@ docs/
 ├── README.md                            # Documentation index
 ├── WORLD_GENERATION_GUIDE.md            # World generation system
 ├── RESOURCE_GENERATION_SYSTEM.md        # Resource management
-├── VERCEL_DEPLOYMENT.md                 # Complete Vercel deployment guide
-├── VERCEL_BUILD_SETTINGS.md             # Quick reference for Dashboard settings
-├── VERCEL_BEST_PRACTICES.md             # Official Vercel best practices
-├── LOCAL_DEPLOYMENT_PREP.md             # Local preparation checklist
-├── MONOREPO_STRUCTURE.md                # Monorepo structure and commands
-├── MONOREPO_SETUP_SUMMARY.md            # Setup summary
-├── MONOREPO_SETUP_COMPLETE.md           # Complete setup documentation
+├── VERCEL_DEPLOYMENT.md                 # Vercel deployment guide
 └── migration/                           # Migration documentation
     ├── SKELETON_V4_MIGRATION_COMPLETE.md
     ├── SKELETON_V4_THEME_MIGRATION.md
@@ -121,37 +108,6 @@ Always consult these official Skeleton LLM documentation files when working with
 - **Guides**: https://www.skeleton.dev/docs/guides
 - **Migration v2→v3**: https://www.skeleton.dev/docs/get-started/migrate-from-v2
 - **Migration v3→v4**: https://www.skeleton.dev/docs/get-started/migrate-from-v3
-
----
-
-## Monorepo Structure
-
-**⚠️ IMPORTANT: This is a monorepo with TWO separate deployable applications.**
-
-### Two Vercel Projects
-
-| Project | Location | Framework | Deployment |
-|---------|----------|-----------|------------|
-| **Client** | `client/` | SvelteKit | Separate Vercel project |
-| **Server** | `server/` | Node.js + WebSockets | Separate Vercel project |
-
-### Key Points
-
-1. **Independent Deployments**: Each project deploys separately to Vercel
-2. **Shared Monorepo**: Both projects in same Git repository using npm workspaces
-3. **Automatic Build Skipping**: Vercel automatically skips unchanged projects
-4. **Documentation**: All docs in `docs/` directory
-
-### Deployment Configuration
-
-- **Root `vercel.json`**: Minimal config (Vercel auto-detects monorepo)
-- **Client `client/vercel.json`**: SvelteKit deployment config
-- **Server `server/vercel.json`**: WebSocket server deployment config
-- **Root `package.json`**: Has `packageManager` field + `workspaces` array
-
-**📖 See [docs/VERCEL_DEPLOYMENT.md](../docs/VERCEL_DEPLOYMENT.md) for complete deployment guide.**
-
-**📖 See [docs/VERCEL_BEST_PRACTICES.md](../docs/VERCEL_BEST_PRACTICES.md) for official Vercel best practices.**
 
 ---
 
@@ -402,22 +358,12 @@ uncharted-lands/
 │   │   ├── app.postcss                  # Global styles
 │   │   └── hooks.server.ts              # Server hooks
 │   ├── vite.config.js                   # Vite configuration
-│   ├── vercel.json                      # Client deployment config
-│   └── package.json                     # Client dependencies
-├── server/                              # 🔌 WebSocket server
-│   ├── src/
-│   │   └── index.ts                     # WebSocket server entry
-│   ├── vercel.json                      # Server deployment config
-│   ├── package.json                     # Server dependencies
-│   └── tsconfig.json                    # TypeScript config
+│   ├── vercel.json                      # Vercel deployment config
+│   └── package.json                     # Dependencies
 ├── docs/                                # 📚 All documentation
 │   ├── VERCEL_DEPLOYMENT.md             # Deployment guide
-│   ├── VERCEL_BEST_PRACTICES.md         # Vercel best practices
-│   ├── MONOREPO_STRUCTURE.md            # Monorepo structure
 │   └── migration/                       # Migration docs
-├── package.json                         # Root workspace config
-├── vercel.json                          # Root Vercel config
-└── MONOREPO_READY.md                    # Quick reference
+└── package.json                         # Project configuration
 ```
 
 ---
