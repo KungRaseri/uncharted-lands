@@ -1,12 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "version": 2,
-  "framework": "sveltekit",
-  "outputDirectory": "build",
-  "functions": {
-    "api/**/*.ts": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  }
+  "framework": "sveltekit"
 }
