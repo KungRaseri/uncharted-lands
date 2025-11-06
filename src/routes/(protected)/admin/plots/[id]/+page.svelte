@@ -105,7 +105,7 @@
 		
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
-				<label class="text-sm text-surface-600 dark:text-surface-400">Biome</label>
+				<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Biome</div>
 				<p class="font-semibold flex items-center gap-2">
 					<Globe size={16} />
 					{data.plot.Tile.Biome.name}
@@ -113,27 +113,27 @@
 			</div>
 
 			<div>
-				<label class="text-sm text-surface-600 dark:text-surface-400">Type</label>
+				<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Type</div>
 				<p class="font-semibold capitalize">{data.plot.Tile.type}</p>
 			</div>
 
 			<div>
-				<label class="text-sm text-surface-600 dark:text-surface-400">Elevation</label>
+				<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Elevation</div>
 				<p class="font-semibold">{(data.plot.Tile.elevation * 100).toPrecision(3)}</p>
 			</div>
 
 			<div>
-				<label class="text-sm text-surface-600 dark:text-surface-400">Precipitation</label>
+				<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Precipitation</div>
 				<p class="font-semibold">{data.plot.Tile.precipitation.toPrecision(3)}</p>
 			</div>
 
 			<div>
-				<label class="text-sm text-surface-600 dark:text-surface-400">Temperature</label>
+				<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Temperature</div>
 				<p class="font-semibold">{data.plot.Tile.temperature.toPrecision(3)}</p>
 			</div>
 
 			<div>
-				<label class="text-sm text-surface-600 dark:text-surface-400">Tile ID</label>
+				<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Tile ID</div>
 				<p class="font-mono text-xs">{data.plot.Tile.id}</p>
 			</div>
 		</div>
