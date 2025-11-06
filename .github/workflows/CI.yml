@@ -20,20 +20,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
       - name: Debug - Check environment and files
         run: |
           echo "Node version: $(node --version)"
           echo "NPM version: $(npm --version)"
           echo "Lockfile version: $(node -e "console.log(JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')).lockfileVersion)")"
-          echo "Has sass-embedded in deps: $(node -e "const l=JSON.parse(require('fs').readFileSync('package-lock.json')); console.log(!!l.dependencies['sass-embedded'])")"
-          echo "Has sass in deps: $(node -e "const l=JSON.parse(require('fs').readFileSync('package-lock.json')); console.log(!!l.dependencies['sass'])")"
           ls -la package*.json
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install dependencies
-        run: npm ci
+          head -20 package-lock.json
+      - name: Install dependencies (using npm install for debugging)
+        run: npm install
       - name: Type check
         run: npm run check
       - name: Build
@@ -56,8 +55,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (using npm install for debugging)
+        run: npm install
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
       - name: Run unit tests
@@ -88,8 +87,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (using npm install for debugging)
+        run: npm install
       - name: Run coverage
         run: npm run coverage
       - name: SonarCloud Scan
