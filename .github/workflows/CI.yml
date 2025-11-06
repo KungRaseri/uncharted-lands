@@ -20,6 +20,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Debug - Check environment and files
+        run: |
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "Lockfile version: $(node -e "console.log(JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')).lockfileVersion)")"
+          echo "Has sass-embedded in deps: $(node -e "const l=JSON.parse(require('fs').readFileSync('package-lock.json')); console.log(!!l.dependencies['sass-embedded'])")"
+          echo "Has sass in deps: $(node -e "const l=JSON.parse(require('fs').readFileSync('package-lock.json')); console.log(!!l.dependencies['sass'])")"
+          ls -la package*.json
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
