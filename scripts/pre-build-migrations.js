@@ -63,6 +63,14 @@ async function main() {
     console.log('🏗️  Pre-build: Prisma Migration Check');
     console.log('=====================================\n');
 
+    // Skip migrations in CI environments - they should be run during deployment
+    if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') {
+        console.log('⏭️  Running in CI environment - skipping migration checks');
+        console.log('   Migrations will be handled during deployment');
+        console.log('✅ Pre-build check completed (CI mode)\n');
+        process.exit(0);
+    }
+
     try {
         // Step 1: Check migration status
         const statusResult = await checkMigrationStatus();

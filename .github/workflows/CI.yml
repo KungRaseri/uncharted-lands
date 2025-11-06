@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      # DATABASE_URL is needed for Prisma generate, but migrations are skipped in CI
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     strategy:
