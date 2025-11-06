@@ -34,6 +34,6 @@ test.describe('Landing Page - suite', () => {
         await link.click();
         await page.waitForLoadState("networkidle");
         
-        await expect(page).toHaveURL(/.*introduction/);
+        await expect(page).toHaveURL(/\/introduction$/);
     });
 });

@@ -52,10 +52,10 @@ async function getSuitableStartingPlot(worldId: string) {
     });
 
     // Filter plots by resource availability
-    const viablePlots = potentialTiles.flatMap(tile => 
-        tile.Plots.filter(plot => 
-            plot.food >= 3 && 
-            plot.water >= 3 && 
+    const viablePlots = potentialTiles.flatMap(tile =>
+        tile.Plots.filter(plot =>
+            plot.food >= 3 &&
+            plot.water >= 3 &&
             plot.wood >= 3
         )
     );
@@ -63,14 +63,14 @@ async function getSuitableStartingPlot(worldId: string) {
     if (viablePlots.length === 0) {
         // Fallback: relax requirements if no perfect plots found
         console.warn('[SETTLEMENT] No ideal starting plots found, using relaxed criteria');
-        const fallbackPlots = potentialTiles.flatMap(tile => 
-            tile.Plots.filter(plot => 
-                plot.food >= 2 && 
-                plot.water >= 2 && 
+        const fallbackPlots = potentialTiles.flatMap(tile =>
+            tile.Plots.filter(plot =>
+                plot.food >= 2 &&
+                plot.water >= 2 &&
                 plot.wood >= 2
             )
         );
-        
+
         if (fallbackPlots.length === 0) {
             // Last resort: any land plot
             console.warn('[SETTLEMENT] No viable plots found, using any available land plot');
@@ -80,14 +80,14 @@ async function getSuitableStartingPlot(worldId: string) {
             }
             return anyPlots[Math.floor(Math.random() * anyPlots.length)];
         }
-        
+
         return fallbackPlots[Math.floor(Math.random() * fallbackPlots.length)];
     }
 
     // Return a random viable plot
     const randomIndex = Math.floor(Math.random() * viablePlots.length);
     const chosenPlot = viablePlots[randomIndex];
-    
+
     console.log('[SETTLEMENT] Chosen starting plot:', {
         plotId: chosenPlot.id,
         food: chosenPlot.food,
@@ -96,7 +96,7 @@ async function getSuitableStartingPlot(worldId: string) {
         stone: chosenPlot.stone,
         area: chosenPlot.area
     });
-    
+
     return chosenPlot;
 }
 
