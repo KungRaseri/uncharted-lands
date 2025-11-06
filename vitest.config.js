@@ -7,11 +7,19 @@ export default mergeConfig(viteConfig, defineConfig({
         globals: true,
         environment: "jsdom",
         include: ['src/**/*.test.{js,ts}'],
+        setupFiles: ['./vitest.setup.js'],
+        alias: {
+            $lib: '/src/lib',
+            $app: '/.svelte-kit/runtime/app'
+        },
         coverage: {
             provider: 'v8',
             all: true,
             reporter: ['text', 'json', 'html'],
             include: ['src']
         }
+    },
+    resolve: {
+        conditions: ['browser']
     }
 }))

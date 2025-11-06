@@ -12,14 +12,8 @@ export const AuthenticateUser = async (cookies: Cookies) => {
         where: {
             userAuthToken: session
         },
-        select: {
-            id: true,
-            email: true,
-            role: true,
-            userAuthToken: true,
-            profile: true,
-            createdAt: true,
-            updatedAt: true
+        include: {
+            profile: true
         }
     })
 

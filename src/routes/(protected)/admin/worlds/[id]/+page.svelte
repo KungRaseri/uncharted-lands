@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Globe, Server, MapPin, Home, Mountain, Waves, ArrowLeft, Edit, Trash2, Save, X } from 'lucide-svelte';
-	import WorldMapPreview from '$lib/components/admin/WorldMapPreview.svelte';
+	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -33,43 +33,9 @@
 		isEditing = false;
 	}
 
-	// Transform database regions into preview format
-	const previewRegions = $derived(
-		data.world.regions.map((region) => {
-			// Group tiles into a 10x10 grid for elevation, precipitation, and temperature
-			const elevationMap: number[][] = Array.from({ length: 10 }, () => Array(10).fill(0));
-			const precipitationMap: number[][] = Array.from({ length: 10 }, () => Array(10).fill(0));
-			const temperatureMap: number[][] = Array.from({ length: 10 }, () => Array(10).fill(0));
-
-			// Sort tiles to ensure correct positioning
-			const sortedTiles = [...region.tiles].sort((a, b) => {
-				// Assuming tiles are stored in row-major order
-				return a.id.localeCompare(b.id);
-			});
-
-			// Fill the maps with tile data
-			sortedTiles.forEach((tile, index) => {
-				const row = Math.floor(index / 10);
-				const col = index % 10;
-				if (row < 10 && col < 10) {
-					elevationMap[row][col] = tile.elevation;
-					precipitationMap[row][col] = tile.precipitation;
-					temperatureMap[row][col] = tile.temperature;
-				}
-			});
-
-			return {
-				id: region.id,
-				worldId: region.worldId,
-				xCoord: region.xCoord,
-				yCoord: region.yCoord,
-				name: region.name,
-				elevationMap,
-				precipitationMap,
-				temperatureMap
-			};
-		})
-	);
+	// Use the same region data as player mode (includes full tile/biome data)
+	// Admin mode will show same colors but with more detailed tooltips
+	const worldRegions = $derived(data.world.regions);
 </script>
 
 <div class="space-y-6">
@@ -314,8 +280,11 @@
 	</div>
 
 	<!-- World Map -->
-	{#if previewRegions && previewRegions.length > 0}
-		<WorldMapPreview regions={previewRegions} />
+	{#if worldRegions && worldRegions.length > 0}
+		<div class="card preset-filled-surface-100-900 p-6">
+			<h2 class="text-xl font-bold mb-4">World Map</h2>
+			<WorldMap regions={worldRegions} mode="admin" showLegend={true} />
+		</div>
 	{/if}
 
 	<!-- Regions List -->

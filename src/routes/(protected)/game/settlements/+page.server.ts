@@ -1,7 +1,11 @@
 import { db } from '$lib/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, depends }) => {
+    // Mark this data as dependent on game state changes
+    depends('game:settlements');
+    depends('game:data');
+
     const settlements = await db.settlement.findMany({
         where: {
             PlayerProfile: {
@@ -16,6 +20,7 @@ export const load = (async ({ locals }) => {
     })
 
     return {
-        settlements
+        settlements,
+        lastUpdate: new Date().toISOString()
     }
 }) satisfies PageServerLoad;

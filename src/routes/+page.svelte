@@ -18,7 +18,7 @@
 				wildlife and the environment
 			</p>
 			<div class="flex gap-4 flex-wrap justify-center">
-				<a href="/introduction" class="btn preset-filled-primary-500">
+				<a href="/game/getting-started" class="btn preset-filled-primary-500">
 					<span>Get Settled</span>
 					<Flame size={20} />
 				</a>

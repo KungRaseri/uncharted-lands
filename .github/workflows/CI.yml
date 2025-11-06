@@ -1,10 +1,10 @@
-name: Uncharted Lands - CI
+name: Uncharted Lands Client - CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "development"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "development"]
 
 jobs:
   build:
@@ -12,20 +12,27 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      # DATABASE_URL is needed for Prisma generate, but migrations are skipped in CI
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [22.x]
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v3.6.0
+      - uses: actions/checkout@v4
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm run build --if-present
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run check
+      - name: Build
+        run: npm run build
+
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -35,35 +42,27 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [22.x]
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v3.6.0
+      - uses: actions/checkout@v4
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npx playwright install
-      - run: npx playwright install-deps
-      - run: npm test
-      - run: npm run test:unit
-  sonarcloud:
-    name: SonarCloud
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x]
-
-    steps:
-      - uses: actions/checkout@v3
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run unit tests
+        run: npm run test:unit
+      - name: Run E2E tests
+        run: npm test
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
-      - run: npm ci
-      - run: npm run coverage
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v1.8
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

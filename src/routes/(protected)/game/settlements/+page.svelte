@@ -1,8 +1,27 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Building2, Search, MapPin, Package, Plus, Home } from 'lucide-svelte';
+	import { Building2, Search, MapPin, Package, Plus, Home, RefreshCw } from 'lucide-svelte';
+	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
+	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
+	
+	// State for UI feedback
+	let isRefreshing = $state(false);
+	
+	async function handleManualRefresh() {
+		isRefreshing = true;
+		refreshGameData('game:settlements');
+		setTimeout(() => {
+			isRefreshing = false;
+		}, 500);
+	}
+	
+	onMount(() => {
+		// Auto-refresh every minute to catch tick updates
+		const cleanup = createGameRefreshInterval('game:settlements');
+		return cleanup;
+	});
 
 	let searchTerm = $state('');
 	let viewMode = $state<'grid' | 'list'>('grid');
@@ -19,14 +38,25 @@
 
 <div class="max-w-7xl mx-auto p-6 space-y-6">
 	<!-- Header -->
-	<div>
-		<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-2">
-			<Building2 size={32} />
-			Settlements
-		</h1>
-		<p class="text-surface-600 dark:text-surface-400">
-			Manage and monitor all your settlements
-		</p>
+	<div class="flex items-start justify-between">
+		<div>
+			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-2">
+				<Building2 size={32} />
+				Settlements
+			</h1>
+			<p class="text-surface-600 dark:text-surface-400">
+				Manage and monitor all your settlements
+			</p>
+		</div>
+		<button
+			onclick={handleManualRefresh}
+			disabled={isRefreshing}
+			class="btn preset-tonal-surface-500 rounded-md"
+			title="Refresh data (auto-refreshes every minute)"
+		>
+			<RefreshCw size={16} class={isRefreshing ? 'animate-spin' : ''} />
+			<span class="hidden sm:inline">Refresh</span>
+		</button>
 	</div>
 
 	<!-- Search & Filters -->

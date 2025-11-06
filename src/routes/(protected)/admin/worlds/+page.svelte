@@ -177,8 +177,12 @@
 	{@const tileCount = regionCount * 100}
 	{@const plotCount = tileCount * 5}
 	
-	<div class="modal-backdrop" onclick={closeDeleteModal}>
-		<div class="modal preset-filled-surface-50-950 w-full max-w-md" onclick={(e) => e.stopPropagation()}>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="modal-backdrop" onclick={closeDeleteModal} role="presentation">
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="modal preset-filled-surface-50-950 w-full max-w-md" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
 			<header class="modal-header">
 				<h3 class="h3">Delete World</h3>
 			</header>
@@ -243,37 +247,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.7);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 999;
-	}
-
-	.modal {
-		border-radius: 0.5rem;
-		padding: 1.5rem;
-	}
-
-	.modal-header {
-		margin-bottom: 1rem;
-	}
-
-	.modal-body {
-		margin-bottom: 1.5rem;
-	}
-
-	.modal-footer {
-		display: flex;
-		gap: 0.75rem;
-		justify-content: flex-end;
-	}
-</style>

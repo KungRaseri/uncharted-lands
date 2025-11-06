@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { PageData, ActionData as GeneratedActionData } from './$types';
-	import { Building2, Home, MapPin, Package, Sun, Wind, ArrowLeft, Droplet, Trees, Mountain, Pickaxe, Plus, X, ShieldAlert, Warehouse, Hammer } from 'lucide-svelte';
+	import { Building2, Home, MapPin, Package, Sun, Wind, ArrowLeft, Droplet, Trees, Mountain, Pickaxe, Plus, X, ShieldAlert, Warehouse, Hammer, RefreshCw } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import { STRUCTURE_DEFINITIONS, getStructureCategories, getStructuresByCategory, canBuildStructure, type StructureDefinition } from '$lib/game/structures';
+	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
+	import { onMount } from 'svelte';
 
 	// Extended ActionData type to include optional reasons array
 	type ActionData = GeneratedActionData & {
@@ -10,6 +12,23 @@
 	};
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	
+	// State for UI feedback
+	let isRefreshing = $state(false);
+	
+	async function handleManualRefresh() {
+		isRefreshing = true;
+		refreshGameData('game:settlement');
+		setTimeout(() => {
+			isRefreshing = false;
+		}, 500);
+	}
+	
+	onMount(() => {
+		// Auto-refresh every minute to catch tick updates
+		const cleanup = createGameRefreshInterval('game:settlement');
+		return cleanup;
+	});
 
 	// Build modal state
 	let buildModalOpen = $state(false);
@@ -75,7 +94,17 @@
 					<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">{data.settlement.id}</p>
 				</div>
 			</div>
-			<span class="badge preset-filled-success-500">Active</span>
+			<div class="flex items-center gap-2">
+				<button
+					onclick={handleManualRefresh}
+					disabled={isRefreshing}
+					class="btn btn-sm preset-tonal-surface-500 rounded-md"
+					title="Refresh data (auto-refreshes every minute)"
+				>
+					<RefreshCw size={16} class={isRefreshing ? 'animate-spin' : ''} />
+				</button>
+				<span class="badge preset-filled-success-500">Active</span>
+			</div>
 		</div>
 
 		<!-- Quick Stats -->
@@ -303,11 +332,15 @@
 
 <!-- Build Structure Modal -->
 {#if buildModalOpen}
-	<div class="modal-backdrop" onclick={closeBuildModal}>
-		<div class="modal preset-filled-surface-50-950 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onclick={(e) => e.stopPropagation()}>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="modal-backdrop" onclick={closeBuildModal} role="presentation">
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="modal preset-filled-surface-50-950 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="build-modal-title" tabindex="-1">
 			<header class="modal-header border-b border-surface-300 dark:border-surface-700 flex-none">
 				<div class="flex items-center justify-between">
-					<h3 class="h3">Build Structure</h3>
+					<h3 class="h3" id="build-modal-title">Build Structure</h3>
 					<button onclick={closeBuildModal} class="btn btn-sm preset-tonal-surface-500 rounded-md" disabled={isBuilding}>
 						<X size={16} />
 					</button>
@@ -473,25 +506,3 @@
 	</div>
 {/if}
 
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.7);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 999;
-	}
-
-	.modal {
-		border-radius: 0.5rem;
-	}
-
-	.modal-header {
-		padding: 1.5rem;
-	}
-</style>

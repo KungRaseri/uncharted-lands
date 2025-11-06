@@ -3,7 +3,11 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { getStructureDefinition, canBuildStructure } from '$lib/game/structures';
 
-export const load = (async ({ params }) => {
+export const load = (async ({ params, depends }) => {
+    // Mark this data as dependent on game state changes
+    depends('game:settlement');
+    depends('game:data');
+
     const settlement = await db.settlement.findUnique({
         where: {
             id: params.id
@@ -29,7 +33,8 @@ export const load = (async ({ params }) => {
         throw fail(404, { invalid: true, params: params.id })
 
     return {
-        settlement
+        settlement,
+        lastUpdate: new Date().toISOString()
     }
 }) satisfies PageServerLoad;
 

@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import type { Snippet } from 'svelte';
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
 	import { onMount } from 'svelte';
 
-	let { data }: { data: PageData } = $props();
+	let { data, children }: { data: PageData; children: Snippet } = $props();
 
 	let serverTime = $state('...');
 	let localTime = $state('...');
@@ -45,7 +46,7 @@
 
 	<!-- Main content -->
 	<main class="flex-1 overflow-y-auto">
-		<slot />
+		{@render children()}
 	</main>
 
 	<!-- Footer -->

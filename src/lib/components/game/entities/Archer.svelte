@@ -33,7 +33,7 @@
 <div class="p-2">
 	<div>
 		<div class="archer">
-			<div class={animState} />
+			<div class={animState}></div>
 			{#each $arrows as arrow}
 				<ArrowComponent {arrow} />
 			{/each}

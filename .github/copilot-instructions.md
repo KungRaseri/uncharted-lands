@@ -6,7 +6,7 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ## Project Overview
 
-**Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a procedurally generated world. Players must overcome extreme weather, scarce resources, and hostile creatures while expanding settlements and improving technology.
+**Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures while expanding settlements and improving technology.
 
 **Tech Stack**:
 - **Framework**: SvelteKit 2.48.4 + Svelte 5.43.2
@@ -14,6 +14,8 @@ This file provides context and guidelines for GitHub Copilot when working on the
 - **Database**: Prisma + PostgreSQL
 - **Build**: Vite 6.0.3
 - **Testing**: Vitest + Playwright
+- **Deployment**: Vercel
+- **Node Version**: 22.x
 
 ---
 
@@ -26,23 +28,25 @@ This file provides context and guidelines for GitHub Copilot when working on the
 1. **Location**: ALL `.md` documentation files go in `docs/` directory
    - ✅ CORRECT: `docs/WORLD_GENERATION_GUIDE.md`
    - ❌ WRONG: `WORLD_GENERATION_GUIDE.md` (root level)
-   - ❌ WRONG: `src/docs/guide.md` (inside src)
+   - ❌ WRONG: `client/src/docs/guide.md` (inside src)
    
 2. **Root-Level Exceptions**: Only these files are allowed in the project root:
    - `README.md` - Project overview and getting started
    - `LICENSE` - License file
    - `CHANGELOG.md` - Version history (if needed)
    
-3. **Migration Documentation**: Temporary migration docs (e.g., `MIGRATION_STATUS.md`, `SKELETON_V4_MIGRATION_COMPLETE.md`) should be:
-   - Moved to `docs/migration/` once completed
-   - Deleted if no longer relevant
-   - Never created in root going forward
+3. **Summary Documents**: 
+   - ⚠️ **DO NOT** create summary documents (e.g., `CHANGES_SUMMARY.md`, `MIGRATION_SUMMARY.md`) unless explicitly requested
+   - Most changes should be documented in existing files or commit messages
+   - Only create summaries when the user specifically asks for one
+   - If created, they MUST go in `docs/` directory with appropriate subdirectory
 
 4. **When Creating Documentation**:
    - **Always** check if `docs/` directory exists
    - **Always** create new docs in `docs/`
    - Use subdirectories for organization: `docs/guides/`, `docs/api/`, `docs/migration/`, etc.
    - **Never** create documentation in the project root (except README.md)
+   - **Ask first** before creating new documentation files
 
 5. **Existing Root-Level Docs**: If you find documentation in the root:
    - Move it to `docs/` with appropriate subdirectory
@@ -53,18 +57,20 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ```
 docs/
-├── Home.md                          # Wiki home page
-├── guides/                          # User guides
-│   ├── world-generation.md          # World generation guide
-│   └── getting-started.md           # Getting started guide
-├── api/                             # API documentation
-│   └── endpoints.md                 # API endpoint docs
-├── migration/                       # Migration documentation
-│   ├── skeleton-v4-migration.md     # Skeleton v4 migration
-│   └── tailwind-v4-compliance.md    # Tailwind v4 compliance
-└── development/                     # Developer documentation
-    ├── architecture.md              # System architecture
-    └── contributing.md              # Contribution guidelines
+├── Home.md                              # Wiki home page
+├── README.md                            # Documentation index
+├── WORLD_GENERATION_GUIDE.md            # World generation system
+├── RESOURCE_GENERATION_SYSTEM.md        # Resource management
+├── VERCEL_DEPLOYMENT.md                 # Vercel deployment guide
+└── migration/                           # Migration documentation
+    ├── SKELETON_V4_MIGRATION_COMPLETE.md
+    ├── SKELETON_V4_THEME_MIGRATION.md
+    ├── LAYOUT_THEME_VERIFICATION.md
+    ├── MIGRATION_COMPLETE_SUMMARY.md
+    ├── MIGRATION_FIX_SUMMARY.md
+    ├── SKELETON_MIGRATION_REMAINING.md
+    ├── DEPLOYMENT_READY.md
+    └── PRODUCTION_MIGRATION_FIX.md
 ```
 
 ---
@@ -328,30 +334,36 @@ import { Navbar } from '@skeletonlabs/skeleton-svelte';
 uncharted-lands/
 ├── .github/
 │   └── copilot-instructions.md          # This file
-├── prisma/
-│   ├── schema.prisma                    # Database schema
-│   └── migrations/                      # Database migrations
-├── src/
-│   ├── lib/
-│   │   ├── components/
-│   │   │   ├── admin/                   # Admin UI components
-│   │   │   ├── app/                     # Global app components
-│   │   │   └── game/                    # Game UI components
-│   │   ├── auth.ts                      # Authentication utilities
-│   │   ├── db.ts                        # Database client
-│   │   └── stores/                      # Svelte stores
-│   ├── routes/                          # SvelteKit routes
-│   │   ├── (auth)/                      # Auth-related routes
-│   │   ├── (protected)/                 # Protected routes
-│   │   │   ├── admin/                   # Admin pages
-│   │   │   ├── game/                    # Game pages
-│   │   │   └── account/                 # User account
-│   │   └── api/                         # API endpoints
-│   ├── app.html                         # Root HTML template
-│   ├── app.postcss                      # Global styles
-│   └── hooks.server.ts                  # Server hooks
-├── vite.config.js                       # Vite configuration
-└── Documentation files (see above)      # Migration docs
+├── client/                              # 🎮 SvelteKit game application
+│   ├── prisma/
+│   │   ├── schema.prisma                # Database schema
+│   │   └── migrations/                  # Database migrations
+│   ├── src/
+│   │   ├── lib/
+│   │   │   ├── components/
+│   │   │   │   ├── admin/               # Admin UI components
+│   │   │   │   ├── app/                 # Global app components
+│   │   │   │   └── game/                # Game UI components
+│   │   │   ├── auth.ts                  # Authentication utilities
+│   │   │   ├── db.ts                    # Database client
+│   │   │   └── stores/                  # Svelte stores
+│   │   ├── routes/                      # SvelteKit routes
+│   │   │   ├── (auth)/                  # Auth-related routes
+│   │   │   ├── (protected)/             # Protected routes
+│   │   │   │   ├── admin/               # Admin pages
+│   │   │   │   ├── game/                # Game pages
+│   │   │   │   └── account/             # User account
+│   │   │   └── api/                     # API endpoints
+│   │   ├── app.html                     # Root HTML template
+│   │   ├── app.postcss                  # Global styles
+│   │   └── hooks.server.ts              # Server hooks
+│   ├── vite.config.js                   # Vite configuration
+│   ├── vercel.json                      # Vercel deployment config
+│   └── package.json                     # Dependencies
+├── docs/                                # 📚 All documentation
+│   ├── VERCEL_DEPLOYMENT.md             # Deployment guide
+│   └── migration/                       # Migration docs
+└── package.json                         # Project configuration
 ```
 
 ---
@@ -559,28 +571,45 @@ AUTH_SECRET=...
 ## Useful Commands
 
 ```powershell
-# Development
-npm run dev              # Start dev server (currently fails)
-npm run build           # Build for production (currently fails)
-npm run preview         # Preview production build
+# Development (from root)
+npm run dev              # Start client dev server (currently fails)
+npm run dev:client       # Start client (currently fails)
+npm run dev:server       # Start server
+npm run build:all        # Build both projects
 
-# Database
-npm run migrate         # Run migrations
-npx prisma studio       # Open Prisma Studio
+# Client-specific (from client/)
+cd client
+npm run dev              # Start dev server (currently fails)
+npm run build            # Build for production (currently fails)
+npm run preview          # Preview production build
+
+# Server-specific (from server/)
+cd server
+npm run dev              # Start dev server with auto-reload
+npm run build            # Build TypeScript
+npm start                # Run production build
+
+# Database (from root or client/)
+npm run migrate          # Run migrations
+npx prisma studio        # Open Prisma Studio
 
 # Testing
-npm run test            # Run Playwright tests
-npm run test:unit       # Run Vitest tests
-npm run coverage        # Generate coverage report
+npm run test             # Run client tests
+npm run test:all         # Run all tests
+npm run coverage         # Generate coverage report
 
 # Code Quality
-npm run check           # Type checking (works!)
-npm run lint            # Lint code
-npm run format          # Format with Prettier
+npm run check            # Type checking (works!)
+npm run lint             # Lint code
+npm run format           # Format with Prettier
+
+# Deployment
+cd client && vercel --prod     # Deploy client
+cd server && vercel --prod     # Deploy server
 
 # Git
-git status              # Check status
-git log --oneline -10   # Recent commits
+git status               # Check status
+git log --oneline -10    # Recent commits
 ```
 
 ---

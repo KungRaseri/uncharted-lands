@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
+	import type { ComponentType } from 'svelte';
 
 	type Props = {
-		icon: Component;
+		icon: ComponentType;
 		title: string;
 		message: string;
 		actionHref?: string;
 		actionText?: string;
-		actionIcon?: Component;
+		actionIcon?: ComponentType;
 	};
 
 	let { icon, title, message, actionHref, actionText, actionIcon }: Props = $props();

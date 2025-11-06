@@ -35,7 +35,9 @@
 			<!-- Avatar -->
 			<div class="flex-none">
 				{#if profile?.picture}
-					<Avatar src={profile.picture} size="xl" class="ring-4 ring-primary-500/20" />
+					<Avatar class="ring-4 ring-primary-500/20">
+						<img src={profile.picture} alt="{profile.username || 'User'} avatar" class="w-24 h-24 rounded-full" />
+					</Avatar>
 				{:else}
 					<div class="w-24 h-24 rounded-full bg-primary-500/10 flex items-center justify-center ring-4 ring-primary-500/20">
 						<User size={48} class="text-primary-500" />
@@ -73,13 +75,13 @@
 			
 			<div class="space-y-4">
 				<div>
-					<label class="text-sm text-surface-600 dark:text-surface-400">Email Address</label>
+					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Email Address</div>
 					<p class="font-semibold">{data.account.email}</p>
 				</div>
 				
 				{#if profile?.username}
 					<div>
-						<label class="text-sm text-surface-600 dark:text-surface-400">Username</label>
+						<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Username</div>
 						<p class="font-semibold">{profile.username}</p>
 					</div>
 				{/if}
@@ -95,12 +97,12 @@
 			
 			<div class="space-y-4">
 				<div>
-					<label class="text-sm text-surface-600 dark:text-surface-400">Role</label>
+					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Role</div>
 					<p class="font-semibold">{data.account.role}</p>
 				</div>
 				
 				<div>
-					<label class="text-sm text-surface-600 dark:text-surface-400">Account Created</label>
+					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Account Created</div>
 					<p class="font-semibold">
 						{new Date(data.account.createdAt).toLocaleDateString('en-US', {
 							year: 'numeric',
@@ -113,7 +115,7 @@
 				</div>
 				
 				<div>
-					<label class="text-sm text-surface-600 dark:text-surface-400">Last Updated</label>
+					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Last Updated</div>
 					<p class="font-semibold">
 						{new Date(data.account.updatedAt).toLocaleDateString('en-US', {
 							year: 'numeric',
@@ -135,16 +137,9 @@
 			
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
-					<label class="text-sm text-surface-600 dark:text-surface-400">Profile ID</label>
+					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Profile ID</div>
 					<p class="font-mono text-sm">{profile.id}</p>
 				</div>
-				
-				{#if profile.bio}
-					<div class="md:col-span-2">
-						<label class="text-sm text-surface-600 dark:text-surface-400">Bio</label>
-						<p>{profile.bio}</p>
-					</div>
-				{/if}
 			</div>
 		</div>
 	{/if}

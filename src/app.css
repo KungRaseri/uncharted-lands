@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton/themes/cerberus';
+@import './lib/styles/modals.css';
 
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";

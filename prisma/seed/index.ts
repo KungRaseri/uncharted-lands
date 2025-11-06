@@ -1,11 +1,11 @@
 import { type Biome, PrismaClient } from "@prisma/client";
-import cuid from 'cuid';
+import { createId } from '@paralleldrive/cuid2';
 
 const prisma = new PrismaClient();
 
 const biomes: Biome[] = [
     {
-        id: cuid(),
+        id: createId(),
         name: "TUNDRA",
         precipitationMin: 10,
         precipitationMax: 175,
@@ -24,7 +24,7 @@ const biomes: Biome[] = [
         plotAreaMax: 70
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "FOREST_BOREAL",
         precipitationMin: 25,
         precipitationMax: 300,
@@ -43,7 +43,7 @@ const biomes: Biome[] = [
         plotAreaMax: 85
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "FOREST_TEMPERATE_SEASONAL",
         precipitationMin: 50,
         precipitationMax: 350,
@@ -62,7 +62,7 @@ const biomes: Biome[] = [
         plotAreaMax: 95
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "FOREST_TROPICAL_SEASONAL",
         precipitationMin: 50,
         precipitationMax: 350,
@@ -81,7 +81,7 @@ const biomes: Biome[] = [
         plotAreaMax: 100
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "RAINFOREST_TEMPERATE",
         precipitationMin: 175,
         precipitationMax: 375,
@@ -100,7 +100,7 @@ const biomes: Biome[] = [
         plotAreaMax: 95
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "RAINFOREST_TROPICAL",
         precipitationMin: 225,
         precipitationMax: 450,
@@ -119,7 +119,7 @@ const biomes: Biome[] = [
         plotAreaMax: 100
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "WOODLAND",
         precipitationMin: 15,
         precipitationMax: 150,
@@ -138,7 +138,7 @@ const biomes: Biome[] = [
         plotAreaMax: 75
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "SHRUBLAND",
         precipitationMin: 15,
         precipitationMax: 125,
@@ -157,7 +157,7 @@ const biomes: Biome[] = [
         plotAreaMax: 70
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "SAVANNA",
         precipitationMin: 50,
         precipitationMax: 275,
@@ -176,7 +176,7 @@ const biomes: Biome[] = [
         plotAreaMax: 95
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "GRASSLAND_TEMPERATE",
         precipitationMin: 5,
         precipitationMax: 50,
@@ -195,7 +195,7 @@ const biomes: Biome[] = [
         plotAreaMax: 70
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "DESERT_COLD",
         precipitationMin: 1,
         precipitationMax: 50,
@@ -214,7 +214,7 @@ const biomes: Biome[] = [
         plotAreaMax: 60
     },
     {
-        id: cuid(),
+        id: createId(),
         name: "DESERT_SUBTROPICAL",
         precipitationMin: 1,
         precipitationMax: 100,
@@ -236,43 +236,43 @@ const biomes: Biome[] = [
 
 // const resources: Resource[] = [
 //     {
-//         id: cuid(),
+//         id: createId(),
 //         name: "Solar",
 //         description: "A measure of the amount of sunlight that reaches the plot. A higher value indicates that the plot is located in an area with more hours of sunlight, which can be useful for certain types of structures or activities.",
 //         icon: ""
 //     },
 //     {
-//         id: cuid(),
+//         id: createId(),
 //         name: "Wind",
 //         description: "A measure of the strength of the winds that pass over the plot. A higher value indicates that the plot is located in an area with stronger winds, which can be harnessed for energy or used for other purposes such as ventilation or transportation.",
 //         icon: ""
 //     },
 //     {
-//         id: cuid(),
+//         id: createId(),
 //         name: "Food",
 //         description: "Refers to any type of edible plant or animal resources that can be gathered, hunted, or grown within a settlement. Food is essential for keeping settlers alive and healthy.",
 //         icon: ""
 //     },
 //     {
-//         id: cuid(),
+//         id: createId(),
 //         name: "Water",
 //         description: "Refers to any source of fresh water within a settlement. Water is essential for the survival of settlers, as well as for farming and other activities.",
 //         icon: ""
 //     },
 //     {
-//         id: cuid(),
+//         id: createId(),
 //         name: "Wood",
 //         description: "Refers to any type of trees or woody plants that can be harvested within a settlement. Wood is a valuable resource for building structures, making tools, and fueling fires.",
 //         icon: ""
 //     },
 //     {
-//         id: cuid(),
+//         id: createId(),
 //         name: "Stone",
 //         description: "Refers to any type of rocks or minerals that can be mined within a settlement. Stone is a valuable resource for building structures and making tools.",
 //         icon: ""
 //     },
 //     {
-//         id: cuid(),
+//         id: createId(),
 //         name: "Ore",
 //         description: "Refers to any type of metallic or mineral resources that can be mined within a settlement. Ores are valuable resources for creating weapons, armor, and other advanced structures.",
 //         icon: ""

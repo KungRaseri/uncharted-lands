@@ -1,29 +1,14 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
-	import RegionComponent from '$lib/components/game/map/Region.svelte';
+	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 
+	// Regions can be full Prisma payloads or minimal server-returned shapes; accept any for flexibility
 	type Props = {
-		regions: Prisma.RegionGetPayload<{
-			include: {
-				tiles: {
-					include: {
-						Biome: true;
-						Plots: true;
-					};
-				};
-			};
-		}>[];
+		regions: any[];
+		playerProfileId?: string;
+		lazyLoadEnabled?: boolean;
 	};
 
-	let { regions }: Props = $props();
+	let { regions, playerProfileId, lazyLoadEnabled = false }: Props = $props();
 </script>
 
-<div class="grid grid-cols-10 p-0 border-surface-300 dark:border-surface-600 w-full xl:w-1/2 mx-auto">
-	{#each regions as region}
-		<div class="p-0 border-surface-300 dark:border-surface-600">
-			<div class="grid grid-cols-10 p-0">
-				<RegionComponent {region} />
-			</div>
-		</div>
-	{/each}
-</div>
+<WorldMap {regions} mode="player" currentPlayerProfileId={playerProfileId} showLegend={true} {lazyLoadEnabled} />

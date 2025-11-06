@@ -6,7 +6,7 @@ import type { Action, Actions, PageServerLoad } from "./$types"
 import { normalizeValue } from '$lib/game/world-generator'
 import { generatePlotResources, determinePlotsTotal } from '$lib/game/resource-generator'
 
-import cuid from 'cuid';
+import { createId } from '@paralleldrive/cuid2';
 
 let mapSettings: any;
 let elevationSettings: Prisma.JsonValue;
@@ -111,7 +111,7 @@ const save: Action = async ({ request }) => {
 
 function createWorld() {
     world = {
-        id: cuid(),
+        id: createId(),
         name: mapSettings.worldName,
         serverId: mapSettings.serverId,
         elevationSettings: elevationSettings,
@@ -124,7 +124,7 @@ function createWorld() {
 
 function createRegions() {
     regions = generatedRegions.map((v) => {
-        v.id = cuid();
+        v.id = createId();
         v.worldId = world.id;
 
         return v;
@@ -149,7 +149,7 @@ async function createTiles() {
                 }
 
                 tiles.push({
-                    id: cuid(),
+                    id: createId(),
                     regionId: region.id,
                     biomeId: biome.id,
                     type,
@@ -173,7 +173,7 @@ function createPlots() {
         for (let i = 0; i < plotsTotal; i++) {
             const resources = generatePlotResources(tile, biome);
             plots.push({
-                id: cuid(),
+                id: createId(),
                 tileId: tile.id,
                 ...resources
             });
