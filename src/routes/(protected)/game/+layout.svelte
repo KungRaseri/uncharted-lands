@@ -3,6 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
+	import SocketStatus from '$lib/components/game/SocketStatus.svelte';
 	import { onMount } from 'svelte';
 
 	let { data, children }: { data: PageData; children: Snippet } = $props();
@@ -54,5 +55,10 @@
 		<footer class="flex-none">
 			<GameFooter />
 		</footer>
+	{/if}
+
+	<!-- Socket connection status indicator -->
+	{#if data.account.profile}
+		<SocketStatus />
 	{/if}
 </div>
