@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { socketStore, connectionState, connectionError } from '$lib/stores/game/socket';
+	import { WS_URL } from '$lib/config';
 	import { onMount, onDestroy } from 'svelte';
 
 	let showDetails = false;
+	
+	// Extract just the host:port for display
+	const serverDisplay = WS_URL.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
 
 	onMount(() => {
 		// Connect to server when component mounts
@@ -57,7 +61,7 @@
 				</div>
 				<div class="flex justify-between">
 					<span class="text-surface-400">Server:</span>
-					<span class="font-mono">localhost:3001</span>
+					<span class="font-mono">{serverDisplay}</span>
 				</div>
 				{#if $connectionError}
 					<div class="mt-2 rounded bg-red-900/20 p-2 text-red-400">

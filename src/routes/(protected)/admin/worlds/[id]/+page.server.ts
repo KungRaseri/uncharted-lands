@@ -1,7 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit"
 import type { PageServerLoad, Actions, Action } from "./$types"
-
-const API_URL = 'http://localhost:3001/api'
+import { API_URL } from "$lib/config"
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
     try {

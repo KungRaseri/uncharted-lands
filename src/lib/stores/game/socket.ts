@@ -8,6 +8,7 @@ import { writable, derived } from 'svelte/store';
 import { io, type Socket } from 'socket.io-client';
 import { browser } from '$app/environment';
 import * as worldApi from '$lib/game/world-api';
+import { WS_URL } from '$lib/config';
 
 // Connection state
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -45,7 +46,7 @@ function createSocketStore() {
 				return;
 			}
 
-			const url = serverUrl || 'http://localhost:3001';
+			const url = serverUrl || WS_URL;
 			console.log(`[SOCKET] Connecting to ${url}...`);
 
 			update(state => ({ ...state, connectionState: 'connecting' }));
