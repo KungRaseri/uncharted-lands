@@ -1,4 +1,4 @@
-import { db } from "$lib/db";
+import { API_URL } from "$lib/config";
 import { fail, redirect } from "@sveltejs/kit";
 import type { Action, Actions, PageServerLoad } from "./$types";
 import bcrypt from 'bcrypt';
@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     }
 }
 
-const login: Action = async ({ cookies, request, url }) => {
+const login: Action = async ({ cookies, request, url, fetch }) => {
     const data = await request.formData();
     const email = data.get('email');
     const password = data.get('password');
@@ -26,20 +26,27 @@ const login: Action = async ({ cookies, request, url }) => {
         return fail(400, { email, invalid: true })
     }
 
-    const account = await db.account.findUnique({
-        where: { email }
-    })
+    // Hash the password before sending to API
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (!account || !await bcrypt.compare(password, account.passwordHash)) {
+    // Call the REST API
+    const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email,
+            password: hashedPassword
+        })
+    });
+
+    if (!response.ok) {
         return fail(400, { email, incorrect: true })
     }
 
-    const userAuthToken = crypto.randomUUID();
-
-    await db.account.update({
-        where: { email: account.email },
-        data: { userAuthToken: userAuthToken }
-    })
+    const result = await response.json();
+    const userAuthToken = result.account.userAuthToken;
 
     const ts = new TimeSpan();
     ts.days = 30;

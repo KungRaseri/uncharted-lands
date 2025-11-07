@@ -1,8 +1,8 @@
-import { db } from "$lib/db"
+import { API_URL } from "$lib/config";
 import { redirect } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
 
-export const load: PageServerLoad = async ({ locals, depends }) => {
+export const load: PageServerLoad = async ({ locals, depends, fetch }) => {
     // Mark this data as dependent on game state changes
     // When tick occurs, calling invalidate('game:settlements') will refresh this
     depends('game:settlements');
@@ -12,28 +12,18 @@ export const load: PageServerLoad = async ({ locals, depends }) => {
         throw redirect(302, '/game/getting-started')
     }
 
-    const settlements = await db.settlement.findMany({
-        where: {
-            PlayerProfile: {
-                profileId: locals.account.profile.id,
-                serverId: (await db.server.findFirst())?.id //TODO: update when server swapping is available
-            },
-        },
-        include: {
-            Plot: {
-                include: {
-                    Settlement: true,
-                    Tile: true
-                }
-            },
-            Storage: true,
-            Structures: {
-                include: {
-                    modifiers: true
-                }
-            }
-        }
-    })
+    // Fetch settlements from REST API
+    const response = await fetch(`${API_URL}/settlements?playerProfileId=${locals.account.profile.id}`);
+    
+    if (!response.ok) {
+        console.error('Failed to fetch settlements:', await response.text());
+        return {
+            settlements: [],
+            lastUpdate: new Date().toISOString()
+        };
+    }
+
+    const settlements = await response.json();
 
     return {
         settlements,

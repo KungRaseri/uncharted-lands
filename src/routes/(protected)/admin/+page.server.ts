@@ -1,6 +1,6 @@
 import type { PageServerLoad } from "./$types"
 import { API_URL } from "$lib/config"
-import type { DashboardStats } from "../../../../../shared/types/api"
+import type { DashboardStats } from "$lib/types/api"
 
 export const load: PageServerLoad = async ({ fetch }) => {
     try {

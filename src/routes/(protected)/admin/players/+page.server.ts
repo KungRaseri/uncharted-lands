@@ -1,6 +1,6 @@
 import type { PageServerLoad } from "./$types"
 import { API_URL } from "$lib/config"
-import type { PlayerWithRelations } from "../../../../../../shared/types/api"
+import type { PlayerWithRelations } from "$lib/types/api"
 
 export const load: PageServerLoad = async ({ fetch }) => {
     try {

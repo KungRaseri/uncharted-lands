@@ -1,7 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit"
 import type { PageServerLoad, Actions, Action } from "./$types"
 import { API_URL } from "$lib/config"
-import type { WorldWithRelations, GameServer } from "../../../../../../../shared/types/api"
+import type { WorldWithRelations, GameServer } from "$lib/types/api"
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
     try {

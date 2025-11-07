@@ -1,5 +1,5 @@
 import type { Cookies } from "@sveltejs/kit";
-import { db } from "./db";
+import { API_URL } from "./config";
 
 export const AuthenticateUser = async (cookies: Cookies) => {
     const session = cookies.get('session');
@@ -8,19 +8,26 @@ export const AuthenticateUser = async (cookies: Cookies) => {
         return null;
     }
 
-    const account = await db.account.findUnique({
-        where: {
-            userAuthToken: session
-        },
-        include: {
-            profile: true
-        }
-    })
+    try {
+        // Call the REST API to validate the session
+        const response = await fetch(`${API_URL}/auth/validate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: session
+            })
+        });
 
-    if (!account) {
+        if (!response.ok) {
+            return null;
+        }
+
+        const result = await response.json();
+        return result.account;
+    } catch (error) {
+        console.error('Auth validation error:', error);
         return null;
     }
-
-
-    return account
 }

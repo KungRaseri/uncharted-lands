@@ -1,35 +1,22 @@
-import { db } from '$lib/db';
-import { fail } from '@sveltejs/kit';
+import { API_URL } from '$lib/config';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ params, depends }) => {
+export const load = (async ({ params, depends, fetch }) => {
     // Mark this data as dependent on game state changes
     depends('game:settlement');
     depends('game:data');
 
-    const settlement = await db.settlement.findUnique({
-        where: {
-            id: params.id
-        },
-        include: {
-            Plot: {
-                include: {
-                    Settlement: true,
-                    Tile: true
-                }
-            },
-            Storage: true,
-            Structures: {
-                include: {
-                    modifiers: true,
-                    buildRequirements: true
-                }
-            }
-        }
-    })
+    const response = await fetch(`${API_URL}/settlements/${params.id}`);
+    
+    if (!response.ok) {
+        return {
+            settlement: null,
+            lastUpdate: new Date().toISOString(),
+            error: 'Settlement not found'
+        };
+    }
 
-    if (!settlement)
-        throw fail(404, { invalid: true, params: params.id })
+    const settlement = await response.json();
 
     return {
         settlement,
