@@ -1,13 +1,9 @@
 <script lang="ts">
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
+	import type { SettlementWithStorage } from '$lib/types/game';
 
 	type Props = {
-		settlement: any; // Simplified after Prisma removal
-				};
-				Storage: true;
-				Structures: true;
-			};
-		}>;
+		settlement: SettlementWithStorage;
 	};
 
 	let { settlement }: Props = $props();

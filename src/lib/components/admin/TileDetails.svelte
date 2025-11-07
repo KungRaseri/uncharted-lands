@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
+	import type { TileWithBiome } from '$lib/types/game';
 
 	type Props = {
-		tile: any; // Simplified after Prisma removal
+		tile: TileWithBiome;
 	};
 
 	let { tile }: Props = $props();

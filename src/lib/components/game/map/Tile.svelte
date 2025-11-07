@@ -120,9 +120,9 @@ Precipitation: ${tile.precipitation.toFixed(1)}mm`;
 		// Add settlement name(s) if player owns any on this tile
 		if (mode === 'player' && currentPlayerProfileId) {
 			const playerSettlements = tile.Plots
-				.filter(plot => plot.Settlement?.playerProfileId === currentPlayerProfileId)
-				.map(plot => plot.Settlement?.name)
-				.filter(name => name);
+				.filter((plot) => plot.Settlement?.playerProfileId === currentPlayerProfileId)
+				.map((plot) => plot.Settlement?.name)
+				.filter((name) => name);
 
 			if (playerSettlements.length > 0) {
 				tooltip += `\n\n🏘️ ${playerSettlements.join(', ')}`;

@@ -1,10 +1,6 @@
 <script lang="ts">
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
-	
-	// Type simplified after Prisma removal
-	type RegionWithTiles = any;
-		};
-	}>;
+	import type { RegionWithTiles } from '$lib/types/game';
 	
 	type RegionWithElevationMap = {
 		id: string;
@@ -146,10 +142,10 @@
 			// Normal mode: count based on actual tiles
 			const totalTiles = regions.reduce((sum, r) => sum + r.tiles.length, 0);
 			const landTiles = regions.reduce((sum, r) => 
-				sum + r.tiles.filter(t => t.type === 'LAND').length, 0
+				sum + r.tiles.filter((t) => t.type === 'LAND').length, 0
 			);
 			const oceanTiles = regions.reduce((sum, r) => 
-				sum + r.tiles.filter(t => t.type === 'OCEAN').length, 0
+				sum + r.tiles.filter((t) => t.type === 'OCEAN').length, 0
 			);
 			
 			return { totalTiles, landTiles, oceanTiles };

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import World from '$lib/components/game/map/World.svelte';
+	import type { WorldWithRegions, WorldInfo } from '$lib/types/game';
 
 	type Props = {
-		world: any; // Simplified after Prisma removal
-		worldInfo: { landTiles: number; oceanTiles: number; settlements: number };
+		world: WorldWithRegions;
+		worldInfo: WorldInfo;
 	};
 
 	let { world, worldInfo }: Props = $props();

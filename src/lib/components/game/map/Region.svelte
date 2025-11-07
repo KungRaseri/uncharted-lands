@@ -10,20 +10,6 @@
 		currentPlayerProfileId?: string;
 	};
 
-	let { region, mode = 'player', currentPlayerProfileId }: Props = $props();s">
-	import TileComponent from './Tile.svelte';
-
-	type Props = {
-		region: any; // Simplified after Prisma removal
-				};
-			};
-		}>;
-		/** Display mode - affects tile sizing and interaction */
-		mode?: 'admin' | 'player';
-		/** Current player's profile ID (for player mode settlement filtering) */
-		currentPlayerProfileId?: string;
-	};
-
 	let { region, mode = 'player', currentPlayerProfileId }: Props = $props();
 	
 	// Sort tiles by ID to ensure correct positioning (matching admin preview behavior)

@@ -109,6 +109,10 @@ export interface RegionBase {
   temperatureMap?: number[][];
 }
 
+export interface Region extends RegionBase {
+  tiles?: TileWithRelations[];
+}
+
 export interface RegionWithTiles extends RegionBase {
   tiles: TileWithRelations[];
 }
@@ -128,8 +132,13 @@ export interface WorldBase {
   updatedAt: Date | string;
 }
 
+export interface World extends WorldBase {
+  regions?: Region[];
+  server?: GameServer;
+}
+
 export interface WorldWithRegions extends WorldBase {
-  regions: RegionWithTiles[];
+  regions: Region[];
 }
 
 export interface WorldWithServer extends WorldBase {
@@ -137,8 +146,9 @@ export interface WorldWithServer extends WorldBase {
 }
 
 export interface WorldWithRelations extends WorldBase {
-  regions?: RegionBase[];
+  regions?: Region[];
   server?: GameServer;
+  servers?: GameServer[]; // Legacy field from API
 }
 
 // ============================================================================
@@ -148,9 +158,9 @@ export interface WorldWithRelations extends WorldBase {
 export interface GameServer {
   id: string;
   name: string;
-  hostname?: string;
-  port?: number;
-  status?: ServerStatus;
+  hostname: string;
+  port: number;
+  status: ServerStatus;
   createdAt: Date | string;
   updatedAt: Date | string;
   _count?: {
