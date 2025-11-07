@@ -1,6 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit"
 import type { PageServerLoad, Actions, Action } from "./$types"
 import { API_URL } from "$lib/config"
+import type { WorldWithRelations, GameServer } from "../../../../../../../shared/types/api"
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
     try {
@@ -10,11 +11,11 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
             return fail(404, { success: false, id: params.id })
         }
 
-        const world = await response.json()
+        const world: WorldWithRelations = await response.json()
 
         // Load all servers for reassignment dropdown
         const serversResponse = await fetch(`${API_URL}/servers`)
-        const servers = serversResponse.ok ? await serversResponse.json() : []
+        const servers: GameServer[] = serversResponse.ok ? await serversResponse.json() : []
 
         // Calculate stats from loaded data
         const landTiles = world.regions?.flatMap((r: any) => r.tiles || [])

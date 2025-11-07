@@ -1,6 +1,7 @@
 import type { PageServerLoad, Actions, Action } from "./$types"
 import { fail } from "@sveltejs/kit"
 import { API_URL } from "$lib/config"
+import type { GameServer } from "../../../../../../shared/types/api"
 
 export const load: PageServerLoad = async ({ fetch }) => {
     try {
@@ -11,7 +12,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
             return { servers: [] }
         }
 
-        const servers = await response.json()
+        const servers: GameServer[] = await response.json()
 
         return { servers }
     } catch (err) {

@@ -1,5 +1,6 @@
 import type { PageServerLoad } from "./$types"
 import { API_URL } from "$lib/config"
+import type { PlayerWithRelations } from "../../../../../../shared/types/api"
 
 export const load: PageServerLoad = async ({ fetch }) => {
     try {
@@ -10,7 +11,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
             return { accounts: [] }
         }
         
-        const accounts = await response.json()
+        const accounts: PlayerWithRelations[] = await response.json()
         return { accounts }
     } catch (error) {
         console.error('Error loading players:', error)
