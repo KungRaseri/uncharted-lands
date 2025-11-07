@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import type { SettlementWithStorage } from '$lib/types/game';
 	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home, RefreshCw } from 'lucide-svelte';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
@@ -27,15 +28,15 @@
 
 	// Calculate total resources across all settlements
 	let totalResources = $derived({
-		food: data.settlements.reduce((sum, s) => sum + (s.Storage?.food || 0), 0),
-		water: data.settlements.reduce((sum, s) => sum + (s.Storage?.water || 0), 0),
-		wood: data.settlements.reduce((sum, s) => sum + (s.Storage?.wood || 0), 0),
-		stone: data.settlements.reduce((sum, s) => sum + (s.Storage?.stone || 0), 0),
-		ore: data.settlements.reduce((sum, s) => sum + (s.Storage?.ore || 0), 0)
+		food: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.Storage?.food || 0), 0),
+		water: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.Storage?.water || 0), 0),
+		wood: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.Storage?.wood || 0), 0),
+		stone: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.Storage?.stone || 0), 0),
+		ore: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.Storage?.ore || 0), 0)
 	});
 
 	let totalStructures = $derived(
-		data.settlements.reduce((sum, s) => sum + (s.Structures?.length || 0), 0)
+		data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.Structures?.length || 0), 0)
 	);
 </script>
 

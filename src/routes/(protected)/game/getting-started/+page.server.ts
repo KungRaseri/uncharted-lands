@@ -3,8 +3,13 @@ import { db } from '$lib/db';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
 import { getStructureDefinition } from '$lib/game/structures';
+import type { TileWithRelations, Plot } from '$lib/types/game';
 
 export const load: PageServerLoad = async ({ locals }) => {
+    if (!locals.account) {
+        throw redirect(302, '/login')
+    }
+
     if (locals.account.profile) {
         throw redirect(302, '/game')
     }
@@ -53,8 +58,8 @@ async function getSuitableStartingPlot(worldId: string) {
     });
 
     // Filter plots by resource availability
-    const viablePlots = potentialTiles.flatMap(tile =>
-        tile.Plots.filter(plot =>
+    const viablePlots = potentialTiles.flatMap((tile: TileWithRelations) =>
+        tile.Plots.filter((plot: Plot) =>
             plot.food >= 3 &&
             plot.water >= 3 &&
             plot.wood >= 3
@@ -64,8 +69,8 @@ async function getSuitableStartingPlot(worldId: string) {
     if (viablePlots.length === 0) {
         // Fallback: relax requirements if no perfect plots found
         console.warn('[SETTLEMENT] No ideal starting plots found, using relaxed criteria');
-        const fallbackPlots = potentialTiles.flatMap(tile =>
-            tile.Plots.filter(plot =>
+        const fallbackPlots = potentialTiles.flatMap((tile: TileWithRelations) =>
+            tile.Plots.filter((plot: Plot) =>
                 plot.food >= 2 &&
                 plot.water >= 2 &&
                 plot.wood >= 2
@@ -75,7 +80,7 @@ async function getSuitableStartingPlot(worldId: string) {
         if (fallbackPlots.length === 0) {
             // Last resort: any land plot
             console.warn('[SETTLEMENT] No viable plots found, using any available land plot');
-            const anyPlots = potentialTiles.flatMap(tile => tile.Plots);
+            const anyPlots = potentialTiles.flatMap((tile: TileWithRelations) => tile.Plots);
             if (anyPlots.length === 0) {
                 throw new Error('No available plots found in world for settlement');
             }
@@ -102,6 +107,12 @@ async function getSuitableStartingPlot(worldId: string) {
 }
 
 const settle: Action = async ({ request, locals }) => {
+    if (!locals.account) {
+        return fail(401, { unauthorized: true });
+    }
+
+    const accountId = locals.account.id;
+
     const data = await request.formData();
     const username = data.get('username');
     const server = data.get('server');
@@ -119,13 +130,14 @@ const settle: Action = async ({ request, locals }) => {
     // Find a suitable starting plot with good resources
     const chosenPlot = await getSuitableStartingPlot(world);
 
-    await db.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await db.$transaction(async (tx: any) => {
         const profile = await tx.profile.create({
             data: {
                 username,
                 account: {
                     connect: {
-                        id: locals.account.id
+                        id: accountId
                     }
                 },
                 picture: `https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,

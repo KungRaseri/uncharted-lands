@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
+	import type { World } from '$lib/types/game';
 	import { Flame, Server, Globe, User, Rocket } from 'lucide-svelte';
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
@@ -11,7 +12,7 @@
 	let { data }: { data: PageData } = $props();
 
 	let availableWorlds = $derived(
-		data.worlds.filter((w) => w.serverId === selectedServer)
+		data.worlds.filter((w: World) => w.serverId === selectedServer)
 	);
 </script>
 

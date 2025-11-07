@@ -39,7 +39,7 @@
 	</div>
 
 	<!-- Header -->
-	{#if data.account.profile}
+	{#if data.account?.profile}
 		<header class="flex-none z-10">
 			<GameNavigation />
 		</header>
@@ -51,14 +51,14 @@
 	</main>
 
 	<!-- Footer -->
-	{#if data.account.profile}
+	{#if data.account?.profile}
 		<footer class="flex-none">
 			<GameFooter />
 		</footer>
 	{/if}
 
 	<!-- Socket connection status indicator -->
-	{#if data.account.profile}
+	{#if data.account?.profile}
 		<SocketStatus />
 	{/if}
 </div>

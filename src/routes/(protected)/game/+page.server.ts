@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ locals, depends, fetch }) => {
     depends('game:settlements');
     depends('game:data');
 
-    if (!locals.account.profile) {
+    if (!locals.account?.profile) {
         throw redirect(302, '/game/getting-started')
     }
 

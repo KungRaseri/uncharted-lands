@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import type { SettlementWithStorage } from '$lib/types/game';
 	import { Building2, Search, MapPin, Package, Plus, Home, RefreshCw } from 'lucide-svelte';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
@@ -26,7 +27,7 @@
 	let searchTerm = $state('');
 	let viewMode = $state<'grid' | 'list'>('grid');
 	
-	let filteredSettlements = $derived(data.settlements.filter(settlement => {
+	let filteredSettlements = $derived(data.settlements.filter((settlement: SettlementWithStorage) => {
 		if (!searchTerm) return true;
 		const search = searchTerm.toLowerCase();
 		return (

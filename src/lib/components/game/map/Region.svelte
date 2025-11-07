@@ -21,6 +21,6 @@
 
 <div class="grid grid-cols-10 gap-0 h-full w-full">
 	{#each sortedTiles as tile}
-		<TileComponent {tile} {mode} {currentPlayerProfileId} />
+		<Tile {tile} {mode} {currentPlayerProfileId} />
 	{/each}
 </div>

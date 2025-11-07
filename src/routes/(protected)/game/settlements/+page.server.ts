@@ -6,7 +6,12 @@ export const load = (async ({ locals, depends, fetch }) => {
     depends('game:settlements');
     depends('game:data');
 
-    const response = await fetch(`${API_URL}/settlements?playerProfileId=${locals.account.profile?.id}`);
+    const profileId = locals.account?.profile?.id;
+    if (!profileId) {
+        return { settlements: [], lastUpdate: new Date().toISOString() };
+    }
+
+    const response = await fetch(`${API_URL}/settlements?playerProfileId=${profileId}`);
     
     if (!response.ok) {
         console.error('Failed to fetch settlements:', await response.text());

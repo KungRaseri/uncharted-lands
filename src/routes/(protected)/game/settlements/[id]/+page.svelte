@@ -8,6 +8,8 @@
 
 	// Extended ActionData type to include optional reasons array
 	type ActionData = GeneratedActionData & {
+		success?: boolean;
+		message?: string;
 		reasons?: string[];
 	};
 

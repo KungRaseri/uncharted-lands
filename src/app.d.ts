@@ -2,6 +2,9 @@
 // for information about these interfaces
 /// <reference types="@sveltejs/kit" />
 
+// Import shared types
+import type { PlayerProfile } from './lib/types/game';
+
 // Local type definitions (previously from Prisma)
 type Role = 'MEMBER' | 'SUPPORT' | 'ADMINISTRATOR';
 
@@ -15,25 +18,20 @@ interface Account {
 	updatedAt: Date;
 }
 
-interface Profile {
-	id: string;
-	username: string;
-	picture: string;
-	accountId: string;
-}
-
 // and what to do when importing types
-declare namespace App {
-	interface Error {
-		message: string;
-		errorId: string
+declare global {
+	namespace App {
+		interface Error {
+			message: string;
+			errorId: string
+		}
+		interface Locals {
+			account: (Account & {
+				profile: PlayerProfile | null
+			}) | null
+		}
+		// interface PageData {}
+		// interface PageState {}
+		// interface Platform {}
 	}
-	interface Locals {
-		account: (Account & {
-			profile: Profile | null
-		}) | null
-	}
-	// interface Platform {}
-	// interface PrivateEnv {}
-	// interface PublicEnv {}
 }
