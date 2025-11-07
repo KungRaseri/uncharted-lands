@@ -4,9 +4,10 @@
  * Manages WebSocket connection to the game server for real-time updates
  */
 
-import { writable, derived, get } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { io, type Socket } from 'socket.io-client';
 import { browser } from '$app/environment';
+import * as worldApi from '$lib/game/world-api';
 
 // Connection state
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -226,5 +227,20 @@ export const gameSocket = {
 	 */
 	collectResources: (settlementId: string) => {
 		socketStore.emit('collect-resources', { settlementId });
-	}
+	},
+
+	/**
+	 * Create a new world (uses world-api for proper type handling)
+	 */
+	createWorld: worldApi.createWorld,
+
+	/**
+	 * Request world data (uses world-api for proper type handling)
+	 */
+	requestWorldData: worldApi.requestWorldData,
+
+	/**
+	 * Request region data (uses world-api for proper type handling)
+	 */
+	requestRegionData: worldApi.requestRegionData
 };

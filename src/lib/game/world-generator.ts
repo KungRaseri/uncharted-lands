@@ -1,3 +1,27 @@
+/**
+ * World Generator (Client-Side)
+ * 
+ * ⚠️ DEPRECATED for gameplay use
+ * 
+ * This file is ONLY used by admin tools:
+ * - /admin/worlds/create - Custom world generation form
+ * 
+ * 🎮 For Gameplay:
+ * Use server-side world generation via Socket.IO:
+ * ```typescript
+ * import { gameSocket } from '$lib/stores/game/socket';
+ * await gameSocket.createWorld({ worldName, seed, width, height });
+ * ```
+ * 
+ * 🔒 Server Authority:
+ * All gameplay world creation goes through:
+ * - server/src/game/world-generator.ts
+ * - server/src/game/world-creator.ts
+ * - server/src/events/handlers.ts (create-world handler)
+ * 
+ * 🚀 Future: Migrate admin tool to server or remove this file.
+ */
+
 import { makeNoise2D } from 'open-simplex-noise';
 import { makeRectangle, type Options } from 'fractal-noise';
 

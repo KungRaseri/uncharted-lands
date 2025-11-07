@@ -1,4 +1,19 @@
 /**
+ * Resource Generator (Client-Side)
+ * 
+ * ⚠️ DEPRECATED for gameplay use
+ * 
+ * This file is ONLY used by admin tools:
+ * - /admin/worlds/create - Custom world generation
+ * 
+ * 🎮 For Gameplay:
+ * Server generates all plot resources during world creation automatically.
+ * See: server/src/game/resource-generator.ts (fully tested with 15 unit tests)
+ * 
+ * 🚀 Future: Remove when admin tools are migrated to use server generation.
+ * 
+ * ---
+ * 
  * Advanced resource generation system for plot creation
  * 
  * This system generates realistic resource values based on:

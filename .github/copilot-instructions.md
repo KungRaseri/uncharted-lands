@@ -4,6 +4,34 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ---
 
+## ⚠️ CRITICAL: Documentation Creation Policy
+
+**NEVER create documentation, summaries, status files, or markdown files unless explicitly requested by the user.**
+
+### Rules:
+1. **DO NOT** automatically create:
+   - Summary documents (SUMMARY.md, STATUS.md, CHANGES.md, etc.)
+   - Migration status files
+   - Progress reports
+   - Documentation files
+   - README files (except when specifically asked)
+
+2. **ONLY create documentation when**:
+   - The user explicitly asks: "Create a summary", "Write documentation for X", etc.
+   - The user requests: "Document this", "Add a README", etc.
+
+3. **Instead of creating documents**:
+   - Answer questions directly in chat
+   - Provide explanations in the conversation
+   - Make code changes as requested
+   - Update existing documentation if it already exists
+
+4. **When documentation IS requested**:
+   - Confirm what they want documented
+   - Follow the Documentation Policy below for placement
+
+---
+
 ## Project Overview
 
 **Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures while expanding settlements and improving technology.
@@ -36,7 +64,8 @@ This file provides context and guidelines for GitHub Copilot when working on the
    - `CHANGELOG.md` - Version history (if needed)
    
 3. **Summary Documents**: 
-   - ⚠️ **DO NOT** create summary documents (e.g., `CHANGES_SUMMARY.md`, `MIGRATION_SUMMARY.md`) unless explicitly requested
+   - ⚠️ **DO NOT** create summary documents unless explicitly requested by the user
+   - User must specifically ask: "Create a summary of changes", "Document the migration", etc.
    - Most changes should be documented in existing files or commit messages
    - Only create summaries when the user specifically asks for one
    - If created, they MUST go in `docs/` directory with appropriate subdirectory

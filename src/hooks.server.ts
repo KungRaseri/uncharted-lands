@@ -1,16 +1,12 @@
 import { redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { AuthenticateUser } from "$lib/auth";
 import * as Sentry from '@sentry/node';
-import { initializeDevScheduler } from "$lib/server/scheduler";
 
 Sentry.init({
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: 1.0,
     environment: process.env.NODE_ENV
 })
-
-// Initialize development cron scheduler (only runs in dev mode)
-initializeDevScheduler();
 
 export const handle: Handle = (async ({ event, resolve }) => {
     const user = await AuthenticateUser(event.cookies);
