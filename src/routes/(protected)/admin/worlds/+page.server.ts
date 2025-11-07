@@ -1,19 +1,27 @@
 import type { PageServerLoad, Actions, Action } from "./$types"
-import { db } from "$lib/db"
 import { fail } from "@sveltejs/kit"
 
-export const load: PageServerLoad = async () => {
-    return {
-        worlds: await db.world.findMany({
-            include: {
-                server: true,
-                regions: true
-            }
-        })
+const API_URL = 'http://localhost:3001/api'
+
+export const load: PageServerLoad = async ({ fetch }) => {
+    try {
+        const response = await fetch(`${API_URL}/worlds`)
+        
+        if (!response.ok) {
+            console.error('Worlds API error:', response.status)
+            return { worlds: [] }
+        }
+
+        const worlds = await response.json()
+
+        return { worlds }
+    } catch (err) {
+        console.error('Failed to load worlds:', err)
+        return { worlds: [] }
     }
 }
 
-const deleteWorld: Action = async ({ request }) => {
+const deleteWorld: Action = async ({ request, fetch }) => {
     const data = await request.formData();
     const worldId = data.get('worldId');
 
@@ -22,10 +30,18 @@ const deleteWorld: Action = async ({ request }) => {
     }
 
     try {
-        // Delete world (cascades to regions, tiles, plots)
-        await db.world.delete({
-            where: { id: worldId }
+        const response = await fetch(`${API_URL}/worlds/${worldId}`, {
+            method: 'DELETE'
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return fail(response.status, { 
+                success: false, 
+                message: errorData.error || 'Failed to delete world', 
+                worldId 
+            });
+        }
 
         return { success: true, message: 'World deleted successfully', worldId };
     } catch (error) {

@@ -8,6 +8,22 @@ import { generatePlotResources, determinePlotsTotal } from '$lib/game/resource-g
 
 import { createId } from '@paralleldrive/cuid2';
 
+/**
+ * ⚠️ TEMPORARY: This file still uses client-side Prisma for world generation
+ * 
+ * Reason: Complex world generation with biomes, tiles, and plots requires:
+ * 1. Biomes API endpoint
+ * 2. Large bulk insert support
+ * 3. Transaction handling
+ * 
+ * TODO for future phase:
+ * - Create /api/biomes endpoint
+ * - Update world creation to use REST API
+ * - Move world generation logic to server
+ * 
+ * For now, this is acceptable as it's admin-only and low frequency operation.
+ */
+
 let mapSettings: any;
 let elevationSettings: Prisma.JsonValue;
 let precipitationSettings: Prisma.JsonValue;

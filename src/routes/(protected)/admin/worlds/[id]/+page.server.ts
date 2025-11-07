@@ -1,86 +1,45 @@
 import { fail, redirect } from "@sveltejs/kit"
-import { db } from "$lib/db"
 import type { PageServerLoad, Actions, Action } from "./$types"
-import { TileType } from "@prisma/client";
 
-export const load: PageServerLoad = async ({ params }) => {
-    const world = await db.world.findUnique({
-        where: {
-            id: params.id
-        },
-        include: {
-            regions: {
-                orderBy: {
-                    name: 'asc'
-                },
-                include: {
-                    tiles: {
-                        include: {
-                            Plots: {
-                                include: {
-                                    Settlement: true
-                                }
-                            },
-                            Biome: true
-                        }
-                    }
-                }
-            },
-            server: true
+const API_URL = 'http://localhost:3001/api'
+
+export const load: PageServerLoad = async ({ params, fetch }) => {
+    try {
+        const response = await fetch(`${API_URL}/worlds/${params.id}`)
+        
+        if (!response.ok) {
+            return fail(404, { success: false, id: params.id })
         }
-    });
 
-    if (!world) {
-        throw fail(404, { success: false, id: params.id })
-    }
+        const world = await response.json()
 
-    // Load all servers for reassignment dropdown
-    const servers = await db.server.findMany({
-        orderBy: { name: 'asc' }
-    });
+        // Load all servers for reassignment dropdown
+        const serversResponse = await fetch(`${API_URL}/servers`)
+        const servers = serversResponse.ok ? await serversResponse.json() : []
 
-    const [landTiles, oceanTiles, settlements] = await db.$transaction([
-        db.tile.count({
-            where: {
-                type: TileType.LAND,
-                Region: {
-                    worldId: world.id
-                }
+        // Calculate stats from loaded data
+        const landTiles = world.regions?.flatMap((r: any) => r.tiles || [])
+            .filter((t: any) => t.type === 'LAND').length || 0
+        const oceanTiles = world.regions?.flatMap((r: any) => r.tiles || [])
+            .filter((t: any) => t.type === 'OCEAN').length || 0
+        const settlements = 0 // TODO: Get from API
+
+        return {
+            world,
+            servers,
+            worldInfo: {
+                landTiles,
+                oceanTiles,
+                settlements
             }
-        }),
-        db.tile.count({
-            where: {
-                type: TileType.OCEAN,
-                Region: {
-                    worldId: world.id
-                }
-            }
-        }),
-        db.settlement.count({
-            where: {
-                Plot: {
-                    Tile: {
-                        Region: {
-                            worldId: world.id
-                        }
-                    }
-                },
-            }
-        })
-    ])
-
-    return {
-        world,
-        servers,
-        worldInfo: {
-            landTiles,
-            oceanTiles,
-            settlements
         }
+    } catch (error) {
+        console.error('Failed to load world:', error)
+        return fail(404, { success: false, id: params.id })
     }
 }
 
-const update: Action = async ({ request, params }) => {
+const update: Action = async ({ request, params, fetch }) => {
     const data = await request.formData();
     const name = data.get('name');
     const serverId = data.get('serverId');
@@ -94,13 +53,15 @@ const update: Action = async ({ request, params }) => {
     }
 
     try {
-        await db.world.update({
-            where: { id: params.id },
-            data: { 
-                name,
-                serverId 
-            }
+        const response = await fetch(`${API_URL}/worlds/${params.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, serverId })
         });
+
+        if (!response.ok) {
+            return fail(500, { success: false, message: 'Failed to update world' });
+        }
 
         return { success: true, message: 'World updated successfully' };
     } catch (error) {
@@ -109,12 +70,15 @@ const update: Action = async ({ request, params }) => {
     }
 }
 
-const deleteWorld: Action = async ({ params }) => {
+const deleteWorld: Action = async ({ params, fetch }) => {
     try {
-        // Delete world (cascades to regions, tiles, plots due to schema)
-        await db.world.delete({
-            where: { id: params.id }
+        const response = await fetch(`${API_URL}/worlds/${params.id}`, {
+            method: 'DELETE'
         });
+
+        if (!response.ok) {
+            return fail(500, { success: false, message: 'Failed to delete world' });
+        }
 
         throw redirect(303, '/admin/worlds');
     } catch (error) {

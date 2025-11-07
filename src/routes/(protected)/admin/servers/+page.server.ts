@@ -1,26 +1,27 @@
 import type { PageServerLoad, Actions, Action } from "./$types"
-import { db } from "$lib/db"
 import { fail } from "@sveltejs/kit"
 
-export const load: PageServerLoad = async () => {
-    return {
-        servers: await db.server.findMany({
-            include: {
-                _count: {
-                    select: {
-                        worlds: true,
-                        players: true
-                    }
-                }
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        })
+const API_URL = 'http://localhost:3001/api'
+
+export const load: PageServerLoad = async ({ fetch }) => {
+    try {
+        const response = await fetch(`${API_URL}/servers`)
+        
+        if (!response.ok) {
+            console.error('Servers API error:', response.status)
+            return { servers: [] }
+        }
+
+        const servers = await response.json()
+
+        return { servers }
+    } catch (err) {
+        console.error('Failed to load servers:', err)
+        return { servers: [] }
     }
 }
 
-const deleteServer: Action = async ({ request }) => {
+const deleteServer: Action = async ({ request, fetch }) => {
     const data = await request.formData();
     const serverId = data.get('serverId');
 
@@ -29,22 +30,18 @@ const deleteServer: Action = async ({ request }) => {
     }
 
     try {
-        // Check if server has any worlds
-        const worldCount = await db.world.count({
-            where: { serverId }
+        const response = await fetch(`${API_URL}/servers/${serverId}`, {
+            method: 'DELETE'
         });
 
-        if (worldCount > 0) {
-            return fail(400, { 
+        if (!response.ok) {
+            const errorData = await response.json();
+            return fail(response.status, { 
                 success: false, 
-                message: `Cannot delete server with ${worldCount} world(s). Delete worlds first.`,
+                message: errorData.error || 'Failed to delete server',
                 serverId
             });
         }
-
-        await db.server.delete({
-            where: { id: serverId }
-        });
 
         return { success: true, message: 'Server deleted successfully', serverId };
     } catch (error) {

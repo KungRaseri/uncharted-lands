@@ -1,28 +1,24 @@
 import { fail } from "@sveltejs/kit"
-import { db } from "$lib/db"
 import type { PageServerLoad } from "./$types"
 
-export const load: PageServerLoad = async ({ params }) => {
-    const account = await db.account.findUnique({
-        where: {
-            id: params.id
-        },
-        select: {
-            id: true,
-            email: true,
-            role: true,
-            profile: true,
-            userAuthToken: true,
-            createdAt: true,
-            updatedAt: true
+const API_URL = 'http://localhost:3001/api'
+
+export const load: PageServerLoad = async ({ params, fetch }) => {
+    try {
+        const response = await fetch(`${API_URL}/players/${params.id}`)
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                return fail(404, { success: false, id: params.id })
+            }
+            console.error('Failed to fetch player:', response.status)
+            return fail(500, { success: false, id: params.id })
         }
-    });
-
-    if (!account) {
-        throw fail(404, { success: false, id: params.id })
-    }
-
-    return {
-        account
+        
+        const account = await response.json()
+        return { account }
+    } catch (error) {
+        console.error('Error loading player:', error)
+        return fail(500, { success: false, id: params.id })
     }
 }

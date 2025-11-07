@@ -1,33 +1,26 @@
 import { fail, redirect } from "@sveltejs/kit"
-import { db } from "$lib/db"
 import type { PageServerLoad, Actions, Action } from "./$types"
 
-export const load: PageServerLoad = async ({ params }) => {
-    const server = await db.server.findUnique({
-        where: {
-            id: params.id
-        },
-        include: {
-            worlds: true,
-            players: {
-                include: {
-                    profile: true,
-                    settlements: true
-                }
-            }
+const API_URL = 'http://localhost:3001/api'
+
+export const load: PageServerLoad = async ({ params, fetch }) => {
+    try {
+        const response = await fetch(`${API_URL}/servers/${params.id}`)
+        
+        if (!response.ok) {
+            return fail(404, { success: false, id: params.id })
         }
-    });
 
-    if (!server) {
-        throw fail(404, { success: false, id: params.id })
-    }
+        const server = await response.json()
 
-    return {
-        server
+        return { server }
+    } catch (error) {
+        console.error('Failed to load server:', error)
+        return fail(404, { success: false, id: params.id })
     }
 }
 
-const update: Action = async ({ request, params }) => {
+const update: Action = async ({ request, params, fetch }) => {
     const data = await request.formData();
     const name = data.get('name');
     const hostname = data.get('hostname');
@@ -52,10 +45,15 @@ const update: Action = async ({ request, params }) => {
             }
         }
 
-        await db.server.update({
-            where: { id: params.id },
-            data: updateData
+        const response = await fetch(`${API_URL}/servers/${params.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
         });
+
+        if (!response.ok) {
+            return fail(500, { success: false, message: 'Failed to update server' });
+        }
 
         return { success: true, message: 'Server updated successfully' };
     } catch (error) {
@@ -64,23 +62,19 @@ const update: Action = async ({ request, params }) => {
     }
 }
 
-const deleteServer: Action = async ({ params }) => {
+const deleteServer: Action = async ({ params, fetch }) => {
     try {
-        // Check if server has any worlds
-        const worldCount = await db.world.count({
-            where: { serverId: params.id }
+        const response = await fetch(`${API_URL}/servers/${params.id}`, {
+            method: 'DELETE'
         });
 
-        if (worldCount > 0) {
-            return fail(400, { 
+        if (!response.ok) {
+            const errorData = await response.json();
+            return fail(response.status, { 
                 success: false, 
-                message: `Cannot delete server with ${worldCount} world(s). Delete worlds first.` 
+                message: errorData.error || 'Failed to delete server'
             });
         }
-
-        await db.server.delete({
-            where: { id: params.id }
-        });
 
         throw redirect(303, '/admin/servers');
     } catch (error) {

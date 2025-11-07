@@ -1,13 +1,13 @@
-import { db } from "$lib/db"
-import { Prisma } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
+
+const API_URL = 'http://localhost:3001/api'
 
 export const load: PageServerLoad = async () => {
     return {}
 }
 
-const createServer: Action = async ({ request }) => {
+const createServer: Action = async ({ request, fetch }) => {
     const data = await request.formData();
     const name = data.get("name")
     const hostname = data.get("hostname")
@@ -23,22 +23,26 @@ const createServer: Action = async ({ request }) => {
     }
 
     try {
-        await db.server.create({
-            data: {
+        const response = await fetch(`${API_URL}/servers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
                 name,
                 hostname,
                 port: Number.parseInt(port)
-            }
-        })
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return fail(response.status, { 
+                invalid: true, 
+                message: errorData.error || 'Failed to create server' 
+            });
+        }
     }
     catch (e) {
-        if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            if (e.code === "P2002") {
-                return fail(400, { invalid: true, message: e.message })
-            }
-        } else {
-            return fail(400, { invalid: true, message: `Unknown error occured: ${e}` })
-        }
+        return fail(500, { invalid: true, message: `Unknown error occurred: ${e}` })
     }
 
     throw redirect(302, '/admin/servers')

@@ -1,36 +1,24 @@
 import { fail } from "@sveltejs/kit"
-import { db } from "$lib/db"
 import type { PageServerLoad } from "./$types"
 
-export const load: PageServerLoad = async ({ params }) => {
-    const region = await db.region.findUnique({
-        where: {
-            id: params.id
-        },
-        include: {
-            world: {
-                include: {
-                    server: true
-                }
-            },
-            tiles: {
-                include: {
-                    Biome: true,
-                    Plots: {
-                        include: {
-                            Settlement: true
-                        }
-                    }
-                }
+const API_URL = 'http://localhost:3001/api'
+
+export const load: PageServerLoad = async ({ params, fetch }) => {
+    try {
+        const response = await fetch(`${API_URL}/regions/${params.id}`)
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                return fail(404, { success: false, id: params.id })
             }
+            console.error('Failed to fetch region:', response.status)
+            return fail(500, { success: false, id: params.id })
         }
-    });
-
-    if (!region) {
-        throw fail(404, { success: false, id: params.id })
-    }
-
-    return {
-        region
+        
+        const region = await response.json()
+        return { region }
+    } catch (error) {
+        console.error('Error loading region:', error)
+        return fail(500, { success: false, id: params.id })
     }
 }
