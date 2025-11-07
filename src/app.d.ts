@@ -2,20 +2,36 @@
 // for information about these interfaces
 /// <reference types="@sveltejs/kit" />
 
+// Local type definitions (previously from Prisma)
+type Role = 'MEMBER' | 'SUPPORT' | 'ADMINISTRATOR';
+
+interface Account {
+	id: string;
+	email: string;
+	passwordHash: string;
+	userAuthToken: string;
+	role: Role;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+interface Profile {
+	id: string;
+	username: string;
+	picture: string;
+	accountId: string;
+}
 
 // and what to do when importing types
 declare namespace App {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	import type { Account, Role, Profile } from "@prisma/client"
-
 	interface Error {
 		message: string;
 		errorId: string
 	}
 	interface Locals {
-		account: Account & {
+		account: (Account & {
 			profile: Profile | null
-		}
+		}) | null
 	}
 	// interface Platform {}
 	// interface PrivateEnv {}

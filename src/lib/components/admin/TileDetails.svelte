@@ -1,9 +1,8 @@
 <script lang="ts">
-	import type { Prisma, Tile } from '@prisma/client';
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
 
 	type Props = {
-		tile: Prisma.TileGetPayload<{ include: { Biome: true } }>;
+		tile: any; // Simplified after Prisma removal
 	};
 
 	let { tile }: Props = $props();

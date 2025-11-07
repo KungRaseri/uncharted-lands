@@ -1,14 +1,8 @@
 <script lang="ts">
-	import type { Prisma, Settlement } from '@prisma/client';
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
 
 	type Props = {
-		settlement: Prisma.SettlementGetPayload<{
-			include: {
-				PlayerProfile: {
-					include: {
-						profile: true;
-					};
+		settlement: any; // Simplified after Prisma removal
 				};
 				Storage: true;
 				Structures: true;

@@ -1,3 +1,4 @@
+// TODO: Migrate to REST API - create /api/servers endpoint
 import { db } from "$lib/db";
 import type { LayoutServerLoad } from "./$types";
 

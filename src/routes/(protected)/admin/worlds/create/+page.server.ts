@@ -1,6 +1,13 @@
+// TODO: This file still uses deprecated db import - needs migration to REST API
 import { db } from "$lib/db"
-import { TileType } from "@prisma/client"
-import type { Prisma, Region, Plot, Biome, Tile, World } from "@prisma/client"
+// Types simplified after Prisma removal
+type TileType = 'LAND' | 'OCEAN';
+type Region = any;
+type Plot = any;
+type Biome = any;
+type Tile = any;
+type World = any;
+
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
 import { normalizeValue } from '$lib/game/world-generator'
@@ -25,9 +32,9 @@ import { createId } from '@paralleldrive/cuid2';
  */
 
 let mapSettings: any;
-let elevationSettings: Prisma.JsonValue;
-let precipitationSettings: Prisma.JsonValue;
-let temperatureSettings: Prisma.JsonValue;
+let elevationSettings: any;
+let precipitationSettings: any;
+let temperatureSettings: any;
 
 let world: World;
 let regions: Region[] = [];
@@ -157,7 +164,7 @@ async function createTiles() {
 
         for (const [x, row] of elevationMap.entries()) {
             for (const [y, elevation] of row.entries()) {
-                const type = elevation < 0 ? TileType.OCEAN : TileType.LAND;
+                const type = elevation < 0 ? 'OCEAN' : 'LAND';
                 const biome = await determineBiome(normalizeValue(precipitationMap[x][y], 0, 450), normalizeValue(temperatureMap[x][y], -10, 32))
 
                 if (!biome || !biome.id) {
@@ -205,21 +212,21 @@ async function finishWorldCreation() {
                 id: world.id,
                 name: world.name,
                 serverId: world.serverId,
-                elevationSettings: world.elevationSettings as Prisma.InputJsonValue,
-                precipitationSettings: world.precipitationSettings as Prisma.InputJsonValue,
-                temperatureSettings: world.temperatureSettings as Prisma.InputJsonValue,
+                elevationSettings: world.elevationSettings as any,
+                precipitationSettings: world.precipitationSettings as any,
+                temperatureSettings: world.temperatureSettings as any,
                 createdAt: world.createdAt,
                 updatedAt: world.updatedAt
             }
         }),
         db.region.createMany({
-            data: regions as Prisma.Enumerable<Prisma.RegionCreateManyInput>
+            data: regions as any
         }),
         db.tile.createMany({
-            data: tiles as Prisma.Enumerable<Prisma.TileCreateManyInput>
+            data: tiles as any
         }),
         db.plot.createMany({
-            data: plots as Prisma.Enumerable<Prisma.PlotCreateManyInput>
+            data: plots as any
         })
     ])
 }

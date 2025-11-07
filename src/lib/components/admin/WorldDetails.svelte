@@ -1,14 +1,8 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
 	import World from '$lib/components/game/map/World.svelte';
 
 	type Props = {
-		world: Prisma.WorldGetPayload<{
-			include: {
-				regions: true;
-				server: true;
-			};
-		}>;
+		world: any; // Simplified after Prisma removal
 		worldInfo: { landTiles: number; oceanTiles: number; settlements: number };
 	};
 

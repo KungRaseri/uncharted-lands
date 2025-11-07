@@ -1,19 +1,8 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
 	
-	type RegionWithTiles = Prisma.RegionGetPayload<{
-		include: {
-			tiles: {
-				include: {
-					Biome: true;
-					Plots: {
-						include: {
-							Settlement: true;
-						};
-					};
-				};
-			};
+	// Type simplified after Prisma removal
+	type RegionWithTiles = any;
 		};
 	}>;
 	

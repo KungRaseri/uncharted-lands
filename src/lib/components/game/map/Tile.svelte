@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
+	import type { TileWithRelations } from '$lib/types/game';
 
 	type Props = {
-		tile: Prisma.TileGetPayload<{ include: { Biome: true; Plots: { include: { Settlement: true } } } }>;
+		tile: TileWithRelations;
 		/** Display mode - affects styling and interaction */
 		mode?: 'admin' | 'player';
 		/** Current player's profile ID (for player mode settlement filtering) */
@@ -13,7 +13,7 @@
 	
 	// Check if tile has any settled plots
 	const hasSettlement = $derived(() => {
-		const settledPlots = tile.Plots.filter(plot => plot.Settlement);
+		const settledPlots = tile.Plots.filter((plot) => plot.Settlement);
 		
 		if (settledPlots.length === 0) {
 			return false;
@@ -21,7 +21,7 @@
 		
 		// In player mode, only show marker if player owns the settlement
 		if (mode === 'player' && currentPlayerProfileId) {
-			return settledPlots.some(plot => plot.Settlement?.playerProfileId === currentPlayerProfileId);
+			return settledPlots.some((plot) => plot.Settlement?.playerProfileId === currentPlayerProfileId);
 		}
 		
 		// In admin mode, show marker if ANY settlement exists

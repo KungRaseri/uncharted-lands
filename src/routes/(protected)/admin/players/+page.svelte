@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { Account } from 'prisma/prisma-client';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 
 	import { Users, Search, ExternalLink, Mail, Shield, Calendar, User } from 'lucide-svelte';

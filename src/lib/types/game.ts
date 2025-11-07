@@ -1,0 +1,210 @@
+/**
+ * Game-related TypeScript types for client components
+ * 
+ * These types extend the API types with component-specific structures
+ * and include nested relations commonly used in the UI.
+ */
+
+// ============================================================================
+// Base Game Types (matching server schema)
+// ============================================================================
+
+export type TileType = 'LAND' | 'OCEAN';
+export type Role = 'MEMBER' | 'SUPPORT' | 'ADMINISTRATOR';
+export type ServerStatus = 'OFFLINE' | 'MAINTENANCE' | 'ONLINE';
+
+// ============================================================================
+// Biome Types
+// ============================================================================
+
+export interface Biome {
+  id: string;
+  name: string;
+  precipitationMin: number;
+  precipitationMax: number;
+  temperatureMin: number;
+  temperatureMax: number;
+  plotsMin: number;
+  plotsMax: number;
+  plotAreaMin: number;
+  plotAreaMax: number;
+  solarModifier: number;
+  windModifier: number;
+  foodModifier: number;
+  waterModifier: number;
+  woodModifier: number;
+  stoneModifier: number;
+  oreModifier: number;
+}
+
+// ============================================================================
+// Plot Types
+// ============================================================================
+
+export interface Plot {
+  id: string;
+  tileId: string;
+  area: number;
+  solar: number;
+  wind: number;
+  food: number;
+  water: number;
+  wood: number;
+  stone: number;
+  ore: number;
+  Settlement?: Settlement | null;
+}
+
+// ============================================================================
+// Settlement Types
+// ============================================================================
+
+export interface Settlement {
+  id: string;
+  name: string;
+  playerProfileId: string;
+  plotId: string;
+  founded: Date | string;
+}
+
+// ============================================================================
+// Tile Types (with nested relations)
+// ============================================================================
+
+export interface TileBase {
+  id: string;
+  biomeId: string;
+  regionId: string;
+  elevation: number;
+  temperature: number;
+  precipitation: number;
+  type: TileType;
+}
+
+export interface TileWithBiome extends TileBase {
+  Biome: Biome;
+}
+
+export interface TileWithPlots extends TileBase {
+  Plots: Plot[];
+}
+
+export interface TileWithRelations extends TileBase {
+  Biome: Biome;
+  Plots: Plot[];
+}
+
+// ============================================================================
+// Region Types (with nested relations)
+// ============================================================================
+
+export interface RegionBase {
+  id: string;
+  xCoord: number;
+  yCoord: number;
+  name: string;
+  worldId: string;
+  elevationMap?: number[][];
+  precipitationMap?: number[][];
+  temperatureMap?: number[][];
+}
+
+export interface RegionWithTiles extends RegionBase {
+  tiles: TileWithRelations[];
+}
+
+// ============================================================================
+// World Types
+// ============================================================================
+
+export interface WorldBase {
+  id: string;
+  name: string;
+  elevationSettings: any;
+  precipitationSettings: any;
+  temperatureSettings: any;
+  serverId: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface WorldWithRegions extends WorldBase {
+  regions: RegionWithTiles[];
+}
+
+export interface WorldWithServer extends WorldBase {
+  server: GameServer;
+}
+
+export interface WorldWithRelations extends WorldBase {
+  regions?: RegionBase[];
+  server?: GameServer;
+}
+
+// ============================================================================
+// Server Types
+// ============================================================================
+
+export interface GameServer {
+  id: string;
+  name: string;
+  hostname?: string;
+  port?: number;
+  status?: ServerStatus;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  _count?: {
+    worlds: number;
+  };
+}
+
+// ============================================================================
+// Player/Profile Types
+// ============================================================================
+
+export interface PlayerProfile {
+  id: string;
+  username: string;
+  picture: string;
+  accountId: string;
+}
+
+export interface Account {
+  id: string;
+  email: string;
+  passwordHash: string;
+  userAuthToken: string;
+  role: Role;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  profile?: PlayerProfile | null;
+}
+
+// ============================================================================
+// Component-specific Types
+// ============================================================================
+
+export interface WorldInfo {
+  landTiles: number;
+  oceanTiles: number;
+  settlements: number;
+}
+
+export interface SettlementWithStorage {
+  id: string;
+  name: string;
+  playerProfileId: string;
+  plotId: string;
+  founded: Date | string;
+  Storage?: {
+    food: number;
+    water: number;
+    wood: number;
+    stone: number;
+    ore: number;
+  } | null;
+  Structures?: Array<{
+    id: string;
+    type: string;
+  }> | null;
+}

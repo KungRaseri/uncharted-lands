@@ -1,3 +1,4 @@
+// TODO: Migrate to REST API - create /api/worlds/:id/map endpoint with region/tile data
 import { db } from '$lib/db';
 import type { PageServerLoad } from './$types';
 

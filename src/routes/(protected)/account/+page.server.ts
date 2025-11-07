@@ -1,3 +1,4 @@
+// TODO: Migrate to REST API - create /api/account endpoint
 import { db } from '$lib/db';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';

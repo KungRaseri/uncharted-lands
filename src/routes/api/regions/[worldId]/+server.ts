@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+// TODO: Migrate to server REST API - this internal API should call server endpoints instead of using db directly
 import { db } from '$lib/db';
 import type { RequestHandler } from './$types';
 

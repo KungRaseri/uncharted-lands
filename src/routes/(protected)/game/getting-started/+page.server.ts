@@ -1,3 +1,4 @@
+// TODO: Migrate to REST API - create /api/servers, /api/worlds, /api/regions, /api/tiles endpoints
 import { db } from '$lib/db';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';

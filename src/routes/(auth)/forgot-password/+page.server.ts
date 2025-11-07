@@ -1,3 +1,4 @@
+// TODO: Migrate to REST API - create /api/auth/forgot-password endpoint
 import { db } from '$lib/db';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';

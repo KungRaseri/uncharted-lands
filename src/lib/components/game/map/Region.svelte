@@ -1,19 +1,20 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
+	import Tile from './Tile.svelte';
+	import type { RegionWithTiles } from '$lib/types/game';
+
+	type Props = {
+		region: RegionWithTiles;
+		/** Display mode - affects tile sizing and interaction */
+		mode?: 'admin' | 'player';
+		/** Current player's profile ID (for player mode settlement filtering) */
+		currentPlayerProfileId?: string;
+	};
+
+	let { region, mode = 'player', currentPlayerProfileId }: Props = $props();s">
 	import TileComponent from './Tile.svelte';
 
 	type Props = {
-		region: Prisma.RegionGetPayload<{
-			include: {
-				tiles: {
-					include: {
-						Biome: true;
-						Plots: {
-							include: {
-								Settlement: true;
-							};
-						};
-					};
+		region: any; // Simplified after Prisma removal
 				};
 			};
 		}>;

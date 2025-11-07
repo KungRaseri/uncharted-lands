@@ -3,7 +3,6 @@
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
-	import type { Prisma } from '@prisma/client';
 	import { generateMap } from '$lib/game/world-generator';
 
 	import { Info } from 'lucide-svelte';

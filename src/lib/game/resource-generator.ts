@@ -23,7 +23,9 @@
  * - Biome modifiers (specific characteristics of each biome type)
  */
 
-import type { Biome, Tile } from "@prisma/client";
+// Types simplified after Prisma removal
+export type Biome = any;
+export type Tile = any;
 
 export interface PlotResources {
 	area: number;
