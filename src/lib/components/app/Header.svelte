@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
 	import LightSwitch from './LightSwitch.svelte';
@@ -47,14 +47,14 @@
 			</button>
 		</div>
 		<div class="hidden sm:flex gap-2">
-			{#each $page.data?.mainMenuLinks ?? [] as link}
+			{#each page.data?.mainMenuLinks ?? [] as link}
 				{#if link.requiredRole}
-					{#if $page.data?.account}
+					{#if page.data?.account}
 						<a
 							href={link.route}
 							class="btn rounded-md
 								{link.isActive ? 'bg-primary-600' : ''}
-								{$page.data?.account?.role !== link.requiredRole ? 'hidden' : ''}
+								{page.data?.account?.role !== link.requiredRole ? 'hidden' : ''}
 								hover:bg-primary-500
 								"
 						>
@@ -68,7 +68,7 @@
 						href={link.route}
 						class="btn rounded-md
 							{link.isActive ? 'bg-primary-600' : ''}
-							{$page.data?.account && link.requiredRole && $page.data?.account?.role !== link.requiredRole
+							{page.data?.account && link.requiredRole && page.data?.account?.role !== link.requiredRole
 							? 'hidden'
 							: ''}
 							hover:bg-primary-500
@@ -86,12 +86,12 @@
 		<!-- Trail slot -->
 		<div class="flex items-center justify-end gap-2">
 			<LightSwitch />
-			{#if !$page.data?.account}
+			{#if !page.data?.account}
 				<a
 					href="/sign-in"
 					class="btn rounded-md
 						hover:bg-primary-500
-						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-600' : ''}
+						{page.route.id === '/(auth)/sign-in' ? 'bg-primary-600' : ''}
 						"
 					data-testid="header-signin"
 				>
@@ -100,7 +100,7 @@
 				<a
 					href="/register"
 					class="btn rounded-md
-						{$page.route.id === '/(auth)/register' ? 'bg-primary-600' : ''}
+						{page.route.id === '/(auth)/register' ? 'bg-primary-600' : ''}
 						hover:bg-primary-500
 						"
 					data-testid="header-register"
@@ -125,10 +125,10 @@
 							userMenuOpen = !userMenuOpen;
 						}}
 					>
-						{#if $page.data?.account?.profile?.picture}
+						{#if page.data?.account?.profile?.picture}
 							<img
 								class="w-6 h-6 rounded-full object-cover"
-								src={$page.data.account.profile.picture}
+								src={page.data.account.profile.picture}
 								alt="Profile"
 							/>
 						{:else}
@@ -146,15 +146,15 @@
 							tabindex="-1"
 						>
 							<ul class="space-y-1">
-								{#each $page.data?.userMenuLinks ?? [] as link}
-									{#if !link.requiredRole || link.requiredRole === $page.data?.account?.role}
+								{#each page.data?.userMenuLinks ?? [] as link}
+									{#if !link.requiredRole || link.requiredRole === page.data?.account?.role}
 										<li>
 											<a
 												href={link.route}
 												class="btn w-full justify-start rounded-md
 													{link.isActive ? 'preset-filled-primary-500' : 'hover:preset-tonal-surface-500'}
 												"
-												aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+												aria-current={page.route.id?.includes(link.route) ? 'page' : undefined}
 												onclick={() => {
 													userMenuOpen = false;
 												}}
@@ -197,21 +197,21 @@
 		aria-labelledby="main-menu-button"
 	>
 		<div class="m-0 p-0 space-y-0 btn-group-vertical w-full rounded-none">
-			{#each $page.data?.mainMenuLinks ?? [] as link}
+			{#each page.data?.mainMenuLinks ?? [] as link}
 				<a
 					href={link.route}
 					class="btn rounded-none
 						hover:bg-primary-500
-						{$page.route.id === link.route ||
-					$page.route.id === `/(protected)${link.route}` ||
-					$page.route.id === `/(auth)${link.route}`
+						{page.route.id === link.route ||
+					page.route.id === `/(protected)${link.route}` ||
+					page.route.id === `/(auth)${link.route}`
 						? 'bg-primary-600'
 						: ''}
 						"
 					onclick={() => {
 						isMainMenuOpen = false;
 					}}
-					aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+					aria-current={page.route.id?.includes(link.route) ? 'page' : undefined}
 				>
 					<span class="">
 						{link.name}

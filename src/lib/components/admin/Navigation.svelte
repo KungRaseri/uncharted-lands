@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	import { LayoutDashboard, Server, Globe, Users, Github } from 'lucide-svelte';
 
@@ -28,7 +28,7 @@
 	];
 	
 	let isActive = $derived.by(() => {
-		return (href: string) => (href === $page.url.pathname ? 'bg-primary-500 dark:bg-primary-600' : '');
+		return (href: string) => (href === page.url.pathname ? 'bg-primary-500 dark:bg-primary-600' : '');
 	});
 </script>
 

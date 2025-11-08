@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { Server, Globe, Users, Calendar, ArrowLeft, Plus, Edit, Trash2, Save, X } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
 	let { data, form }: { data: PageData; form: any } = $props();
@@ -19,7 +19,7 @@
 	
 	// Auto-enable edit mode if ?edit=true in URL
 	onMount(() => {
-		if ($page.url.searchParams.get('edit') === 'true') {
+		if (page.url.searchParams.get('edit') === 'true') {
 			startEdit();
 		}
 	});

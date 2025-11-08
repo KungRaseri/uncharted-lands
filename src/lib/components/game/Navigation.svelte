@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { Home, Building2, Map, Shield, User, History, Mail, Users } from 'lucide-svelte';
 	
 	// Check if current page matches the href
 	function isActive(href: string) {
-		return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
+		return page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	}
 </script>
 

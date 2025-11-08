@@ -253,6 +253,57 @@ node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
 </script>
 ```
 
+**Accessing Page Data and Stores**:
+
+```svelte
+<!-- ✅ CORRECT - Svelte 5 with SvelteKit 2.12+ -->
+<script>
+  import { page } from '$app/state';
+  
+  // Access page state directly (no $ prefix needed)
+  let currentPath = page.url.pathname;
+  let user = page.data.user;
+  
+  // Use with $derived for reactive computations
+  let isActive = $derived(page.url.pathname === '/home');
+</script>
+
+<!-- ✅ BEST PRACTICE - For route components, use props when available -->
+<script lang="ts">
+  import type { PageData } from './$types';
+  import { page } from '$app/state';
+  
+  let { data }: { data: PageData } = $props();
+  
+  // Access page data directly from props - more efficient
+  let user = data.user;
+  
+  // For URL/route data, use page state
+  let currentPath = page.url.pathname;
+</script>
+
+<!-- ✅ For derived values with page state -->
+<script>
+  import { page } from '$app/state';
+  
+  let isActive = $derived.by(() => {
+    return (href: string) => page.url.pathname === href;
+  });
+</script>
+```
+
+**Key Points**:
+- Use `$app/state` for SvelteKit 2.12+ (not `$app/stores` which is deprecated)
+- `page` from `$app/state` is a reactive state object (no `$` prefix needed)
+- Access properties directly: `page.url.pathname`, `page.data.user`, `page.route.id`
+- Use `$derived` or `$derived.by()` for computed values based on page state
+- In route components, prefer using props (`data`) when you only need `page.data`
+- ❌ DON'T import from `$app/stores` in Svelte 5
+- ✅ DO import from `@sveltejs/kit` for page context
+- ✅ DO use `$props()` to receive page data in route components
+- ✅ DO pass data as props to child components
+- ❌ DON'T use `$page` store subscription syntax
+
 **Use Snippets** (not slots):
 
 ```svelte

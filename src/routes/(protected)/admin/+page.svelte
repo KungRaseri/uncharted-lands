@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { Server, Globe, Users, MapPin, Grid3x3, LayoutGrid } from 'lucide-svelte';
 	import StatsCard from '$lib/components/admin/StatsCard.svelte';
@@ -12,7 +11,7 @@
 	<div class="card preset-filled-surface-100-900 p-6">
 		<h1 class="text-3xl font-bold mb-2">Admin Dashboard</h1>
 		<p class="text-surface-600 dark:text-surface-400">
-			Welcome back, <span class="font-semibold">{$page.data.account.email}</span>
+			Welcome back, <span class="font-semibold">{data.account?.email}</span>
 		</p>
 	</div>
 

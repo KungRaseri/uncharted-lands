@@ -3,7 +3,7 @@
 	import { Globe, Server, MapPin, Home, Mountain, Waves, ArrowLeft, Edit, Trash2, Save, X } from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { TileWithRelations, Plot } from '$lib/types/api';
 
@@ -24,7 +24,7 @@
 	
 	// Auto-enable edit mode if ?edit=true in URL
 	onMount(() => {
-		if ($page.url.searchParams.get('edit') === 'true') {
+		if (page.url.searchParams.get('edit') === 'true') {
 			startEdit();
 		}
 	});
