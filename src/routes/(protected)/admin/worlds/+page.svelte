@@ -13,7 +13,7 @@
 		return (
 			world.id.toLowerCase().includes(search) ||
 			world.name.toLowerCase().includes(search) ||
-			world.server.name.toLowerCase().includes(search)
+			(world.server?.name && world.server.name.toLowerCase().includes(search))
 		);
 	}));
 
@@ -123,10 +123,10 @@
 								<td>
 									<div class="flex items-center gap-2">
 										<Server size={14} class="text-surface-400" />
-										<span>{world.server.name}</span>
+										<span>{world.server?.name || 'No Server'}</span>
 									</div>
 								</td>
-								<td>{world.regions.length}</td>
+								<td>{world.regions?.length || 0}</td>
 								<td class="font-mono text-xs">{world.id}</td>
 								<td class="text-right space-x-2">
 									<a
@@ -173,7 +173,7 @@
 
 <!-- Delete Confirmation Modal -->
 {#if deleteModalOpen && worldToDelete}
-	{@const regionCount = worldToDelete.regions.length}
+	{@const regionCount = worldToDelete.regions?.length || 0}
 	{@const tileCount = regionCount * 100}
 	{@const plotCount = tileCount * 5}
 	

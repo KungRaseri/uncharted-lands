@@ -38,11 +38,16 @@ export interface World {
   temperatureMap: number[][] | null;
   createdAt: Date | string;
   updatedAt: Date | string;
+  // Additional properties from Prisma schema
+  serverId?: string;
+  server?: GameServer;  // Eager-loaded relation
+  regions?: Region[];   // Eager-loaded relations
 }
 
 export interface WorldWithRelations extends World {
   regions?: Region[];
   servers?: GameServer[];
+  server?: GameServer;  // Singular server relation
 }
 
 export interface CreateWorldRequest {
@@ -73,6 +78,12 @@ export interface Region {
   y: number;
   createdAt: Date | string;
   updatedAt: Date | string;
+  // Additional properties from Prisma schema
+  name?: string;
+  xCoord?: number;  // Alias for x
+  yCoord?: number;  // Alias for y
+  world?: World;    // Eager-loaded relation
+  tiles?: Tile[];   // Eager-loaded tiles
 }
 
 export interface RegionWithRelations extends Region {
@@ -101,12 +112,17 @@ export interface Tile {
   biomeId: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
+  // Additional properties from Prisma schema
+  type?: 'LAND' | 'OCEAN';
 }
 
 export interface TileWithRelations extends Tile {
   region?: Region;
   biome?: Biome;
   plots?: Plot[];
+  Region?: Region;   // Capitalized Prisma relation
+  Biome?: Biome;     // Capitalized Prisma relation
+  Plots?: Plot[];    // Capitalized Prisma relation
 }
 
 export interface CreateTileRequest {
@@ -143,6 +159,7 @@ export interface Plot {
 export interface PlotWithRelations extends Plot {
   tile?: TileWithRelations;
   settlement?: Settlement;
+  Settlement?: Settlement;  // Capitalized Prisma relation
 }
 
 export interface CreatePlotRequest {
@@ -187,6 +204,13 @@ export interface GameServer {
   isActive: boolean;
   createdAt: Date | string;
   updatedAt: Date | string;
+  // Additional properties from Prisma schema
+  hostname?: string;
+  port?: number;
+  status?: 'ONLINE' | 'OFFLINE' | 'MAINTENANCE';
+  _count?: {
+    worlds: number;
+  };
 }
 
 export interface GameServerWithRelations extends GameServer {
@@ -229,6 +253,9 @@ export interface PlayerProfile {
   bio: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
+  // Aliases for compatibility with old Prisma schema
+  username?: string;  // Alias for displayName
+  picture?: string;   // Alias for avatar
 }
 
 export interface PlayerWithRelations extends Player {

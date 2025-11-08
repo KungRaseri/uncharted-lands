@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import { Layers, MapPin, Globe, Mountain, Droplets, Thermometer, Grid3x3, ArrowLeft, Home, Wind, Sun } from 'lucide-svelte';
 	import TilePlotsPreview from '$lib/components/admin/TilePlotsPreview.svelte';
+	import type { Plot } from '$lib/types/game';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -192,15 +193,15 @@
 					</div>
 					<div>
 						<p class="text-xs text-surface-600 dark:text-surface-400">Total Area</p>
-						<p class="font-semibold">{data.tile.Plots.reduce((sum, p) => sum + p.area, 0)} m²</p>
+						<p class="font-semibold">{data.tile.Plots.reduce((sum: number, p: Plot) => sum + p.area, 0)} m²</p>
 					</div>
 					<div>
 						<p class="text-xs text-surface-600 dark:text-surface-400">With Settlements</p>
-						<p class="font-semibold text-warning-500">{data.tile.Plots.filter((p) => p.Settlement).length}</p>
+						<p class="font-semibold text-warning-500">{data.tile.Plots.filter((p: Plot) => p.Settlement).length}</p>
 					</div>
 					<div>
 						<p class="text-xs text-surface-600 dark:text-surface-400">Total Resources</p>
-						<p class="font-semibold">{data.tile.Plots.reduce((sum, p) => sum + p.food + p.water + p.wood + p.stone + p.ore, 0)}</p>
+						<p class="font-semibold">{data.tile.Plots.reduce((sum: number, p: Plot) => sum + p.food + p.water + p.wood + p.stone + p.ore, 0)}</p>
 					</div>
 				</div>
 			</div>

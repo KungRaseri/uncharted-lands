@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import { MapPin, Globe, Layers, ArrowLeft, Mountain, Droplets, Thermometer, Home } from 'lucide-svelte';
 	import RegionMapPreview from '$lib/components/admin/RegionMapPreview.svelte';
+	import type { Plot, TileWithRelations } from '$lib/types/game';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -81,7 +82,7 @@
 					</thead>
 					<tbody>
 						{#each data.region.tiles as tile}
-							{@const hasSettlement = tile.Plots?.some((p) => p.Settlement)}
+							{@const hasSettlement = tile.Plots?.some((p: Plot) => p.Settlement)}
 							{@const tileColor = tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
 							<tr class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
 								<td class="p-3">
@@ -152,8 +153,8 @@
 			<div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
 				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
 					Showing {data.region.tiles.length} tiles
-					{#if data.region.tiles.some((t) => t.Plots?.some((p) => p.Settlement))}
-						• {data.region.tiles.filter((t) => t.Plots?.some((p) => p.Settlement)).length} with settlements
+					{#if data.region.tiles.some((t: TileWithRelations) => t.Plots?.some((p: Plot) => p.Settlement))}
+						• {data.region.tiles.filter((t: TileWithRelations) => t.Plots?.some((p: Plot) => p.Settlement)).length} with settlements
 					{/if}
 				</p>
 			</div>
