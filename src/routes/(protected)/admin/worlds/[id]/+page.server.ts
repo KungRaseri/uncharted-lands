@@ -17,21 +17,18 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         const serversResponse = await fetch(`${API_URL}/servers`)
         const servers: GameServer[] = serversResponse.ok ? await serversResponse.json() : []
 
-        // Calculate stats from loaded data
-        const landTiles = world.regions?.flatMap((r: any) => r.tiles || [])
-            .filter((t: any) => t.type === 'LAND').length || 0
-        const oceanTiles = world.regions?.flatMap((r: any) => r.tiles || [])
-            .filter((t: any) => t.type === 'OCEAN').length || 0
-        const settlements = 0 // TODO: Get from API
+        // Use stats from API response (_count property added by server)
+        const worldInfo = {
+            landTiles: (world as any)._count?.landTiles || 0,
+            oceanTiles: (world as any)._count?.oceanTiles || 0,
+            settlements: (world as any)._count?.settlements || 0,
+            regions: (world as any)._count?.regions || 0
+        };
 
         return {
             world,
             servers,
-            worldInfo: {
-                landTiles,
-                oceanTiles,
-                settlements
-            }
+            worldInfo
         }
     } catch (error) {
         console.error('Failed to load world:', error)

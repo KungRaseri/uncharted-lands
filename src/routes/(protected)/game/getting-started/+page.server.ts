@@ -1,11 +1,15 @@
-// TODO: Migrate to REST API - create /api/servers, /api/worlds, /api/regions, /api/tiles endpoints
-import { db } from '$lib/db';
+// TODO: Complete migration to REST API
+// This file needs significant server-side work:
+// 1. POST /api/settlements endpoint to create settlements
+// 2. POST /api/profiles endpoint to create profiles
+// 3. GET /api/servers/:id/suitable-plots endpoint to find good starting locations
+// 4. Transaction support on server for atomic operations
 import { fail, redirect } from '@sveltejs/kit';
-import type { Action, Actions, PageServerLoad } from './$types';
-import { getStructureDefinition } from '$lib/game/structures';
-import type { TileWithRelations, Plot } from '$lib/types/game';
+import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+const API_URL = process.env.API_URL || 'http://localhost:3001/api';
+
+export const load: PageServerLoad = async ({ locals, fetch }) => {
     if (!locals.account) {
         throw redirect(302, '/login')
     }
@@ -14,229 +18,115 @@ export const load: PageServerLoad = async ({ locals }) => {
         throw redirect(302, '/game')
     }
 
-    return {
-        servers: await db.server.findMany(),
-        worlds: await db.world.findMany(),
-        regions: await db.region.findMany(),
-        tiles: await db.region.findMany()
+    try {
+        // Fetch servers
+        const serversResponse = await fetch(`${API_URL}/servers`, {
+            headers: {
+                'Cookie': `session=${locals.account.userAuthToken}`
+            }
+        });
+
+        if (!serversResponse.ok) {
+            console.error('[GETTING STARTED] Failed to fetch servers:', serversResponse.status);
+            return fail(500, { error: 'Failed to load servers' });
+        }
+
+        const servers = await serversResponse.json();
+
+        // Fetch worlds
+        const worldsResponse = await fetch(`${API_URL}/worlds`, {
+            headers: {
+                'Cookie': `session=${locals.account.userAuthToken}`
+            }
+        });
+
+        if (!worldsResponse.ok) {
+            console.error('[GETTING STARTED] Failed to fetch worlds:', worldsResponse.status);
+            return fail(500, { error: 'Failed to load worlds' });
+        }
+
+        const worlds = await worldsResponse.json();
+
+        return {
+            servers,
+            worlds
+        };
+    } catch (error) {
+        console.error('[GETTING STARTED] Error:', error);
+        return fail(500, { error: 'Failed to load game data' });
     }
 }
 
-/**
- * Find a suitable starting plot for a new settlement
- * 
- * Ensures the plot has minimum viable resources:
- * - At least 3 food (for initial survival)
- * - At least 3 water (for hydration)
- * - At least 3 wood (for basic construction)
- * - Land tile (elevation > 0)
- * - Moderate climate conditions
- */
-async function getSuitableStartingPlot(worldId: string) {
-    // Query tiles with good starting conditions
-    const potentialTiles = await db.tile.findMany({
-        where: {
-            elevation: {
-                gt: 0,      // Must be land
-                lt: 25      // Not too mountainous (better for beginners)
-            },
-            precipitation: {
-                gte: 150,   // Adequate rainfall for food and water
-                lte: 350    // Not too much (flooding)
-            },
-            temperature: {
-                gte: 10,    // Warm enough for crops
-                lte: 28     // Not too hot
-            },
-            Region: {
-                worldId: worldId
-            }
-        },
-        include: {
-            Plots: true
-        }
-    });
-
-    // Filter plots by resource availability
-    const viablePlots = potentialTiles.flatMap((tile: TileWithRelations) =>
-        tile.Plots.filter((plot: Plot) =>
-            plot.food >= 3 &&
-            plot.water >= 3 &&
-            plot.wood >= 3
-        )
-    );
-
-    if (viablePlots.length === 0) {
-        // Fallback: relax requirements if no perfect plots found
-        console.warn('[SETTLEMENT] No ideal starting plots found, using relaxed criteria');
-        const fallbackPlots = potentialTiles.flatMap((tile: TileWithRelations) =>
-            tile.Plots.filter((plot: Plot) =>
-                plot.food >= 2 &&
-                plot.water >= 2 &&
-                plot.wood >= 2
-            )
-        );
-
-        if (fallbackPlots.length === 0) {
-            // Last resort: any land plot
-            console.warn('[SETTLEMENT] No viable plots found, using any available land plot');
-            const anyPlots = potentialTiles.flatMap((tile: TileWithRelations) => tile.Plots);
-            if (anyPlots.length === 0) {
-                throw new Error('No available plots found in world for settlement');
-            }
-            return anyPlots[Math.floor(Math.random() * anyPlots.length)];
+export const actions: Actions = {
+    settle: async ({ request, locals, fetch }) => {
+        if (!locals.account) {
+            return fail(401, { unauthorized: true });
         }
 
-        return fallbackPlots[Math.floor(Math.random() * fallbackPlots.length)];
-    }
+        const data = await request.formData();
+        const username = data.get('username');
+        const serverId = data.get('server');
+        const worldId = data.get('world');
 
-    // Return a random viable plot
-    const randomIndex = Math.floor(Math.random() * viablePlots.length);
-    const chosenPlot = viablePlots[randomIndex];
+        // Validate inputs
+        if (typeof serverId !== 'string' || !serverId ||
+            typeof worldId !== 'string' || !worldId ||
+            typeof username !== 'string' || !username) {
+            return fail(400, { invalid: true, message: 'Please fill in all fields' });
+        }
 
-    console.log('[SETTLEMENT] Chosen starting plot:', {
-        plotId: chosenPlot.id,
-        food: chosenPlot.food,
-        water: chosenPlot.water,
-        wood: chosenPlot.wood,
-        stone: chosenPlot.stone,
-        area: chosenPlot.area
-    });
-
-    return chosenPlot;
-}
-
-const settle: Action = async ({ request, locals }) => {
-    if (!locals.account) {
-        return fail(401, { unauthorized: true });
-    }
-
-    const accountId = locals.account.id;
-
-    const data = await request.formData();
-    const username = data.get('username');
-    const server = data.get('server');
-    const world = data.get('world');
-
-    if (typeof server !== 'string' ||
-        !server ||
-        typeof world !== 'string' ||
-        !world ||
-        typeof username !== 'string' ||
-        !username) {
-        return fail(400, { invalid: true })
-    }
-
-    // Find a suitable starting plot with good resources
-    const chosenPlot = await getSuitableStartingPlot(world);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await db.$transaction(async (tx: any) => {
-        const profile = await tx.profile.create({
-            data: {
-                username,
-                account: {
-                    connect: {
-                        id: accountId
-                    }
+        try {
+            // Call server API to create settlement
+            const response = await fetch(`${API_URL}/settlements`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': `session=${locals.account.userAuthToken}`
                 },
-                picture: `https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,
-            }
-        })
-
-        const serverProfile = await tx.profileServerData.create({
-            data: {
-                profile: {
-                    connect: {
-                        id: profile.id
-                    }
-                },
-                server: {
-                    connect: {
-                        id: server
-                    }
-                }
-            },
-            include: {
-                settlements: true
-            }
-        })
-
-        const settlement = await tx.settlement.create({
-            data: {
-                name: "Home Settlement",
-                Storage: {
-                    create: {
-                        food: 5,
-                        water: 5,
-                        wood: 10,
-                        stone: 5,
-                        ore: 0
-                    }
-                },
-                PlayerProfile: {
-                    connect: {
-                        profileId: serverProfile.profileId
-                    }
-                },
-                Plot: {
-                    connect: {
-                        id: chosenPlot.id
-                    }
-                }
-            }
-        })
-
-        // Create initial tent structure for new settlement
-        const tentDefinition = getStructureDefinition('tent');
-        if (tentDefinition) {
-            // Create structure requirements
-            const requirements = await tx.structureRequirements.create({
-                data: {
-                    area: tentDefinition.requirements.area,
-                    solar: tentDefinition.requirements.solar,
-                    wind: tentDefinition.requirements.wind,
-                    food: tentDefinition.requirements.food,
-                    water: tentDefinition.requirements.water,
-                    wood: tentDefinition.requirements.wood,
-                    stone: tentDefinition.requirements.stone,
-                    ore: tentDefinition.requirements.ore
-                }
+                body: JSON.stringify({
+                    username,
+                    serverId,
+                    worldId,
+                    accountId: locals.account.id
+                })
             });
 
-            // Create the structure instance
-            const structure = await tx.settlementStructure.create({
-                data: {
-                    name: tentDefinition.name,
-                    description: tentDefinition.description,
-                    buildRequirements: {
-                        connect: { id: requirements.id }
-                    },
-                    settlement: {
-                        connect: { id: settlement.id }
-                    }
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+                console.error('[GETTING STARTED] Settlement creation failed:', error);
+                
+                if (response.status === 409) {
+                    return fail(409, { 
+                        message: 'Username already taken or you already have a settlement' 
+                    });
                 }
-            });
-
-            // Create structure modifiers
-            for (const modifier of tentDefinition.modifiers) {
-                await tx.structureModifier.create({
-                    data: {
-                        name: modifier.name,
-                        description: modifier.description,
-                        value: modifier.value,
-                        settlementStructure: {
-                            connect: { id: structure.id }
-                        }
-                    }
+                
+                if (response.status === 404) {
+                    return fail(404, { 
+                        message: error.error || 'No suitable locations found in this world' 
+                    });
+                }
+                
+                return fail(500, { 
+                    message: error.error || 'Failed to create settlement. Please try again.' 
                 });
             }
+
+            const settlement = await response.json();
+            console.log('[GETTING STARTED] Settlement created:', settlement.id);
+
+            // Redirect to game
+            throw redirect(302, '/game');
+        } catch (error) {
+            // If it's a redirect, let it through
+            if (error instanceof Response && error.status === 302) {
+                throw error;
+            }
+            
+            console.error('[GETTING STARTED] Error:', error);
+            return fail(500, { 
+                message: 'An unexpected error occurred. Please try again.' 
+            });
         }
-    })
-
-    // update the player profile and connect it to the server
-
-    throw redirect(302, '/game')
+    }
 }
-
-export const actions: Actions = { settle }
