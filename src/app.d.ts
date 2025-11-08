@@ -23,12 +23,14 @@ declare global {
 	namespace App {
 		interface Error {
 			message: string;
-			errorId: string
+			errorId: string;
 		}
 		interface Locals {
-			account: (Account & {
-				profile: PlayerProfile | null
-			}) | null
+			account:
+				| (Account & {
+						profile: PlayerProfile | null;
+				  })
+				| null;
 		}
 		// interface PageData {}
 		// interface PageState {}
