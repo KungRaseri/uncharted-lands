@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TileWithRelations } from '$lib/types/game';
+	import { getTileColor } from '$lib/utils/tile-colors';
 
 	type Props = {
 		tile: TileWithRelations;
@@ -10,7 +11,6 @@
 	};
 
 	let { tile, mode = 'player', currentPlayerProfileId }: Props = $props();
-	
 	// Check if tile has any settled plots
 	const hasSettlement = $derived(() => {
 		const settledPlots = tile.Plots.filter((plot) => plot.Settlement);
@@ -27,73 +27,6 @@
 		// In admin mode, show marker if ANY settlement exists
 		return true;
 	});
-
-	// Get color based on biome type and elevation
-	function getTileColor(tile: Props['tile']): string {
-		const elevation = tile.elevation;
-		const biomeName = tile.Biome.name;
-		const type = tile.type;
-
-		// Ocean/Water - differentiate by depth
-		if (type === 'OCEAN' || elevation < 0) {
-			if (elevation < -0.35) {
-				return 'rgb(0, 26, 51)'; // Deep ocean - #001a33
-			}
-			return 'rgb(0, 61, 102)'; // Shallow ocean - #003d66
-		}
-
-		// Beach/Coastal (low elevation land)
-		if (elevation >= 0 && elevation < 0.15) {
-			return 'rgb(244, 228, 193)'; // Sandy beach color - #f4e4c1
-		}
-
-		// Biome-specific colors
-		switch (biomeName) {
-			case 'TUNDRA':
-				return 'rgb(220, 225, 240)'; // Pale blue-white
-
-			case 'FOREST_BOREAL':
-				return 'rgb(45, 100, 60)'; // Dark green
-
-			case 'FOREST_TEMPERATE_SEASONAL':
-				return 'rgb(60, 130, 50)'; // Medium green
-
-			case 'FOREST_TROPICAL_SEASONAL':
-				return 'rgb(50, 140, 70)'; // Tropical green
-
-			case 'RAINFOREST_TEMPERATE':
-				return 'rgb(40, 110, 55)'; // Deep green
-
-			case 'RAINFOREST_TROPICAL':
-				return 'rgb(30, 130, 60)'; // Lush green
-
-			case 'WOODLAND':
-				return 'rgb(90, 140, 70)'; // Light forest green
-
-			case 'SHRUBLAND':
-				return 'rgb(140, 160, 90)'; // Olive green
-
-			case 'SAVANNA':
-				return 'rgb(200, 170, 80)'; // Golden grassland
-
-			case 'GRASSLAND_TEMPERATE':
-				return 'rgb(120, 180, 80)'; // Bright grass green
-
-			case 'DESERT_COLD':
-				return 'rgb(190, 180, 160)'; // Gray-tan
-
-			case 'DESERT_SUBTROPICAL':
-				return 'rgb(230, 200, 140)'; // Sandy yellow
-
-			default:
-				// Fallback: elevation-based
-				if (elevation > 0.7) {
-					return 'rgb(150, 150, 150)'; // Mountain gray
-				}
-
-				return 'rgb(100, 140, 80)'; // Default green
-		}
-	}
 
 	// Get tooltip content based on mode
 	function getTooltipContent(): string {
@@ -135,7 +68,7 @@ Precipitation: ${tile.precipitation.toFixed(1)}mm`;
 
 <div
 	class="w-full h-full cursor-help hover:shadow-[inset_0_0_0_2px_rgba(255,255,0,0.8)] hover:z-10 transition-shadow relative"
-	style="background-color: {getTileColor(tile)}"
+	style="background-color: {getTileColor(tile.elevation, tile.Biome.name, tile.type)}"
 	role="button"
 	tabindex="0"
 	aria-label="Tile: {tile.Biome.name}"

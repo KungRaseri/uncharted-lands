@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getElevationColor, getTerrainType } from '$lib/utils/map-colors';
+	
 	type Props = {
 		tile: any;
 		regionTiles: any[];
@@ -6,30 +8,6 @@
 	};
 
 	let { tile, regionTiles, regionName = 'Region' }: Props = $props();
-
-	// Get color based on elevation value
-	function getElevationColor(value: number): string {
-		if (value < -0.3) return '#001a33'; // Deep ocean
-		if (value < 0) return '#003d66'; // Ocean
-		if (value < 0.1) return '#f4e4c1'; // Beach/Sand
-		if (value < 0.3) return '#7cb342'; // Plains
-		if (value < 0.5) return '#558b2f'; // Forest
-		if (value < 0.7) return '#8d6e63'; // Hills
-		if (value < 0.9) return '#757575'; // Mountains
-		return '#ffffff'; // Snow peaks
-	}
-
-	// Get terrain type name from elevation
-	function getTerrainType(elevation: number): string {
-		if (elevation < -0.3) return 'Deep Ocean';
-		if (elevation < 0) return 'Ocean';
-		if (elevation < 0.1) return 'Beach';
-		if (elevation < 0.3) return 'Plains';
-		if (elevation < 0.5) return 'Forest';
-		if (elevation < 0.7) return 'Hills';
-		if (elevation < 0.9) return 'Mountains';
-		return 'Snow Peaks';
-	}
 
 	// Organize tiles into 10x10 grid
 	const tileGrid = $derived(() => {

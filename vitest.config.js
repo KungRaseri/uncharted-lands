@@ -6,7 +6,7 @@ export default mergeConfig(viteConfig, defineConfig({
     test: {
         globals: true,
         environment: "jsdom",
-        include: ['src/**/*.test.{js,ts}'],
+        include: ['tests/unit/**/*.test.{js,ts}', 'tests/unit/**/*.spec.{js,ts}'],
         setupFiles: ['./vitest.setup.js'],
         alias: {
             $lib: '/src/lib',

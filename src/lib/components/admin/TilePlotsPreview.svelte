@@ -1,19 +1,12 @@
 <script lang="ts">
 	import { Grid3x3, Home } from 'lucide-svelte';
+	import { 
+		calculatePlotStats, 
+		getPlotTooltip, 
+		getPlotLayout,
+		type Plot 
+	} from '$lib/utils/plot-layout';
 	
-	type Plot = {
-		id: string;
-		area: number;
-		solar: number;
-		wind: number;
-		food: number;
-		water: number;
-		wood: number;
-		stone: number;
-		ore: number;
-		Settlement?: any;
-	};
-
 	type TileProps = {
 		id: string;
 		elevation: number;
@@ -38,23 +31,8 @@
 		tileY?: number;
 	} = $props();
 
-	// Calculate plot statistics
-	const plotStats = $derived(() => {
-		const plots = tile.Plots;
-		const totalPlots = plots.length;
-		const totalArea = plots.reduce((sum, p) => sum + p.area, 0);
-		const withSettlements = plots.filter((p) => p.Settlement).length;
-		const avgSolar = totalPlots > 0 ? plots.reduce((sum, p) => sum + p.solar, 0) / totalPlots : 0;
-		const avgWind = totalPlots > 0 ? plots.reduce((sum, p) => sum + p.wind, 0) / totalPlots : 0;
-
-		return {
-			totalPlots,
-			totalArea,
-			withSettlements,
-			avgSolar,
-			avgWind
-		};
-	});
+	// Calculate plot statistics using utility function
+	const plotStats = $derived(calculatePlotStats(tile.Plots));
 
 	// Get elevation-based color (using tile.type to determine ocean vs land)
 	function getElevationColor(elevation: number, tileType: string): string {
@@ -89,40 +67,7 @@
 		return 'High Mountains';
 	}
 
-	// Generate plot tooltip
-	function getPlotTooltip(plot: Plot): string {
-		return `Plot ${plot.id.substring(0, 8)}
-Area: ${plot.area} m²
-Solar: ${plot.solar} | Wind: ${plot.wind}
-Resources: 🌾${plot.food} 💧${plot.water} 🪵${plot.wood} 🪨${plot.stone} ⛏️${plot.ore}
-${plot.Settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
-	}
-
-	// Calculate plot position and size (simple grid layout)
-	// For visualization, we'll arrange plots in a grid pattern within the tile
-	function getPlotLayout(plots: Plot[]) {
-		const totalArea = plots.reduce((sum, p) => sum + p.area, 0);
-		return plots.map((plot, index) => {
-			// Calculate position based on index and area proportion
-			const areaProportion = plot.area / totalArea;
-			const cols = Math.ceil(Math.sqrt(plots.length));
-			const row = Math.floor(index / cols);
-			const col = index % cols;
-			
-			return {
-				plot,
-				// Position as percentage (grid layout)
-				top: (row / Math.ceil(plots.length / cols)) * 100,
-				left: (col / cols) * 100,
-				// Size as percentage (with some variation based on area)
-				width: (1 / cols) * 100,
-				height: (1 / Math.ceil(plots.length / cols)) * 100,
-				// Visual size indicator
-				scale: Math.max(0.6, Math.min(1.2, areaProportion * plots.length))
-			};
-		});
-	}
-
+	// Use utility function for plot layout
 	const plotLayout = $derived(getPlotLayout(tile.Plots));
 </script>
 
@@ -202,23 +147,23 @@ ${plot.Settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
 	<div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-sm">
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Total Plots</p>
-			<p class="font-semibold">{plotStats().totalPlots}</p>
+			<p class="font-semibold">{plotStats.totalPlots}</p>
 		</div>
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Total Area</p>
-			<p class="font-semibold">{plotStats().totalArea.toFixed(0)} m²</p>
+			<p class="font-semibold">{plotStats.totalArea.toFixed(0)} m²</p>
 		</div>
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Settlements</p>
-			<p class="font-semibold text-warning-500">{plotStats().withSettlements}</p>
+			<p class="font-semibold text-warning-500">{plotStats.withSettlements}</p>
 		</div>
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Avg Solar</p>
-			<p class="font-semibold">{plotStats().avgSolar.toFixed(1)}</p>
+			<p class="font-semibold">{plotStats.avgSolar.toFixed(1)}</p>
 		</div>
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Avg Wind</p>
-			<p class="font-semibold">{plotStats().avgWind.toFixed(1)}</p>
+			<p class="font-semibold">{plotStats.avgWind.toFixed(1)}</p>
 		</div>
 	</div>
 
