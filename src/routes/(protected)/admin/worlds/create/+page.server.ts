@@ -139,10 +139,6 @@ export const actions: Actions = {
                 name: world.name
             });
 
-            // Small delay to ensure database transaction is fully committed
-            // This prevents race condition when redirecting to world detail page
-            await new Promise(resolve => setTimeout(resolve, 100));
-
             throw redirect(303, `/admin/worlds/${world.id}`);
         } catch (err) {
             // Re-throw redirects immediately (don't log them as errors)

@@ -13,16 +13,39 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
             hasSessionToken: !!sessionToken
         });
 
-        const response = await fetch(`${API_URL}/worlds/${params.id}`, {
-            headers: {
-                'Cookie': `session=${sessionToken}`
-            }
-        });
+        // Retry logic for newly created worlds (race condition mitigation)
+        let response;
+        let retries = 3;
+        let lastError;
         
-        if (!response.ok) {
-            logger.warn('[ADMIN WORLD] World not found', {
+        for (let i = 0; i < retries; i++) {
+            response = await fetch(`${API_URL}/worlds/${params.id}`, {
+                headers: {
+                    'Cookie': `session=${sessionToken}`
+                }
+            });
+            
+            if (response.ok) {
+                break;
+            }
+            
+            lastError = response;
+            
+            // If not found and we have retries left, wait a bit and try again
+            if (response.status === 404 && i < retries - 1) {
+                logger.debug('[ADMIN WORLD] World not found, retrying...', {
+                    worldId: params.id,
+                    attempt: i + 1
+                });
+                await new Promise(resolve => setTimeout(resolve, 150));
+                continue;
+            }
+        }
+        
+        if (!response || !response.ok) {
+            logger.warn('[ADMIN WORLD] World not found after retries', {
                 worldId: params.id,
-                status: response.status
+                status: response?.status
             });
             throw error(404);
         }

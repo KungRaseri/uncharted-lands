@@ -11,6 +11,7 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let regions = $state<any[]>([]);
+	let isSaving = $state(false);
 
 	// Simple, user-friendly controls
 	let terrainRoughness = $state(50); // 0-100: Smooth to Rugged
@@ -769,9 +770,13 @@
 			method="POST"
 			class="mt-4"
 			use:enhance={() => {
+				isSaving = true;
 				return async ({ result }) => {
-					if (result.type !== 'redirect') await invalidateAll();
-
+					if (result.type !== 'redirect') {
+						await invalidateAll();
+						isSaving = false;
+					}
+					// Note: if redirect, page will navigate away so no need to reset isSaving
 					await applyAction(result);
 				};
 			}}
@@ -802,9 +807,14 @@
 			<button
 				type="submit"
 				class="btn preset-filled-primary-500 rounded-md"
-				disabled={!mapOptions.worldName}
+				disabled={!mapOptions.worldName || isSaving}
 			>
-				Save World
+				{#if isSaving}
+					<span class="animate-spin">⏳</span>
+					<span>Creating World...</span>
+				{:else}
+					<span>Save World</span>
+				{/if}
 			</button>
 		</form>
 	</div>
