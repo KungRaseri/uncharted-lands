@@ -16,7 +16,31 @@ export default mergeConfig(viteConfig, defineConfig({
             provider: 'v8',
             all: true,
             reporter: ['text', 'json', 'html', 'lcov'],
-            include: ['src'],
+            include: ['src/lib/**/*.{js,ts}'],
+            exclude: [
+                '**/*.test.{js,ts}',
+                '**/*.spec.{js,ts}',
+                '**/*.d.ts',
+                '**/*.config.{js,ts}',
+                '**/node_modules/**',
+                // Exclude SvelteKit specific files that can't be parsed by V8
+                '**/*.svelte',
+                '**/+*.ts',
+                '**/+*.js',
+                'src/hooks.*.ts',
+                'src/app.html',
+                'src/error.html',
+                // Exclude image assets
+                '**/*.{png,jpg,jpeg,gif,svg,webp}',
+                // Exclude CSS
+                '**/*.css',
+                // Exclude markdown
+                '**/*.md',
+                // Exclude type definitions
+                'src/lib/types/**',
+                'src/app.d.ts',
+                'src/index.d.ts'
+            ],
             reportsDirectory: './coverage'
         }
     },
