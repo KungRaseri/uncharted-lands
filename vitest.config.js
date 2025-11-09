@@ -40,6 +40,8 @@ export default mergeConfig(viteConfig, defineConfig({
                 'src/lib/server/**',
                 // Exclude files with advanced TS that V8 can't parse
                 'src/lib/stores/game/socket.ts',
+                // Exclude API client (better tested via E2E)
+                'src/lib/game/world-api.ts',
                 // Exclude image assets
                 '**/*.{png,jpg,jpeg,gif,svg,webp}',
                 // Exclude CSS
