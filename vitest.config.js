@@ -32,6 +32,10 @@ export default mergeConfig(viteConfig, defineConfig({
                 'src/hooks.*.ts',
                 'src/app.html',
                 'src/error.html',
+                // Exclude server-side code (not testable in jsdom)
+                'src/lib/server/**',
+                // Exclude files with advanced TS that V8 can't parse
+                'src/lib/stores/game/socket.ts',
                 // Exclude image assets
                 '**/*.{png,jpg,jpeg,gif,svg,webp}',
                 // Exclude CSS
