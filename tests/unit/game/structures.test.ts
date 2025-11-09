@@ -16,14 +16,14 @@ describe('structures', () => {
 		});
 
 		it('should have valid structure objects', () => {
-			Object.values(STRUCTURE_DEFINITIONS).forEach((structure) => {
+			for (const structure of Object.values(STRUCTURE_DEFINITIONS)) {
 				expect(structure).toHaveProperty('id');
 				expect(structure).toHaveProperty('name');
 				expect(structure).toHaveProperty('description');
 				expect(structure).toHaveProperty('category');
 				expect(structure).toHaveProperty('requirements');
 				expect(structure).toHaveProperty('modifiers');
-			});
+			}
 		});
 
 		it('should have tent structure', () => {
@@ -39,7 +39,7 @@ describe('structures', () => {
 		});
 
 		it('should have valid requirements for all structures', () => {
-			Object.values(STRUCTURE_DEFINITIONS).forEach((structure) => {
+			for (const structure of Object.values(STRUCTURE_DEFINITIONS)) {
 				expect(structure.requirements).toHaveProperty('area');
 				expect(structure.requirements).toHaveProperty('solar');
 				expect(structure.requirements).toHaveProperty('wind');
@@ -58,28 +58,28 @@ describe('structures', () => {
 				expect(structure.requirements.wood).toBeGreaterThanOrEqual(0);
 				expect(structure.requirements.stone).toBeGreaterThanOrEqual(0);
 				expect(structure.requirements.ore).toBeGreaterThanOrEqual(0);
-			});
+			}
 		});
 
 		it('should have valid modifiers for all structures', () => {
-			Object.values(STRUCTURE_DEFINITIONS).forEach((structure) => {
+			for (const structure of Object.values(STRUCTURE_DEFINITIONS)) {
 				expect(Array.isArray(structure.modifiers)).toBe(true);
-				structure.modifiers.forEach((modifier) => {
+				for (const modifier of structure.modifiers) {
 					expect(modifier).toHaveProperty('name');
 					expect(modifier).toHaveProperty('description');
 					expect(modifier).toHaveProperty('value');
 					expect(typeof modifier.name).toBe('string');
 					expect(typeof modifier.description).toBe('string');
 					expect(typeof modifier.value).toBe('number');
-				});
-			});
+				}
+			}
 		});
 
 		it('should have valid categories for all structures', () => {
 			const validCategories = ['housing', 'production', 'storage', 'defense', 'utility'];
-			Object.values(STRUCTURE_DEFINITIONS).forEach((structure) => {
+			for (const structure of Object.values(STRUCTURE_DEFINITIONS)) {
 				expect(validCategories).toContain(structure.category);
-			});
+			}
 		});
 	});
 
@@ -127,45 +127,45 @@ describe('structures', () => {
 			
 			expect(Array.isArray(housing)).toBe(true);
 			expect(housing.length).toBeGreaterThan(0);
-			housing.forEach((structure) => {
+			for (const structure of housing) {
 				expect(structure.category).toBe('housing');
-			});
+			}
 		});
 
 		it('should return production structures', () => {
 			const production = getStructuresByCategory('production');
 			
 			expect(Array.isArray(production)).toBe(true);
-			production.forEach((structure) => {
+			for (const structure of production) {
 				expect(structure.category).toBe('production');
-			});
+			}
 		});
 
 		it('should return storage structures', () => {
 			const storage = getStructuresByCategory('storage');
 			
 			expect(Array.isArray(storage)).toBe(true);
-			storage.forEach((structure) => {
+			for (const structure of storage) {
 				expect(structure.category).toBe('storage');
-			});
+			}
 		});
 
 		it('should return defense structures', () => {
 			const defense = getStructuresByCategory('defense');
 			
 			expect(Array.isArray(defense)).toBe(true);
-			defense.forEach((structure) => {
+			for (const structure of defense) {
 				expect(structure.category).toBe('defense');
-			});
+			}
 		});
 
 		it('should return utility structures', () => {
 			const utility = getStructuresByCategory('utility');
 			
 			expect(Array.isArray(utility)).toBe(true);
-			utility.forEach((structure) => {
+			for (const structure of utility) {
 				expect(structure.category).toBe('utility');
-			});
+			}
 		});
 
 		it('should return empty array for non-existent category', () => {

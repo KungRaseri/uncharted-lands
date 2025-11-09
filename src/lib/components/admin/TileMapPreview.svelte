@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { getElevationColor, getTerrainType } from '$lib/utils/map-colors';
-	
+	import {
+		organizeTilesIntoGrid,
+		findTilePosition,
+		calculateTileNumber
+	} from '$lib/utils/tile-grid-utils';
+
 	type Props = {
 		tile: any;
 		regionTiles: any[];
@@ -9,34 +14,11 @@
 
 	let { tile, regionTiles, regionName = 'Region' }: Props = $props();
 
-	// Organize tiles into 10x10 grid
-	const tileGrid = $derived(() => {
-		const grid: any[][] = Array.from({ length: 10 }, () => Array(10).fill(null));
-		
-		// Sort tiles to ensure correct positioning
-		const sortedTiles = [...regionTiles].sort((a, b) => a.id.localeCompare(b.id));
-		
-		sortedTiles.forEach((t, index) => {
-			const row = Math.floor(index / 10);
-			const col = index % 10;
-			if (row < 10 && col < 10) {
-				grid[row][col] = t;
-			}
-		});
-		
-		return grid;
-	});
+	// Organize tiles into 10x10 grid - using utility function
+	const tileGrid = $derived(() => organizeTilesIntoGrid(regionTiles));
 
-	// Find current tile position
-	const tilePosition = $derived(() => {
-		const sortedTiles = [...regionTiles].sort((a, b) => a.id.localeCompare(b.id));
-		const index = sortedTiles.findIndex((t) => t.id === tile.id);
-		if (index === -1) return { row: -1, col: -1 };
-		return {
-			row: Math.floor(index / 10),
-			col: index % 10
-		};
-	});
+	// Find current tile position - using utility function
+	const tilePosition = $derived(() => findTilePosition(tile.id, regionTiles));
 </script>
 
 <div class="card p-4 rounded-md">
@@ -48,7 +30,7 @@
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Position in Region</p>
 			<p class="text-lg font-bold">Row {tilePosition().row}, Column {tilePosition().col}</p>
 			<p class="text-xs text-surface-600 dark:text-surface-400">
-				(Tile {tilePosition().row * 10 + tilePosition().col + 1} of 100)
+				(Tile {calculateTileNumber(tilePosition().row, tilePosition().col)} of 100)
 			</p>
 		</div>
 

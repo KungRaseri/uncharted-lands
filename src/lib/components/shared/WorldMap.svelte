@@ -1,7 +1,14 @@
 <script lang="ts">
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
 	import type { RegionWithTiles } from '$lib/types/game';
-	import { getElevationColor, getTerrainType } from '$lib/utils/map-colors';
+	import { getElevationColor, getTerrainType } fro												class="w-full h-full cursor-help
+												hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]
+												dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
+												transition-shadow duration-150"
+												style="background-color: {getElevationColor(elevationValue)}"
+												title={getAdminRegionTooltip(region, rowIndex, colIndex, elevationValue)}
+											></div>/utils/map-colors';
+	import { getAdminRegionTooltip } from '$lib/utils/admin-tooltips';
 	
 	type RegionWithElevationMap = {
 		id: string;
@@ -155,14 +162,7 @@
 		return null;
 	});
 	
-	// Create tooltip for admin mode (elevation map preview)
-	function getAdminTooltip(region: RegionWithElevationMap, row: number, col: number, elevation: number): string {
-		const terrain = getTerrainType(elevation);
-		return `Region: ${region.name || 'Unknown'} (${region.xCoord}, ${region.yCoord})
-Tile: (${row}, ${col})
-Elevation: ${elevation.toFixed(3)}
-Terrain: ${terrain}`;
-	}
+	// Helper removed - now using getAdminRegionTooltip from utils
 </script>
 
 <div class="space-y-4">

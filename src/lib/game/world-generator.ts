@@ -25,7 +25,7 @@
 import { makeNoise2D } from 'open-simplex-noise';
 import { makeRectangle, type Options } from 'fractal-noise';
 
-function chunks(heightMap: number[][], chunkSize: number): number[][][][] {
+export function chunks(heightMap: number[][], chunkSize: number): number[][][][] {
     const splitChunks: number[][][][] = [];
 
     if (chunkSize === 0)
