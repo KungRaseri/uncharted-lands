@@ -755,9 +755,12 @@
 				{#if isGenerating}
 					Generating...
 				{:else}
-					Generate Preview
+					Generate Preview (Optional)
 				{/if}
 			</button>
+			<p class="text-xs text-surface-600 dark:text-surface-400 mt-2">
+				Preview generation is optional. The world will be generated on the server when you save.
+			</p>
 		</div>
 
 		<!-- Save Form -->
@@ -773,7 +776,6 @@
 				};
 			}}
 		>
-			<input type="hidden" name="map" value={JSON.stringify(regions)} />
 			<input type="hidden" name="map-options" value={JSON.stringify(mapOptions)} />
 			<input
 				type="hidden"
@@ -800,16 +802,19 @@
 			<button
 				type="submit"
 				class="btn preset-filled-primary-500 rounded-md"
-				disabled={!mapOptions.worldName || regions.length === 0}
+				disabled={!mapOptions.worldName}
 			>
 				Save World
 			</button>
 		</form>
 	</div>
 
-	{#if regions}
+	{#if regions && regions.length > 0}
 		<div class="card p-4 rounded-md">
 			<h2 class="text-xl font-semibold mb-4">World Preview (Elevation)</h2>
+			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
+				This is a client-side preview. The actual world will be generated on the server when you save.
+			</p>
 			<WorldMap previewRegions={regions} mode="admin" showLegend={true} showStats={true} />
 		</div>
 	{/if}

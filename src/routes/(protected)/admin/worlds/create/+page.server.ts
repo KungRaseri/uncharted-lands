@@ -45,21 +45,18 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 export const actions: Actions = {
     save: async ({ request, cookies }) => {
         const data = await request.formData();
-        const mapString = data.get('map');
         const mapOptionsString = data.get('map-options');
         const elevationOptionsString = data.get('elevation-options');
         const precipitationOptionsString = data.get('precipitation-options');
         const temperatureOptionsString = data.get('temperature-options');
 
         // Parse the JSON strings
-        let regions: any[];
         let mapOptions: any;
         let elevationOptions: any;
         let precipitationOptions: any;
         let temperatureOptions: any;
 
         try {
-            regions = mapString ? JSON.parse(mapString.toString()) : [];
             mapOptions = mapOptionsString ? JSON.parse(mapOptionsString.toString()) : {};
             elevationOptions = elevationOptionsString ? JSON.parse(elevationOptionsString.toString()) : {};
             precipitationOptions = precipitationOptionsString ? JSON.parse(precipitationOptionsString.toString()) : {};
@@ -84,24 +81,25 @@ export const actions: Actions = {
             });
         }
 
-        if (!regions || regions.length === 0) {
-            logger.warn('[WORLD CREATE] No regions to save');
+        // Validate dimensions for server-side generation
+        if (!mapOptions.width || !mapOptions.height) {
+            logger.warn('[WORLD CREATE] Missing dimensions');
             return fail(400, {
                 invalid: true,
-                message: 'Please generate a world preview first'
+                message: 'World dimensions are required'
             });
         }
 
         logger.info('[WORLD CREATE] Creating world', {
             name: mapOptions.worldName,
             serverId: mapOptions.serverId,
-            regionCount: regions.length
+            mode: 'server-side-generation'
         });
 
         try {
             const sessionToken = cookies.get('session');
 
-            // Send to API
+            // Send generation settings to API for server-side generation
             const response = await fetch(`${API_URL}/worlds`, {
                 method: 'POST',
                 headers: {
@@ -111,10 +109,15 @@ export const actions: Actions = {
                 body: JSON.stringify({
                     name: mapOptions.worldName,
                     serverId: mapOptions.serverId,
+                    generate: true, // Enable server-side generation
+                    width: mapOptions.width,
+                    height: mapOptions.height,
+                    elevationSeed: mapOptions.elevationSeed,
+                    precipitationSeed: mapOptions.precipitationSeed,
+                    temperatureSeed: mapOptions.temperatureSeed,
                     elevationSettings: elevationOptions,
                     precipitationSettings: precipitationOptions,
                     temperatureSettings: temperatureOptions,
-                    regions: regions
                 })
             });
 
@@ -138,7 +141,7 @@ export const actions: Actions = {
 
             throw redirect(303, `/admin/worlds/${world.id}`);
         } catch (err) {
-            // Re-throw redirects
+            // Re-throw redirects (don't log them as errors)
             if (err instanceof Response) throw err;
 
             logger.error('[WORLD CREATE] Error creating world', err);
