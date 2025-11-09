@@ -15,8 +15,9 @@ export default mergeConfig(viteConfig, defineConfig({
         coverage: {
             provider: 'v8',
             all: true,
-            reporter: ['text', 'json', 'html'],
-            include: ['src']
+            reporter: ['text', 'json', 'html', 'lcov'],
+            include: ['src'],
+            reportsDirectory: './coverage'
         }
     },
     resolve: {
