@@ -168,8 +168,6 @@
 				generatedMap[i] = [];
 				for (let j = 0; j < elevationMap[i].length; j++) {
 					generatedMap[i][j] = {
-						id: '',
-						worldId: '',
 						xCoord: i,
 						yCoord: j,
 						name: `${i}:${j}`,
