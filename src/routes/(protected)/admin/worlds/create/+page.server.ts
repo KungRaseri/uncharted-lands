@@ -139,10 +139,17 @@ export const actions: Actions = {
                 name: world.name
             });
 
+            // Small delay to ensure database transaction is fully committed
+            // This prevents race condition when redirecting to world detail page
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             throw redirect(303, `/admin/worlds/${world.id}`);
         } catch (err) {
-            // Re-throw redirects (don't log them as errors)
-            if (err instanceof Response) throw err;
+            // Re-throw redirects immediately (don't log them as errors)
+            // SvelteKit redirects are Response objects
+            if (err instanceof Response || (err && typeof err === 'object' && 'status' in err && 'location' in err)) {
+                throw err;
+            }
 
             logger.error('[WORLD CREATE] Error creating world', err);
             return fail(500, {
