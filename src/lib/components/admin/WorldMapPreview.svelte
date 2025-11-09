@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getElevationColor, getTerrainType } from '$lib/utils/map-colors';
+	import { getRegionStats, formatRegionTileTooltip } from '$lib/utils/region-stats';
 	
 	type Props = {
 		regions: any[];
@@ -7,42 +8,26 @@
 
 	let { regions }: Props = $props();
 
-	// Calculate average values for a region
-	function getRegionStats(region: any) {
-		if (!region.elevationMap || !Array.isArray(region.elevationMap)) {
-			return { avgElevation: 0, minElevation: 0, maxElevation: 0 };
-		}
-
-		const allValues = region.elevationMap.flat();
-		const sum = allValues.reduce((a: number, b: number) => a + b, 0);
-		const avg = sum / allValues.length;
-		const min = Math.min(...allValues);
-		const max = Math.max(...allValues);
-
-		return {
-			avgElevation: avg,
-			minElevation: min,
-			maxElevation: max
-		};
-	}
-
-	// Create detailed tooltip for a tile
+	// Create detailed tooltip for a tile using utility functions
 	function getTileTooltip(
 		region: any,
 		tileRow: number,
 		tileCol: number,
 		elevation: number
 	): string {
-		const stats = getRegionStats(region);
+		const stats = getRegionStats(region.elevationMap);
 		const terrainType = getTerrainType(elevation);
 
-		return `Region: ${region.name || 'Unknown'} (${region.xCoord}, ${region.yCoord})
-Region Avg Elevation: ${stats.avgElevation.toFixed(3)}
-Region Range: ${stats.minElevation.toFixed(2)} to ${stats.maxElevation.toFixed(2)}
-
-Tile: (${tileRow}, ${tileCol})
-Tile Elevation: ${elevation.toFixed(3)}
-Terrain Type: ${terrainType}`;
+		return formatRegionTileTooltip({
+			regionName: region.name,
+			regionX: region.xCoord,
+			regionY: region.yCoord,
+			tileRow,
+			tileCol,
+			elevation,
+			terrainType,
+			stats
+		});
 	}
 </script>
 

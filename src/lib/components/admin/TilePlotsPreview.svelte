@@ -6,6 +6,7 @@
 		getPlotLayout,
 		type Plot 
 	} from '$lib/utils/plot-layout';
+	import { getAdminElevationColor, getAdminTerrainDescription } from '$lib/utils/admin-terrain';
 	
 	type TileProps = {
 		id: string;
@@ -34,39 +35,6 @@
 	// Calculate plot statistics using utility function
 	const plotStats = $derived(calculatePlotStats(tile.Plots));
 
-	// Get elevation-based color (using tile.type to determine ocean vs land)
-	function getElevationColor(elevation: number, tileType: string): string {
-		// Ocean tiles (elevation < 0)
-		if (tileType === 'ocean') {
-			if (elevation < -10) return '#001a33'; // Deep ocean
-			if (elevation < -5) return '#003d66'; // Ocean
-			return '#006699'; // Shallow water
-		}
-		
-		// Land tiles (elevation >= 0)
-		if (elevation < 5) return '#c2b280'; // Beach/coastal lowland
-		if (elevation < 15) return '#228b22'; // Lowland/grassland
-		if (elevation < 25) return '#4a7c59'; // Hills/forest
-		if (elevation < 35) return '#8b7355'; // Mountains
-		return '#ffffff'; // Snow peaks
-	}
-
-	// Get terrain description based on actual values
-	function getTerrainDescription(elevation: number, tileType: string): string {
-		if (tileType === 'ocean') {
-			if (elevation < -10) return 'Deep Ocean';
-			if (elevation < -5) return 'Ocean';
-			return 'Shallow Water';
-		}
-		
-		// Land tiles
-		if (elevation < 5) return 'Coastal/Beach';
-		if (elevation < 15) return 'Lowland';
-		if (elevation < 25) return 'Hills';
-		if (elevation < 35) return 'Mountains';
-		return 'High Mountains';
-	}
-
 	// Use utility function for plot layout
 	const plotLayout = $derived(getPlotLayout(tile.Plots));
 </script>
@@ -82,7 +50,7 @@
 			<span>Coordinates: ({tileX}, {tileY})</span>
 			<span>Biome: {tile.Biome?.name || 'Unknown'}</span>
 			<span>Type: {tile.type.charAt(0).toUpperCase() + tile.type.slice(1)}</span>
-			<span>Terrain: {getTerrainDescription(tile.elevation, tile.type)}</span>
+			<span>Terrain: {getAdminTerrainDescription(tile.elevation, tile.type)}</span>
 		</div>
 	</div>
 
@@ -91,7 +59,7 @@
 		<!-- Base Tile (colored by elevation) -->
 		<div
 			class="absolute inset-0"
-			style="background-color: {getElevationColor(tile.elevation, tile.type)}"
+			style="background-color: {getAdminElevationColor(tile.elevation, tile.type)}"
 		></div>
 
 		<!-- Plots Overlay -->
@@ -210,9 +178,9 @@
 				<div class="flex items-center gap-2">
 					<div
 						class="w-4 h-4 rounded border border-surface-300 dark:border-surface-600"
-						style="background-color: {getElevationColor(tile.elevation, tile.type)}"
+						style="background-color: {getAdminElevationColor(tile.elevation, tile.type)}"
 					></div>
-					<span>{tile.elevation.toFixed(3)} ({getTerrainDescription(tile.elevation, tile.type)})</span>
+					<span>{tile.elevation.toFixed(3)} ({getAdminTerrainDescription(tile.elevation, tile.type)})</span>
 				</div>
 			</div>
 		</div>
