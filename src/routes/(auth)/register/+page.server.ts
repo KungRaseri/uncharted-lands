@@ -97,8 +97,8 @@ const register: Action = async ({ cookies, request, fetch }) => {
 
         throw redirect(302, '/');
     } catch (error) {
-        // Re-throw redirects
-        if (error instanceof Error && error.message.includes('redirect')) {
+        // Re-throw redirects (SvelteKit redirect objects have a status property)
+        if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
             throw error;
         }
 

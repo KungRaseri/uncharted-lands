@@ -103,8 +103,8 @@ const login: Action = async ({ cookies, request, url, fetch }) => {
 
         throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
     } catch (error) {
-        // Re-throw redirects
-        if (error instanceof Error && error.message.includes('redirect')) {
+        // Re-throw redirects (SvelteKit redirect objects have a status property)
+        if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
             throw error;
         }
 
