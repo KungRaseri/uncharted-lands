@@ -1,21 +1,42 @@
-import { fail, redirect } from "@sveltejs/kit"
+import { error, fail, redirect } from "@sveltejs/kit"
+import { logger } from "$lib/utils/logger"
 import type { PageServerLoad, Actions, Action } from "./$types"
 import { API_URL } from "$lib/config"
 import type { WorldWithRelations, GameServer } from "$lib/types/api"
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, cookies }) => {
     try {
-        const response = await fetch(`${API_URL}/worlds/${params.id}`)
+        const sessionToken = cookies.get('session');
+        
+        logger.debug('[ADMIN WORLD] Loading world details', {
+            worldId: params.id,
+            hasSessionToken: !!sessionToken
+        });
+
+        const response = await fetch(`${API_URL}/worlds/${params.id}`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
+        });
         
         if (!response.ok) {
-            return fail(404, { success: false, id: params.id })
+            logger.warn('[ADMIN WORLD] World not found', {
+                worldId: params.id,
+                status: response.status
+            });
+            throw error(404);
         }
 
-        const world: WorldWithRelations = await response.json()
+        const world: WorldWithRelations = await response.json();
 
         // Load all servers for reassignment dropdown
-        const serversResponse = await fetch(`${API_URL}/servers`)
-        const servers: GameServer[] = serversResponse.ok ? await serversResponse.json() : []
+        const serversResponse = await fetch(`${API_URL}/servers`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
+        });
+        
+        const servers: GameServer[] = serversResponse.ok ? await serversResponse.json() : [];
 
         // Use stats from API response (_count property added by server)
         const worldInfo = {
@@ -25,62 +46,117 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
             regions: (world as any)._count?.regions || 0
         };
 
+        logger.info('[ADMIN WORLD] Successfully loaded world', {
+            worldId: params.id,
+            worldName: world.name,
+            serverCount: servers.length
+        });
+
         return {
             world,
             servers,
             worldInfo
         }
-    } catch (error) {
-        console.error('Failed to load world:', error)
-        return fail(404, { success: false, id: params.id })
+    } catch (err) {
+        // Re-throw SvelteKit errors
+        if (err && typeof err === 'object' && 'status' in err) {
+            throw err;
+        }
+        
+        logger.error('[ADMIN WORLD] Failed to load world', err, {
+            worldId: params.id
+        });
+        throw error(500);
     }
 }
 
-const update: Action = async ({ request, params, fetch }) => {
+const update: Action = async ({ request, params, cookies }) => {
     const data = await request.formData();
     const name = data.get('name');
     const serverId = data.get('serverId');
 
     if (!name || typeof name !== 'string') {
+        logger.warn('[ADMIN WORLD] Invalid world name', { worldId: params.id });
         return fail(400, { invalid: true, message: 'World name is required' });
     }
 
     if (!serverId || typeof serverId !== 'string') {
+        logger.warn('[ADMIN WORLD] Invalid server ID', { worldId: params.id });
         return fail(400, { invalid: true, message: 'Server is required' });
     }
 
     try {
+        const sessionToken = cookies.get('session');
+        
+        logger.debug('[ADMIN WORLD] Updating world', {
+            worldId: params.id,
+            name,
+            serverId
+        });
+
         const response = await fetch(`${API_URL}/worlds/${params.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': `session=${sessionToken}`
+            },
             body: JSON.stringify({ name, serverId })
         });
 
         if (!response.ok) {
+            logger.error('[ADMIN WORLD] Failed to update world', {
+                worldId: params.id,
+                status: response.status
+            });
             return fail(500, { success: false, message: 'Failed to update world' });
         }
 
+        logger.info('[ADMIN WORLD] World updated successfully', {
+            worldId: params.id,
+            name
+        });
+
         return { success: true, message: 'World updated successfully' };
-    } catch (error) {
-        console.error('Failed to update world:', error);
+    } catch (err) {
+        logger.error('[ADMIN WORLD] Error updating world', err, {
+            worldId: params.id
+        });
         return fail(500, { success: false, message: 'Failed to update world' });
     }
 }
 
-const deleteWorld: Action = async ({ params, fetch }) => {
+const deleteWorld: Action = async ({ params, cookies }) => {
     try {
+        const sessionToken = cookies.get('session');
+        
+        logger.debug('[ADMIN WORLD] Deleting world', { worldId: params.id });
+
         const response = await fetch(`${API_URL}/worlds/${params.id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
         });
 
         if (!response.ok) {
+            logger.error('[ADMIN WORLD] Failed to delete world', {
+                worldId: params.id,
+                status: response.status
+            });
             return fail(500, { success: false, message: 'Failed to delete world' });
         }
 
+        logger.info('[ADMIN WORLD] World deleted successfully', { worldId: params.id });
         throw redirect(303, '/admin/worlds');
-    } catch (error) {
-        if (error instanceof Response) throw error; // Re-throw redirect
-        console.error('Failed to delete world:', error);
+    } catch (err) {
+        // Re-throw redirects
+        if (err && typeof err === 'object' && 'location' in err) {
+            throw err;
+        }
+        
+        logger.error('[ADMIN WORLD] Error deleting world', err, {
+            worldId: params.id
+        });
         return fail(500, { success: false, message: 'Failed to delete world' });
     }
 }

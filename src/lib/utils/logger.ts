@@ -109,6 +109,19 @@ class ClientLogger {
   isDev(): boolean {
     return this.isDevelopment;
   }
+
+  /**
+   * Mask email address for privacy in logs
+   * Example: test@example.com -> tes***@example.com
+   */
+  maskEmail(email: string): string {
+    const [local, domain] = email.split('@');
+    if (local && domain && local.length > 0) {
+      const visibleChars = Math.min(3, local.length);
+      return `${local.substring(0, visibleChars)}***@${domain}`;
+    }
+    return '***';
+  }
 }
 
 // Export singleton instance

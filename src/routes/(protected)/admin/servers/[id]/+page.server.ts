@@ -1,21 +1,49 @@
-import { fail, redirect } from "@sveltejs/kit"
+import { error, fail, redirect } from "@sveltejs/kit"
+import { logger } from "$lib/utils/logger"
 import type { PageServerLoad, Actions, Action } from "./$types"
 import { API_URL } from "$lib/config"
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, cookies }) => {
     try {
-        const response = await fetch(`${API_URL}/servers/${params.id}`)
+        const sessionToken = cookies.get('session');
+        
+        logger.debug('[ADMIN SERVER] Loading server details', {
+            serverId: params.id,
+            hasSessionToken: !!sessionToken
+        });
+
+        const response = await fetch(`${API_URL}/servers/${params.id}`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
+        });
         
         if (!response.ok) {
-            return fail(404, { success: false, id: params.id })
+            logger.warn('[ADMIN SERVER] Server not found', {
+                serverId: params.id,
+                status: response.status
+            });
+            throw error(404);
         }
 
-        const server = await response.json()
+        const server = await response.json();
 
-        return { server }
-    } catch (error) {
-        console.error('Failed to load server:', error)
-        return fail(404, { success: false, id: params.id })
+        logger.info('[ADMIN SERVER] Successfully loaded server', {
+            serverId: params.id,
+            serverName: server.name
+        });
+
+        return { server };
+    } catch (err) {
+        // Re-throw SvelteKit errors
+        if (err && typeof err === 'object' && 'status' in err) {
+            throw err;
+        }
+        
+        logger.error('[ADMIN SERVER] Failed to load server', err, {
+            serverId: params.id
+        });
+        throw error(500);
     }
 }
 

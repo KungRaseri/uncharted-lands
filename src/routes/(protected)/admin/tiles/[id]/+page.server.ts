@@ -1,25 +1,48 @@
-import { fail } from "@sveltejs/kit"
+import { error } from "@sveltejs/kit"
+import { logger } from "$lib/utils/logger"
 import type { PageServerLoad } from "./$types"
 import { API_URL } from "$lib/config"
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, cookies }) => {
     try {
-        const response = await fetch(`${API_URL}/regions/tiles/${params.id}`)
+        const sessionToken = cookies.get('session');
+        
+        logger.debug('[ADMIN TILE] Loading tile details', {
+            tileId: params.id,
+            hasSessionToken: !!sessionToken
+        });
+
+        const response = await fetch(`${API_URL}/regions/tiles/${params.id}`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
+        });
         
         if (!response.ok) {
             if (response.status === 404) {
-                return fail(404, { success: false, id: params.id })
+                logger.warn('[ADMIN TILE] Tile not found', { tileId: params.id });
+                throw error(404);
             }
-            console.error('Failed to fetch tile:', response.status)
-            return fail(500, { success: false, id: params.id })
+            
+            logger.error('[ADMIN TILE] Failed to fetch tile', {
+                tileId: params.id,
+                status: response.status
+            });
+            throw error(500);
         }
         
-        const tile = await response.json()
+        const tile = await response.json();
         
         // Calculate tile position within region (10x10 grid)
-        const tileIndex = tile.Region.tiles.findIndex((t: any) => t.id === tile.id)
-        const tileX = tileIndex % 10
-        const tileY = Math.floor(tileIndex / 10)
+        const tileIndex = tile.Region.tiles.findIndex((t: any) => t.id === tile.id);
+        const tileX = tileIndex % 10;
+        const tileY = Math.floor(tileIndex / 10);
+        
+        logger.info('[ADMIN TILE] Successfully loaded tile', {
+            tileId: params.id,
+            position: `(${tileX}, ${tileY})`,
+            regionId: tile.Region.id
+        });
         
         return {
             tile,
@@ -27,8 +50,15 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
             tileX,
             tileY
         }
-    } catch (error) {
-        console.error('Error loading tile:', error)
-        return fail(500, { success: false, id: params.id })
+    } catch (err) {
+        // Re-throw SvelteKit errors
+        if (err && typeof err === 'object' && 'status' in err) {
+            throw err;
+        }
+        
+        logger.error('[ADMIN TILE] Error loading tile', err, {
+            tileId: params.id
+        });
+        throw error(500);
     }
 }
