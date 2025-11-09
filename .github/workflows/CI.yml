@@ -41,6 +41,11 @@ jobs:
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PUBLIC_SENTRY_DSN: disabled
+      PUBLIC_API_URL: http://localhost:3001/api
+      PUBLIC_WS_URL: http://localhost:3001
+      API_URL: http://localhost:3001/api
+      NODE_ENV: test
 
     strategy:
       matrix:
@@ -48,26 +53,41 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+      
       - name: Install dependencies
         run: npm ci
+      
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium firefox webkit
+      
       - name: Run unit tests with coverage
         run: npm run coverage
+        continue-on-error: false
+      
+      - name: Build for E2E tests
+        run: npm run build
+        env:
+          CI: true
+      
       - name: Run E2E tests
-        run: npm test
-      - name: Upload coverage reports
+        run: npm run test:e2e
+        env:
+          CI: true
+      
+      - name: Upload unit test coverage
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-client
           path: coverage/
           retention-days: 30
+      
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()
@@ -75,6 +95,14 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+      
+      - name: Upload Playwright trace
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
 
   sonarcloud:
     name: SonarCloud Analysis
