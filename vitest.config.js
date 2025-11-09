@@ -8,6 +8,12 @@ export default mergeConfig(viteConfig, defineConfig({
         environment: "jsdom",
         include: ['tests/unit/**/*.test.{js,ts}', 'tests/unit/**/*.spec.{js,ts}'],
         setupFiles: ['./vitest.setup.js'],
+        pool: 'forks',
+        poolOptions: {
+            forks: {
+                singleFork: true
+            }
+        },
         alias: {
             $lib: '/src/lib',
             $app: '/.svelte-kit/runtime/app'

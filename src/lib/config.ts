@@ -6,7 +6,7 @@
  * in the browser.
  */
 
-import * as publicEnv from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 /**
  * REST API base URL
@@ -16,7 +16,7 @@ import * as publicEnv from '$env/static/public';
  * 
  * Set via PUBLIC_API_URL environment variable.
  */
-export const API_URL = (publicEnv as any).PUBLIC_API_URL || 'http://localhost:3001/api';
+export const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
 
 /**
  * WebSocket server URL
@@ -26,7 +26,7 @@ export const API_URL = (publicEnv as any).PUBLIC_API_URL || 'http://localhost:30
  * 
  * Set via PUBLIC_WS_URL environment variable.
  */
-export const WS_URL = (publicEnv as any).PUBLIC_WS_URL || 'http://localhost:3001';
+export const WS_URL = env.PUBLIC_WS_URL || 'http://localhost:3001';
 
 /**
  * Check if running in development mode
