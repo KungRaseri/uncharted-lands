@@ -2,7 +2,7 @@ import type { PageServerLoad, Actions, Action } from "./$types"
 import { fail } from "@sveltejs/kit"
 import { logger } from "$lib/utils/logger"
 import { API_URL } from "$lib/config"
-import type { World } from "$lib/types/api"
+import type { WorldWithRelations } from "$lib/types/api"
 
 export const load: PageServerLoad = async ({ cookies }) => {
     try {
@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
             return { worlds: [] };
         }
 
-        const worlds: World[] = await response.json();
+        const worlds: WorldWithRelations[] = await response.json();
 
         logger.info('[ADMIN WORLDS] Successfully loaded worlds', {
             count: worlds.length

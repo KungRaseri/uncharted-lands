@@ -92,7 +92,7 @@
 										{server.status}
 									</span>
 								</td>
-								<td>{server._count?.worlds || 0}</td>
+								<td>{server.worlds?.length || 0}</td>
 								<td class="text-right space-x-2">
 									<a
 										href="/admin/servers/{server.id}"
@@ -147,10 +147,10 @@
 			<section class="modal-body space-y-4">
 				<p>Are you sure you want to delete the server <strong>{serverToDelete.name}</strong>?</p>
 				
-				{#if serverToDelete._count && serverToDelete._count.worlds > 0}
+				{#if serverToDelete.worlds && serverToDelete.worlds.length > 0}
 					<aside class="alert preset-filled-warning-500 rounded-md">
 						<div class="alert-message">
-							<p class="font-semibold">Warning: This server has {serverToDelete._count.worlds} world(s)</p>
+							<p class="font-semibold">Warning: This server has {serverToDelete.worlds.length} world(s)</p>
 							<p class="text-sm">You must delete or reassign all worlds before deleting this server.</p>
 						</div>
 					</aside>
@@ -187,7 +187,7 @@
 					<button 
 						type="submit" 
 						class="btn preset-filled-error-500 rounded-md"
-						disabled={isDeleting || (serverToDelete._count && serverToDelete._count.worlds > 0)}
+						disabled={isDeleting || (serverToDelete.worlds && serverToDelete.worlds.length > 0)}
 					>
 						{#if isDeleting}
 							<span>Deleting...</span>
