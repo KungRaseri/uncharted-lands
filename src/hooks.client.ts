@@ -1,8 +1,9 @@
 import type { HandleClientError } from '@sveltejs/kit';
+import { env } from '$env/dynamic/public';
 import * as Sentry from '@sentry/svelte';
 
 Sentry.init({
-	dsn: process.env.SENTRY_DSN,
+	dsn: env.PUBLIC_SENTRY_DSN === 'disabled' ? undefined : env.PUBLIC_SENTRY_DSN,
 	integrations: [Sentry.browserTracingIntegration()],
 	tracesSampleRate: 1,
 	environment: 'CLIENT'
