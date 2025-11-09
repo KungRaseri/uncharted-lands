@@ -12,52 +12,22 @@
 
 	let { region, mode = 'player', currentPlayerProfileId }: Props = $props();
 	
-	// Match tiles to their positions using elevation map (same as preview mode)
-	// This ensures tiles display in EXACTLY the same positions as during world creation preview
-	const sortedTiles = $derived(() => {
-		if (!region.elevationMap || !Array.isArray(region.elevationMap)) {
-			// Fallback: use tiles as-is if no elevation map
-			console.warn('[REGION] No elevation map available, using unsorted tiles');
-			return region.tiles;
+	// Tiles are ordered by (xCoord, yCoord) from database query
+	// This matches the creation order: row-by-row (x=row index, y=column index)
+	// Which is EXACTLY the same order as the preview displays them
+	// Database columns added: xCoord, yCoord (integers 0-9)
+	
+	// Debug: Log tile coordinates to verify ordering
+	$effect(() => {
+		if (typeof window !== 'undefined' && region.tiles.length > 0) {
+			const coords = region.tiles.slice(0, 20).map((t: any) => `(${t.xCoord ?? '?'},${t.yCoord ?? '?'})`).join(' ');
+			console.log(`[REGION ${region.xCoord},${region.yCoord}] First 20 tiles:`, coords);
 		}
-		
-		const positioned: any[] = [];
-		const used = new Set<string>();
-		
-		// Iterate in the same order as preview: row by row
-		for (const [rowIndex, row] of region.elevationMap.entries()) {
-			if (!Array.isArray(row)) continue;
-			
-			for (const [colIndex, elevation] of row.entries()) {
-				// Find the tile that matches this position
-				const tile = region.tiles.find(t => 
-					!used.has(t.id) &&
-					t.elevation === elevation &&
-					t.precipitation === region.precipitationMap?.[rowIndex]?.[colIndex] &&
-					t.temperature === region.temperatureMap?.[rowIndex]?.[colIndex]
-				);
-				
-				if (tile) {
-					positioned.push(tile);
-					used.add(tile.id);
-				} else {
-					console.warn(`[REGION] No tile found for position [${rowIndex}][${colIndex}] with elevation ${elevation}`);
-					positioned.push(null);
-				}
-			}
-		}
-		
-		return positioned;
 	});
 </script>
 
 <div class="grid grid-cols-10 gap-0 h-full w-full">
-	{#each sortedTiles() as tile}
-		{#if tile}
-			<Tile {tile} {mode} {currentPlayerProfileId} />
-		{:else}
-			<!-- Placeholder for missing tile -->
-			<div class="w-full h-full bg-red-900/50" title="Missing tile data"></div>
-		{/if}
+	{#each region.tiles as tile}
+		<Tile {tile} {mode} {currentPlayerProfileId} />
 	{/each}
 </div>

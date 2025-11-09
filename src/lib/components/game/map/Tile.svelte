@@ -14,7 +14,7 @@
 	let { tile, mode = 'player', currentPlayerProfileId }: Props = $props();
 	// Check if tile has any settled plots
 	const hasSettlement = $derived(() => {
-		const settledPlots = tile.Plots.filter((plot) => plot.Settlement);
+		const settledPlots = (tile.plots || []).filter((plot: any) => plot.settlement);
 		
 		if (settledPlots.length === 0) {
 			return false;
@@ -22,7 +22,7 @@
 		
 		// In player mode, only show marker if player owns the settlement
 		if (mode === 'player' && currentPlayerProfileId) {
-			return settledPlots.some((plot) => plot.Settlement?.playerProfileId === currentPlayerProfileId);
+			return settledPlots.some((plot: any) => plot.settlement?.playerProfileId === currentPlayerProfileId);
 		}
 		
 		// In admin mode, show marker if ANY settlement exists
@@ -32,10 +32,10 @@
 
 <div
 	class="w-full h-full cursor-help hover:shadow-[inset_0_0_0_2px_rgba(255,255,0,0.8)] hover:z-10 transition-shadow relative"
-	style="background-color: {getTileColor(tile.elevation, tile.Biome.name, tile.type)}"
+	style="background-color: {getTileColor(tile.elevation, tile.biome?.name || 'Unknown', tile.type)}"
 	role="button"
 	tabindex="0"
-	aria-label="Tile: {tile.Biome.name}"
+	aria-label="Tile: {tile.biome?.name || 'Unknown'}"
 	title={getTileTooltip(tile, mode, currentPlayerProfileId)}
 >
 	{#if hasSettlement()}

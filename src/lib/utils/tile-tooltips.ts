@@ -7,7 +7,7 @@
  * Plot data for settlement information
  */
 export type PlotData = {
-	Settlement?: {
+	settlement?: {
 		playerProfileId: string;
 		name: string;
 	} | null;
@@ -17,14 +17,14 @@ export type PlotData = {
  * Tile data for tooltip generation
  */
 export type TileData = {
-	Biome: {
+	biome?: {
 		name: string;
 	};
 	type: string;
 	elevation: number;
 	precipitation: number;
 	temperature: number;
-	Plots: PlotData[];
+	plots?: PlotData[];
 };
 
 /**
@@ -35,12 +35,14 @@ export type TileData = {
  * @returns Formatted tooltip string with newlines
  */
 export function getAdminTileTooltip(tile: TileData): string {
-	return `Biome: ${tile.Biome.name}
+	const biomeName = tile.biome?.name || 'Unknown';
+	const plotCount = tile.plots?.length || 0;
+	return `Biome: ${biomeName}
 Type: ${tile.type}
 Elevation: ${tile.elevation.toFixed(3)}
 Precipitation: ${tile.precipitation.toFixed(3)}
 Temperature: ${tile.temperature.toFixed(3)}
-Plots: ${tile.Plots.length}`;
+Plots: ${plotCount}`;
 }
 
 /**
@@ -55,22 +57,25 @@ export function getPlayerTileTooltip(
 	tile: TileData,
 	currentPlayerProfileId?: string
 ): string {
+	const biomeName = tile.biome?.name || 'Unknown';
+	const plots = tile.plots || [];
+	
 	// Base tooltip with tile information
-	let tooltip = `${tile.Biome.name}
+	let tooltip = `${biomeName}
 Elevation: ${(tile.elevation * 100).toFixed(1)}%
 Temperature: ${tile.temperature.toFixed(1)}°C
 Precipitation: ${tile.precipitation.toFixed(1)}mm`;
 
 	// Add plot count if any plots exist
-	if (tile.Plots.length > 0) {
-		tooltip += `\n${tile.Plots.length} ${tile.Plots.length === 1 ? 'Plot' : 'Plots'}`;
+	if (plots.length > 0) {
+		tooltip += `\n${plots.length} ${plots.length === 1 ? 'Plot' : 'Plots'}`;
 	}
 
 	// Add settlement names if player owns any on this tile
 	if (currentPlayerProfileId) {
-		const playerSettlements = tile.Plots
-			.filter((plot) => plot.Settlement?.playerProfileId === currentPlayerProfileId)
-			.map((plot) => plot.Settlement?.name)
+		const playerSettlements = plots
+			.filter((plot) => plot.settlement?.playerProfileId === currentPlayerProfileId)
+			.map((plot) => plot.settlement?.name)
 			.filter((name): name is string => name !== undefined && name !== null && name !== '');
 
 		if (playerSettlements.length > 0) {

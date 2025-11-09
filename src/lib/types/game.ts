@@ -90,8 +90,8 @@ export interface TileWithPlots extends TileBase {
 }
 
 export interface TileWithRelations extends TileBase {
-  Biome: Biome;
-  Plots: Plot[];
+  biome?: Biome;
+  plots?: Plot[];
 }
 
 // ============================================================================
