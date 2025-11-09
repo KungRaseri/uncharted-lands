@@ -4,28 +4,31 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ---
 
-## ⚠️ CRITICAL: Documentation Creation Policy
+## ⚠️ CRITICAL: No Summaries or Auto-Documentation
 
-**NEVER create documentation, summaries, status files, or markdown files unless explicitly requested by the user.**
+**NEVER write conversation summaries or create documentation unless explicitly requested.**
 
 ### Rules:
 
-1. **DO NOT** automatically create:
-   - Summary documents (SUMMARY.md, STATUS.md, CHANGES.md, etc.)
-   - Migration status files
-   - Progress reports
-   - Documentation files
-   - README files (except when specifically asked)
+1. **DO NOT EVER**:
+   - Write conversation summaries at any point
+   - Create summary documents (SUMMARY.md, STATUS.md, CHANGES.md, etc.)
+   - Generate progress reports automatically
+   - Create migration status files
+   - Auto-generate documentation files
+   - Create README files (except when specifically asked)
 
-2. **ONLY create documentation when**:
-   - The user explicitly asks: "Create a summary", "Write documentation for X", etc.
-   - The user requests: "Document this", "Add a README", etc.
+2. **ONLY create documentation when user explicitly requests it**:
+   - "Create a summary"
+   - "Write documentation for X"
+   - "Document this feature"
+   - "Add a README"
 
-3. **Instead of creating documents**:
-   - Answer questions directly in chat
-   - Provide explanations in the conversation
-   - Make code changes as requested
-   - Update existing documentation if it already exists
+3. **Always prefer**:
+   - Direct answers in chat
+   - Inline explanations
+   - Code changes as requested
+   - Updating existing documentation if it exists
 
 4. **When documentation IS requested**:
    - Confirm what they want documented
