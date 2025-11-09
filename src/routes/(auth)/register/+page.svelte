@@ -54,24 +54,29 @@
 				/>
 			</label>
 
-			{#if form?.invalid}
-				<div transition:slide>
-					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
-						<div class="alert-message ">
-							<Info size={24} />
-							<div class="grid grid-cols-1">Form information is invalid</div>
-							{#if form?.length}
-								Password must be 16 or more characters in length
-							{/if}
-							{#if form?.exists}
-								Please enter the account information again
+		{#if form?.invalid}
+			<div transition:slide>
+				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
+					<div class="alert-message ">
+						<Info size={24} />
+						<div class="grid grid-cols-1">
+							{#if form?.message}
+								{form.message}
+							{:else if form?.exists}
+								This email is already registered. If this is your account, please 
+								<a href="/sign-in" class="text-primary-500 hover:underline">sign in here</a>.
+							{:else if form?.length}
+								Password must be 16 or more characters in length.
+							{:else if form?.missingFields}
+								Please provide both email and password.
+							{:else}
+								Form information is invalid. Please check your information and try again.
 							{/if}
 						</div>
 					</div>
 				</div>
-			{/if}
-
-			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md">Register</button>
+			</div>
+		{/if}			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md">Register</button>
 		</form>
 	</div>
 </div>
