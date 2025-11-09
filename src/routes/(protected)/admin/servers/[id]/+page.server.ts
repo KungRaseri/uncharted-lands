@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
     }
 }
 
-const update: Action = async ({ request, params, fetch }) => {
+const update: Action = async ({ request, params, cookies }) => {
     const data = await request.formData();
     const name = data.get('name');
     const hostname = data.get('hostname');
@@ -58,6 +58,14 @@ const update: Action = async ({ request, params, fetch }) => {
         return fail(400, { invalid: true, message: 'Server name is required' });
     }
 
+    const sessionToken = cookies.get('session');
+
+    logger.debug('[ADMIN SERVER] Updating server', {
+        serverId: params.id,
+        name,
+        hasSessionToken: !!sessionToken
+    });
+
     try {
         const updateData: any = {
             name,
@@ -66,47 +74,82 @@ const update: Action = async ({ request, params, fetch }) => {
         };
 
         if (port && typeof port === 'string') {
-            const portNum = parseInt(port);
-            if (!isNaN(portNum)) {
+            const portNum = Number.parseInt(port);
+            if (!Number.isNaN(portNum)) {
                 updateData.port = portNum;
             }
         }
 
         const response = await fetch(`${API_URL}/servers/${params.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Cookie': `session=${sessionToken}`
+            },
             body: JSON.stringify(updateData)
         });
 
         if (!response.ok) {
+            logger.error('[ADMIN SERVER] Failed to update server', {
+                serverId: params.id,
+                status: response.status
+            });
             return fail(500, { success: false, message: 'Failed to update server' });
         }
 
+        logger.info('[ADMIN SERVER] Successfully updated server', {
+            serverId: params.id,
+            name
+        });
+
         return { success: true, message: 'Server updated successfully' };
-    } catch (error) {
-        console.error('Failed to update server:', error);
+    } catch (err) {
+        logger.error('[ADMIN SERVER] Error updating server', err, {
+            serverId: params.id
+        });
         return fail(500, { success: false, message: 'Failed to update server' });
     }
 }
 
-const deleteServer: Action = async ({ params, fetch }) => {
+const deleteServer: Action = async ({ params, cookies }) => {
+    const sessionToken = cookies.get('session');
+
+    logger.debug('[ADMIN SERVER] Deleting server', {
+        serverId: params.id,
+        hasSessionToken: !!sessionToken
+    });
+
     try {
         const response = await fetch(`${API_URL}/servers/${params.id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
         });
 
         if (!response.ok) {
             const errorData = await response.json();
+            logger.error('[ADMIN SERVER] Failed to delete server', {
+                serverId: params.id,
+                status: response.status,
+                error: errorData.error
+            });
             return fail(response.status, { 
                 success: false, 
                 message: errorData.error || 'Failed to delete server'
             });
         }
 
+        logger.info('[ADMIN SERVER] Successfully deleted server', {
+            serverId: params.id
+        });
+
         throw redirect(303, '/admin/servers');
-    } catch (error) {
-        if (error instanceof Response) throw error; // Re-throw redirect
-        console.error('Failed to delete server:', error);
+    } catch (err) {
+        if (err instanceof Response) throw err; // Re-throw redirect
+        logger.error('[ADMIN SERVER] Error deleting server', err, {
+            serverId: params.id
+        });
         return fail(500, { success: false, message: 'Failed to delete server' });
     }
 }
