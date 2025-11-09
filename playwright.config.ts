@@ -11,7 +11,8 @@ dotenv.config();
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
-	testDir: 'tests',
+	testDir: 'tests/e2e',
+	testMatch: '**/*.spec.ts', // Only match .spec.ts files (Playwright), not .test.ts files (Vitest)
 	/* Maximum time one test can run for. */
 	timeout: 30 * 1000,
 	expect: {

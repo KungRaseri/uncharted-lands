@@ -6,7 +6,15 @@ import { cleanup } from '@testing-library/svelte'
 import * as matchers from '@testing-library/jest-dom/matchers'
 
 // Extend Vitest's expect with jest-dom matchers
-expect.extend(matchers)
+// Wrap in try-catch to handle cases where matchers are already registered
+try {
+  expect.extend(matchers)
+} catch (error) {
+  // Silently ignore if matchers are already extended
+  if (!error.message?.includes('Cannot redefine property')) {
+    throw error
+  }
+}
 
 // Cleanup after each test
 afterEach(() => {

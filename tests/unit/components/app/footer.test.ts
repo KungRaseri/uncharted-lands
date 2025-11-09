@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from "@testing-library/svelte";
-import Footer from './Footer.svelte';
+import Footer from '$lib/components/app/Footer.svelte';
 
 describe('Footer.svelte', () => {
     it('Should have a set of links', () => {
