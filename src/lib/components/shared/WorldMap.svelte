@@ -1,13 +1,7 @@
 <script lang="ts">
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
 	import type { RegionWithTiles } from '$lib/types/game';
-	import { getElevationColor, getTerrainType } fro												class="w-full h-full cursor-help
-												hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]
-												dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
-												transition-shadow duration-150"
-												style="background-color: {getElevationColor(elevationValue)}"
-												title={getAdminRegionTooltip(region, rowIndex, colIndex, elevationValue)}
-											></div>/utils/map-colors';
+	import { getElevationColor, getTerrainType } from '$lib/utils/map-colors';
 	import { getAdminRegionTooltip } from '$lib/utils/admin-tooltips';
 	
 	type RegionWithElevationMap = {
@@ -208,7 +202,7 @@
 													dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
 													transition-shadow duration-150"
 													style="background-color: {getElevationColor(elevationValue)}"
-													title={getAdminTooltip(region, rowIndex, colIndex, elevationValue)}
+													title={getAdminRegionTooltip(region, rowIndex, colIndex, elevationValue)}
 												></div>
 											{/each}
 										{/if}
