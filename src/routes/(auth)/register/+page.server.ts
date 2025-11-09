@@ -1,32 +1,13 @@
 import { API_URL } from '$lib/config';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
-
-const isDev = process.env.NODE_ENV === 'development';
-
-/**
- * Log debug messages in development mode
- */
-function logDebug(message: string, context?: Record<string, unknown>) {
-    if (isDev) {
-        console.log(`[CLIENT AUTH] ${message}`, context || '');
-    }
-}
-
-/**
- * Log warning messages in development mode
- */
-function logWarn(message: string) {
-    if (isDev) {
-        console.warn(`[CLIENT AUTH] ${message}`);
-    }
-}
+import { logger } from '$lib/utils/logger';
 
 /**
  * Handle API error responses
  */
 function handleRegistrationError(response: Response, error: { code?: string; error?: string }) {
-    logDebug('Registration failed:', {
+    logger.debug('[AUTH] Registration failed', {
         status: response.status,
         code: error.code,
         error: error.error
@@ -67,7 +48,7 @@ const register: Action = async ({ cookies, request, fetch }) => {
     const password = data.get('password');
     const username = data.get('username') || email;
 
-    logDebug('Registration attempt:', {
+    logger.debug('[AUTH] Registration attempt', {
         email: email ? `${email.toString().substring(0, 3)}***` : 'missing',
         hasPassword: !!password,
         timestamp: new Date().toISOString()
@@ -75,13 +56,13 @@ const register: Action = async ({ cookies, request, fetch }) => {
 
     // Validate required fields
     if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
-        logWarn('Registration validation failed - missing fields');
+        logger.warn('[AUTH] Registration validation failed - missing fields');
         return fail(400, { invalid: true, missingFields: true });
     }
 
     // Validate password length
     if (password.length < 16) {
-        logWarn('Registration validation failed - password too short');
+        logger.warn('[AUTH] Registration validation failed - password too short');
         return fail(400, { invalid: true, length: true });
     }
 
@@ -104,7 +85,7 @@ const register: Action = async ({ cookies, request, fetch }) => {
         }
 
         const result = await response.json();
-        logDebug('✓ Registration successful');
+        logger.info('[AUTH] ✓ Registration successful');
 
         cookies.set('session', result.account.userAuthToken, {
             path: '/',
@@ -121,7 +102,7 @@ const register: Action = async ({ cookies, request, fetch }) => {
             throw error;
         }
 
-        console.error('[CLIENT AUTH] Registration error:', error);
+        logger.error('[AUTH] Registration error', error);
         return fail(500, { 
             invalid: true,
             message: 'An unexpected error occurred. Please try again later.'

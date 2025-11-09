@@ -2,26 +2,7 @@ import { API_URL } from "$lib/config";
 import { fail, redirect } from "@sveltejs/kit";
 import type { Action, Actions, PageServerLoad } from "./$types";
 import { TimeSpan } from "$lib/timespan";
-
-const isDev = process.env.NODE_ENV === 'development';
-
-/**
- * Log debug messages in development mode
- */
-function logDebug(message: string, context?: Record<string, unknown>) {
-    if (isDev) {
-        console.log(`[CLIENT AUTH] ${message}`, context || '');
-    }
-}
-
-/**
- * Log warning messages in development mode
- */
-function logWarn(message: string) {
-    if (isDev) {
-        console.warn(`[CLIENT AUTH] ${message}`);
-    }
-}
+import { logger } from "$lib/utils/logger";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
     if (locals.account)
@@ -38,7 +19,7 @@ const login: Action = async ({ cookies, request, url, fetch }) => {
     const password = data.get('password');
     const rememberMeIsChecked = data.get('remember_me');
 
-    logDebug('Login attempt:', {
+    logger.debug('[AUTH] Login attempt', {
         email: email ? `${email.toString().substring(0, 3)}***` : 'missing',
         hasPassword: !!password,
         rememberMe: !!rememberMeIsChecked,
@@ -47,7 +28,7 @@ const login: Action = async ({ cookies, request, url, fetch }) => {
 
     // Validate required fields
     if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
-        logWarn('Login validation failed - missing fields');
+        logger.warn('[AUTH] Login validation failed - missing fields');
         return fail(400, { email, invalid: true, missingFields: true })
     }
 
@@ -68,7 +49,7 @@ const login: Action = async ({ cookies, request, url, fetch }) => {
         if (!response.ok) {
             const error = await response.json();
             
-            logDebug('Login failed:', {
+            logger.debug('[AUTH] Login failed', {
                 status: response.status,
                 code: error.code,
                 error: error.error
@@ -102,7 +83,7 @@ const login: Action = async ({ cookies, request, url, fetch }) => {
         const result = await response.json();
         const userAuthToken = result.account.userAuthToken;
 
-        logDebug('✓ Login successful');
+        logger.info('[AUTH] ✓ Login successful');
 
         const ts = new TimeSpan();
         ts.days = 30;
@@ -127,7 +108,7 @@ const login: Action = async ({ cookies, request, url, fetch }) => {
             throw error;
         }
 
-        console.error('[CLIENT AUTH] Login error:', error);
+        logger.error('[AUTH] Login error', error);
         return fail(500, { 
             email,
             invalid: true,

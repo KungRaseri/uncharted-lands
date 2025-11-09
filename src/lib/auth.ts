@@ -1,5 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
 import { API_URL } from './config';
+import { logger } from './utils/logger';
 
 export const AuthenticateUser = async (cookies: Cookies) => {
 	const session = cookies.get('session');
@@ -27,7 +28,7 @@ export const AuthenticateUser = async (cookies: Cookies) => {
 		const result = await response.json();
 		return result.account;
 	} catch (error) {
-		console.error('Auth validation error:', error);
+		logger.error('[AUTH] Validation error', error);
 		return null;
 	}
 };
