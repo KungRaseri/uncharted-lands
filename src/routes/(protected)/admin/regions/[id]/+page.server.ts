@@ -1,23 +1,40 @@
-import { fail } from "@sveltejs/kit"
+import { error } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
 import { API_URL } from "$lib/config"
+import { logger } from "$lib/utils/logger"
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, cookies }) => {
     try {
-        const response = await fetch(`${API_URL}/regions/${params.id}`)
+        const sessionToken = cookies.get('session');
+        
+        const response = await fetch(`${API_URL}/regions/${params.id}`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
+        });
         
         if (!response.ok) {
             if (response.status === 404) {
-                return fail(404, { success: false, id: params.id })
+                logger.warn('[ADMIN REGION] Region not found', { regionId: params.id });
+                throw error(404);
             }
-            console.error('Failed to fetch region:', response.status)
-            return fail(500, { success: false, id: params.id })
+            logger.error('[ADMIN REGION] Failed to fetch region', {
+                regionId: params.id,
+                status: response.status
+            });
+            throw error(500);
         }
         
-        const region = await response.json()
-        return { region }
-    } catch (error) {
-        console.error('Error loading region:', error)
-        return fail(500, { success: false, id: params.id })
+        const region = await response.json();
+        
+        logger.debug('[ADMIN REGION] Region loaded', {
+            regionId: region.id
+        });
+        
+        return { region };
+    } catch (err) {
+        if (err instanceof Response) throw err;
+        logger.error('[ADMIN REGION] Error loading region', err);
+        throw error(500);
     }
 }

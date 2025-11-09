@@ -1,8 +1,9 @@
 import { API_URL } from "$lib/config";
+import { logger } from "$lib/utils/logger";
 import { redirect } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
 
-export const load: PageServerLoad = async ({ locals, depends, fetch }) => {
+export const load: PageServerLoad = async ({ locals, depends, cookies }) => {
     // Mark this data as dependent on game state changes
     // When tick occurs, calling invalidate('game:settlements') will refresh this
     depends('game:settlements');
@@ -12,11 +13,20 @@ export const load: PageServerLoad = async ({ locals, depends, fetch }) => {
         throw redirect(302, '/game/getting-started')
     }
 
+    const sessionToken = cookies.get('session');
+
     // Fetch settlements from REST API
-    const response = await fetch(`${API_URL}/settlements?playerProfileId=${locals.account.profile.id}`);
+    const response = await fetch(`${API_URL}/settlements?playerProfileId=${locals.account.profile.id}`, {
+        headers: {
+            'Cookie': `session=${sessionToken}`
+        }
+    });
     
     if (!response.ok) {
-        console.error('Failed to fetch settlements:', await response.text());
+        logger.error('[GAME HOME] Failed to fetch settlements', {
+            profileId: locals.account.profile.id,
+            status: response.status
+        });
         return {
             settlements: [],
             lastUpdate: new Date().toISOString()
@@ -24,6 +34,10 @@ export const load: PageServerLoad = async ({ locals, depends, fetch }) => {
     }
 
     const settlements = await response.json();
+
+    logger.debug('[GAME HOME] Settlements loaded', {
+        count: settlements.length
+    });
 
     return {
         settlements,

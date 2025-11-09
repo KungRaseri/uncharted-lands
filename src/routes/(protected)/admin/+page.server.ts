@@ -1,13 +1,22 @@
 import type { PageServerLoad } from "./$types"
 import { API_URL } from "$lib/config"
+import { logger } from "$lib/utils/logger"
 import type { DashboardStats } from "$lib/types/api"
 
-export const load: PageServerLoad = async ({ fetch }) => {
+export const load: PageServerLoad = async ({ cookies }) => {
     try {
-        const response = await fetch(`${API_URL}/admin/dashboard`)
+        const sessionToken = cookies.get('session');
+        
+        const response = await fetch(`${API_URL}/admin/dashboard`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
+        });
         
         if (!response.ok) {
-            console.error('Dashboard API error:', response.status)
+            logger.error('[ADMIN DASHBOARD] Dashboard API error', {
+                status: response.status
+            });
             // Return default stats on error
             return {
                 stats: {
@@ -18,10 +27,16 @@ export const load: PageServerLoad = async ({ fetch }) => {
                     totalTiles: 0,
                     totalPlots: 0
                 }
-            }
+            };
         }
 
-        const data: DashboardStats = await response.json()
+        const data: DashboardStats = await response.json();
+
+        logger.debug('[ADMIN DASHBOARD] Dashboard loaded', {
+            servers: data.counts.servers,
+            worlds: data.counts.worlds,
+            players: data.counts.players
+        });
 
         return {
             stats: {
@@ -32,9 +47,9 @@ export const load: PageServerLoad = async ({ fetch }) => {
                 totalTiles: 0,
                 totalPlots: 0
             }
-        }
+        };
     } catch (err) {
-        console.error('Failed to load dashboard:', err)
+        logger.error('[ADMIN DASHBOARD] Failed to load dashboard', err);
         // Return default stats on error
         return {
             stats: {
@@ -45,6 +60,6 @@ export const load: PageServerLoad = async ({ fetch }) => {
                 totalTiles: 0,
                 totalPlots: 0
             }
-        }
+        };
     }
 }

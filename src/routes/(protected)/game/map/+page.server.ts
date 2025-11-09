@@ -1,9 +1,10 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
+import { logger } from '$lib/utils/logger';
 
 const API_URL = process.env.API_URL || 'http://localhost:3001/api';
 
-export const load = (async ({ locals, fetch, url }) => {
+export const load = (async ({ locals, cookies, url }) => {
     // Check authentication
     if (!locals.account) {
         throw redirect(302, '/login');
@@ -15,6 +16,8 @@ export const load = (async ({ locals, fetch, url }) => {
     }
 
     try {
+        const sessionToken = cookies.get('session');
+        
         // Get optional center coordinates from query params (for lazy loading)
         const centerX = url.searchParams.get('centerX');
         const centerY = url.searchParams.get('centerY');
@@ -34,13 +37,16 @@ export const load = (async ({ locals, fetch, url }) => {
         // Fetch map data from server API
         const response = await fetch(`${API_URL}/map?${queryParams.toString()}`, {
             headers: {
-                'Cookie': `session=${locals.account.userAuthToken}`
+                'Cookie': `session=${sessionToken}`
             }
         });
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-            console.error('[MAP LOAD] Failed to load map:', error);
+            logger.error('[MAP LOAD] Failed to load map', {
+                status: response.status,
+                error: error.error
+            });
             
             if (response.status === 404) {
                 throw new Error('No world found. Please ask an administrator to create a world.');
@@ -51,7 +57,7 @@ export const load = (async ({ locals, fetch, url }) => {
 
         const data = await response.json();
 
-        console.log('[MAP LOAD] Map loaded:', {
+        logger.info('[MAP LOAD] Map loaded', {
             worldId: data.world?.id,
             worldName: data.world?.name,
             regionCount: data.world?.regions?.length,
@@ -60,7 +66,7 @@ export const load = (async ({ locals, fetch, url }) => {
 
         return data;
     } catch (error) {
-        console.error('[MAP LOAD] Error:', error);
+        logger.error('[MAP LOAD] Error', error);
         
         // If it's a redirect, let it through
         if (error instanceof Response) {
