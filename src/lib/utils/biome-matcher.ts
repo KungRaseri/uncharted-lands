@@ -87,27 +87,23 @@ export function getBiomeNameForPreview(
 
 	// IMPORTANT: The raw precipitation and temperature values from the preview
 	// are in the range [-1, 1] (from noise function), not the normalized ranges.
-	// We need to convert them from [-1, 1] to [0, 450] and [-10, 32] respectively,
-	// then normalize to 0-100 for biome matching.
+	// We need to convert them from [-1, 1] to [0, 450] and [-10, 32] respectively.
+	// The biome matching uses these actual value ranges, NOT 0-100!
 	const precipInRange = normalizeNoiseValue(precipitation, 0, 450);
 	const tempInRange = normalizeNoiseValue(temperature, -10, 32);
-	
-	const normalizedPrecip = normalizeValue(precipInRange, 0, 450);
-	const normalizedTemp = normalizeValue(tempInRange, -10, 32);
 
-	// Find matching biome
-	const biome = findBiomeForTile(normalizedPrecip, normalizedTemp);
+	// Find matching biome (uses actual ranges, not normalized)
+	const biome = findBiomeForTile(precipInRange, tempInRange);
 	
-	// Debug logging - remove after verification
-	if (!biome) {
-		console.warn('[BIOME] No biome found for:', { 
+	// Debug logging - sample every 100th tile to avoid spam
+	if (Math.random() < 0.01) {
+		console.log('[BIOME DEBUG]', { 
 			elevation, 
-			precipitation, 
-			temperature, 
-			precipInRange,
-			tempInRange,
-			normalizedPrecip, 
-			normalizedTemp 
+			precipitation: precipitation.toFixed(3), 
+			temperature: temperature.toFixed(3), 
+			precipInRange: precipInRange.toFixed(2),
+			tempInRange: tempInRange.toFixed(2),
+			biomeName: biome?.name || 'Unknown'
 		});
 	}
 	

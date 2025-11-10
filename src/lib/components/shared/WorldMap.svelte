@@ -200,13 +200,16 @@
 												{@const precipValue = region.precipitationMap?.[rowIndex]?.[colIndex] ?? 0}
 												{@const tempValue = region.temperatureMap?.[rowIndex]?.[colIndex] ?? 0}
 												{@const biomeName = getBiomeNameForPreview(elevationValue, precipValue, tempValue)}
+												{@const tileColor = getTileColor(elevationValue, biomeName, elevationValue < 0 ? 'OCEAN' : 'LAND')}
 												<div
 													class="w-full h-full cursor-help
 													hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]
 													dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
 													transition-shadow duration-150"
-													style="background-color: {getTileColor(elevationValue, biomeName, elevationValue < 0 ? 'OCEAN' : 'LAND')}"
+													style="background-color: {tileColor}"
 													title={getAdminRegionTooltip(region, rowIndex, colIndex, elevationValue)}
+													data-biome={biomeName}
+													data-color={tileColor}
 												></div>
 											{/each}
 										{/if}
