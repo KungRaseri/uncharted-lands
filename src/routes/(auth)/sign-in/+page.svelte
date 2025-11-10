@@ -21,7 +21,7 @@
 		</div>
 
 		<form
-			action="?/login&redirectTo={data.redirectTo}"
+			action="?/login"
 			method="POST"
 			class="space-y-1 md:space-y-3"
 			use:enhance={() => {

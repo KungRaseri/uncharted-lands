@@ -87,19 +87,29 @@ const login: Action = async ({ cookies, request, url, fetch }) => {
 
         const ts = new TimeSpan();
         ts.days = 30;
-
-        const age30d = ts.totalSeconds
+        const age30d = ts.totalSeconds;
+        
         ts.days = 0;
         ts.hours = 6;
-        const age6h = ts.totalSeconds
+        const age6h = ts.totalSeconds;
+
+        const rememberMe = !!rememberMeIsChecked;
+        const cookieMaxAge = rememberMe ? age30d : age6h;
+
+        logger.debug('[AUTH] Cookie settings', {
+            rememberMe,
+            rememberMeValue: rememberMeIsChecked,
+            maxAge: cookieMaxAge,
+            maxAgeDays: cookieMaxAge / (60 * 60 * 24)
+        });
 
         cookies.set('session', userAuthToken, {
             path: '/',
             httpOnly: true,
             sameSite: 'strict',
             secure: process.env.NODE_ENV === 'production',
-            maxAge: (rememberMeIsChecked) ? age30d : age6h
-        })
+            maxAge: cookieMaxAge
+        });
 
         throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
     } catch (error) {
