@@ -31,12 +31,13 @@
 	<title>Game | Uncharted Lands</title>
 </svelte:head>
 
+<!-- Time display - positioned above everything -->
+<div class="fixed top-2 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none min-w-[200px]">
+	<div class="text-xs text-neutral-400 text-center font-medium">{serverTime}</div>
+	<div class="text-xs text-neutral-400 text-center">{localTime}</div>
+</div>
+
 <div class="flex flex-col h-full">
-	<!-- Time display -->
-	<div class="absolute top-24 left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
-		<div class="text-xs text-neutral-400 text-center">{serverTime}</div>
-		<div class="text-xs text-neutral-400 text-center">{localTime}</div>
-	</div>
 
 	<!-- Header -->
 	{#if data.account?.profile}

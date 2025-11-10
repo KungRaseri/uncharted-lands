@@ -26,28 +26,29 @@
 	});
 </script>
 
-<header class="bg-surface-100 dark:bg-surface-800 shadow-md relative z-9">
-	<div class="grid grid-cols-3 items-center gap-4 p-4">
+<header class="bg-surface-100 dark:bg-surface-800 shadow-md relative z-50">
+	<div class="flex items-center justify-between gap-4 p-4">
 		<!-- Lead slot -->
-		<div class="block sm:hidden">
-			<button
-				type="button"
-				class="px-1.5 py-0 btn-icon preset-tonal-surface-500 justify-center items-center"
-				aria-controls="mobile-menu"
-				aria-expanded={isMainMenuOpen}
-				onclick={() => {
-					isMainMenuOpen = !isMainMenuOpen;
-				}}
-			>
-				{#if !isMainMenuOpen}
-					<Menu size={24} />
-				{:else}
-					<X size={24} />
-				{/if}
-			</button>
-		</div>
-		<div class="hidden sm:flex gap-2">
-			{#each page.data?.mainMenuLinks ?? [] as link}
+		<div class="flex items-center gap-2">
+			<div class="block sm:hidden">
+				<button
+					type="button"
+					class="px-1.5 py-0 btn-icon preset-tonal-surface-500 justify-center items-center"
+					aria-controls="mobile-menu"
+					aria-expanded={isMainMenuOpen}
+					onclick={() => {
+						isMainMenuOpen = !isMainMenuOpen;
+					}}
+				>
+					{#if !isMainMenuOpen}
+						<Menu size={24} />
+					{:else}
+						<X size={24} />
+					{/if}
+				</button>
+			</div>
+			<div class="hidden sm:flex gap-2">
+				{#each page.data?.mainMenuLinks ?? [] as link}
 				{#if link.requiredRole}
 					{#if page.data?.account}
 						<a
@@ -81,6 +82,7 @@
 					</a>
 				{/if}
 			{/each}
+			</div>
 		</div>
 
 		<!-- Trail slot -->
