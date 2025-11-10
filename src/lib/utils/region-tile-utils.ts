@@ -3,7 +3,7 @@
  * Used for displaying detailed tile information in region map previews
  */
 
-import { getTerrainType } from './map-colors';
+import { getTerrainType } from './tile-colors';
 
 export interface TileData {
 	elevation: number;

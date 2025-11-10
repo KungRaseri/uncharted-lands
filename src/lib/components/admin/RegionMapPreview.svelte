@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getElevationColor } from '$lib/utils/map-colors';
+	import { getElevationColor } from '$lib/utils/tile-colors';
 	import { getRegionTileTooltip, calculateRegionStats } from '$lib/utils/region-tile-utils';
 	
 	type Props = {

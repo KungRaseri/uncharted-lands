@@ -207,7 +207,7 @@
 													dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
 													transition-shadow duration-150"
 													style="background-color: {tileColor}"
-													title={getAdminRegionTooltip(region, rowIndex, colIndex, elevationValue)}
+													title={getAdminRegionTooltip(region, rowIndex, colIndex, elevationValue, precipValue, tempValue, biomeName)}
 													data-biome={biomeName}
 													data-color={tileColor}
 												></div>
