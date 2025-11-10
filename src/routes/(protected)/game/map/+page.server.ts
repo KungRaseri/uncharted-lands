@@ -35,7 +35,7 @@ export const load = (async ({ locals, cookies, url }) => {
         }
 
         // Fetch map data from server API
-        const response = await fetch(`${API_URL}/map?${queryParams.toString()}`, {
+        const response = await fetch(`${API_URL}/regions/map?${queryParams.toString()}`, {
             headers: {
                 'Cookie': `session=${sessionToken}`
             }
@@ -48,8 +48,13 @@ export const load = (async ({ locals, cookies, url }) => {
                 error: error.error
             });
             
-            if (response.status === 404) {
-                throw new Error('No world found. Please ask an administrator to create a world.');
+            if (response.status === 404 && error.code === 'NO_WORLD') {
+                // Redirect admins to world creation, others to a waiting page
+                if (locals.account.role === 'ADMINISTRATOR') {
+                    throw redirect(302, '/admin/worlds?message=Please create a world to enable the game map');
+                } else {
+                    throw redirect(302, '/game?error=no-world');
+                }
             }
             
             throw new Error(`Failed to load map: ${error.error || 'Unknown error'}`);

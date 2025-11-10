@@ -4,8 +4,12 @@
 	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home, RefreshCw } from 'lucide-svelte';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 
 	let { data }: { data: PageData } = $props();
+	
+	// Check for error message in URL
+	let showNoWorldError = $derived($page.url.searchParams.get('error') === 'no-world');
 	
 	// State for UI feedback
 	let isRefreshing = $state(false);
@@ -41,6 +45,19 @@
 </script>
 
 <div class="max-w-7xl mx-auto p-6 space-y-6">
+	<!-- No World Error Alert -->
+	{#if showNoWorldError}
+		<aside class="alert preset-filled-warning-500 rounded-md">
+			<div class="alert-message">
+				<AlertTriangle size={20} />
+				<div>
+					<h3 class="font-bold">World Not Available</h3>
+					<p>The game world hasn't been created yet. Please contact an administrator to set up the world before accessing the map.</p>
+				</div>
+			</div>
+		</aside>
+	{/if}
+
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
