@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { SettlementWithStorage } from '$lib/types/game';
-	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home, RefreshCw } from 'lucide-svelte';
+	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home, RefreshCw, Shield, User, Clock, MessageSquare, Users } from 'lucide-svelte';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -221,7 +221,7 @@
 	</div>
 
 	<!-- Quick Actions -->
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 		<a
 			href="/game/map"
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors group"
@@ -245,6 +245,71 @@
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
 				View and manage all your settlements
+			</p>
+		</a>
+
+		<a
+			href="/game/wardens"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-tertiary-500 transition-colors group"
+		>
+			<Shield size={32} class="text-tertiary-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				Wardens
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				Manage your settlement defenses
+			</p>
+		</a>
+
+		<a
+			href="/game/profile"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-success-500 transition-colors group"
+		>
+			<User size={32} class="text-success-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				Profile
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				View your player profile and statistics
+			</p>
+		</a>
+
+		<a
+			href="/game/history"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-warning-500 transition-colors group"
+		>
+			<Clock size={32} class="text-warning-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				History
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				View your activity history
+			</p>
+		</a>
+
+		<a
+			href="/game/messages"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-error-500 transition-colors group"
+		>
+			<MessageSquare size={32} class="text-error-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				Messages
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				Private messages with other players
+			</p>
+		</a>
+
+		<a
+			href="/game/guild"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors group"
+		>
+			<Users size={32} class="text-primary-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				Guild
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				Your guild information and members
 			</p>
 		</a>
 	</div>

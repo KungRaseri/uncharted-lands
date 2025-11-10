@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Home, Building2, Map, Shield, User, History, Mail, Users } from 'lucide-svelte';
-	import { isActive, isActiveExcluding } from '$lib/utils/navigation';
+	import { isActive, isExactActive } from '$lib/utils/navigation';
 	
-	// Get the current pathname
-	$: currentPath = page.url.pathname;
+	// Get the current pathname - use $derived for Svelte 5 reactivity
+	let currentPath = $derived(page.url.pathname);
 </script>
 
 <nav class="bg-surface-200 dark:bg-surface-700 shadow-md">
@@ -14,7 +14,7 @@
 			<div class="flex items-center gap-1">
 				<a
 					href="/game"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActiveExcluding(currentPath, '/game', ['/game/settlements', '/game/map', '/game/wardens'])
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -36,7 +36,7 @@
 				</a>
 				<a
 					href="/game/map"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive(currentPath, '/game/map')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/map')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -47,7 +47,7 @@
 				</a>
 				<a
 					href="/game/wardens"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive(currentPath, '/game/wardens')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/wardens')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -62,7 +62,7 @@
 			<div class="flex items-center gap-1">
 				<a
 					href="/game/profile"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive(currentPath, '/game/profile')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/profile')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -73,7 +73,7 @@
 				</a>
 				<a
 					href="/game/history"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive(currentPath, '/game/history')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/history')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -84,7 +84,7 @@
 				</a>
 				<a
 					href="/game/messages"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive(currentPath, '/game/messages')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/messages')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -95,7 +95,7 @@
 				</a>
 				<a
 					href="/game/guild"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive(currentPath, '/game/guild')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/guild')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
