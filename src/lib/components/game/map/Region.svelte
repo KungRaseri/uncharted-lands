@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Tile from './Tile.svelte';
 	import type { RegionWithTiles } from '$lib/types/game';
+	import type { MapViewMode } from '$lib/utils/tile-colors';
 
 	type Props = {
 		region: RegionWithTiles;
@@ -8,9 +9,11 @@
 		mode?: 'admin' | 'player';
 		/** Current player's profile ID (for player mode settlement filtering) */
 		currentPlayerProfileId?: string;
+		/** Map visualization mode */
+		mapViewMode?: MapViewMode;
 	};
 
-	let { region, mode = 'player', currentPlayerProfileId }: Props = $props();
+	let { region, mode = 'player', currentPlayerProfileId, mapViewMode = 'satellite' }: Props = $props();
 
 	// Tiles are ordered by (xCoord, yCoord) from database query
 	// This matches the creation order: row-by-row (x=row index, y=column index)
@@ -30,6 +33,6 @@
 
 <div class="grid grid-cols-10 gap-0 h-full w-full">
 	{#each region.tiles as tile}
-		<Tile {tile} {mode} {currentPlayerProfileId} />
+		<Tile {tile} {mode} {currentPlayerProfileId} {mapViewMode} />
 	{/each}
 </div>

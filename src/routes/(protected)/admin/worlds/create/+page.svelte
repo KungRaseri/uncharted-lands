@@ -824,9 +824,9 @@
 			<h2 class="text-xl font-semibold mb-4">World Preview</h2>
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
 				This is a client-side preview. The actual world will be generated on the server when you save.
-				Toggle between Biome and Terrain views to see different aspects of your world.
+				Use the view mode selector to see different aspects of your world (Satellite, Topographical, Temperature, Precipitation, Political).
 			</p>
-			<WorldMap previewRegions={regions} mode="admin" showLegend={true} legendView="both" showStats={true} />
+			<WorldMap previewRegions={regions} mode="admin" showLegend={true} mapViewMode="satellite" showStats={true} />
 		</div>
 	{/if}
 </div>

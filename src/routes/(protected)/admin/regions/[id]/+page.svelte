@@ -53,11 +53,11 @@
 		<WorldMap 
 			regions={[regionForMap]} 
 			viewLevel="region"
-			title="{data.region.name || 'Region'} Preview (Elevation)"
+			title="{data.region.name || 'Region'} Preview"
 			mode="admin"
 			showStats={true}
 			showLegend={true}
-			legendView="terrain"
+			mapViewMode="topographical"
 		/>
 	{/if}
 

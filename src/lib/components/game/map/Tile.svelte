@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { TileWithRelations } from '$lib/types/game';
-	import { getTileColor } from '$lib/utils/tile-colors';
+	import { getTileColorByViewMode, type MapViewMode } from '$lib/utils/tile-colors';
 	import { getTileTooltip } from '$lib/utils/tile-tooltips';
 
 	type Props = {
@@ -9,9 +9,11 @@
 		mode?: 'admin' | 'player';
 		/** Current player's profile ID (for player mode settlement filtering) */
 		currentPlayerProfileId?: string;
+		/** Map visualization mode */
+		mapViewMode?: MapViewMode;
 	};
 
-	let { tile, mode = 'player', currentPlayerProfileId }: Props = $props();
+	let { tile, mode = 'player', currentPlayerProfileId, mapViewMode = 'satellite' }: Props = $props();
 	// Check if tile has any settled plots
 	const hasSettlement = $derived(() => {
 		const settledPlots = (tile.plots || []).filter((plot: any) => plot.settlement);
@@ -32,7 +34,14 @@
 
 <div
 	class="w-full h-full cursor-help hover:shadow-[inset_0_0_0_2px_rgba(255,255,0,0.8)] hover:z-10 transition-shadow relative"
-	style="background-color: {getTileColor(tile.elevation, tile.biome?.name || 'Unknown', tile.type)}"
+	style="background-color: {getTileColorByViewMode(
+		mapViewMode,
+		tile.elevation,
+		tile.biome?.name || 'Unknown',
+		tile.type,
+		tile.temperature ?? 0,
+		tile.precipitation ?? 0
+	)}"
 	role="button"
 	tabindex="0"
 	aria-label="Tile: {tile.biome?.name || 'Unknown'}"

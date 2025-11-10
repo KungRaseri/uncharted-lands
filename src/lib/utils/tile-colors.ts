@@ -1,6 +1,7 @@
 /**
  * Tile color utilities
  * Consolidated color mapping for biomes, terrain, and elevation
+ * Supports multiple visualization modes: satellite, topographical, political, etc.
  * 
  * IMPORTANT: Elevation values are generated using fractal noise with:
  * - Base amplitude: 1.0
@@ -12,6 +13,16 @@
  * 
  * In practice, values can exceed 2.0 in rare cases.
  */
+
+/**
+ * Map visualization mode
+ */
+export type MapViewMode = 
+	| 'satellite'      // Realistic biome colors (default)
+	| 'topographical'  // Elevation-based height map
+	| 'temperature'    // Temperature gradient visualization
+	| 'precipitation'  // Precipitation/moisture visualization
+	| 'political';     // Simplified colors for settlements/claims
 
 /**
  * Biome type definition
@@ -243,4 +254,102 @@ export function getTileColor(
 	});
 
 	return getElevationFallbackColor(elevation);
+}
+
+/**
+ * Get color based on temperature value
+ * Temperature ranges from approximately -1 to 1 in the noise generation
+ * 
+ * @param temperature - Temperature value
+ * @returns Hex color string
+ */
+export function getTemperatureColor(temperature: number): string {
+	// Normalize temperature to 0-1 range (assuming input is roughly -1 to 1)
+	const normalized = (temperature + 1) / 2;
+	
+	if (normalized < 0.15) return '#0d1f4d'; // Frigid - deep blue
+	if (normalized < 0.3) return '#2e5c8a'; // Very cold - blue
+	if (normalized < 0.45) return '#4a9eff'; // Cold - light blue
+	if (normalized < 0.55) return '#90ee90'; // Cool - light green
+	if (normalized < 0.65) return '#ffff00'; // Mild - yellow
+	if (normalized < 0.75) return '#ffa500'; // Warm - orange
+	if (normalized < 0.85) return '#ff4500'; // Hot - red-orange
+	return '#8b0000'; // Very hot - dark red
+}
+
+/**
+ * Get color based on precipitation value
+ * Precipitation ranges from approximately 0 to 1 in the noise generation
+ * 
+ * @param precipitation - Precipitation value
+ * @returns Hex color string
+ */
+export function getPrecipitationColor(precipitation: number): string {
+	if (precipitation < 0.1) return '#d4a574'; // Arid - tan/brown
+	if (precipitation < 0.25) return '#c9b896'; // Dry - light brown
+	if (precipitation < 0.4) return '#b8d4a8'; // Semi-dry - pale green
+	if (precipitation < 0.55) return '#90c878'; // Moderate - light green
+	if (precipitation < 0.7) return '#5fb04e'; // Moist - green
+	if (precipitation < 0.85) return '#3a8c3a'; // Wet - dark green
+	return '#1e5a1e'; // Very wet - very dark green
+}
+
+/**
+ * Get tile color based on view mode
+ * Unified function that handles all visualization modes
+ * 
+ * @param viewMode - The visualization mode to use
+ * @param elevation - Tile elevation value
+ * @param biomeName - Name of the biome
+ * @param type - Type of tile (OCEAN or LAND)
+ * @param temperature - Temperature value (optional, needed for temperature view)
+ * @param precipitation - Precipitation value (optional, needed for precipitation view)
+ * @returns RGB/Hex color string
+ */
+export function getTileColorByViewMode(
+	viewMode: MapViewMode,
+	elevation: number,
+	biomeName: string,
+	type: TileType,
+	temperature?: number,
+	precipitation?: number
+): string {
+	switch (viewMode) {
+		case 'satellite':
+			// Realistic biome colors
+			return getTileColor(elevation, biomeName, type);
+			
+		case 'topographical':
+			// Elevation-based colors
+			return getElevationColor(elevation);
+			
+		case 'temperature':
+			// Temperature gradient
+			if (type === 'OCEAN' || elevation < 0) {
+				// Ocean gets darker blue based on depth
+				return getOceanColor(elevation);
+			}
+			return getTemperatureColor(temperature ?? 0);
+			
+		case 'precipitation':
+			// Precipitation/moisture gradient
+			if (type === 'OCEAN' || elevation < 0) {
+				// Ocean is always wet, show as deep blue-green
+				return '#1e5a5a';
+			}
+			return getPrecipitationColor(precipitation ?? 0);
+			
+		case 'political':
+			// Simplified colors for political boundaries
+			if (type === 'OCEAN' || elevation < 0) {
+				return '#b0c4de'; // Light steel blue for ocean
+			}
+			if (elevation < 0.15) {
+				return '#f5deb3'; // Wheat for beach
+			}
+			return '#d2b48c'; // Tan for land
+			
+		default:
+			return getTileColor(elevation, biomeName, type);
+	}
 }

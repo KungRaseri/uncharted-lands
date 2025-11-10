@@ -2,7 +2,7 @@
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
 	import MapLegend from '$lib/components/shared/MapLegend.svelte';
 	import type { RegionWithTiles } from '$lib/types/game';
-	import { getTileColor, getElevationColor } from '$lib/utils/tile-colors';
+	import { getTileColor, getTileColorByViewMode, getElevationColor, type MapViewMode } from '$lib/utils/tile-colors';
 	import { getAdminRegionTooltip } from '$lib/utils/admin-tooltips';
 	import { getBiomeNameForPreview } from '$lib/utils/biome-matcher';
 	import { getRegionTileTooltip, calculateRegionStats } from '$lib/utils/region-tile-utils';
@@ -27,6 +27,8 @@
 		mode?: 'admin' | 'player';
 		/** View level: world (multiple regions), region (single region), or tile (single tile in region) */
 		viewLevel?: 'world' | 'region' | 'tile';
+		/** Map visualization mode */
+		mapViewMode?: MapViewMode;
 		/** Highlighted tile ID (for tile view level) */
 		highlightedTileId?: string;
 		/** Title for the map view */
@@ -35,8 +37,6 @@
 		currentPlayerProfileId?: string;
 		/** Show legend */
 		showLegend?: boolean;
-		/** Legend view mode */
-		legendView?: 'biomes' | 'terrain' | 'both';
 		/** Show stats */
 		showStats?: boolean;
 		/** Lazy load mode: adjust grid size based on loaded regions */
@@ -48,14 +48,17 @@
 		previewRegions, 
 		mode = 'player',
 		viewLevel = 'world',
+		mapViewMode: initialMapViewMode = 'satellite',
 		highlightedTileId,
 		title,
 		currentPlayerProfileId,
 		showLegend = true,
-		legendView = 'biomes',
 		showStats = false,
 		lazyLoadEnabled = false
 	}: Props = $props();
+
+	// Make mapViewMode reactive so the view mode selector can change it
+	let mapViewMode = $state<MapViewMode>(initialMapViewMode);
 	
 	// Preview mode is ONLY for world creation (before tiles exist)
 	const isPreviewMode = $derived(!!previewRegions && !regions);
@@ -215,6 +218,40 @@
 		<h2 class="text-xl font-semibold text-center">{title}</h2>
 	{/if}
 	
+	<!-- View Mode Selector -->
+	<div class="flex flex-wrap gap-2 justify-center p-2 bg-surface-100 dark:bg-surface-800 rounded-md">
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'satellite' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'satellite'}
+		>
+			Satellite
+		</button>
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'topographical' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'topographical'}
+		>
+			Topographical
+		</button>
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'temperature' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'temperature'}
+		>
+			Temperature
+		</button>
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'precipitation' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'precipitation'}
+		>
+			Precipitation
+		</button>
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'political' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'political'}
+		>
+			Political
+		</button>
+	</div>
+	
 	<!-- Stats (if enabled) -->
 	{#if showStats}
 		{#if isRegionView && regionViewData()}
@@ -311,7 +348,14 @@
 													{@const precipValue = region.precipitationMap?.[rowIndex]?.[colIndex] ?? 0}
 													{@const tempValue = region.temperatureMap?.[rowIndex]?.[colIndex] ?? 0}
 													{@const biomeName = getBiomeNameForPreview(elevationValue, precipValue, tempValue)}
-													{@const tileColor = getTileColor(elevationValue, biomeName, elevationValue < 0 ? 'OCEAN' : 'LAND')}
+													{@const tileColor = getTileColorByViewMode(
+														mapViewMode,
+														elevationValue,
+														biomeName,
+														elevationValue < 0 ? 'OCEAN' : 'LAND',
+														tempValue,
+														precipValue
+													)}
 													<div
 														class="w-full h-full cursor-help
 														hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]
@@ -338,7 +382,7 @@
 							<div class="border border-surface-400 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 w-full h-full" 
 								 style="grid-row: {gridRow}; grid-column: {gridCol};"
 								 title="Region {region.name} ({region.xCoord}, {region.yCoord}) -> Grid ({gridRow}, {gridCol})">
-								<RegionComponent {region} mode={mode} {currentPlayerProfileId} />
+								<RegionComponent {region} mode={mode} {currentPlayerProfileId} {mapViewMode} />
 							</div>
 						{/each}
 					{/if}
@@ -349,6 +393,6 @@
 	
 	<!-- Legend -->
 	{#if showLegend}
-		<MapLegend view={legendView} {mode} {isPreviewMode} />
+		<MapLegend viewMode={mapViewMode} {mode} {isPreviewMode} />
 	{/if}
 </div>
