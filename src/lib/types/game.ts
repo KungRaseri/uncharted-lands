@@ -79,6 +79,14 @@ export interface TileBase {
   temperature: number;
   precipitation: number;
   type: TileType;
+  // Resource quality fields (0-100)
+  foodQuality: number;
+  woodQuality: number;
+  stoneQuality: number;
+  oreQuality: number;
+  specialResource?: string | null;
+  settlementId?: string | null;
+  plotSlots: number;
 }
 
 export interface TileWithBiome extends TileBase {
@@ -93,6 +101,9 @@ export interface TileWithRelations extends TileBase {
   biome?: Biome;
   plots?: Plot[];
 }
+
+// Convenient type alias for most common use case
+export type Tile = TileWithBiome | TileWithRelations;
 
 // ============================================================================
 // Region Types (with nested relations)

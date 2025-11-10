@@ -60,6 +60,49 @@ export type SpecialResource = (typeof SPECIAL_RESOURCES)[number];
 // CONFIGURATION TYPES
 // ===========================
 
+export interface ResourceDisplayConfig {
+  type: ResourceType;
+  name: string;
+  icon: string;
+  description?: string;
+}
+
+export interface ExtractorDisplayConfig {
+  type: ExtractorType;
+  name: string;
+  icon?: string;
+  description?: string;
+}
+
+export interface BuildingDisplayConfig {
+  type: BuildingType;
+  name: string;
+  icon?: string;
+  description?: string;
+}
+
+export interface QualityDisplayConfig {
+  threshold: number;
+  rating: string;
+  color: string;
+  multiplier: number;
+}
+
+export interface AccumulationConfig {
+  /** Hours before diminishing returns start */
+  fullRateHours: number;
+  /** Multiplier for next tier (e.g., 0.5 = 50% rate) */
+  tier1Multiplier: number;
+  /** Hours before second diminishing returns tier */
+  tier1Hours: number;
+  /** Multiplier for third tier */
+  tier2Multiplier: number;
+  /** Hours before third diminishing returns tier */
+  tier2Hours: number;
+  /** Maximum effective hours cap */
+  maxHours: number;
+}
+
 export interface ProductionRateConfig {
   resourceType: ResourceType;
   extractorType: ExtractorType;
@@ -94,4 +137,9 @@ export interface GameConfig {
     good: number;
     excellent: number;
   };
+  resourceDisplay: ResourceDisplayConfig[];
+  extractorDisplay: ExtractorDisplayConfig[];
+  buildingDisplay: BuildingDisplayConfig[];
+  qualityDisplay: QualityDisplayConfig[];
+  accumulation: AccumulationConfig;
 }

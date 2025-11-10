@@ -19,22 +19,6 @@ async function ensureConfig(): Promise<GameConfig> {
 }
 
 /**
- * DEPRECATED: Use getBaseProductionRate() instead
- * Kept for backward compatibility
- */
-export const BASE_PRODUCTION_RATES = {
-  FOOD: { FARM: 10 },
-  WOOD: { LUMBER_MILL: 8 },
-  STONE: { QUARRY: 6 },
-  ORE: { MINE: 4 },
-  CLAY: { QUARRY: 3 },
-  HERBS: { HERB_GARDEN: 5 },
-  PELTS: { HUNTERS_LODGE: 4 },
-  GEMS: { MINE: 1 },
-  EXOTIC_WOOD: { LUMBER_MILL: 2 },
-} as const;
-
-/**
  * Get base production rate from config
  */
 export async function getBaseProductionRate(
@@ -114,26 +98,31 @@ export async function getQualityInfo(quality: number): Promise<{
 
 /**
  * Calculate accumulated resources since last harvest
+ * Uses server config for diminishing returns parameters
  */
-export function calculateAccumulatedResources(
+export async function calculateAccumulatedResources(
   productionRate: number,
-  lastHarvested: Date | null
-): number {
+  lastHarvested: Date | null,
+): Promise<number> {
   if (!lastHarvested) return 0;
+
+  const config = await ensureConfig();
+  const { fullRateHours, tier1Multiplier, tier1Hours, tier2Multiplier, maxHours } =
+    config.accumulation;
 
   const now = new Date();
   const hoursSinceHarvest = (now.getTime() - lastHarvested.getTime()) / (1000 * 60 * 60);
 
-  // Apply diminishing returns after 24 hours
+  // Apply diminishing returns based on server config
   let effectiveHours = hoursSinceHarvest;
-  if (hoursSinceHarvest > 24) {
-    effectiveHours = 24 + (hoursSinceHarvest - 24) * 0.5;
+  if (hoursSinceHarvest > fullRateHours) {
+    effectiveHours = fullRateHours + (hoursSinceHarvest - fullRateHours) * tier1Multiplier;
   }
-  if (effectiveHours > 48) {
-    effectiveHours = 48 + (hoursSinceHarvest - 48) * 0.25;
+  if (effectiveHours > tier1Hours) {
+    effectiveHours = tier1Hours + (hoursSinceHarvest - tier1Hours) * tier2Multiplier;
   }
-  if (effectiveHours > 96) {
-    effectiveHours = 96;
+  if (effectiveHours > maxHours) {
+    effectiveHours = maxHours;
   }
 
   return Math.floor(productionRate * effectiveHours);
@@ -141,15 +130,22 @@ export function calculateAccumulatedResources(
 
 /**
  * Format time until next harvest (for display)
+ * Uses server config for thresholds
  */
-export function formatHarvestTime(lastHarvested: Date | null, productionRate: number): string {
+export async function formatHarvestTime(
+  lastHarvested: Date | null,
+  productionRate: number,
+): Promise<string> {
   if (!lastHarvested || productionRate === 0) return 'Not producing';
+
+  const config = await ensureConfig();
+  const { fullRateHours, maxHours } = config.accumulation;
 
   const now = new Date();
   const hoursSinceHarvest = (now.getTime() - lastHarvested.getTime()) / (1000 * 60 * 60);
 
-  if (hoursSinceHarvest >= 96) return 'Ready (max)';
-  if (hoursSinceHarvest >= 24) return 'Ready';
+  if (hoursSinceHarvest >= maxHours) return 'Ready (max)';
+  if (hoursSinceHarvest >= fullRateHours) return 'Ready';
   if (hoursSinceHarvest >= 1) return `${Math.floor(hoursSinceHarvest)}h ago`;
 
   const minutesSince = Math.floor(hoursSinceHarvest * 60);
@@ -157,51 +153,37 @@ export function formatHarvestTime(lastHarvested: Date | null, productionRate: nu
 }
 
 /**
- * Get resource type icon/emoji
+ * Get resource type icon/emoji from server config
  */
-export function getResourceIcon(resourceType: string): string {
-  const icons: Record<string, string> = {
-    FOOD: '🌾',
-    WOOD: '🪵',
-    STONE: '🪨',
-    ORE: '⛏️',
-    CLAY: '🧱',
-    HERBS: '🌿',
-    PELTS: '🦊',
-    GEMS: '💎',
-    EXOTIC_WOOD: '🌳',
-  };
-  return icons[resourceType] || '❓';
+export async function getResourceIcon(resourceType: string): Promise<string> {
+  const config = await ensureConfig();
+  const resource = config.resourceDisplay.find((r) => r.type === resourceType);
+  return resource?.icon || '❓';
 }
 
 /**
- * Get extractor type display name
+ * Get resource display name from server config
  */
-export function getExtractorName(extractorType: string): string {
-  const names: Record<string, string> = {
-    FARM: 'Farm',
-    LUMBER_MILL: 'Lumber Mill',
-    QUARRY: 'Quarry',
-    MINE: 'Mine',
-    FISHING_DOCK: 'Fishing Dock',
-    HUNTERS_LODGE: "Hunter's Lodge",
-    HERB_GARDEN: 'Herb Garden',
-  };
-  return names[extractorType] || extractorType;
+export async function getResourceName(resourceType: string): Promise<string> {
+  const config = await ensureConfig();
+  const resource = config.resourceDisplay.find((r) => r.type === resourceType);
+  return resource?.name || resourceType;
 }
 
 /**
- * Get building type display name
+ * Get extractor type display name from server config
  */
-export function getBuildingName(buildingType: string): string {
-  const names: Record<string, string> = {
-    HOUSE: 'House',
-    STORAGE: 'Storage',
-    BARRACKS: 'Barracks',
-    WORKSHOP: 'Workshop',
-    MARKETPLACE: 'Marketplace',
-    TOWN_HALL: 'Town Hall',
-    WALL: 'Wall',
-  };
-  return names[buildingType] || buildingType;
+export async function getExtractorName(extractorType: string): Promise<string> {
+  const config = await ensureConfig();
+  const extractor = config.extractorDisplay.find((e) => e.type === extractorType);
+  return extractor?.name || extractorType;
+}
+
+/**
+ * Get building type display name from server config
+ */
+export async function getBuildingName(buildingType: string): Promise<string> {
+  const config = await ensureConfig();
+  const building = config.buildingDisplay.find((b) => b.type === buildingType);
+  return building?.name || buildingType;
 }
