@@ -289,7 +289,7 @@
 	{#if worldRegions && worldRegions.length > 0}
 		<div class="card preset-filled-surface-100-900 p-6">
 			<h2 class="text-xl font-bold mb-4">World Map</h2>
-			<WorldMap regions={worldRegions} mode="admin" showLegend={true} />
+			<WorldMap regions={worldRegions} mode="admin" showLegend={true} legendView="both" />
 		</div>
 	{/if}
 

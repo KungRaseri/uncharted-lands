@@ -11,17 +11,19 @@
 	};
 
 	let { region, mode = 'player', currentPlayerProfileId }: Props = $props();
-	
+
 	// Tiles are ordered by (xCoord, yCoord) from database query
 	// This matches the creation order: row-by-row (x=row index, y=column index)
 	// Which is EXACTLY the same order as the preview displays them
 	// Database columns added: xCoord, yCoord (integers 0-9)
-	
+
 	// Debug: Log tile coordinates to verify ordering
 	$effect(() => {
 		if (typeof window !== 'undefined' && region.tiles.length > 0) {
-			const coords = region.tiles.slice(0, 20).map((t: any) => `(${t.xCoord ?? '?'},${t.yCoord ?? '?'})`).join(' ');
-			console.log(`[REGION ${region.xCoord},${region.yCoord}] First 20 tiles:`, coords);
+			const coords = region.tiles
+				.slice(0, 20)
+				.map((t: any) => `(${t.xCoord ?? '?'},${t.yCoord ?? '?'})`)
+				.join(' ');
 		}
 	});
 </script>
