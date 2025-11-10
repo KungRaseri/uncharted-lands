@@ -119,3 +119,10 @@ export const BIOME_DISPLAY_NAMES: Record<string, string> = {
 	DESERT_COLD: 'Cold Desert',
 	DESERT_SUBTROPICAL: 'Desert',
 };
+
+/**
+ * Get display name for a biome
+ */
+export function getBiomeDisplayName(biomeName: string): string {
+	return BIOME_DISPLAY_NAMES[biomeName] || biomeName;
+}

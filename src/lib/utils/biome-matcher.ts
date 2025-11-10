@@ -56,6 +56,14 @@ export function normalizeValue(value: number, min: number, max: number): number 
 }
 
 /**
+ * Normalize a raw noise value from [-1, 1] to [min, max]
+ * This matches the server-side normalizeValue in world-generator.ts
+ */
+export function normalizeNoiseValue(value: number, min: number, max: number): number {
+	return (value * (max - min)) / 2 + (max + min) / 2;
+}
+
+/**
  * Get biome name for a tile based on elevation, precipitation, and temperature
  * This is now synchronous - no more async/await needed!
  */
@@ -77,11 +85,31 @@ export function getBiomeNameForPreview(
 		return 'Beach';
 	}
 
-	// Normalize precipitation and temperature to match server-side
-	const normalizedPrecip = normalizeValue(precipitation, 0, 450);
-	const normalizedTemp = normalizeValue(temperature, -10, 32);
+	// IMPORTANT: The raw precipitation and temperature values from the preview
+	// are in the range [-1, 1] (from noise function), not the normalized ranges.
+	// We need to convert them from [-1, 1] to [0, 450] and [-10, 32] respectively,
+	// then normalize to 0-100 for biome matching.
+	const precipInRange = normalizeNoiseValue(precipitation, 0, 450);
+	const tempInRange = normalizeNoiseValue(temperature, -10, 32);
+	
+	const normalizedPrecip = normalizeValue(precipInRange, 0, 450);
+	const normalizedTemp = normalizeValue(tempInRange, -10, 32);
 
 	// Find matching biome
 	const biome = findBiomeForTile(normalizedPrecip, normalizedTemp);
+	
+	// Debug logging - remove after verification
+	if (!biome) {
+		console.warn('[BIOME] No biome found for:', { 
+			elevation, 
+			precipitation, 
+			temperature, 
+			precipInRange,
+			tempInRange,
+			normalizedPrecip, 
+			normalizedTemp 
+		});
+	}
+	
 	return biome?.name || 'Unknown';
 }

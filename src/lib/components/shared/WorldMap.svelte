@@ -1,7 +1,6 @@
 <script lang="ts">
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
 	import type { RegionWithTiles } from '$lib/types/game';
-	import { getElevationColor, getTerrainType } from '$lib/utils/map-colors';
 	import { getTileColor } from '$lib/utils/tile-colors';
 	import { getAdminRegionTooltip } from '$lib/utils/admin-tooltips';
 	import { getBiomeNameForPreview } from '$lib/utils/biome-matcher';
@@ -237,129 +236,82 @@
 	{#if showLegend}
 		<div class="flex justify-center">
 			<div class="bg-surface-200 dark:bg-surface-700 p-6 rounded-lg max-w-4xl">
-				{#if isPreviewMode}
-					<!-- Preview Legend (Elevation-based - World Creation Only) -->
-					<div class="text-sm text-surface-600 dark:text-surface-400">
-						<div class="flex items-center gap-3 flex-wrap justify-center">
-							<span class="font-semibold text-base mr-2">Elevation Preview:</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #001a33"></span>
-								<span>Deep Ocean (&lt; -0.3)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #003d66"></span>
-								<span>Ocean (&lt; 0)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #f4e4c1"></span>
-								<span>Beach (0-0.1)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #78b450"></span>
-								<span>Plains (0.1-0.3)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #5a8232"></span>
-								<span>Forest (0.3-0.5)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #8d6e63"></span>
-								<span>Hills (0.5-0.7)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #969696"></span>
-								<span>Mountains (0.7-0.9)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #dce1f0"></span>
-								<span>Snow Peaks (&gt; 0.9)</span>
-							</span>
-						</div>
+				<!-- Biome Legend (Both Preview & Normal Modes) -->
+				<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-sm">
+					<!-- Water & Coastal -->
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(0, 26, 51)"></div>
+						<span>Deep Ocean</span>
 					</div>
-				{:else}
-					<!-- Biome Legend (Both Admin & Player) -->
-					<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-sm">
-						<!-- Water & Coastal -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(0, 26, 51)"></div>
-							<span>Deep Ocean</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(0, 61, 102)"></div>
-							<span>Ocean</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(244, 228, 193)"></div>
-							<span>Beach</span>
-						</div>
-						
-						<!-- Cold Biomes -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(220, 225, 240)"></div>
-							<span>Tundra</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(45, 100, 60)"></div>
-							<span>Boreal Forest</span>
-						</div>
-						
-						<!-- Temperate Biomes -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(60, 130, 50)"></div>
-							<span>Temperate Forest</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(120, 180, 80)"></div>
-							<span>Grassland</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(90, 140, 70)"></div>
-							<span>Woodland</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(140, 160, 90)"></div>
-							<span>Shrubland</span>
-						</div>
-						
-						<!-- Tropical Biomes -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(50, 140, 70)"></div>
-							<span>Tropical Forest</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(30, 130, 60)"></div>
-							<span>Rainforest</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(200, 170, 80)"></div>
-							<span>Savanna</span>
-						</div>
-						
-						<!-- Deserts -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(190, 180, 160)"></div>
-							<span>Cold Desert</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(230, 200, 140)"></div>
-							<span>Desert</span>
-						</div>
-						
-						<!-- Mountains -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(150, 150, 150)"></div>
-							<span>Mountains</span>
-						</div>
-						
-						<!-- Settlement Marker (Player Mode Only) -->
-						{#if mode === 'player'}
-							<div class="flex items-center gap-2">
-								<div class="w-3 h-3 bg-warning-400 rounded-full border border-surface-900 shadow-[0_0_3px_rgba(251,191,36,1)]"></div>
-								<span>Settled Plots</span>
-							</div>
-						{/if}
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(0, 61, 102)"></div>
+						<span>Ocean</span>
 					</div>
-				{/if}
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(244, 228, 193)"></div>
+						<span>Beach</span>
+					</div>
+					
+					<!-- Cold Biomes -->
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(220, 225, 240)"></div>
+						<span>Tundra</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(45, 100, 60)"></div>
+						<span>Boreal Forest</span>
+					</div>
+					
+					<!-- Temperate Biomes -->
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(60, 130, 50)"></div>
+						<span>Temperate Forest</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(120, 180, 80)"></div>
+						<span>Grassland</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(90, 140, 70)"></div>
+						<span>Woodland</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(140, 160, 90)"></div>
+						<span>Shrubland</span>
+					</div>
+					
+					<!-- Tropical Biomes -->
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(50, 140, 70)"></div>
+						<span>Tropical Forest</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(30, 130, 60)"></div>
+						<span>Rainforest</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(200, 170, 80)"></div>
+						<span>Savanna</span>
+					</div>
+					
+					<!-- Deserts -->
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(190, 180, 160)"></div>
+						<span>Cold Desert</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(230, 200, 140)"></div>
+						<span>Desert</span>
+					</div>
+					
+					<!-- Settlement Marker (Player Mode Only) -->
+					{#if mode === 'player' && !isPreviewMode}
+						<div class="flex items-center gap-2">
+							<div class="w-3 h-3 bg-warning-400 rounded-full border border-surface-900 shadow-[0_0_3px_rgba(251,191,36,1)]"></div>
+							<span>Settled Plots</span>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	{/if}

@@ -83,9 +83,10 @@ export function getElevationFallbackColor(elevation: number): string {
 /**
  * Get tile color based on biome type and elevation
  * Main function that determines tile color using elevation, biome, and tile type
+ * Prioritizes biome data over elevation data
  * 
  * @param elevation - Tile elevation value
- * @param biomeName - Name of the biome
+ * @param biomeName - Name of the biome (including special cases like "Deep Ocean", "Ocean", "Beach")
  * @param type - Type of tile (OCEAN or LAND)
  * @returns RGB color string
  */
@@ -94,13 +95,12 @@ export function getTileColor(
 	biomeName: string,
 	type: TileType
 ): string {
-	// Ocean/Water - differentiate by depth
-	if (type === 'OCEAN' || elevation < 0) {
+	// Handle special biome names first (from getBiomeNameForPreview)
+	if (biomeName === 'Deep Ocean' || biomeName === 'Ocean') {
 		return getOceanColor(elevation);
 	}
-
-	// Beach/Coastal (low elevation land)
-	if (elevation >= 0 && elevation < 0.15) {
+	
+	if (biomeName === 'Beach') {
 		return getBeachColor();
 	}
 
@@ -109,6 +109,24 @@ export function getTileColor(
 		return BIOME_COLORS[biomeName as BiomeType];
 	}
 
-	// Fallback: elevation-based
+	// Fallback to elevation-based coloring only if biome is unknown
+	// This handles edge cases and legacy data
+	if (type === 'OCEAN' || elevation < 0) {
+		return getOceanColor(elevation);
+	}
+
+	if (elevation >= 0 && elevation < 0.15) {
+		return getBeachColor();
+	}
+
+	// Debug logging for unknown biomes - remove after verification
+	console.warn('[TILE COLOR] Unknown biome, using fallback:', { 
+		biomeName, 
+		elevation, 
+		type,
+		availableBiomes: Object.keys(BIOME_COLORS)
+	});
+
+	// Final fallback: elevation-based
 	return getElevationFallbackColor(elevation);
 }
