@@ -129,7 +129,7 @@
 	const settledPlots = $derived(
 		regions.reduce(
 			(sum: number, region: RegionWithTiles) => sum + (region.tiles?.reduce(
-				(tileSum: number, tile: TileWithRelations) => tileSum + (tile.Plots?.filter((plot: Plot) => plot.Settlement !== null).length || 0), 0
+				(tileSum: number, tile: TileWithRelations) => tileSum + (tile.plots?.filter((plot: Plot) => plot.Settlement !== null).length || 0), 0
 			) || 0), 0
 		) || 0
 	);

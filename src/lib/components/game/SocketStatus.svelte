@@ -3,14 +3,16 @@
 	import { WS_URL } from '$lib/config';
 	import { onMount, onDestroy } from 'svelte';
 
-	let showDetails = false;
+	let { sessionToken }: { sessionToken?: string | null } = $props();
+	
+	let showDetails = $state(false);
 	
 	// Extract just the host:port for display
 	const serverDisplay = WS_URL.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
 
 	onMount(() => {
-		// Connect to server when component mounts
-		socketStore.connect();
+		// Connect to server when component mounts, passing the session token
+		socketStore.connect(undefined, sessionToken || undefined);
 	});
 
 	onDestroy(() => {
@@ -18,19 +20,19 @@
 		socketStore.disconnect();
 	});
 
-	$: statusColor = {
+	const statusColor = $derived({
 		connected: 'bg-green-500',
 		connecting: 'bg-yellow-500',
 		disconnected: 'bg-gray-500',
 		error: 'bg-red-500'
-	}[$connectionState];
+	}[$connectionState]);
 
-	$: statusText = {
+	const statusText = $derived({
 		connected: 'Connected',
 		connecting: 'Connecting...',
 		disconnected: 'Disconnected',
 		error: 'Connection Error'
-	}[$connectionState];
+	}[$connectionState]);
 </script>
 
 <div class="fixed bottom-4 right-4 z-50">
@@ -70,7 +72,7 @@
 				{/if}
 				{#if $connectionState === 'disconnected' || $connectionState === 'error'}
 					<button
-						onclick={() => socketStore.connect()}
+						onclick={() => socketStore.connect(undefined, sessionToken || undefined)}
 						class="mt-2 w-full rounded bg-primary-600 px-3 py-1 text-xs font-medium hover:bg-primary-700"
 					>
 						Reconnect

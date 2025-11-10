@@ -21,7 +21,10 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
                 status: response.status,
                 statusText: response.statusText
             });
-            return { server: null };
+            return { 
+                server: null,
+                sessionToken: sessionToken || null
+            };
         }
         
         const servers = await response.json();
@@ -31,12 +34,16 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
             hasServer: servers && servers.length > 0
         });
         
-        // Return first server or null
+        // Return first server and session token
         return {
-            server: servers && servers.length > 0 ? servers[0] : null
+            server: servers && servers.length > 0 ? servers[0] : null,
+            sessionToken: sessionToken || null
         };
     } catch (error) {
         logger.error('[GAME LAYOUT] Error fetching servers', error);
-        return { server: null };
+        return { 
+            server: null,
+            sessionToken: null
+        };
     }
 }

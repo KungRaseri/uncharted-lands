@@ -138,7 +138,7 @@
 						<!-- Structures -->
 						<div class="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
 							<Home size={14} />
-							<span>{settlement.Structures?.length || 0} Structure{settlement.Structures?.length === 1 ? '' : 's'}</span>
+							<span>{settlement.structures?.length || 0} Structure{settlement.structures?.length === 1 ? '' : 's'}</span>
 						</div>
 
 						<!-- Resources -->
@@ -151,31 +151,31 @@
 								<div class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1">
 									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">Food</p>
 									<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
-										{settlement.Storage?.food || 0}
+										{settlement.storage?.food || 0}
 									</p>
 								</div>
 								<div class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1">
 									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">Water</p>
 									<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
-										{settlement.Storage?.water || 0}
+										{settlement.storage?.water || 0}
 									</p>
 								</div>
 								<div class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1">
 									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">Wood</p>
 									<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
-										{settlement.Storage?.wood || 0}
+										{settlement.storage?.wood || 0}
 									</p>
 								</div>
 								<div class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1">
 									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">Stone</p>
 									<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
-										{settlement.Storage?.stone || 0}
+										{settlement.storage?.stone || 0}
 									</p>
 								</div>
 								<div class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1">
 									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">Ore</p>
 									<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
-										{settlement.Storage?.ore || 0}
+										{settlement.storage?.ore || 0}
 									</p>
 								</div>
 							</div>
@@ -216,12 +216,12 @@
 										<span>{settlement.plotId.slice(0, 8)}...</span>
 									</div>
 								</td>
-								<td>{settlement.Structures?.length || 0}</td>
-								<td class="text-center font-semibold">{settlement.Storage?.food || 0}</td>
-								<td class="text-center font-semibold">{settlement.Storage?.water || 0}</td>
-								<td class="text-center font-semibold">{settlement.Storage?.wood || 0}</td>
-								<td class="text-center font-semibold">{settlement.Storage?.stone || 0}</td>
-								<td class="text-center font-semibold">{settlement.Storage?.ore || 0}</td>
+								<td>{settlement.structures?.length || 0}</td>
+								<td class="text-center font-semibold">{settlement.storage?.food || 0}</td>
+								<td class="text-center font-semibold">{settlement.storage?.water || 0}</td>
+								<td class="text-center font-semibold">{settlement.storage?.wood || 0}</td>
+								<td class="text-center font-semibold">{settlement.storage?.stone || 0}</td>
+								<td class="text-center font-semibold">{settlement.storage?.ore || 0}</td>
 							</tr>
 						{/each}
 					</tbody>

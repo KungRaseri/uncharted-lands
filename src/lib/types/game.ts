@@ -206,14 +206,14 @@ export interface SettlementWithStorage {
   playerProfileId: string;
   plotId: string;
   founded: Date | string;
-  Storage?: {
+  storage?: {
     food: number;
     water: number;
     wood: number;
     stone: number;
     ore: number;
   } | null;
-  Structures?: Array<{
+  structures?: Array<{
     id: string;
     type: string;
   }> | null;

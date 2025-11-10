@@ -38,8 +38,10 @@ function createSocketStore() {
 
 		/**
 		 * Connect to the game server
+		 * @param serverUrl - Optional server URL override
+		 * @param token - Session token for authentication
 		 */
-		connect: (serverUrl?: string) => {
+		connect: (serverUrl?: string, token?: string) => {
 			if (!browser) return;
 			if (socket?.connected) {
 				console.log('[SOCKET] Already connected');
@@ -56,7 +58,10 @@ function createSocketStore() {
 				reconnectionDelay: 1000,
 				reconnectionDelayMax: 5000,
 				reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
-				transports: ['websocket', 'polling']
+				transports: ['websocket', 'polling'],
+				auth: {
+					token: token || ''
+				}
 			});
 
 			// Connection successful

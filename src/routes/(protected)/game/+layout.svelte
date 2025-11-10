@@ -59,6 +59,6 @@
 
 	<!-- Socket connection status indicator -->
 	{#if data.account?.profile}
-		<SocketStatus />
+		<SocketStatus sessionToken={data.sessionToken} />
 	{/if}
 </div>
