@@ -2,7 +2,9 @@
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
 	import type { RegionWithTiles } from '$lib/types/game';
 	import { getElevationColor, getTerrainType } from '$lib/utils/map-colors';
+	import { getTileColor } from '$lib/utils/tile-colors';
 	import { getAdminRegionTooltip } from '$lib/utils/admin-tooltips';
+	import { getBiomeNameForPreview } from '$lib/utils/biome-matcher';
 	
 	type RegionWithElevationMap = {
 		id: string;
@@ -187,7 +189,7 @@
 			<!-- Dynamic grid size based on loaded regions -->
 			<div class="grid {gridColsClass()} {gridRowsClass()} gap-0 border-2 border-surface-400 dark:border-surface-500 w-[600px] h-[600px] max-w-[90vw] max-h-[90vw]">
 				{#if isPreviewMode && previewRegions}
-					<!-- Preview Mode (World Creation ONLY): Show elevation data -->
+					<!-- Preview Mode (World Creation): Show biome-based colors to match tile view -->
 					{#each previewRegions as region}
 						<div class="border border-surface-400 dark:border-surface-600 p-0 aspect-square">
 							<div class="grid grid-cols-10 gap-0 h-full w-full">
@@ -196,12 +198,15 @@
 										{#if Array.isArray(row)}
 											{#each row as elevation, colIndex}
 												{@const elevationValue = typeof elevation === 'number' ? elevation : 0}
+												{@const precipValue = region.precipitationMap?.[rowIndex]?.[colIndex] ?? 0}
+												{@const tempValue = region.temperatureMap?.[rowIndex]?.[colIndex] ?? 0}
+												{@const biomeName = getBiomeNameForPreview(elevationValue, precipValue, tempValue)}
 												<div
 													class="w-full h-full cursor-help
 													hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]
 													dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
 													transition-shadow duration-150"
-													style="background-color: {getElevationColor(elevationValue)}"
+													style="background-color: {getTileColor(elevationValue, biomeName, elevationValue < 0 ? 'OCEAN' : 'LAND')}"
 													title={getAdminRegionTooltip(region, rowIndex, colIndex, elevationValue)}
 												></div>
 											{/each}
