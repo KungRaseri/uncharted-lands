@@ -16,7 +16,7 @@ export type Plot = {
 	wood: number;
 	stone: number;
 	ore: number;
-	Settlement?: any;
+	settlement?: any;
 };
 
 /**
@@ -51,7 +51,7 @@ export type PlotStats = {
 export function calculatePlotStats(plots: Plot[]): PlotStats {
 	const totalPlots = plots.length;
 	const totalArea = plots.reduce((sum, p) => sum + p.area, 0);
-	const withSettlements = plots.filter((p) => p.Settlement).length;
+	const withSettlements = plots.filter((p) => p.settlement).length;
 	const avgSolar = totalPlots > 0 ? plots.reduce((sum, p) => sum + p.solar, 0) / totalPlots : 0;
 	const avgWind = totalPlots > 0 ? plots.reduce((sum, p) => sum + p.wind, 0) / totalPlots : 0;
 
@@ -76,7 +76,7 @@ export function getPlotTooltip(plot: Plot): string {
 Area: ${plot.area} m²
 Solar: ${plot.solar} | Wind: ${plot.wind}
 Resources: 🌾${plot.food} 💧${plot.water} 🪵${plot.wood} 🪨${plot.stone} ⛏️${plot.ore}
-${plot.Settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
+${plot.settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
 }
 
 /**

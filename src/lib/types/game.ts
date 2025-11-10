@@ -52,7 +52,7 @@ export interface Plot {
   wood: number;
   stone: number;
   ore: number;
-  Settlement?: Settlement | null;
+  settlement?: Settlement | null;
 }
 
 // ============================================================================

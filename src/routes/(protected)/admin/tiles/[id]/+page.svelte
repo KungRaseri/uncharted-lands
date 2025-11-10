@@ -129,7 +129,7 @@
 					</thead>
 					<tbody>
 						{#each data.tile.Plots as plot}
-							{@const hasSettlement = plot.Settlement}
+							{@const hasSettlement = plot.settlement}
 							<tr class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
 								<td class="p-3">
 									<p class="font-mono text-xs">{plot.id.substring(0, 12)}...</p>
@@ -197,7 +197,7 @@
 					</div>
 					<div>
 						<p class="text-xs text-surface-600 dark:text-surface-400">With Settlements</p>
-						<p class="font-semibold text-warning-500">{data.tile.Plots.filter((p: Plot) => p.Settlement).length}</p>
+						<p class="font-semibold text-warning-500">{data.tile.Plots.filter((p: Plot) => p.settlement).length}</p>
 					</div>
 					<div>
 						<p class="text-xs text-surface-600 dark:text-surface-400">Total Resources</p>

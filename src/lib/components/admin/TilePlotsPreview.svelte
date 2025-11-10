@@ -65,7 +65,7 @@
 		<!-- Plots Overlay -->
 		{#if tile.Plots.length > 0}
 			{#each plotLayout as { plot, top, left, width, height, scale }}
-				{@const hasSettlement = plot.Settlement}
+				{@const hasSettlement = plot.settlement}
 				<div
 					class="absolute border-2 border-white/60 rounded transition-all duration-150 hover:border-warning-500 hover:z-10 hover:scale-105 cursor-pointer"
 					style="
