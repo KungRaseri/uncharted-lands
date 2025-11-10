@@ -26,7 +26,7 @@
 	});
 </script>
 
-<header class="bg-surface-100 dark:bg-surface-800 shadow-md">
+<header class="bg-surface-100 dark:bg-surface-800 shadow-md relative z-9">
 	<div class="grid grid-cols-3 items-center gap-4 p-4">
 		<!-- Lead slot -->
 		<div class="block sm:hidden">
@@ -129,7 +129,21 @@
 							<img
 								class="w-6 h-6 rounded-full object-cover"
 								src={page.data.account.profile.picture}
-								alt="Profile"
+								alt={page.data.account.profile.username || 'User'}
+								onerror={(e) => {
+									// If image fails to load, replace with User icon
+									const parent = e.currentTarget.parentElement;
+									e.currentTarget.remove();
+									const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+									icon.setAttribute('width', '20');
+									icon.setAttribute('height', '20');
+									icon.setAttribute('viewBox', '0 0 24 24');
+									icon.setAttribute('fill', 'none');
+									icon.setAttribute('stroke', 'currentColor');
+									icon.setAttribute('stroke-width', '2');
+									icon.innerHTML = '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>';
+									parent?.appendChild(icon);
+								}}
 							/>
 						{:else}
 							<User size={20} />

@@ -33,7 +33,7 @@
 
 <div class="flex flex-col h-full">
 	<!-- Time display -->
-	<div class="absolute top-3 z-10 right-1/3 left-1/3">
+	<div class="absolute top-24 left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
 		<div class="text-xs text-neutral-400 text-center">{serverTime}</div>
 		<div class="text-xs text-neutral-400 text-center">{localTime}</div>
 	</div>
