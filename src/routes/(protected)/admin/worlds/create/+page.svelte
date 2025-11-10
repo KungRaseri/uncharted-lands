@@ -821,11 +821,12 @@
 
 	{#if regions && regions.length > 0}
 		<div class="card p-4 rounded-md">
-			<h2 class="text-xl font-semibold mb-4">World Preview (Elevation)</h2>
+			<h2 class="text-xl font-semibold mb-4">World Preview</h2>
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
 				This is a client-side preview. The actual world will be generated on the server when you save.
+				Toggle between Biome and Terrain views to see different aspects of your world.
 			</p>
-			<WorldMap previewRegions={regions} mode="admin" showLegend={true} showStats={true} />
+			<WorldMap previewRegions={regions} mode="admin" showLegend={true} legendView="both" showStats={true} />
 		</div>
 	{/if}
 </div>
