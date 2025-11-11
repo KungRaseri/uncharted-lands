@@ -80,6 +80,38 @@ jobs:
             -e CORS_ORIGIN=http://localhost:3000 \
             server:test
 
+      - name: Checkout server repository for migrations
+        uses: actions/checkout@v4
+        with:
+          repository: KungRaseri/uncharted-lands-server
+          path: server-migration
+          
+      - name: Setup Node.js for migrations
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server-migration/package-lock.json
+          
+      - name: Install server dependencies
+        run: |
+          cd server-migration
+          npm ci
+          
+      - name: Run database migrations
+        run: |
+          cd server-migration
+          npm run db:migrate:run
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
+          
+      - name: Seed test data
+        run: |
+          cd server-migration
+          npm run db:seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
+
       - name: Wait for server to be ready
         run: |
           echo "Waiting for server to start..."
