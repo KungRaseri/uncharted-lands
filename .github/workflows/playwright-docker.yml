@@ -58,9 +58,19 @@ jobs:
       - name: Pull server Docker image
         run: |
           # Pull the published server image from the server repository
-          echo "Pulling server image from main branch..."
-          docker pull ghcr.io/kungraseri/uncharted-lands-server:main
-          docker tag ghcr.io/kungraseri/uncharted-lands-server:main server:test
+          # Use 'development' tag for PRs, 'main' tag for main branch
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "Pulling server image from development branch (PR context)..."
+            docker pull ghcr.io/kungraseri/uncharted-lands-server:development
+            docker tag ghcr.io/kungraseri/uncharted-lands-server:development server:test
+            SERVER_REF="development"
+          else
+            echo "Pulling server image from main branch..."
+            docker pull ghcr.io/kungraseri/uncharted-lands-server:main
+            docker tag ghcr.io/kungraseri/uncharted-lands-server:main server:test
+            SERVER_REF="main"
+          fi
+          echo "SERVER_REF=$SERVER_REF" >> $GITHUB_ENV
 
       - name: Start server container
         run: |
@@ -79,13 +89,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KungRaseri/uncharted-lands-server
-          ref: main
+          ref: ${{ env.SERVER_REF }}
           path: server-repo
           
       - name: Setup Node.js for migrations
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: server-repo/package-lock.json
           
