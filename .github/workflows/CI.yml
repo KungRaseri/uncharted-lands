@@ -40,16 +40,40 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PUBLIC_SENTRY_DSN: disabled
-      PUBLIC_API_URL: http://localhost:3001/api
-      PUBLIC_WS_URL: http://localhost:3001
-      API_URL: http://localhost:3001/api
+      PUBLIC_API_URL: http://localhost:3001
+      PUBLIC_WS_URL: ws://localhost:3001
       NODE_ENV: test
 
     strategy:
       matrix:
         node-version: [22.x]
+
+    # Service containers for backend
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: uncharted_lands_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     steps:
       - uses: actions/checkout@v4
@@ -70,15 +94,81 @@ jobs:
         run: npm run coverage
         continue-on-error: false
       
-      - name: Build for E2E tests
-        run: npm run build
-        env:
-          CI: true
+      # Pull and start the backend server from Docker image
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      
+      - name: Pull server Docker image
+        run: |
+          # Pull the published server image from the server repository
+          docker pull ghcr.io/kungraseri/uncharted-lands-server:latest || \
+          docker pull ghcr.io/kungraseri/uncharted-lands-server:main || \
+          docker pull ghcr.io/kungraseri/uncharted-lands-server:development
+      
+      - name: Start server container
+        run: |
+          docker run -d \
+            --name uncharted-server \
+            --network host \
+            -e NODE_ENV=test \
+            -e PORT=3001 \
+            -e DATABASE_URL=postgresql://postgres:postgres@localhost:5432/uncharted_lands_test \
+            -e REDIS_URL=redis://localhost:6379 \
+            -e JWT_SECRET=test-secret-key-for-ci \
+            -e CORS_ORIGIN=http://localhost:3000,http://localhost:4173 \
+            ghcr.io/kungraseri/uncharted-lands-server:latest || \
+          docker run -d \
+            --name uncharted-server \
+            --network host \
+            -e NODE_ENV=test \
+            -e PORT=3001 \
+            -e DATABASE_URL=postgresql://postgres:postgres@localhost:5432/uncharted_lands_test \
+            -e REDIS_URL=redis://localhost:6379 \
+            -e JWT_SECRET=test-secret-key-for-ci \
+            -e CORS_ORIGIN=http://localhost:3000,http://localhost:4173 \
+            ghcr.io/kungraseri/uncharted-lands-server:main || \
+          docker run -d \
+            --name uncharted-server \
+            --network host \
+            -e NODE_ENV=test \
+            -e PORT=3001 \
+            -e DATABASE_URL=postgresql://postgres:postgres@localhost:5432/uncharted_lands_test \
+            -e REDIS_URL=redis://localhost:6379 \
+            -e JWT_SECRET=test-secret-key-for-ci \
+            -e CORS_ORIGIN=http://localhost:3000,http://localhost:4173 \
+            ghcr.io/kungraseri/uncharted-lands-server:development
+      
+      - name: Wait for server to be ready
+        run: |
+          echo "Waiting for server to start..."
+          for i in {1..60}; do
+            if curl -f http://localhost:3001/health 2>/dev/null; then
+              echo "✅ Server is ready!"
+              exit 0
+            fi
+            echo "⏳ Waiting for server... ($i/60)"
+            sleep 2
+          done
+          echo "❌ Server failed to start within 120 seconds"
+          docker logs uncharted-server
+          exit 1
       
       - name: Run E2E tests
         run: npm run test:e2e
         env:
           CI: true
+      
+      - name: Show server logs on failure
+        if: failure()
+        run: |
+          echo "=== Server Logs ==="
+          docker logs uncharted-server
+          echo "=== Server Container Info ==="
+          docker inspect uncharted-server
+      
+      - name: Stop server container
+        if: always()
+        run: docker stop uncharted-server && docker rm uncharted-server
       
       - name: Upload unit test coverage
         uses: actions/upload-artifact@v4
