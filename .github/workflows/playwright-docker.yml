@@ -112,15 +112,30 @@ jobs:
         run: |
           echo "Waiting for server to start..."
           for i in {1..60}; do
+            # Check if container is still running
+            if ! docker ps --filter "name=uncharted-server" --filter "status=running" --format "{{.Names}}" | grep -q "uncharted-server"; then
+              echo "❌ Server container has stopped or crashed!"
+              echo "=== Container Status ==="
+              docker ps -a --filter "name=uncharted-server"
+              echo "=== Server Logs ==="
+              docker logs uncharted-server
+              exit 1
+            fi
+            
+            # Check if server is responding to health checks
             if curl -f http://localhost:3001/health 2>/dev/null; then
               echo "✅ Server is ready!"
               break
             fi
+            
+            # On final iteration, show logs and fail
             if [ $i -eq 60 ]; then
               echo "❌ Server failed to start within 60 seconds"
+              echo "=== Server Logs ==="
               docker logs uncharted-server
               exit 1
             fi
+            
             echo "⏳ Waiting for server... ($i/60)"
             sleep 1
           done
