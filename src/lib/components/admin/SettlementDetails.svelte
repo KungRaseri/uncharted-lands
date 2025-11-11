@@ -1,19 +1,9 @@
 <script lang="ts">
-	import type { Prisma, Settlement } from '@prisma/client';
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
+	import type { SettlementWithStorage } from '$lib/types/game';
 
 	type Props = {
-		settlement: Prisma.SettlementGetPayload<{
-			include: {
-				PlayerProfile: {
-					include: {
-						profile: true;
-					};
-				};
-				Storage: true;
-				Structures: true;
-			};
-		}>;
+		settlement: SettlementWithStorage;
 	};
 
 	let { settlement }: Props = $props();
@@ -24,27 +14,32 @@
 		<h3>Settlement Details {`[${settlement.id}]`}</h3>
 	</header>
 	<section class="p-4">
-		{settlement.PlayerProfile.profile.username}
-		{settlement.name}
-		{#each settlement.Structures as structure}
-			{structure.name}
-		{/each}
+		<p><strong>Name:</strong> {settlement.name}</p>
+		<p><strong>Player Profile ID:</strong> {settlement.playerProfileId}</p>
+		{#if settlement.structures && settlement.structures.length > 0}
+			<p><strong>Structures:</strong></p>
+			<ul>
+				{#each settlement.structures as structure}
+					<li>{structure.type} (ID: {structure.id})</li>
+				{/each}
+			</ul>
+		{/if}
 	</section>
 	<footer class="card-footer">
 		<span class="badge preset-filled-secondary-500">
-			Food Storage: {settlement.Storage.food}
+			Food Storage: {settlement.storage?.food || 0}
 		</span>
 		<span class="badge preset-filled-secondary-500">
-			Water Storage: {settlement.Storage.water}
+			Water Storage: {settlement.storage?.water || 0}
 		</span>
 		<span class="badge preset-filled-secondary-500">
-			Wood Storage: {settlement.Storage.wood}
+			Wood Storage: {settlement.storage?.wood || 0}
 		</span>
 		<span class="badge preset-filled-secondary-500">
-			Stone Storage: {settlement.Storage.stone}
+			Stone Storage: {settlement.storage?.stone || 0}
 		</span>
 		<span class="badge preset-filled-secondary-500">
-			Ore Storage: {settlement.Storage.ore}
+			Ore Storage: {settlement.storage?.ore || 0}
 		</span>
 	</footer>
 </div>

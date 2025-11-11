@@ -1,9 +1,16 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { MapPin, Globe, Layers, ArrowLeft, Mountain, Droplets, Thermometer, Home } from 'lucide-svelte';
-	import RegionMapPreview from '$lib/components/admin/RegionMapPreview.svelte';
+	import WorldMap from '$lib/components/shared/WorldMap.svelte';
+	import type { Plot, TileWithRelations } from '$lib/types/game';
 
 	let { data }: { data: PageData } = $props();
+	
+	// Convert the region data to the format WorldMap expects
+	const regionForMap = $derived({
+		...data.region,
+		tiles: data.region.tiles
+	});
 </script>
 
 <div class="space-y-6">
@@ -43,7 +50,15 @@
 
 	<!-- Region Map Preview -->
 	{#if data.region.tiles.length > 0}
-		<RegionMapPreview tiles={data.region.tiles} regionName={data.region.name || 'Region'} />
+		<WorldMap 
+			regions={[regionForMap]} 
+			viewLevel="region"
+			title="{data.region.name || 'Region'} Preview"
+			mode="admin"
+			showStats={true}
+			showLegend={true}
+			mapViewMode="topographical"
+		/>
 	{/if}
 
 	<!-- Tiles Table -->
@@ -81,7 +96,7 @@
 					</thead>
 					<tbody>
 						{#each data.region.tiles as tile}
-							{@const hasSettlement = tile.Plots?.some((p) => p.Settlement)}
+							{@const hasSettlement = tile.plots?.some((p: Plot) => p.settlement)}
 							{@const tileColor = tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
 							<tr class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
 								<td class="p-3">
@@ -121,7 +136,7 @@
 									</div>
 								</td>
 								<td class="p-3 text-center">
-									<span class="font-semibold">{tile.Plots?.length || 0}</span>
+									<span class="font-semibold">{tile.plots?.length || 0}</span>
 								</td>
 								<td class="p-3 text-center">
 									{#if hasSettlement}
@@ -152,8 +167,8 @@
 			<div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
 				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
 					Showing {data.region.tiles.length} tiles
-					{#if data.region.tiles.some((t) => t.Plots?.some((p) => p.Settlement))}
-						• {data.region.tiles.filter((t) => t.Plots?.some((p) => p.Settlement)).length} with settlements
+					{#if data.region.tiles.some((t: TileWithRelations) => t.plots?.some((p: Plot) => p.settlement))}
+						• {data.region.tiles.filter((t: TileWithRelations) => t.plots?.some((p: Plot) => p.settlement)).length} with settlements
 					{/if}
 				</p>
 			</div>

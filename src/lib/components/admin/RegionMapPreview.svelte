@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { getElevationColor } from '$lib/utils/tile-colors';
+	import { getRegionTileTooltip, calculateRegionStats } from '$lib/utils/region-tile-utils';
+	
 	type Props = {
 		tiles: any[];
 		regionName?: string;
@@ -6,69 +9,8 @@
 
 	let { tiles, regionName = 'Region' }: Props = $props();
 
-	// Get color based on elevation value
-	function getElevationColor(value: number): string {
-		if (value < -0.3) return '#001a33'; // Deep ocean
-		if (value < 0) return '#003d66'; // Ocean
-		if (value < 0.1) return '#f4e4c1'; // Beach/Sand
-		if (value < 0.3) return '#7cb342'; // Plains
-		if (value < 0.5) return '#558b2f'; // Forest
-		if (value < 0.7) return '#8d6e63'; // Hills
-		if (value < 0.9) return '#757575'; // Mountains
-		return '#ffffff'; // Snow peaks
-	}
-
-	// Get terrain type name from elevation
-	function getTerrainType(elevation: number): string {
-		if (elevation < -0.3) return 'Deep Ocean';
-		if (elevation < 0) return 'Ocean';
-		if (elevation < 0.1) return 'Beach';
-		if (elevation < 0.3) return 'Plains';
-		if (elevation < 0.5) return 'Forest';
-		if (elevation < 0.7) return 'Hills';
-		if (elevation < 0.9) return 'Mountains';
-		return 'Snow Peaks';
-	}
-
-	// Create tooltip for a tile
-	function getTileTooltip(tile: any, row: number, col: number): string {
-		const terrainType = getTerrainType(tile.elevation);
-		
-		return `Tile Position: (${row}, ${col})
-Biome: ${tile.Biome?.name || 'Unknown'}
-Type: ${tile.type}
-
-Elevation: ${tile.elevation.toFixed(3)}
-Terrain: ${terrainType}
-
-Precipitation: ${tile.precipitation.toFixed(3)}
-Temperature: ${tile.temperature.toFixed(3)}
-
-Plots: ${tile.Plots?.length || 0}${tile.Plots?.some((p: any) => p.Settlement) ? '\n🏠 Has Settlement' : ''}`;
-	}
-
-	// Calculate stats for the region
-	const stats = $derived(() => {
-		if (!tiles || tiles.length === 0) {
-			return { avgElevation: 0, minElevation: 0, maxElevation: 0, landTiles: 0, oceanTiles: 0 };
-		}
-
-		const elevations = tiles.map(t => t.elevation);
-		const sum = elevations.reduce((a, b) => a + b, 0);
-		const avg = sum / elevations.length;
-		const min = Math.min(...elevations);
-		const max = Math.max(...elevations);
-		const land = tiles.filter(t => t.type === 'LAND').length;
-		const ocean = tiles.filter(t => t.type === 'OCEAN').length;
-
-		return {
-			avgElevation: avg,
-			minElevation: min,
-			maxElevation: max,
-			landTiles: land,
-			oceanTiles: ocean
-		};
-	});
+	// Calculate stats for the region - using utility function
+	const stats = $derived(() => calculateRegionStats(tiles));
 
 	// Organize tiles into 10x10 grid
 	const tileGrid = $derived(() => {
@@ -124,7 +66,7 @@ Plots: ${tile.Plots?.length || 0}${tile.Plots?.some((p: any) => p.Settlement) ? 
 						<div
 							class="aspect-square cursor-help hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)] dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)] transition-shadow duration-150"
 							style="background-color: {getElevationColor(tile.elevation)}"
-							title={getTileTooltip(tile, rowIndex, colIndex)}
+							title={getRegionTileTooltip(tile, rowIndex, colIndex)}
 						></div>
 					{:else}
 						<div class="aspect-square bg-surface-500"></div>

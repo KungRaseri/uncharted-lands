@@ -1,54 +1,83 @@
 import type { PageServerLoad, Actions, Action } from "./$types"
-import { db } from "$lib/db"
 import { fail } from "@sveltejs/kit"
+import { logger } from "$lib/utils/logger"
+import { API_URL } from "$lib/config"
+import type { GameServerWithRelations } from "$lib/types/api"
 
-export const load: PageServerLoad = async () => {
-    return {
-        servers: await db.server.findMany({
-            include: {
-                _count: {
-                    select: {
-                        worlds: true,
-                        players: true
-                    }
-                }
-            },
-            orderBy: {
-                createdAt: 'desc'
+export const load: PageServerLoad = async ({ cookies }) => {
+    try {
+        const sessionToken = cookies.get('session');
+        
+        logger.debug('[ADMIN SERVERS] Loading servers list', {
+            hasSessionToken: !!sessionToken
+        });
+
+        const response = await fetch(`${API_URL}/servers`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
             }
-        })
+        });
+        
+        if (!response.ok) {
+            logger.error('[ADMIN SERVERS] Failed to fetch servers', {
+                status: response.status,
+                statusText: response.statusText
+            });
+            return { servers: [] };
+        }
+
+        const servers: GameServerWithRelations[] = await response.json();
+
+        logger.info('[ADMIN SERVERS] Successfully loaded servers', {
+            count: servers.length
+        });
+
+        return { servers };
+    } catch (err) {
+        logger.error('[ADMIN SERVERS] Error loading servers', err);
+        return { servers: [] };
     }
 }
 
-const deleteServer: Action = async ({ request }) => {
+const deleteServer: Action = async ({ request, cookies }) => {
     const data = await request.formData();
     const serverId = data.get('serverId');
 
     if (!serverId || typeof serverId !== 'string') {
+        logger.warn('[ADMIN SERVERS] Delete attempt without server ID');
         return fail(400, { success: false, message: 'Server ID is required' });
     }
 
     try {
-        // Check if server has any worlds
-        const worldCount = await db.world.count({
-            where: { serverId }
+        const sessionToken = cookies.get('session');
+        
+        logger.debug('[ADMIN SERVERS] Deleting server', { serverId });
+
+        const response = await fetch(`${API_URL}/servers/${serverId}`, {
+            method: 'DELETE',
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
         });
 
-        if (worldCount > 0) {
-            return fail(400, { 
+        if (!response.ok) {
+            const errorData = await response.json();
+            logger.error('[ADMIN SERVERS] Failed to delete server', {
+                serverId,
+                status: response.status,
+                error: errorData
+            });
+            return fail(response.status, { 
                 success: false, 
-                message: `Cannot delete server with ${worldCount} world(s). Delete worlds first.`,
+                message: errorData.error || 'Failed to delete server',
                 serverId
             });
         }
 
-        await db.server.delete({
-            where: { id: serverId }
-        });
-
+        logger.info('[ADMIN SERVERS] Server deleted successfully', { serverId });
         return { success: true, message: 'Server deleted successfully', serverId };
-    } catch (error) {
-        console.error('Failed to delete server:', error);
+    } catch (err) {
+        logger.error('[ADMIN SERVERS] Error deleting server', err, { serverId });
         return fail(500, { success: false, message: 'Failed to delete server', serverId });
     }
 }

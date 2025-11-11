@@ -24,7 +24,7 @@ services:
   db_cluster:
     container_name: db_cluster
     image: mongo
-    command: [ "--replSet", "rs0", "--bind_ip", "db_cluster" ]
+    command: ['--replSet', 'rs0', '--bind_ip', 'db_cluster']
     depends_on:
       - db1
       - db2
@@ -33,21 +33,21 @@ services:
       - ./docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
   db1:
     image: mongo
-    command: [ "--replSet", "rs0", "--bind_ip", "db1" ]
+    command: ['--replSet', 'rs0', '--bind_ip', 'db1']
     expose:
       - 27018
     ports:
       - '27018:27017'
   db2:
     image: mongo
-    command: [ "--replSet", "rs0", "--bind_ip", "db2" ]
+    command: ['--replSet', 'rs0', '--bind_ip', 'db2']
     expose:
       - 27019
     ports:
       - '27019:27017'
   db3:
     image: mongo
-    command: [ "--replSet", "rs0", "--bind_ip", "db3" ]
+    command: ['--replSet', 'rs0', '--bind_ip', 'db3']
     expose:
       - 27020
     ports:

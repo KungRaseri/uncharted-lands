@@ -1,36 +1,39 @@
-import { db } from '$lib/db';
+import { API_URL } from '$lib/config';
+import { logger } from '$lib/utils/logger';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { getStructureDefinition, canBuildStructure } from '$lib/game/structures';
 
-export const load = (async ({ params, depends }) => {
+export const load = (async ({ params, depends, cookies }) => {
     // Mark this data as dependent on game state changes
     depends('game:settlement');
     depends('game:data');
 
-    const settlement = await db.settlement.findUnique({
-        where: {
-            id: params.id
-        },
-        include: {
-            Plot: {
-                include: {
-                    Settlement: true,
-                    Tile: true
-                }
-            },
-            Storage: true,
-            Structures: {
-                include: {
-                    modifiers: true,
-                    buildRequirements: true
-                }
-            }
-        }
-    })
+    const sessionToken = cookies.get('session');
 
-    if (!settlement)
-        throw fail(404, { invalid: true, params: params.id })
+    const response = await fetch(`${API_URL}/settlements/${params.id}`, {
+        headers: {
+            'Cookie': `session=${sessionToken}`
+        }
+    });
+    
+    if (!response.ok) {
+        logger.error('[SETTLEMENT DETAIL] Failed to fetch settlement', {
+            settlementId: params.id,
+            status: response.status
+        });
+        return {
+            settlement: null,
+            lastUpdate: new Date().toISOString(),
+            error: 'Settlement not found'
+        };
+    }
+
+    const settlement = await response.json();
+
+    logger.debug('[SETTLEMENT DETAIL] Settlement loaded', {
+        settlementId: settlement.id,
+        name: settlement.name
+    });
 
     return {
         settlement,
@@ -39,109 +42,75 @@ export const load = (async ({ params, depends }) => {
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-    buildStructure: async ({ params, request }) => {
-        const data = await request.formData();
-        const structureId = data.get('structureId')?.toString();
+    buildStructure: async ({ request, params, cookies }) => {
+        const formData = await request.formData();
+        const structureId = formData.get('structureId');
 
-        if (!structureId) {
-            return fail(400, { success: false, message: 'Structure ID is required' });
-        }
-
-        // Get structure definition
-        const structureDef = getStructureDefinition(structureId);
-        if (!structureDef) {
-            return fail(400, { success: false, message: 'Invalid structure type' });
-        }
-
-        // Get settlement with current resources
-        const settlement = await db.settlement.findUnique({
-            where: { id: params.id },
-            include: {
-                Storage: true,
-                Plot: true
-            }
-        });
-
-        if (!settlement) {
-            return fail(404, { success: false, message: 'Settlement not found' });
-        }
-
-        // Check if player can afford this structure
-        const affordability = canBuildStructure(
-            structureDef,
-            settlement.Storage,
-            settlement.Plot
-        );
-
-        if (!affordability.canBuild) {
-            return fail(400, {
-                success: false,
-                message: 'Cannot build structure',
-                reasons: affordability.reasons
+        if (!structureId || typeof structureId !== 'string') {
+            logger.error('[BUILD STRUCTURE] Invalid structure ID', { structureId });
+            return fail(400, { 
+                success: false, 
+                message: 'Invalid structure ID' 
             });
         }
 
+        const sessionToken = cookies.get('session');
+
         try {
-            // Create structure with requirements and modifiers in a transaction
-            await db.$transaction(async (tx) => {
-                // Create structure requirements
-                const requirements = await tx.structureRequirements.create({
-                    data: {
-                        area: structureDef.requirements.area,
-                        solar: structureDef.requirements.solar,
-                        wind: structureDef.requirements.wind,
-                        food: structureDef.requirements.food,
-                        water: structureDef.requirements.water,
-                        wood: structureDef.requirements.wood,
-                        stone: structureDef.requirements.stone,
-                        ore: structureDef.requirements.ore
-                    }
-                });
+            // Call the REST API endpoint for building structures
+            const response = await fetch(`${API_URL}/structures/create`, {
+                method: 'POST',
+                headers: {
+                    'Cookie': `session=${sessionToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    settlementId: params.id,
+                    buildingType: structureId,
+                    name: undefined,
+                    description: undefined
+                })
+            });
 
-                // Create the structure
-                const structure = await tx.settlementStructure.create({
-                    data: {
-                        settlementId: settlement.id,
-                        structureRequirementsId: requirements.id,
-                        name: structureDef.name,
-                        description: structureDef.description
-                    }
+            if (!response.ok) {
+                const result = await response.json();
+                logger.error('[BUILD STRUCTURE] Failed to build structure', {
+                    settlementId: params.id,
+                    structureId,
+                    status: response.status,
+                    error: result
                 });
-
-                // Create modifiers
-                if (structureDef.modifiers.length > 0) {
-                    await tx.structureModifier.createMany({
-                        data: structureDef.modifiers.map(mod => ({
-                            settlementStructureId: structure.id,
-                            name: mod.name,
-                            description: mod.description,
-                            value: mod.value
-                        }))
-                    });
-                }
-
-                // Deduct resources from storage
-                await tx.settlementStorage.update({
-                    where: { id: settlement.settlementStorageId },
-                    data: {
-                        food: { decrement: structureDef.requirements.food },
-                        water: { decrement: structureDef.requirements.water },
-                        wood: { decrement: structureDef.requirements.wood },
-                        stone: { decrement: structureDef.requirements.stone },
-                        ore: { decrement: structureDef.requirements.ore }
-                    }
+                
+                return fail(response.status, {
+                    success: false,
+                    message: result.message || 'Failed to build structure',
+                    reasons: [result.code || 'UNKNOWN_ERROR']
                 });
+            }
+
+            const result = await response.json();
+
+            logger.info('[BUILD STRUCTURE] Structure built successfully', {
+                settlementId: params.id,
+                structureId,
+                structureName: result.name
             });
 
             return {
                 success: true,
-                message: `${structureDef.name} built successfully!`
+                message: `${result.name || 'Structure'} built successfully!`
             };
+
         } catch (error) {
-            console.error('Failed to build structure:', error);
+            logger.error('[BUILD STRUCTURE] Error building structure', {
+                settlementId: params.id,
+                structureId,
+                error
+            });
+            
             return fail(500, {
                 success: false,
-                message: 'Failed to build structure'
+                message: 'An error occurred while building the structure'
             });
         }
     }

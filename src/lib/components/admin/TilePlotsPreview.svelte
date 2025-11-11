@@ -1,19 +1,13 @@
 <script lang="ts">
 	import { Grid3x3, Home } from 'lucide-svelte';
+	import { 
+		calculatePlotStats, 
+		getPlotTooltip, 
+		getPlotLayout,
+		type Plot 
+	} from '$lib/utils/plot-layout';
+	import { getAdminElevationColor, getAdminTerrainDescription } from '$lib/utils/admin-terrain';
 	
-	type Plot = {
-		id: string;
-		area: number;
-		solar: number;
-		wind: number;
-		food: number;
-		water: number;
-		wood: number;
-		stone: number;
-		ore: number;
-		Settlement?: any;
-	};
-
 	type TileProps = {
 		id: string;
 		elevation: number;
@@ -38,91 +32,10 @@
 		tileY?: number;
 	} = $props();
 
-	// Calculate plot statistics
-	const plotStats = $derived(() => {
-		const plots = tile.Plots;
-		const totalPlots = plots.length;
-		const totalArea = plots.reduce((sum, p) => sum + p.area, 0);
-		const withSettlements = plots.filter((p) => p.Settlement).length;
-		const avgSolar = totalPlots > 0 ? plots.reduce((sum, p) => sum + p.solar, 0) / totalPlots : 0;
-		const avgWind = totalPlots > 0 ? plots.reduce((sum, p) => sum + p.wind, 0) / totalPlots : 0;
+	// Calculate plot statistics using utility function
+	const plotStats = $derived(calculatePlotStats(tile.Plots));
 
-		return {
-			totalPlots,
-			totalArea,
-			withSettlements,
-			avgSolar,
-			avgWind
-		};
-	});
-
-	// Get elevation-based color (using tile.type to determine ocean vs land)
-	function getElevationColor(elevation: number, tileType: string): string {
-		// Ocean tiles (elevation < 0)
-		if (tileType === 'ocean') {
-			if (elevation < -10) return '#001a33'; // Deep ocean
-			if (elevation < -5) return '#003d66'; // Ocean
-			return '#006699'; // Shallow water
-		}
-		
-		// Land tiles (elevation >= 0)
-		if (elevation < 5) return '#c2b280'; // Beach/coastal lowland
-		if (elevation < 15) return '#228b22'; // Lowland/grassland
-		if (elevation < 25) return '#4a7c59'; // Hills/forest
-		if (elevation < 35) return '#8b7355'; // Mountains
-		return '#ffffff'; // Snow peaks
-	}
-
-	// Get terrain description based on actual values
-	function getTerrainDescription(elevation: number, tileType: string): string {
-		if (tileType === 'ocean') {
-			if (elevation < -10) return 'Deep Ocean';
-			if (elevation < -5) return 'Ocean';
-			return 'Shallow Water';
-		}
-		
-		// Land tiles
-		if (elevation < 5) return 'Coastal/Beach';
-		if (elevation < 15) return 'Lowland';
-		if (elevation < 25) return 'Hills';
-		if (elevation < 35) return 'Mountains';
-		return 'High Mountains';
-	}
-
-	// Generate plot tooltip
-	function getPlotTooltip(plot: Plot): string {
-		return `Plot ${plot.id.substring(0, 8)}
-Area: ${plot.area} m²
-Solar: ${plot.solar} | Wind: ${plot.wind}
-Resources: 🌾${plot.food} 💧${plot.water} 🪵${plot.wood} 🪨${plot.stone} ⛏️${plot.ore}
-${plot.Settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
-	}
-
-	// Calculate plot position and size (simple grid layout)
-	// For visualization, we'll arrange plots in a grid pattern within the tile
-	function getPlotLayout(plots: Plot[]) {
-		const totalArea = plots.reduce((sum, p) => sum + p.area, 0);
-		return plots.map((plot, index) => {
-			// Calculate position based on index and area proportion
-			const areaProportion = plot.area / totalArea;
-			const cols = Math.ceil(Math.sqrt(plots.length));
-			const row = Math.floor(index / cols);
-			const col = index % cols;
-			
-			return {
-				plot,
-				// Position as percentage (grid layout)
-				top: (row / Math.ceil(plots.length / cols)) * 100,
-				left: (col / cols) * 100,
-				// Size as percentage (with some variation based on area)
-				width: (1 / cols) * 100,
-				height: (1 / Math.ceil(plots.length / cols)) * 100,
-				// Visual size indicator
-				scale: Math.max(0.6, Math.min(1.2, areaProportion * plots.length))
-			};
-		});
-	}
-
+	// Use utility function for plot layout
 	const plotLayout = $derived(getPlotLayout(tile.Plots));
 </script>
 
@@ -137,7 +50,7 @@ ${plot.Settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
 			<span>Coordinates: ({tileX}, {tileY})</span>
 			<span>Biome: {tile.Biome?.name || 'Unknown'}</span>
 			<span>Type: {tile.type.charAt(0).toUpperCase() + tile.type.slice(1)}</span>
-			<span>Terrain: {getTerrainDescription(tile.elevation, tile.type)}</span>
+			<span>Terrain: {getAdminTerrainDescription(tile.elevation, tile.type)}</span>
 		</div>
 	</div>
 
@@ -146,13 +59,13 @@ ${plot.Settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
 		<!-- Base Tile (colored by elevation) -->
 		<div
 			class="absolute inset-0"
-			style="background-color: {getElevationColor(tile.elevation, tile.type)}"
+			style="background-color: {getAdminElevationColor(tile.elevation, tile.type)}"
 		></div>
 
 		<!-- Plots Overlay -->
 		{#if tile.Plots.length > 0}
 			{#each plotLayout as { plot, top, left, width, height, scale }}
-				{@const hasSettlement = plot.Settlement}
+				{@const hasSettlement = plot.settlement}
 				<div
 					class="absolute border-2 border-white/60 rounded transition-all duration-150 hover:border-warning-500 hover:z-10 hover:scale-105 cursor-pointer"
 					style="
@@ -202,23 +115,23 @@ ${plot.Settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
 	<div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-sm">
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Total Plots</p>
-			<p class="font-semibold">{plotStats().totalPlots}</p>
+			<p class="font-semibold">{plotStats.totalPlots}</p>
 		</div>
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Total Area</p>
-			<p class="font-semibold">{plotStats().totalArea.toFixed(0)} m²</p>
+			<p class="font-semibold">{plotStats.totalArea.toFixed(0)} m²</p>
 		</div>
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Settlements</p>
-			<p class="font-semibold text-warning-500">{plotStats().withSettlements}</p>
+			<p class="font-semibold text-warning-500">{plotStats.withSettlements}</p>
 		</div>
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Avg Solar</p>
-			<p class="font-semibold">{plotStats().avgSolar.toFixed(1)}</p>
+			<p class="font-semibold">{plotStats.avgSolar.toFixed(1)}</p>
 		</div>
 		<div class="p-2 rounded bg-surface-100 dark:bg-surface-800">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Avg Wind</p>
-			<p class="font-semibold">{plotStats().avgWind.toFixed(1)}</p>
+			<p class="font-semibold">{plotStats.avgWind.toFixed(1)}</p>
 		</div>
 	</div>
 
@@ -265,9 +178,9 @@ ${plot.Settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
 				<div class="flex items-center gap-2">
 					<div
 						class="w-4 h-4 rounded border border-surface-300 dark:border-surface-600"
-						style="background-color: {getElevationColor(tile.elevation, tile.type)}"
+						style="background-color: {getAdminElevationColor(tile.elevation, tile.type)}"
 					></div>
-					<span>{tile.elevation.toFixed(3)} ({getTerrainDescription(tile.elevation, tile.type)})</span>
+					<span>{tile.elevation.toFixed(3)} ({getAdminTerrainDescription(tile.elevation, tile.type)})</span>
 				</div>
 			</div>
 		</div>

@@ -1,15 +1,10 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
 	import World from '$lib/components/game/map/World.svelte';
+	import type { WorldWithRegions, WorldInfo } from '$lib/types/game';
 
 	type Props = {
-		world: Prisma.WorldGetPayload<{
-			include: {
-				regions: true;
-				server: true;
-			};
-		}>;
-		worldInfo: { landTiles: number; oceanTiles: number; settlements: number };
+		world: WorldWithRegions;
+		worldInfo: WorldInfo;
 	};
 
 	let { world, worldInfo }: Props = $props();

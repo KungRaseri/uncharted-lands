@@ -4,11 +4,44 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ---
 
+## ⚠️ CRITICAL: No Summaries or Auto-Documentation
+
+**NEVER write conversation summaries or create documentation unless explicitly requested.**
+
+### Rules:
+
+1. **DO NOT EVER**:
+   - Write conversation summaries at any point
+   - Create summary documents (SUMMARY.md, STATUS.md, CHANGES.md, etc.)
+   - Generate progress reports automatically
+   - Create migration status files
+   - Auto-generate documentation files
+   - Create README files (except when specifically asked)
+
+2. **ONLY create documentation when user explicitly requests it**:
+   - "Create a summary"
+   - "Write documentation for X"
+   - "Document this feature"
+   - "Add a README"
+
+3. **Always prefer**:
+   - Direct answers in chat
+   - Inline explanations
+   - Code changes as requested
+   - Updating existing documentation if it exists
+
+4. **When documentation IS requested**:
+   - Confirm what they want documented
+   - Follow the Documentation Policy below for placement
+
+---
+
 ## Project Overview
 
 **Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures while expanding settlements and improving technology.
 
 **Tech Stack**:
+
 - **Framework**: SvelteKit 2.48.4 + Svelte 5.43.2
 - **Styling**: Tailwind CSS 4.1.16 + Skeleton 4.2.2
 - **Database**: Prisma + PostgreSQL
@@ -29,14 +62,13 @@ This file provides context and guidelines for GitHub Copilot when working on the
    - ✅ CORRECT: `docs/WORLD_GENERATION_GUIDE.md`
    - ❌ WRONG: `WORLD_GENERATION_GUIDE.md` (root level)
    - ❌ WRONG: `client/src/docs/guide.md` (inside src)
-   
 2. **Root-Level Exceptions**: Only these files are allowed in the project root:
    - `README.md` - Project overview and getting started
    - `LICENSE` - License file
    - `CHANGELOG.md` - Version history (if needed)
-   
-3. **Summary Documents**: 
-   - ⚠️ **DO NOT** create summary documents (e.g., `CHANGES_SUMMARY.md`, `MIGRATION_SUMMARY.md`) unless explicitly requested
+3. **Summary Documents**:
+   - ⚠️ **DO NOT** create summary documents unless explicitly requested by the user
+   - User must specifically ask: "Create a summary of changes", "Document the migration", etc.
    - Most changes should be documented in existing files or commit messages
    - Only create summaries when the user specifically asks for one
    - If created, they MUST go in `docs/` directory with appropriate subdirectory
@@ -118,6 +150,7 @@ Always consult these official Skeleton LLM documentation files when working with
 **📍 Location**: `docs/WORLD_GENERATION_GUIDE.md`
 
 Complete technical documentation on the world generation system:
+
 - How simple sliders map to Open Simplex Noise parameters
 - Technical parameter explanations (octaves, frequency, amplitude, persistence, scale)
 - Preset recommendations for different world types
@@ -164,6 +197,7 @@ Our project is in active migration from Skeleton v2 to v4 with Tailwind v4. Read
 **Status**: Application CANNOT currently build
 
 **Error**:
+
 ```
 Cannot use `@variant` with unknown variant: md
 node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
@@ -172,6 +206,7 @@ node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
 **Cause**: Bug in Skeleton v4.2.2 library code (NOT our configuration)
 
 **Impact**:
+
 - ❌ `npm run build` fails
 - ❌ `npm run dev` fails
 - ✅ Configuration is 100% correct
@@ -179,6 +214,7 @@ node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
 - ✅ Tests run (if no CSS needed)
 
 **What This Means for You**:
+
 - DO NOT suggest configuration changes to "fix" the build
 - Our setup follows ALL official guidelines perfectly
 - The bug is in Skeleton's compiled CSS, not our code
@@ -207,7 +243,7 @@ node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
 <script>
   let count = $state(0);
   let doubled = $derived(count * 2);
-  
+
   function increment() {
     count++;
   }
@@ -217,12 +253,64 @@ node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
 <script>
   let count = 0;
   $: doubled = count * 2;
-  
+
   function increment() {
     count++;
   }
 </script>
 ```
+
+**Accessing Page Data and Stores**:
+
+```svelte
+<!-- ✅ CORRECT - Svelte 5 with SvelteKit 2.12+ -->
+<script>
+  import { page } from '$app/state';
+
+  // Access page state directly (no $ prefix needed)
+  let currentPath = page.url.pathname;
+  let user = page.data.user;
+
+  // Use with $derived for reactive computations
+  let isActive = $derived(page.url.pathname === '/home');
+</script>
+
+<!-- ✅ BEST PRACTICE - For route components, use props when available -->
+<script lang="ts">
+  import type { PageData } from './$types';
+  import { page } from '$app/state';
+
+  let { data }: { data: PageData } = $props();
+
+  // Access page data directly from props - more efficient
+  let user = data.user;
+
+  // For URL/route data, use page state
+  let currentPath = page.url.pathname;
+</script>
+
+<!-- ✅ For derived values with page state -->
+<script>
+  import { page } from '$app/state';
+
+  let isActive = $derived.by(() => {
+    return (href: string) => page.url.pathname === href;
+  });
+</script>
+```
+
+**Key Points**:
+
+- Use `$app/state` for SvelteKit 2.12+ (not `$app/stores` which is deprecated)
+- `page` from `$app/state` is a reactive state object (no `$` prefix needed)
+- Access properties directly: `page.url.pathname`, `page.data.user`, `page.route.id`
+- Use `$derived` or `$derived.by()` for computed values based on page state
+- In route components, prefer using props (`data`) when you only need `page.data`
+- ❌ DON'T import from `$app/stores` in Svelte 5
+- ✅ DO import from `@sveltejs/kit` for page context
+- ✅ DO use `$props()` to receive page data in route components
+- ✅ DO pass data as props to child components
+- ❌ DON'T use `$page` store subscription syntax
 
 **Use Snippets** (not slots):
 
@@ -261,6 +349,7 @@ import { Navbar } from '@skeletonlabs/skeleton-svelte';
 ```
 
 **Component Name Changes**:
+
 - `AppBar` → `Navbar`
 - `AppRail` → `Navigation`
 - `RangeSlider` → `Slider`
@@ -269,6 +358,7 @@ import { Navbar } from '@skeletonlabs/skeleton-svelte';
 - `Table` → REMOVED (use Tailwind tables)
 
 **When suggesting Skeleton components**:
+
 1. Check if component exists in v4 (see COMPONENT_MIGRATION_AUDIT.md)
 2. Use correct v4 name and import path
 3. Reference official docs for API changes
@@ -281,30 +371,30 @@ import { Navbar } from '@skeletonlabs/skeleton-svelte';
 ```css
 /* ❌ AVOID */
 .my-class {
-  @apply bg-surface-50-950 text-surface-950 p-4;
+	@apply bg-surface-50-950 text-surface-950 p-4;
 }
 
 /* ✅ PREFER - Standard CSS */
 .my-class {
-  background-color: var(--color-surface-50-950);
-  color: var(--color-surface-950);
-  padding: 1rem;
+	background-color: var(--color-surface-50-950);
+	color: var(--color-surface-950);
+	padding: 1rem;
 }
 
 /* ✅ PREFER - CSS Custom Properties */
 .my-class {
-  background-color: var(--color-surface-50-950);
-  color: var(--color-surface-950);
-  padding: --spacing(4);
+	background-color: var(--color-surface-50-950);
+	color: var(--color-surface-950);
+	padding: --spacing(4);
 }
 
 /* ✅ PREFER - @variant for dark mode */
 .my-class {
-  color: var(--color-surface-950);
-  
-  @variant dark {
-    color: var(--color-surface-50);
-  }
+	color: var(--color-surface-950);
+
+	@variant dark {
+		color: var(--color-surface-50);
+	}
 }
 ```
 
@@ -312,16 +402,17 @@ import { Navbar } from '@skeletonlabs/skeleton-svelte';
 
 ```css
 /* ✅ CORRECT - Configuration in CSS */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  --color-primary: oklch(0.75 0.15 250);
+	--color-primary: oklch(0.75 0.15 250);
 }
 
 @plugin "@tailwindcss/forms";
 ```
 
 **NO External Config Files**:
+
 - ❌ DO NOT create `tailwind.config.js`
 - ❌ DO NOT create `tailwind.config.ts`
 - ✅ All config in `src/app.postcss` using directives
@@ -378,17 +469,17 @@ When the build works and we can use Skeleton components:
 <script lang="ts">
   // ✅ Import from skeleton-svelte package
   import { ComponentName } from '@skeletonlabs/skeleton-svelte';
-  
+
   // Use Svelte 5 runes for state
   let value = $state(initialValue);
-  
+
   // Use proper event handlers
   function handleChange(e) {
     value = e.value; // Note: Skeleton v4 event structure
   }
 </script>
 
-<ComponentName 
+<ComponentName
   {value}
   onValueChange={handleChange}
   class="my-custom-classes"
@@ -410,19 +501,19 @@ When the build works and we can use Skeleton components:
   <header class="flex-none">
     <Header />
   </header>
-  
+
   <div class="flex flex-1 overflow-hidden">
     <!-- Sidebar -->
     <aside class="flex-none w-64 overflow-y-auto">
       <Navigation />
     </aside>
-    
+
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto">
       <slot />
     </main>
   </div>
-  
+
   <!-- Footer -->
   <footer class="flex-none">
     <Footer />
@@ -437,13 +528,13 @@ import { db } from '$lib/db';
 
 // Query examples
 const users = await db.user.findMany({
-  where: { active: true },
-  include: { settlements: true }
+	where: { active: true },
+	include: { settlements: true }
 });
 
 const settlement = await db.settlement.update({
-  where: { id: settlementId },
-  data: { resources: { increment: 10 } }
+	where: { id: settlementId },
+	data: { resources: { increment: 10 } }
 });
 ```
 
@@ -455,14 +546,14 @@ import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ locals, url }) => {
-  // Check authentication
-  if (!locals.user) {
-    return json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  
-  // Handle request
-  const data = await fetchData();
-  return json(data);
+	// Check authentication
+	if (!locals.user) {
+		return json({ error: 'Unauthorized' }, { status: 401 });
+	}
+
+	// Handle request
+	const data = await fetchData();
+	return json(data);
 };
 ```
 
@@ -478,10 +569,10 @@ import { render } from '@testing-library/svelte';
 import Component from './Component.svelte';
 
 describe('Component', () => {
-  it('renders correctly', () => {
-    const { getByText } = render(Component, { props: { title: 'Test' } });
-    expect(getByText('Test')).toBeInTheDocument();
-  });
+	it('renders correctly', () => {
+		const { getByText } = render(Component, { props: { title: 'Test' } });
+		expect(getByText('Test')).toBeInTheDocument();
+	});
 });
 ```
 
@@ -491,11 +582,11 @@ describe('Component', () => {
 import { test, expect } from '@playwright/test';
 
 test('user can login', async ({ page }) => {
-  await page.goto('/sign-in');
-  await page.fill('[name="email"]', 'test@example.com');
-  await page.fill('[name="password"]', 'password123');
-  await page.click('button[type="submit"]');
-  await expect(page).toHaveURL('/dashboard');
+	await page.goto('/sign-in');
+	await page.fill('[name="email"]', 'test@example.com');
+	await page.fill('[name="password"]', 'password123');
+	await page.click('button[type="submit"]');
+	await expect(page).toHaveURL('/dashboard');
 });
 ```
 
@@ -535,23 +626,23 @@ See `COMPONENT_MIGRATION_AUDIT.md` for complete details. Quick reference:
 
 ### Components Needing Migration
 
-| Old (v2/v3) | New (v4) | Status | Alternative |
-|-------------|----------|--------|-------------|
-| `AppShell` | — | ❌ Removed | Custom layouts |
-| `AppBar` | `Navbar` | ✅ Renamed | |
-| `AppRail` | `Navigation` | ✅ Renamed | |
-| `AppRailTile` | (part of Navigation) | ✅ Merged | |
-| `Avatar` | `Avatar` | ✅ Same | |
-| `LightSwitch` | — | ❌ Removed | Custom component |
-| `RangeSlider` | `Slider` | ✅ Renamed | |
-| `Table` | — | ❌ Removed | Tailwind tables |
+| Old (v2/v3)   | New (v4)             | Status     | Alternative      |
+| ------------- | -------------------- | ---------- | ---------------- |
+| `AppShell`    | —                    | ❌ Removed | Custom layouts   |
+| `AppBar`      | `Navbar`             | ✅ Renamed |                  |
+| `AppRail`     | `Navigation`         | ✅ Renamed |                  |
+| `AppRailTile` | (part of Navigation) | ✅ Merged  |                  |
+| `Avatar`      | `Avatar`             | ✅ Same    |                  |
+| `LightSwitch` | —                    | ❌ Removed | Custom component |
+| `RangeSlider` | `Slider`             | ✅ Renamed |                  |
+| `Table`       | —                    | ❌ Removed | Tailwind tables  |
 
 ### Utilities Needing Replacement
 
-| Utility | Status | Alternative |
-|---------|--------|-------------|
-| `popup` | ❌ Removed | Integration guide |
-| `storePopup` | ❌ Removed | Integration guide |
+| Utility             | Status     | Alternative           |
+| ------------------- | ---------- | --------------------- |
+| `popup`             | ❌ Removed | Integration guide     |
+| `storePopup`        | ❌ Removed | Integration guide     |
 | `tableMapperValues` | ❌ Removed | Custom implementation |
 
 ---
@@ -619,6 +710,7 @@ git log --oneline -10    # Recent commits
 **✅ Configuration**: 100% correct per all official guidelines
 
 **Current Versions**:
+
 - Svelte: 5.43.2 ✅
 - SvelteKit: 2.48.4 ✅
 - Tailwind: 4.1.16 ✅
@@ -626,17 +718,20 @@ git log --oneline -10    # Recent commits
 - @tailwindcss/vite: 4.1.16 ✅
 
 **What's Working**:
+
 - ✅ Type checking
 - ✅ Configuration files
 - ✅ Package installation
 - ✅ Documentation
 
 **What's Blocked**:
+
 - ❌ Builds (Skeleton @variant bug)
 - ❌ Dev server (same bug)
 - 🔄 Component migration (waiting for build)
 
 **Next Steps** (when build works):
+
 1. Migrate 10 files with Skeleton components
 2. Replace AppShell with custom layouts (3 files)
 3. Update component imports and names
@@ -648,20 +743,24 @@ git log --oneline -10    # Recent commits
 ## Additional Resources
 
 ### Skeleton
+
 - Discord: https://discord.gg/EXqV7W8MtY
 - GitHub: https://github.com/skeletonlabs/skeleton
 - Themes: https://themes.skeleton.dev/
 
 ### Tailwind
+
 - Docs: https://tailwindcss.com/docs
 - Discord: https://discord.gg/tailwindcss
 
 ### Svelte
+
 - Docs: https://svelte.dev/docs
 - Tutorial: https://learn.svelte.dev/
 - Discord: https://discord.gg/svelte
 
 ### SvelteKit
+
 - Docs: https://kit.svelte.dev/docs
 - FAQ: https://kit.svelte.dev/faq
 

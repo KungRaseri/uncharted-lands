@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { Prisma, Tile } from '@prisma/client';
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
+	import type { TileWithBiome } from '$lib/types/game';
 
 	type Props = {
-		tile: Prisma.TileGetPayload<{ include: { Biome: true } }>;
+		tile: TileWithBiome;
 	};
 
 	let { tile }: Props = $props();

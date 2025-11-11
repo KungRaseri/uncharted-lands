@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton/themes/cerberus';
 @import './lib/styles/modals.css';
@@ -11,13 +11,13 @@
 
 html,
 body {
-    height: 100%;
-    font-family: 'Titillium Web', sans-serif;
-    background-color: var(--body-background-color);
-    color: var(--base-font-color);
+	height: 100%;
+	font-family: 'Titillium Web', sans-serif;
+	background-color: var(--body-background-color);
+	color: var(--base-font-color);
 }
 
-html[data-mode="dark"] body {
-    background-color: var(--body-background-color-dark);
-    color: var(--base-font-color-dark);
+html[data-mode='dark'] body {
+	background-color: var(--body-background-color-dark);
+	color: var(--base-font-color-dark);
 }

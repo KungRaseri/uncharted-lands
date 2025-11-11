@@ -1,43 +1,40 @@
-import { fail } from "@sveltejs/kit"
-import { db } from "$lib/db"
+import { error } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
+import { API_URL } from "$lib/config"
+import { logger } from "$lib/utils/logger"
 
-export const load: PageServerLoad = async ({ params }) => {
-    const plot = await db.plot.findUnique({
-        where: {
-            id: params.id
-        },
-        include: {
-            Settlement: {
-                include: {
-                    PlayerProfile: {
-                        include: {
-                            profile: true
-                        }
-                    },
-                    Storage: true,
-                    Structures: true,
-                    Plot: true
-                }
-            },
-            Tile: {
-                include: {
-                    Biome: true,
-                    Region: {
-                        include: {
-                            world: true
-                        }
-                    }
-                }
+export const load: PageServerLoad = async ({ params, cookies }) => {
+    try {
+        const sessionToken = cookies.get('session');
+        
+        const response = await fetch(`${API_URL}/regions/plots/${params.id}`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
             }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                logger.warn('[ADMIN PLOT] Plot not found', { plotId: params.id });
+                throw error(404);
+            }
+            logger.error('[ADMIN PLOT] Failed to fetch plot', {
+                plotId: params.id,
+                status: response.status
+            });
+            throw error(500);
         }
-    });
-
-    if (!plot) {
-        throw fail(404, { success: false, id: params.id })
-    }
-
-    return {
-        plot
+        
+        const plot = await response.json();
+        
+        logger.debug('[ADMIN PLOT] Plot loaded', {
+            plotId: plot.id
+        });
+        
+        return { plot };
+    } catch (err) {
+        if (err instanceof Response) throw err;
+        logger.error('[ADMIN PLOT] Error loading plot', err);
+        throw error(500);
     }
 }

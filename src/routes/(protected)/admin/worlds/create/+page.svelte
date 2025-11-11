@@ -3,7 +3,6 @@
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
-	import type { Prisma } from '@prisma/client';
 	import { generateMap } from '$lib/game/world-generator';
 
 	import { Info } from 'lucide-svelte';
@@ -12,6 +11,7 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let regions = $state<any[]>([]);
+	let isSaving = $state(false);
 
 	// Simple, user-friendly controls
 	let terrainRoughness = $state(50); // 0-100: Smooth to Rugged
@@ -169,8 +169,6 @@
 				generatedMap[i] = [];
 				for (let j = 0; j < elevationMap[i].length; j++) {
 					generatedMap[i][j] = {
-						id: '',
-						worldId: '',
 						xCoord: i,
 						yCoord: j,
 						name: `${i}:${j}`,
@@ -758,9 +756,12 @@
 				{#if isGenerating}
 					Generating...
 				{:else}
-					Generate Preview
+					Generate Preview (Optional)
 				{/if}
 			</button>
+			<p class="text-xs text-surface-600 dark:text-surface-400 mt-2">
+				Preview generation is optional. The world will be generated on the server when you save.
+			</p>
 		</div>
 
 		<!-- Save Form -->
@@ -769,14 +770,17 @@
 			method="POST"
 			class="mt-4"
 			use:enhance={() => {
+				isSaving = true;
 				return async ({ result }) => {
-					if (result.type !== 'redirect') await invalidateAll();
-
+					if (result.type !== 'redirect') {
+						await invalidateAll();
+						isSaving = false;
+					}
+					// Note: if redirect, page will navigate away so no need to reset isSaving
 					await applyAction(result);
 				};
 			}}
 		>
-			<input type="hidden" name="map" value={JSON.stringify(regions)} />
 			<input type="hidden" name="map-options" value={JSON.stringify(mapOptions)} />
 			<input
 				type="hidden"
@@ -803,17 +807,26 @@
 			<button
 				type="submit"
 				class="btn preset-filled-primary-500 rounded-md"
-				disabled={!mapOptions.worldName || regions.length === 0}
+				disabled={!mapOptions.worldName || isSaving}
 			>
-				Save World
+				{#if isSaving}
+					<span class="animate-spin">⏳</span>
+					<span>Creating World...</span>
+				{:else}
+					<span>Save World</span>
+				{/if}
 			</button>
 		</form>
 	</div>
 
-	{#if regions}
+	{#if regions && regions.length > 0}
 		<div class="card p-4 rounded-md">
-			<h2 class="text-xl font-semibold mb-4">World Preview (Elevation)</h2>
-			<WorldMap previewRegions={regions} mode="admin" showLegend={true} showStats={true} />
+			<h2 class="text-xl font-semibold mb-4">World Preview</h2>
+			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
+				This is a client-side preview. The actual world will be generated on the server when you save.
+				Use the view mode selector to see different aspects of your world (Satellite, Topographical, Temperature, Precipitation, Political).
+			</p>
+			<WorldMap previewRegions={regions} mode="admin" showLegend={true} mapViewMode="satellite" showStats={true} />
 		</div>
 	{/if}
 </div>

@@ -1,13 +1,13 @@
-import { db } from "$lib/db"
-import { Prisma } from "@prisma/client"
 import { fail, redirect } from "@sveltejs/kit"
 import type { Action, Actions, PageServerLoad } from "./$types"
+import { API_URL } from "$lib/config"
+import { logger } from "$lib/utils/logger"
 
 export const load: PageServerLoad = async () => {
     return {}
 }
 
-const createServer: Action = async ({ request }) => {
+const createServer: Action = async ({ request, cookies }) => {
     const data = await request.formData();
     const name = data.get("name")
     const hostname = data.get("hostname")
@@ -22,23 +22,50 @@ const createServer: Action = async ({ request }) => {
         return fail(400, { invalid: true, message: "Invalid form data. Check form and try again" })
     }
 
+    const sessionToken = cookies.get('session');
+    
+    logger.debug('[ADMIN CREATE SERVER] Creating server', {
+        name,
+        hostname,
+        port,
+        hasSessionToken: !!sessionToken
+    });
+
     try {
-        await db.server.create({
-            data: {
+        const response = await fetch(`${API_URL}/servers`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Cookie': `session=${sessionToken}`
+            },
+            body: JSON.stringify({
                 name,
                 hostname,
                 port: Number.parseInt(port)
-            }
-        })
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            logger.error('[ADMIN CREATE SERVER] Failed to create server', {
+                status: response.status,
+                error: errorData.error
+            });
+            return fail(response.status, { 
+                invalid: true, 
+                message: errorData.error || 'Failed to create server' 
+            });
+        }
+        
+        const server = await response.json();
+        logger.info('[ADMIN CREATE SERVER] Successfully created server', {
+            serverId: server.id,
+            name: server.name
+        });
     }
     catch (e) {
-        if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            if (e.code === "P2002") {
-                return fail(400, { invalid: true, message: e.message })
-            }
-        } else {
-            return fail(400, { invalid: true, message: `Unknown error occured: ${e}` })
-        }
+        logger.error('[ADMIN CREATE SERVER] Error creating server', e);
+        return fail(500, { invalid: true, message: `Unknown error occurred: ${e}` })
     }
 
     throw redirect(302, '/admin/servers')

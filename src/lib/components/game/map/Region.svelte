@@ -1,39 +1,38 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
-	import TileComponent from './Tile.svelte';
+	import Tile from './Tile.svelte';
+	import type { RegionWithTiles } from '$lib/types/game';
+	import type { MapViewMode } from '$lib/utils/tile-colors';
 
 	type Props = {
-		region: Prisma.RegionGetPayload<{
-			include: {
-				tiles: {
-					include: {
-						Biome: true;
-						Plots: {
-							include: {
-								Settlement: true;
-							};
-						};
-					};
-				};
-			};
-		}>;
+		region: RegionWithTiles;
 		/** Display mode - affects tile sizing and interaction */
 		mode?: 'admin' | 'player';
 		/** Current player's profile ID (for player mode settlement filtering) */
 		currentPlayerProfileId?: string;
+		/** Map visualization mode */
+		mapViewMode?: MapViewMode;
 	};
 
-	let { region, mode = 'player', currentPlayerProfileId }: Props = $props();
-	
-	// Sort tiles by ID to ensure correct positioning (matching admin preview behavior)
-	// Tiles are created in row-major order during world generation
-	const sortedTiles = $derived(
-		[...region.tiles].sort((a, b) => a.id.localeCompare(b.id))
-	);
+	let { region, mode = 'player', currentPlayerProfileId, mapViewMode = 'satellite' }: Props = $props();
+
+	// Tiles are ordered by (xCoord, yCoord) from database query
+	// This matches the creation order: row-by-row (x=row index, y=column index)
+	// Which is EXACTLY the same order as the preview displays them
+	// Database columns added: xCoord, yCoord (integers 0-9)
+
+	// Debug: Log tile coordinates to verify ordering
+	$effect(() => {
+		if (typeof window !== 'undefined' && region.tiles.length > 0) {
+			const coords = region.tiles
+				.slice(0, 20)
+				.map((t: any) => `(${t.xCoord ?? '?'},${t.yCoord ?? '?'})`)
+				.join(' ');
+		}
+	});
 </script>
 
 <div class="grid grid-cols-10 gap-0 h-full w-full">
-	{#each sortedTiles as tile}
-		<TileComponent {tile} {mode} {currentPlayerProfileId} />
+	{#each region.tiles as tile}
+		<Tile {tile} {mode} {currentPlayerProfileId} {mapViewMode} />
 	{/each}
 </div>

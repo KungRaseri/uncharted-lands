@@ -2,12 +2,15 @@
 	import type { PageData, ActionData as GeneratedActionData } from './$types';
 	import { Building2, Home, MapPin, Package, Sun, Wind, ArrowLeft, Droplet, Trees, Mountain, Pickaxe, Plus, X, ShieldAlert, Warehouse, Hammer, RefreshCw } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
+	import { invalidate } from '$app/navigation';
 	import { STRUCTURE_DEFINITIONS, getStructureCategories, getStructuresByCategory, canBuildStructure, type StructureDefinition } from '$lib/game/structures';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
 
 	// Extended ActionData type to include optional reasons array
 	type ActionData = GeneratedActionData & {
+		success?: boolean;
+		message?: string;
 		reasons?: string[];
 	};
 
@@ -67,7 +70,7 @@
 	// Check affordability
 	let affordability = $derived(
 		selectedStructure
-			? canBuildStructure(selectedStructure, data.settlement.Storage, data.settlement.Plot)
+			? canBuildStructure(selectedStructure, data.settlement.storage, data.settlement.plot)
 			: { canBuild: false, reasons: [] }
 	);
 </script>
@@ -112,25 +115,25 @@
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Structures</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.Structures.length}
+					{data.settlement.structures.length}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Plot Area</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.Plot.area}
+					{data.settlement.plot.area}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Solar</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.Plot.solar}
+					{data.settlement.plot.solar}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Wind</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.Plot.wind}
+					{data.settlement.plot.wind}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
@@ -156,7 +159,7 @@
 						<span class="font-medium text-surface-900 dark:text-surface-100">Food</span>
 					</div>
 					<span class="text-xl font-bold text-surface-900 dark:text-surface-100">
-						{data.settlement.Storage.food}
+						{data.settlement.storage.food}
 					</span>
 				</div>
 				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
@@ -165,7 +168,7 @@
 						<span class="font-medium text-surface-900 dark:text-surface-100">Water</span>
 					</div>
 					<span class="text-xl font-bold text-surface-900 dark:text-surface-100">
-						{data.settlement.Storage.water}
+						{data.settlement.storage.water}
 					</span>
 				</div>
 				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
@@ -174,7 +177,7 @@
 						<span class="font-medium text-surface-900 dark:text-surface-100">Wood</span>
 					</div>
 					<span class="text-xl font-bold text-surface-900 dark:text-surface-100">
-						{data.settlement.Storage.wood}
+						{data.settlement.storage.wood}
 					</span>
 				</div>
 				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
@@ -183,7 +186,7 @@
 						<span class="font-medium text-surface-900 dark:text-surface-100">Stone</span>
 					</div>
 					<span class="text-xl font-bold text-surface-900 dark:text-surface-100">
-						{data.settlement.Storage.stone}
+						{data.settlement.storage.stone}
 					</span>
 				</div>
 				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
@@ -192,7 +195,7 @@
 						<span class="font-medium text-surface-900 dark:text-surface-100">Ore</span>
 					</div>
 					<span class="text-xl font-bold text-surface-900 dark:text-surface-100">
-						{data.settlement.Storage.ore}
+						{data.settlement.storage.ore}
 					</span>
 				</div>
 			</div>
@@ -213,35 +216,35 @@
 						<Droplet size={18} class="text-success-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Food Capacity</span>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.Plot.food}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.food}/10</span>
 				</div>
 				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
 					<div class="flex items-center gap-2">
 						<Droplet size={18} class="text-primary-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Water Capacity</span>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.Plot.water}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.water}/10</span>
 				</div>
 				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
 					<div class="flex items-center gap-2">
 						<Trees size={18} class="text-secondary-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Wood Capacity</span>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.Plot.wood}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.wood}/10</span>
 				</div>
 				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
 					<div class="flex items-center gap-2">
 						<Mountain size={18} class="text-tertiary-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Stone Capacity</span>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.Plot.stone}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.stone}/10</span>
 				</div>
 				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
 					<div class="flex items-center gap-2">
 						<Pickaxe size={18} class="text-warning-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Ore Capacity</span>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.Plot.ore}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.ore}/10</span>
 				</div>
 			</div>
 		</div>
@@ -274,7 +277,7 @@
 		<div class="flex items-center justify-between mb-4">
 			<h2 class="text-xl font-bold flex items-center gap-2 text-surface-900 dark:text-surface-100">
 				<Home size={24} />
-				Structures ({data.settlement.Structures.length})
+				Structures ({data.settlement.structures?.length ?? 0})
 			</h2>
 			<button 
 				onclick={openBuildModal}
@@ -285,7 +288,7 @@
 			</button>
 		</div>
 
-		{#if data.settlement.Structures.length === 0}
+		{#if !data.settlement.structures || data.settlement.structures.length === 0}
 			<div class="text-center py-8">
 				<Home size={48} class="mx-auto mb-4 text-surface-400" />
 				<p class="text-surface-600 dark:text-surface-400 mb-4">No structures built yet</p>
@@ -299,12 +302,12 @@
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-				{#each data.settlement.Structures as structure}
+				{#each data.settlement.structures as structure}
 					<div class="card preset-filled-surface-200-700 p-4">
 						<h3 class="font-bold text-lg mb-2 text-surface-900 dark:text-surface-100">{structure.name}</h3>
 						<p class="text-sm text-surface-600 dark:text-surface-400 mb-3">{structure.description}</p>
 
-						{#if structure.modifiers.length > 0}
+						{#if structure.modifiers && structure.modifiers.length > 0}
 							<div class="space-y-2">
 								<p class="text-xs font-semibold text-surface-700 dark:text-surface-300">Modifiers:</p>
 								{#each structure.modifiers as modifier}
@@ -378,7 +381,7 @@
 					</h4>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{#each getStructuresByCategory(selectedCategory) as structure}
-							{@const availability = canBuildStructure(structure, data.settlement.Storage, data.settlement.Plot)}
+							{@const availability = canBuildStructure(structure, data.settlement.storage, data.settlement.plot)}
 							<button
 								onclick={() => selectStructure(structure)}
 								class="text-left card preset-filled-surface-200-700 p-4 hover:preset-tonal-primary-500 transition-colors {selectedStructure?.id === structure.id ? 'ring-2 ring-primary-500' : ''}"
@@ -480,6 +483,8 @@
 									await update();
 									isBuilding = false;
 									if (form?.success) {
+										// Invalidate settlement data to refetch with new structure
+										await invalidate('game:settlement');
 										closeBuildModal();
 									}
 								};

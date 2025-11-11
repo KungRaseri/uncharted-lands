@@ -1,10 +1,15 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home, RefreshCw } from 'lucide-svelte';
+	import type { SettlementWithStorage } from '$lib/types/game';
+	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home, RefreshCw, Shield, User, Clock, MessageSquare, Users } from 'lucide-svelte';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 
 	let { data }: { data: PageData } = $props();
+	
+	// Check for error message in URL
+	let showNoWorldError = $derived($page.url.searchParams.get('error') === 'no-world');
 	
 	// State for UI feedback
 	let isRefreshing = $state(false);
@@ -27,19 +32,32 @@
 
 	// Calculate total resources across all settlements
 	let totalResources = $derived({
-		food: data.settlements.reduce((sum, s) => sum + (s.Storage?.food || 0), 0),
-		water: data.settlements.reduce((sum, s) => sum + (s.Storage?.water || 0), 0),
-		wood: data.settlements.reduce((sum, s) => sum + (s.Storage?.wood || 0), 0),
-		stone: data.settlements.reduce((sum, s) => sum + (s.Storage?.stone || 0), 0),
-		ore: data.settlements.reduce((sum, s) => sum + (s.Storage?.ore || 0), 0)
+		food: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.food || 0), 0),
+		water: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.water || 0), 0),
+		wood: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.wood || 0), 0),
+		stone: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.stone || 0), 0),
+		ore: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.ore || 0), 0)
 	});
 
 	let totalStructures = $derived(
-		data.settlements.reduce((sum, s) => sum + (s.Structures?.length || 0), 0)
+		data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.structures?.length || 0), 0)
 	);
 </script>
 
 <div class="max-w-7xl mx-auto p-6 space-y-6">
+	<!-- No World Error Alert -->
+	{#if showNoWorldError}
+		<aside class="alert preset-filled-warning-500 rounded-md">
+			<div class="alert-message">
+				<AlertTriangle size={20} />
+				<div>
+					<h3 class="font-bold">World Not Available</h3>
+					<p>The game world hasn't been created yet. Please contact an administrator to set up the world before accessing the map.</p>
+				</div>
+			</div>
+		</aside>
+	{/if}
+
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
@@ -138,15 +156,9 @@
 	<!-- Settlements List -->
 	<div class="card preset-filled-surface-100-900">
 		<div class="p-6 border-b border-surface-300 dark:border-surface-700">
-			<div class="flex items-center justify-between">
-				<h2 class="text-xl font-bold text-surface-900 dark:text-surface-100">
-					Your Settlements
-				</h2>
-				<a href="/game/settlements/create" class="btn btn-sm preset-filled-primary-500 rounded-md">
-					<Building2 size={16} />
-					<span>New Settlement</span>
-				</a>
-			</div>
+			<h2 class="text-xl font-bold text-surface-900 dark:text-surface-100">
+				Your Settlements
+			</h2>
 		</div>
 
 		{#if data.settlements.length === 0}
@@ -156,11 +168,11 @@
 					No settlements yet
 				</h3>
 				<p class="text-surface-600 dark:text-surface-400 mb-4">
-					Start your journey by creating your first settlement
+					You haven't created your first settlement yet. Start by going through the getting started flow.
 				</p>
-				<a href="/game/settlements/create" class="btn preset-filled-primary-500 rounded-md">
+				<a href="/game/getting-started" class="btn preset-filled-primary-500 rounded-md">
 					<Building2 size={20} />
-					<span>Create Settlement</span>
+					<span>Get Started</span>
 				</a>
 			</div>
 		{:else}
@@ -190,13 +202,13 @@
 									<div>
 										<p class="text-xs text-surface-500 dark:text-surface-500 group-hover:text-white/60">Structures</p>
 										<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
-											{settlement.Structures?.length || 0}
+											{settlement.structures?.length || 0}
 										</p>
 									</div>
 									<div>
 										<p class="text-xs text-surface-500 dark:text-surface-500 group-hover:text-white/60">Food</p>
 										<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
-											{settlement.Storage?.food || 0}
+											{settlement.storage?.food || 0}
 										</p>
 									</div>
 								</div>
@@ -209,7 +221,7 @@
 	</div>
 
 	<!-- Quick Actions -->
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 		<a
 			href="/game/map"
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors group"
@@ -240,12 +252,64 @@
 			href="/game/wardens"
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-tertiary-500 transition-colors group"
 		>
-			<AlertTriangle size={32} class="text-tertiary-500 group-hover:text-white mb-3" />
+			<Shield size={32} class="text-tertiary-500 group-hover:text-white mb-3" />
 			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
 				Wardens
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
-				Protect your settlements from threats
+				Manage your settlement defenses
+			</p>
+		</a>
+
+		<a
+			href="/game/profile"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-success-500 transition-colors group"
+		>
+			<User size={32} class="text-success-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				Profile
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				View your player profile and statistics
+			</p>
+		</a>
+
+		<a
+			href="/game/history"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-warning-500 transition-colors group"
+		>
+			<Clock size={32} class="text-warning-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				History
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				View your activity history
+			</p>
+		</a>
+
+		<a
+			href="/game/messages"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-error-500 transition-colors group"
+		>
+			<MessageSquare size={32} class="text-error-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				Messages
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				Private messages with other players
+			</p>
+		</a>
+
+		<a
+			href="/game/guild"
+			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors group"
+		>
+			<Users size={32} class="text-primary-500 group-hover:text-white mb-3" />
+			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+				Guild
+			</h3>
+			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+				Your guild information and members
 			</p>
 		</a>
 	</div>

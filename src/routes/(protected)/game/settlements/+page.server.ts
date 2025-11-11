@@ -1,23 +1,41 @@
-import { db } from '$lib/db';
+import { API_URL } from '$lib/config';
+import { logger } from '$lib/utils/logger';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, depends }) => {
+export const load = (async ({ locals, depends, cookies }) => {
     // Mark this data as dependent on game state changes
     depends('game:settlements');
     depends('game:data');
 
-    const settlements = await db.settlement.findMany({
-        where: {
-            PlayerProfile: {
-                profileId: locals.account.profile.id,
-                serverId: (await db.server.findFirst())?.id //TODO: update when server swapping is available
-            },
-        },
-        include: {
-            Storage: true,
-            Structures: true
+    const profileId = locals.account?.profile?.id;
+    if (!profileId) {
+        return { settlements: [], lastUpdate: new Date().toISOString() };
+    }
+
+    const sessionToken = cookies.get('session');
+
+    const response = await fetch(`${API_URL}/settlements?playerProfileId=${profileId}`, {
+        headers: {
+            'Cookie': `session=${sessionToken}`
         }
-    })
+    });
+    
+    if (!response.ok) {
+        logger.error('[SETTLEMENTS] Failed to fetch settlements', {
+            profileId,
+            status: response.status
+        });
+        return {
+            settlements: [],
+            lastUpdate: new Date().toISOString()
+        };
+    }
+
+    const settlements = await response.json();
+
+    logger.debug('[SETTLEMENTS] Settlements loaded', {
+        count: settlements.length
+    });
 
     return {
         settlements,

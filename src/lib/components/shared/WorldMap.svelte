@@ -1,21 +1,11 @@
 <script lang="ts">
-	import type { Prisma } from '@prisma/client';
 	import RegionComponent from '$lib/components/game/map/Region.svelte';
-	
-	type RegionWithTiles = Prisma.RegionGetPayload<{
-		include: {
-			tiles: {
-				include: {
-					Biome: true;
-					Plots: {
-						include: {
-							Settlement: true;
-						};
-					};
-				};
-			};
-		};
-	}>;
+	import MapLegend from '$lib/components/shared/MapLegend.svelte';
+	import type { RegionWithTiles } from '$lib/types/game';
+	import { getTileColor, getTileColorByViewMode, getElevationColor, type MapViewMode } from '$lib/utils/tile-colors';
+	import { getAdminRegionTooltip } from '$lib/utils/admin-tooltips';
+	import { getBiomeNameForPreview } from '$lib/utils/biome-matcher';
+	import { getRegionTileTooltip, calculateRegionStats } from '$lib/utils/region-tile-utils';
 	
 	type RegionWithElevationMap = {
 		id: string;
@@ -35,6 +25,14 @@
 		previewRegions?: RegionWithElevationMap[];
 		/** Display mode: affects tooltips and hover details */
 		mode?: 'admin' | 'player';
+		/** View level: world (multiple regions), region (single region), or tile (single tile in region) */
+		viewLevel?: 'world' | 'region' | 'tile';
+		/** Map visualization mode */
+		mapViewMode?: MapViewMode;
+		/** Highlighted tile ID (for tile view level) */
+		highlightedTileId?: string;
+		/** Title for the map view */
+		title?: string;
 		/** Current player's profile ID (for player mode settlement filtering) */
 		currentPlayerProfileId?: string;
 		/** Show legend */
@@ -49,11 +47,18 @@
 		regions, 
 		previewRegions, 
 		mode = 'player',
+		viewLevel = 'world',
+		mapViewMode: initialMapViewMode = 'satellite',
+		highlightedTileId,
+		title,
 		currentPlayerProfileId,
 		showLegend = true,
 		showStats = false,
 		lazyLoadEnabled = false
 	}: Props = $props();
+
+	// Make mapViewMode reactive so the view mode selector can change it
+	let mapViewMode = $state<MapViewMode>(initialMapViewMode);
 	
 	// Preview mode is ONLY for world creation (before tiles exist)
 	const isPreviewMode = $derived(!!previewRegions && !regions);
@@ -157,10 +162,10 @@
 			// Normal mode: count based on actual tiles
 			const totalTiles = regions.reduce((sum, r) => sum + r.tiles.length, 0);
 			const landTiles = regions.reduce((sum, r) => 
-				sum + r.tiles.filter(t => t.type === 'LAND').length, 0
+				sum + r.tiles.filter((t) => t.type === 'LAND').length, 0
 			);
 			const oceanTiles = regions.reduce((sum, r) => 
-				sum + r.tiles.filter(t => t.type === 'OCEAN').length, 0
+				sum + r.tiles.filter((t) => t.type === 'OCEAN').length, 0
 			);
 			
 			return { totalTiles, landTiles, oceanTiles };
@@ -169,238 +174,225 @@
 		return null;
 	});
 	
-	// Get elevation color (for admin mode)
-	// These colors should roughly correspond to common biomes at those elevations
-	function getElevationColor(value: number): string {
-		if (value < -0.3) return '#001a33'; // Deep ocean
-		if (value < 0) return '#003d66'; // Shallow ocean
-		if (value < 0.1) return '#f4e4c1'; // Beach/Sand
-		if (value < 0.3) return '#78b450'; // Low grassland/plains
-		if (value < 0.5) return '#5a8232'; // Forest/woodland
-		if (value < 0.7) return '#8d6e63'; // Hills
-		if (value < 0.9) return '#969696'; // Mountains
-		return '#dce1f0'; // Snow/tundra peaks
-	}
+	// Helper removed - now using getAdminRegionTooltip from utils
 	
-	// Get terrain type name (for tooltips)
-	function getTerrainType(elevation: number): string {
-		if (elevation < -0.3) return 'Deep Ocean';
-		if (elevation < 0) return 'Ocean';
-		if (elevation < 0.1) return 'Beach';
-		if (elevation < 0.3) return 'Plains';
-		if (elevation < 0.5) return 'Forest';
-		if (elevation < 0.7) return 'Hills';
-		if (elevation < 0.9) return 'Mountains';
-		return 'Snow Peaks';
-	}
+	// Detect if we're in region view mode (single region being displayed)
+	const isRegionView = $derived(
+		viewLevel === 'region' || (regions && regions.length === 1 && !isPreviewMode)
+	);
 	
-	// Create tooltip for admin mode (elevation map preview)
-	function getAdminTooltip(region: RegionWithElevationMap, row: number, col: number, elevation: number): string {
-		const terrain = getTerrainType(elevation);
-		return `Region: ${region.name || 'Unknown'} (${region.xCoord}, ${region.yCoord})
-Tile: (${row}, ${col})
-Elevation: ${elevation.toFixed(3)}
-Terrain: ${terrain}`;
-	}
+	// Prepare single region data and tile grid for region view
+	const regionViewData = $derived(() => {
+		if (!isRegionView || !regions || regions.length === 0) return null;
+		
+		const region = regions[0];
+		const tiles = region.tiles || [];
+		
+		// Calculate stats using utility function
+		const regionStats = calculateRegionStats(tiles);
+		
+		// Organize tiles into 10x10 grid
+		const grid: any[][] = Array.from({ length: 10 }, () => Array(10).fill(null));
+		const sortedTiles = [...tiles].sort((a, b) => a.id.localeCompare(b.id));
+		
+		sortedTiles.forEach((tile, index) => {
+			const row = Math.floor(index / 10);
+			const col = index % 10;
+			if (row < 10 && col < 10) {
+				grid[row][col] = tile;
+			}
+		});
+		
+		return {
+			region,
+			tiles,
+			grid,
+			stats: regionStats
+		};
+	});
 </script>
 
 <div class="space-y-4">
+	<!-- Title (if provided) -->
+	{#if title}
+		<h2 class="text-xl font-semibold text-center">{title}</h2>
+	{/if}
+	
+	<!-- View Mode Selector -->
+	<div class="flex flex-wrap gap-2 justify-center p-2 bg-surface-100 dark:bg-surface-800 rounded-md">
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'satellite' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'satellite'}
+		>
+			Satellite
+		</button>
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'topographical' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'topographical'}
+		>
+			Topographical
+		</button>
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'temperature' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'temperature'}
+		>
+			Temperature
+		</button>
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'precipitation' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'precipitation'}
+		>
+			Precipitation
+		</button>
+		<button
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'political' ? 'bg-primary-500 text-white' : 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
+			onclick={() => mapViewMode = 'political'}
+		>
+			Political
+		</button>
+	</div>
+	
 	<!-- Stats (if enabled) -->
-	{#if showStats && stats()}
-		{@const currentStats = stats()}
-		{#if currentStats}
-			<div class="flex justify-center gap-6 text-sm">
-				<div class="text-center">
-					<p class="text-2xl font-bold">{currentStats.totalTiles}</p>
-					<p class="text-surface-600 dark:text-surface-400">Total Tiles</p>
+	{#if showStats}
+		{#if isRegionView && regionViewData()}
+			<!-- Region-specific stats -->
+			{@const data = regionViewData()}
+			{#if data}
+				<div class="grid grid-cols-2 md:grid-cols-5 gap-2 p-3 bg-surface-200 dark:bg-surface-700 rounded-md">
+					<div class="text-center">
+						<p class="text-xs text-surface-600 dark:text-surface-400">Avg Elevation</p>
+						<p class="font-semibold">{data.stats.avgElevation.toFixed(3)}</p>
+					</div>
+					<div class="text-center">
+						<p class="text-xs text-surface-600 dark:text-surface-400">Range</p>
+						<p class="font-semibold text-xs">{data.stats.minElevation.toFixed(2)} to {data.stats.maxElevation.toFixed(2)}</p>
+					</div>
+					<div class="text-center">
+						<p class="text-xs text-surface-600 dark:text-surface-400">Land Tiles</p>
+						<p class="font-semibold text-success-500">{data.stats.landTiles}</p>
+					</div>
+					<div class="text-center">
+						<p class="text-xs text-surface-600 dark:text-surface-400">Ocean Tiles</p>
+						<p class="font-semibold text-primary-500">{data.stats.oceanTiles}</p>
+					</div>
+					<div class="text-center">
+						<p class="text-xs text-surface-600 dark:text-surface-400">Total Tiles</p>
+						<p class="font-semibold">{data.tiles.length}</p>
+					</div>
 				</div>
-				<div class="text-center">
-					<p class="text-2xl font-bold text-success-500">{currentStats.landTiles}</p>
-					<p class="text-surface-600 dark:text-surface-400">Land Tiles</p>
+			{/if}
+		{:else if stats()}
+			<!-- World-level stats -->
+			{@const currentStats = stats()}
+			{#if currentStats}
+				<div class="flex justify-center gap-6 text-sm">
+					<div class="text-center">
+						<p class="text-2xl font-bold">{currentStats.totalTiles}</p>
+						<p class="text-surface-600 dark:text-surface-400">Total Tiles</p>
+					</div>
+					<div class="text-center">
+						<p class="text-2xl font-bold text-success-500">{currentStats.landTiles}</p>
+						<p class="text-surface-600 dark:text-surface-400">Land Tiles</p>
+					</div>
+					<div class="text-center">
+						<p class="text-2xl font-bold text-primary-500">{currentStats.oceanTiles}</p>
+						<p class="text-surface-600 dark:text-surface-400">Ocean Tiles</p>
+					</div>
 				</div>
-				<div class="text-center">
-					<p class="text-2xl font-bold text-primary-500">{currentStats.oceanTiles}</p>
-					<p class="text-surface-600 dark:text-surface-400">Ocean Tiles</p>
-				</div>
-			</div>
+			{/if}
 		{/if}
 	{/if}
 	
 	<!-- Map Container -->
 	<div class="flex justify-center">
 		<div class="bg-surface-200 dark:bg-surface-800 p-4 rounded-lg inline-block">
-			<!-- Dynamic grid size based on loaded regions -->
-			<div class="grid {gridColsClass()} {gridRowsClass()} gap-0 border-2 border-surface-400 dark:border-surface-500 w-[600px] h-[600px] max-w-[90vw] max-h-[90vw]">
-				{#if isPreviewMode && previewRegions}
-					<!-- Preview Mode (World Creation ONLY): Show elevation data -->
-					{#each previewRegions as region}
-						<div class="border border-surface-400 dark:border-surface-600 p-0 aspect-square">
-							<div class="grid grid-cols-10 gap-0 h-full w-full">
-								{#if region.elevationMap && Array.isArray(region.elevationMap)}
-									{#each region.elevationMap as row, rowIndex}
-										{#if Array.isArray(row)}
-											{#each row as elevation, colIndex}
-												{@const elevationValue = typeof elevation === 'number' ? elevation : 0}
-												<div
-													class="w-full h-full cursor-help
-													hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]
-													dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
-													transition-shadow duration-150"
-													style="background-color: {getElevationColor(elevationValue)}"
-													title={getAdminTooltip(region, rowIndex, colIndex, elevationValue)}
-												></div>
-											{/each}
-										{/if}
-									{/each}
+			{#if isRegionView && regionViewData()}
+				<!-- Region View: Show single region's 10x10 tile grid -->
+				{@const data = regionViewData()}
+				{#if data}
+					<div class="grid grid-cols-10 gap-0 w-full max-w-2xl mx-auto border-2 border-surface-400 dark:border-surface-500">
+						{#each data.grid as row, rowIndex}
+							{#each row as tile, colIndex}
+								{#if tile}
+									{@const isHighlighted = highlightedTileId && tile.id === highlightedTileId}
+									<div
+										class="aspect-square cursor-help 
+										hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)] 
+										dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)] 
+										transition-shadow duration-150
+										{isHighlighted ? 'ring-4 ring-warning-500' : ''}"
+										style="background-color: {getElevationColor(tile.elevation)}"
+										title={getRegionTileTooltip(tile, rowIndex, colIndex)}
+									></div>
+								{:else}
+									<div class="aspect-square bg-surface-500"></div>
 								{/if}
-							</div>
-						</div>
-					{/each}
-				{:else if regions}
-					<!-- Normal Mode: Show biome-based tiles using Region component (both admin & player) -->
-					{#each regions as region}
-						{@const dims = gridDimensions()}
-						{@const gridRow = region.xCoord - dims.minX + 1}
-						{@const gridCol = region.yCoord - dims.minY + 1}
-						<div class="border border-surface-400 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 w-full h-full" 
-						     style="grid-row: {gridRow}; grid-column: {gridCol};"
-						     title="Region {region.name} ({region.xCoord}, {region.yCoord}) -> Grid ({gridRow}, {gridCol})">
-							<RegionComponent {region} mode={mode} {currentPlayerProfileId} />
-						</div>
-					{/each}
+							{/each}
+						{/each}
+					</div>
 				{/if}
-			</div>
+			{:else}
+				<!-- World View: Show region grid -->
+				<!-- Dynamic grid size based on loaded regions -->
+				<div class="grid {gridColsClass()} {gridRowsClass()} gap-0 border-2 border-surface-400 dark:border-surface-500 w-[600px] h-[600px] max-w-[90vw] max-h-[90vw]">
+					{#if isPreviewMode && previewRegions}
+						<!-- Preview Mode (World Creation): Show biome-based colors to match tile view -->
+						{#each previewRegions as region}
+							<div class="border border-surface-400 dark:border-surface-600 p-0 aspect-square">
+								<div class="grid grid-cols-10 gap-0 h-full w-full">
+									{#if region.elevationMap && Array.isArray(region.elevationMap)}
+										{#each region.elevationMap as row, rowIndex}
+											{#if Array.isArray(row)}
+												{#each row as elevation, colIndex}
+													{@const elevationValue = typeof elevation === 'number' ? elevation : 0}
+													{@const precipValue = region.precipitationMap?.[rowIndex]?.[colIndex] ?? 0}
+													{@const tempValue = region.temperatureMap?.[rowIndex]?.[colIndex] ?? 0}
+													{@const biomeName = getBiomeNameForPreview(elevationValue, precipValue, tempValue)}
+													{@const tileColor = getTileColorByViewMode(
+														mapViewMode,
+														elevationValue,
+														biomeName,
+														elevationValue < 0 ? 'OCEAN' : 'LAND',
+														tempValue,
+														precipValue
+													)}
+													<div
+														class="w-full h-full cursor-help
+														hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]
+														dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
+														transition-shadow duration-150"
+														style="background-color: {tileColor}"
+														title={getAdminRegionTooltip(region, rowIndex, colIndex, elevationValue, precipValue, tempValue, biomeName)}
+														data-biome={biomeName}
+														data-color={tileColor}
+													></div>
+												{/each}
+											{/if}
+										{/each}
+									{/if}
+								</div>
+							</div>
+						{/each}
+					{:else if regions}
+						<!-- Normal Mode: Show biome-based tiles using Region component (both admin & player) -->
+						{#each regions as region}
+							{@const dims = gridDimensions()}
+							{@const gridRow = region.xCoord - dims.minX + 1}
+							{@const gridCol = region.yCoord - dims.minY + 1}
+							<div class="border border-surface-400 dark:border-surface-600 bg-surface-100 dark:bg-surface-900 w-full h-full" 
+								 style="grid-row: {gridRow}; grid-column: {gridCol};"
+								 title="Region {region.name} ({region.xCoord}, {region.yCoord}) -> Grid ({gridRow}, {gridCol})">
+								<RegionComponent {region} mode={mode} {currentPlayerProfileId} {mapViewMode} />
+							</div>
+						{/each}
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 	
 	<!-- Legend -->
 	{#if showLegend}
-		<div class="flex justify-center">
-			<div class="bg-surface-200 dark:bg-surface-700 p-6 rounded-lg max-w-4xl">
-				{#if isPreviewMode}
-					<!-- Preview Legend (Elevation-based - World Creation Only) -->
-					<div class="text-sm text-surface-600 dark:text-surface-400">
-						<div class="flex items-center gap-3 flex-wrap justify-center">
-							<span class="font-semibold text-base mr-2">Elevation Preview:</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #001a33"></span>
-								<span>Deep Ocean (&lt; -0.3)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #003d66"></span>
-								<span>Ocean (&lt; 0)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #f4e4c1"></span>
-								<span>Beach (0-0.1)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #78b450"></span>
-								<span>Plains (0.1-0.3)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #5a8232"></span>
-								<span>Forest (0.3-0.5)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #8d6e63"></span>
-								<span>Hills (0.5-0.7)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #969696"></span>
-								<span>Mountains (0.7-0.9)</span>
-							</span>
-							<span class="flex items-center gap-1.5">
-								<span class="w-5 h-5 inline-block border border-surface-400 rounded" style="background-color: #dce1f0"></span>
-								<span>Snow Peaks (&gt; 0.9)</span>
-							</span>
-						</div>
-					</div>
-				{:else}
-					<!-- Biome Legend (Both Admin & Player) -->
-					<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-sm">
-						<!-- Water & Coastal -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(0, 26, 51)"></div>
-							<span>Deep Ocean</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(0, 61, 102)"></div>
-							<span>Ocean</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(244, 228, 193)"></div>
-							<span>Beach</span>
-						</div>
-						
-						<!-- Cold Biomes -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(220, 225, 240)"></div>
-							<span>Tundra</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(45, 100, 60)"></div>
-							<span>Boreal Forest</span>
-						</div>
-						
-						<!-- Temperate Biomes -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(60, 130, 50)"></div>
-							<span>Temperate Forest</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(120, 180, 80)"></div>
-							<span>Grassland</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(90, 140, 70)"></div>
-							<span>Woodland</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(140, 160, 90)"></div>
-							<span>Shrubland</span>
-						</div>
-						
-						<!-- Tropical Biomes -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(50, 140, 70)"></div>
-							<span>Tropical Forest</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(30, 130, 60)"></div>
-							<span>Rainforest</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(200, 170, 80)"></div>
-							<span>Savanna</span>
-						</div>
-						
-						<!-- Deserts -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(190, 180, 160)"></div>
-							<span>Cold Desert</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(230, 200, 140)"></div>
-							<span>Desert</span>
-						</div>
-						
-						<!-- Mountains -->
-						<div class="flex items-center gap-2">
-							<div class="w-5 h-5 rounded border border-surface-400" style="background-color: rgb(150, 150, 150)"></div>
-							<span>Mountains</span>
-						</div>
-						
-						<!-- Settlement Marker (Player Mode Only) -->
-						{#if mode === 'player'}
-							<div class="flex items-center gap-2">
-								<div class="w-3 h-3 bg-warning-400 rounded-full border border-surface-900 shadow-[0_0_3px_rgba(251,191,36,1)]"></div>
-								<span>Settled Plots</span>
-							</div>
-						{/if}
-					</div>
-				{/if}
-			</div>
-		</div>
+		<MapLegend viewMode={mapViewMode} {mode} {isPreviewMode} />
 	{/if}
 </div>

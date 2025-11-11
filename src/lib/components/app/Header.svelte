@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
 	import LightSwitch from './LightSwitch.svelte';
@@ -26,35 +26,36 @@
 	});
 </script>
 
-<header class="bg-surface-100 dark:bg-surface-800 shadow-md">
-	<div class="grid grid-cols-3 items-center gap-4 p-4">
+<header class="bg-surface-100 dark:bg-surface-800 shadow-md relative z-50">
+	<div class="flex items-center justify-between gap-4 p-4">
 		<!-- Lead slot -->
-		<div class="block sm:hidden">
-			<button
-				type="button"
-				class="px-1.5 py-0 btn-icon preset-tonal-surface-500 justify-center items-center"
-				aria-controls="mobile-menu"
-				aria-expanded={isMainMenuOpen}
-				onclick={() => {
-					isMainMenuOpen = !isMainMenuOpen;
-				}}
-			>
-				{#if !isMainMenuOpen}
-					<Menu size={24} />
-				{:else}
-					<X size={24} />
-				{/if}
-			</button>
-		</div>
-		<div class="hidden sm:flex gap-2">
-			{#each $page.data?.mainMenuLinks ?? [] as link}
+		<div class="flex items-center gap-2">
+			<div class="block sm:hidden">
+				<button
+					type="button"
+					class="px-1.5 py-0 btn-icon preset-tonal-surface-500 justify-center items-center"
+					aria-controls="mobile-menu"
+					aria-expanded={isMainMenuOpen}
+					onclick={() => {
+						isMainMenuOpen = !isMainMenuOpen;
+					}}
+				>
+					{#if !isMainMenuOpen}
+						<Menu size={24} />
+					{:else}
+						<X size={24} />
+					{/if}
+				</button>
+			</div>
+			<div class="hidden sm:flex gap-2">
+				{#each page.data?.mainMenuLinks ?? [] as link}
 				{#if link.requiredRole}
-					{#if $page.data?.account}
+					{#if page.data?.account}
 						<a
 							href={link.route}
 							class="btn rounded-md
 								{link.isActive ? 'bg-primary-600' : ''}
-								{$page.data?.account?.role !== link.requiredRole ? 'hidden' : ''}
+								{page.data?.account?.role !== link.requiredRole ? 'hidden' : ''}
 								hover:bg-primary-500
 								"
 						>
@@ -68,7 +69,7 @@
 						href={link.route}
 						class="btn rounded-md
 							{link.isActive ? 'bg-primary-600' : ''}
-							{$page.data?.account && link.requiredRole && $page.data?.account?.role !== link.requiredRole
+							{page.data?.account && link.requiredRole && page.data?.account?.role !== link.requiredRole
 							? 'hidden'
 							: ''}
 							hover:bg-primary-500
@@ -81,17 +82,18 @@
 					</a>
 				{/if}
 			{/each}
+			</div>
 		</div>
 
 		<!-- Trail slot -->
 		<div class="flex items-center justify-end gap-2">
 			<LightSwitch />
-			{#if !$page.data?.account}
+			{#if !page.data?.account}
 				<a
 					href="/sign-in"
 					class="btn rounded-md
 						hover:bg-primary-500
-						{$page.route.id === '/(auth)/sign-in' ? 'bg-primary-600' : ''}
+						{page.route.id === '/(auth)/sign-in' ? 'bg-primary-600' : ''}
 						"
 					data-testid="header-signin"
 				>
@@ -100,7 +102,7 @@
 				<a
 					href="/register"
 					class="btn rounded-md
-						{$page.route.id === '/(auth)/register' ? 'bg-primary-600' : ''}
+						{page.route.id === '/(auth)/register' ? 'bg-primary-600' : ''}
 						hover:bg-primary-500
 						"
 					data-testid="header-register"
@@ -125,11 +127,25 @@
 							userMenuOpen = !userMenuOpen;
 						}}
 					>
-						{#if $page.data?.account?.profile?.picture}
+						{#if page.data?.account?.profile?.picture}
 							<img
 								class="w-6 h-6 rounded-full object-cover"
-								src={$page.data.account.profile.picture}
-								alt="Profile"
+								src={page.data.account.profile.picture}
+								alt={page.data.account.profile.username || 'User'}
+								onerror={(e) => {
+									// If image fails to load, replace with User icon
+									const parent = e.currentTarget.parentElement;
+									e.currentTarget.remove();
+									const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+									icon.setAttribute('width', '20');
+									icon.setAttribute('height', '20');
+									icon.setAttribute('viewBox', '0 0 24 24');
+									icon.setAttribute('fill', 'none');
+									icon.setAttribute('stroke', 'currentColor');
+									icon.setAttribute('stroke-width', '2');
+									icon.innerHTML = '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>';
+									parent?.appendChild(icon);
+								}}
 							/>
 						{:else}
 							<User size={20} />
@@ -146,15 +162,15 @@
 							tabindex="-1"
 						>
 							<ul class="space-y-1">
-								{#each $page.data?.userMenuLinks ?? [] as link}
-									{#if !link.requiredRole || link.requiredRole === $page.data?.account?.role}
+								{#each page.data?.userMenuLinks ?? [] as link}
+									{#if !link.requiredRole || link.requiredRole === page.data?.account?.role}
 										<li>
 											<a
 												href={link.route}
 												class="btn w-full justify-start rounded-md
 													{link.isActive ? 'preset-filled-primary-500' : 'hover:preset-tonal-surface-500'}
 												"
-												aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+												aria-current={page.route.id?.includes(link.route) ? 'page' : undefined}
 												onclick={() => {
 													userMenuOpen = false;
 												}}
@@ -197,21 +213,21 @@
 		aria-labelledby="main-menu-button"
 	>
 		<div class="m-0 p-0 space-y-0 btn-group-vertical w-full rounded-none">
-			{#each $page.data?.mainMenuLinks ?? [] as link}
+			{#each page.data?.mainMenuLinks ?? [] as link}
 				<a
 					href={link.route}
 					class="btn rounded-none
 						hover:bg-primary-500
-						{$page.route.id === link.route ||
-					$page.route.id === `/(protected)${link.route}` ||
-					$page.route.id === `/(auth)${link.route}`
+						{page.route.id === link.route ||
+					page.route.id === `/(protected)${link.route}` ||
+					page.route.id === `/(auth)${link.route}`
 						? 'bg-primary-600'
 						: ''}
 						"
 					onclick={() => {
 						isMainMenuOpen = false;
 					}}
-					aria-current={$page.route.id?.includes(link.route) ? 'page' : undefined}
+					aria-current={page.route.id?.includes(link.route) ? 'page' : undefined}
 				>
 					<span class="">
 						{link.name}

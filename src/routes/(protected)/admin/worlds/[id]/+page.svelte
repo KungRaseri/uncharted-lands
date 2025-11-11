@@ -3,10 +3,16 @@
 	import { Globe, Server, MapPin, Home, Mountain, Waves, ArrowLeft, Edit, Trash2, Save, X } from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
+	import type { TileWithRelations, Plot } from '$lib/types/api';
 
 	let { data, form }: { data: PageData; form: any } = $props();
+	
+	// Guard: if world failed to load, show error (this shouldn't happen but satisfies TypeScript)
+	if (!data.world) {
+		throw new Error('World not found');
+	}
 	
 	let isEditing = $state(false);
 	let showDeleteConfirm = $state(false);
@@ -18,14 +24,14 @@
 	
 	// Auto-enable edit mode if ?edit=true in URL
 	onMount(() => {
-		if ($page.url.searchParams.get('edit') === 'true') {
+		if (page.url.searchParams.get('edit') === 'true') {
 			startEdit();
 		}
 	});
 	
 	function startEdit() {
-		editName = data.world.name;
-		editServerId = data.world.serverId;
+		editName = data.world!.name;
+		editServerId = data.world!.serverId;
 		isEditing = true;
 	}
 	
@@ -35,7 +41,7 @@
 
 	// Use the same region data as player mode (includes full tile/biome data)
 	// Admin mode will show same colors but with more detailed tooltips
-	const worldRegions = $derived(data.world.regions);
+	const worldRegions = $derived((data.world!.regions || []) as any);
 </script>
 
 <div class="space-y-6">
@@ -69,8 +75,8 @@
 
 					<div class="flex items-center gap-2">
 						<Server size={16} class="text-surface-400" />
-						<a href="/admin/servers/{data.world.serverId}" class="text-primary-500 hover:underline">
-							{data.world.server.name}
+						<a href="/admin/servers/{data.world!.serverId}" class="text-primary-500 hover:underline">
+							{data.world!.server?.name || 'Unknown Server'}
 						</a>
 					</div>
 				</div>
@@ -185,7 +191,7 @@
 					<p class="font-semibold">⚠️ Warning</p>
 					<p class="text-sm mt-1">This will permanently delete:</p>
 					<ul class="text-sm mt-2 list-disc list-inside">
-						<li>{data.world.regions.length} regions</li>
+						<li>{data.world!.regions?.length || 0} regions</li>
 						<li>{data.worldInfo.landTiles + data.worldInfo.oceanTiles} tiles</li>
 						<li>All plots on those tiles</li>
 						<li>{data.worldInfo.settlements} settlements</li>
@@ -260,7 +266,7 @@
 					<MapPin size={24} class="text-warning-500" />
 				</div>
 				<div>
-					<p class="text-2xl font-bold">{data.world.regions.length}</p>
+					<p class="text-2xl font-bold">{data.world!.regions?.length || 0}</p>
 					<p class="text-sm text-surface-600 dark:text-surface-400">Regions</p>
 				</div>
 			</div>
@@ -283,7 +289,7 @@
 	{#if worldRegions && worldRegions.length > 0}
 		<div class="card preset-filled-surface-100-900 p-6">
 			<h2 class="text-xl font-bold mb-4">World Map</h2>
-			<WorldMap regions={worldRegions} mode="admin" showLegend={true} />
+			<WorldMap regions={worldRegions} mode="admin" showLegend={true} mapViewMode="satellite" />
 		</div>
 	{/if}
 
@@ -314,11 +320,12 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each data.world.regions as region}
-							{@const landTiles = region.tiles.filter((t) => t.type === 'LAND').length}
-							{@const oceanTiles = region.tiles.filter((t) => t.type === 'OCEAN').length}
-							{@const avgElevation = region.tiles.reduce((sum, t) => sum + t.elevation, 0) / region.tiles.length}
-							{@const settlements = region.tiles.flatMap((t) => t.Plots).filter((p) => p.Settlement).length}
+						{#each data.world!.regions as region}
+							{@const tiles = region.tiles || []}
+							{@const landTiles = tiles.filter((t: TileWithRelations) => t.type === 'LAND').length}
+							{@const oceanTiles = tiles.filter((t: TileWithRelations) => t.type === 'OCEAN').length}
+							{@const avgElevation = tiles.length > 0 ? tiles.reduce((sum: number, t: TileWithRelations) => sum + t.elevation, 0) / tiles.length : 0}
+							{@const settlements = tiles.flatMap((t: TileWithRelations) => (t.Plots || []) as any).filter((p: any) => p.Settlement).length}
 							{@const elevationClass =
 								avgElevation < 0
 									? 'bg-primary-500/10 text-primary-500'
@@ -400,8 +407,8 @@
 			<!-- Grid view toggle option (optional) -->
 			<div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
 				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
-					Showing {data.world.regions.length} regions with {data.world.regions.reduce(
-						(sum, r) => sum + r.tiles.length,
+					Showing {data.world!.regions?.length || 0} regions with {(data.world!.regions || []).reduce(
+						(sum, r) => sum + (r.tiles?.length || 0),
 						0
 					)} total tiles
 				</p>

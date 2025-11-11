@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { Server, Globe, Users, Calendar, ArrowLeft, Plus, Edit, Trash2, Save, X } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
 	let { data, form }: { data: PageData; form: any } = $props();
@@ -19,7 +19,7 @@
 	
 	// Auto-enable edit mode if ?edit=true in URL
 	onMount(() => {
-		if ($page.url.searchParams.get('edit') === 'true') {
+		if (page.url.searchParams.get('edit') === 'true') {
 			startEdit();
 		}
 	});
@@ -248,7 +248,7 @@
 		<div class="flex items-center justify-between mb-4">
 			<h2 class="text-xl font-bold flex items-center gap-2">
 				<Globe size={24} />
-				Worlds ({data.server.worlds.length})
+				Worlds ({data.server.worlds?.length || 0})
 			</h2>
 			<a href="/admin/worlds/create" class="btn btn-sm preset-filled-primary-500 rounded-md">
 				<Plus size={16} />
@@ -256,7 +256,7 @@
 			</a>
 		</div>
 
-		{#if data.server.worlds.length === 0}
+		{#if !data.server.worlds || data.server.worlds.length === 0}
 			<div class="text-center py-8">
 				<Globe size={48} class="mx-auto mb-4 text-surface-400" />
 				<p class="text-surface-600 dark:text-surface-400">No worlds created yet</p>
@@ -286,10 +286,10 @@
 	<div class="card preset-filled-surface-100-900 p-6">
 		<h2 class="text-xl font-bold flex items-center gap-2 mb-4">
 			<Users size={24} />
-			Players ({data.server.players.length})
+			Players ({data.server.players?.length || 0})
 		</h2>
 
-		{#if data.server.players.length === 0}
+		{#if !data.server.players || data.server.players.length === 0}
 			<div class="text-center py-8">
 				<Users size={48} class="mx-auto mb-4 text-surface-400" />
 				<p class="text-surface-600 dark:text-surface-400">No players on this server yet</p>

@@ -1,8 +1,8 @@
-import { db } from "$lib/db";
+import { API_URL } from "$lib/config";
 import { fail, redirect } from "@sveltejs/kit";
 import type { Action, Actions, PageServerLoad } from "./$types";
-import bcrypt from 'bcrypt';
 import { TimeSpan } from "$lib/timespan";
+import { logger } from "$lib/utils/logger";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
     if (locals.account)
@@ -13,51 +13,118 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     }
 }
 
-const login: Action = async ({ cookies, request, url }) => {
+const login: Action = async ({ cookies, request, url, fetch }) => {
     const data = await request.formData();
     const email = data.get('email');
     const password = data.get('password');
     const rememberMeIsChecked = data.get('remember_me');
 
-    if (typeof email !== 'string' ||
-        typeof password !== 'string' ||
-        !email ||
-        !password) {
-        return fail(400, { email, invalid: true })
+    logger.debug('[AUTH] Login attempt', {
+        email: email ? `${email.toString().substring(0, 3)}***` : 'missing',
+        hasPassword: !!password,
+        rememberMe: !!rememberMeIsChecked,
+        timestamp: new Date().toISOString()
+    });
+
+    // Validate required fields
+    if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+        logger.warn('[AUTH] Login validation failed - missing fields');
+        return fail(400, { email, invalid: true, missingFields: true })
     }
 
-    const account = await db.account.findUnique({
-        where: { email }
-    })
+    try {
+        // Send plain password to API (server will handle hashing/comparison)
+        // This is secure when using HTTPS
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password // Plain password - server will compare with bcrypt
+            })
+        });
 
-    if (!account || !await bcrypt.compare(password, account.passwordHash)) {
-        return fail(400, { email, incorrect: true })
+        if (!response.ok) {
+            const error = await response.json();
+            
+            logger.debug('[AUTH] Login failed', {
+                status: response.status,
+                code: error.code,
+                error: error.error
+            });
+
+            // Handle specific error codes
+            if (error.code === 'INVALID_CREDENTIALS') {
+                return fail(401, { 
+                    email, 
+                    incorrect: true,
+                    message: 'The email or password you entered is incorrect.'
+                });
+            }
+
+            if (error.code === 'MISSING_FIELDS') {
+                return fail(400, { 
+                    email, 
+                    invalid: true, 
+                    missingFields: true,
+                    message: 'Please provide both email and password.'
+                });
+            }
+
+            return fail(400, { 
+                email, 
+                incorrect: true,
+                message: 'Login failed. Please check your credentials and try again.'
+            });
+        }
+
+        const result = await response.json();
+        const userAuthToken = result.account.userAuthToken;
+
+        logger.info('[AUTH] ✓ Login successful');
+
+        const ts = new TimeSpan();
+        ts.days = 30;
+        const age30d = ts.totalSeconds;
+        
+        ts.days = 0;
+        ts.hours = 6;
+        const age6h = ts.totalSeconds;
+
+        const rememberMe = !!rememberMeIsChecked;
+        const cookieMaxAge = rememberMe ? age30d : age6h;
+
+        logger.debug('[AUTH] Cookie settings', {
+            rememberMe,
+            rememberMeValue: rememberMeIsChecked,
+            maxAge: cookieMaxAge,
+            maxAgeDays: cookieMaxAge / (60 * 60 * 24)
+        });
+
+        cookies.set('session', userAuthToken, {
+            path: '/',
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: cookieMaxAge
+        });
+
+        throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
+    } catch (error) {
+        // Re-throw redirects (SvelteKit redirect objects have a status property)
+        if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
+            throw error;
+        }
+
+        logger.error('[AUTH] Login error', error);
+        return fail(500, { 
+            email,
+            invalid: true,
+            message: 'An unexpected error occurred. Please try again later.'
+        });
     }
-
-    const userAuthToken = crypto.randomUUID();
-
-    await db.account.update({
-        where: { email: account.email },
-        data: { userAuthToken: userAuthToken }
-    })
-
-    const ts = new TimeSpan();
-    ts.days = 30;
-
-    const age30d = ts.totalSeconds
-    ts.days = 0;
-    ts.hours = 6;
-    const age6h = ts.totalSeconds
-
-    cookies.set('session', userAuthToken, {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: (rememberMeIsChecked) ? age30d : age6h // 30 days if remember me is checked, otherwise it's 6 hours
-    })
-
-    throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
 }
 
 export const actions: Actions = { login }

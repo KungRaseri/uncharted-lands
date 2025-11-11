@@ -1,324 +1,84 @@
-import { db } from '$lib/db';
 import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
+import { logger } from '$lib/utils/logger';
 
-export const load = (async ({ locals }) => {
-    console.log('[MAP LOAD] Starting map load...');
-    
-    // Get the authenticated account
-    const account = locals.account;
-    
-    console.log('[MAP LOAD] Account check:', {
-        hasAccount: !!account,
-        hasProfile: !!account?.profile,
-        accountId: account?.id,
-        profileId: account?.profile?.id
-    });
-    
-    if (!account || !account.profile) {
-        console.error('[MAP LOAD] No account or profile found');
-        throw new Error('You must be logged in to view the map.');
+const API_URL = process.env.API_URL || 'http://localhost:3001/api';
+
+export const load = (async ({ locals, cookies, url }) => {
+    // Check authentication
+    if (!locals.account) {
+        throw redirect(302, '/login');
+    }
+
+    // Check if user has a profile
+    if (!locals.account.profile) {
+        throw redirect(302, '/game/getting-started');
     }
 
     try {
-        console.log('[MAP LOAD] Searching for settlement with profileId:', account.profile.id);
+        const sessionToken = cookies.get('session');
         
-        // Find the player's settlement through ProfileServerData
-        const settlement = await db.settlement.findFirst({
-            where: {
-                PlayerProfile: {
-                    profileId: account.profile.id
-                }
-            },
-            include: {
-                Plot: {
-                    include: {
-                        Tile: {
-                            include: {
-                                Region: {
-                                    include: {
-                                        world: {
-                                            include: {
-                                                server: true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        // Get optional center coordinates from query params (for lazy loading)
+        const centerX = url.searchParams.get('centerX');
+        const centerY = url.searchParams.get('centerY');
+        const radius = url.searchParams.get('radius');
+
+        // Build query params
+        const queryParams = new URLSearchParams({
+            profileId: locals.account.profile.id
         });
 
-        console.log('[MAP LOAD] Settlement query result:', {
-            found: !!settlement,
-            settlementId: settlement?.id,
-            hasPlot: !!settlement?.Plot,
-            hasTile: !!settlement?.Plot?.Tile,
-            hasRegion: !!settlement?.Plot?.Tile?.Region,
-            hasWorld: !!settlement?.Plot?.Tile?.Region?.world
-        });
-
-        // If player has a settlement, show their world
-        if (settlement && settlement.Plot?.Tile?.Region?.world) {
-            const worldId = settlement.Plot.Tile.Region.worldId;
-            const centerRegionX = settlement.Plot.Tile.Region.xCoord;
-            const centerRegionY = settlement.Plot.Tile.Region.yCoord;
-            
-            console.log('[MAP LOAD] Loading world for player settlement:', worldId);
-            console.log('[MAP LOAD] Phase 2: Lazy loading 3x3 grid around region (' + centerRegionX + ',' + centerRegionY + ')');
-            
-            const startTime = performance.now();
-            
-            // Phase 2: Fetch only basic world info (no regions yet)
-            const worldBasic = await db.world.findUnique({
-                where: { id: worldId },
-                select: {
-                    id: true,
-                    name: true,
-                    server: {
-                        select: {
-                            id: true,
-                            name: true
-                        }
-                    }
-                }
-            });
-            
-            if (!worldBasic) {
-                console.error('[MAP LOAD] ERROR: World not found for ID:', worldId);
-                return { error: 'World not found' };
-            }
-            
-            // Phase 2: Fetch only 3x3 region grid around player settlement
-            const regions = await db.region.findMany({
-                where: {
-                    worldId: worldId,
-                    xCoord: {
-                        gte: centerRegionX - 1,
-                        lte: centerRegionX + 1
-                    },
-                    yCoord: {
-                        gte: centerRegionY - 1,
-                        lte: centerRegionY + 1
-                    }
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    xCoord: true,
-                    yCoord: true,
-                    tiles: {
-                        select: {
-                            id: true,
-                            elevation: true,
-                            precipitation: true,
-                            temperature: true,
-                            type: true,
-                            Biome: {
-                                select: {
-                                    id: true,
-                                    name: true
-                                }
-                            },
-                            Plots: {
-                                select: {
-                                    id: true,
-                                    Settlement: {
-                                        select: {
-                                            id: true,
-                                            name: true,
-                                            playerProfileId: true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            const loadTimeMs = Math.round(performance.now() - startTime);
-
-            console.log('[MAP LOAD] World loaded:', {
-                worldName: worldBasic.name,
-                regionCount: regions.length,
-                serverName: worldBasic.server.name
-            });
-            console.log('[MAP LOAD] ⏱️  Query time: ' + loadTimeMs + 'ms (Phase 2 optimized - 3x3 grid)');
-
-            // Reconstruct world object with regions
-            const world = {
-                ...worldBasic,
-                regions: regions
-            };
-
-            console.log('[MAP LOAD] SUCCESS - Returning player world with settlement');
-            return {
-                world,
-                playerSettlement: {
-                    id: settlement.id,
-                    name: settlement.name,
-                    plotId: settlement.Plot.id,
-                    tileId: settlement.Plot.Tile.id,
-                    regionId: settlement.Plot.Tile.Region.id,
-                    regionCoords: {
-                        x: centerRegionX,
-                        y: centerRegionY
-                    }
-                },
-                playerProfileId: settlement.playerProfileId,
-                lazyLoadEnabled: true,
-                initialRegionBounds: {
-                    xMin: centerRegionX - 1,
-                    xMax: centerRegionX + 1,
-                    yMin: centerRegionY - 1,
-                    yMax: centerRegionY + 1
-                }
-            };
+        if (centerX && centerY) {
+            queryParams.set('centerX', centerX);
+            queryParams.set('centerY', centerY);
+            if (radius) queryParams.set('radius', radius);
         }
 
-        // Fallback: If no settlement or world not found, show first available world
-        console.log('[MAP LOAD] No settlement found or incomplete data, falling back to first available world');
-        const server = await db.server.findFirst();
-        
-        console.log('[MAP LOAD] Server lookup:', { found: !!server, serverId: server?.id, serverName: server?.name });
-        
-        if (!server) {
-            console.error('[MAP LOAD] FAILED - No server found');
-            throw new Error('No server found. Please contact an administrator.');
+        // Fetch map data from server API
+        const response = await fetch(`${API_URL}/regions/map?${queryParams.toString()}`, {
+            headers: {
+                'Cookie': `session=${sessionToken}`
+            }
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+            logger.error('[MAP LOAD] Failed to load map', {
+                status: response.status,
+                error: error.error
+            });
+            
+            if (response.status === 404 && error.code === 'NO_WORLD') {
+                // Redirect admins to world creation, others to a waiting page
+                if (locals.account.role === 'ADMINISTRATOR') {
+                    throw redirect(302, '/admin/worlds?message=Please create a world to enable the game map');
+                } else {
+                    throw redirect(302, '/game?error=no-world');
+                }
+            }
+            
+            throw new Error(`Failed to load map: ${error.error || 'Unknown error'}`);
         }
 
-        const startTime = performance.now();
-        
-        // Phase 2: Fetch basic world info first
-        const worldBasic = await db.world.findFirst({
-            where: {
-                serverId: server.id
-            },
-            select: {
-                id: true,
-                name: true,
-                server: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                }
-            }
+        const data = await response.json();
+
+        logger.info('[MAP LOAD] Map loaded', {
+            worldId: data.world?.id,
+            worldName: data.world?.name,
+            regionCount: data.world?.regions?.length,
+            hasPlayerSettlement: !!data.playerSettlement
         });
 
-        if (!worldBasic) {
-            console.error('[MAP LOAD] FAILED - No world found');
-            throw new Error('No world found. Please create a world in Admin > Worlds or create your settlement in Getting Started.');
-        }
-
-        // Phase 2: Load center 3x3 grid (regions 4,4 to 6,6 - assuming 10x10 world, center is 5,5)
-        const centerX = 5;
-        const centerY = 5;
-        
-        console.log('[MAP LOAD] Phase 2: Lazy loading center 3x3 grid around (' + centerX + ',' + centerY + ')');
-        
-        const regions = await db.region.findMany({
-            where: {
-                worldId: worldBasic.id,
-                xCoord: {
-                    gte: centerX - 1,
-                    lte: centerX + 1
-                },
-                yCoord: {
-                    gte: centerY - 1,
-                    lte: centerY + 1
-                }
-            },
-            select: {
-                id: true,
-                name: true,
-                xCoord: true,
-                yCoord: true,
-                tiles: {
-                    select: {
-                        id: true,
-                        elevation: true,
-                        precipitation: true,
-                        temperature: true,
-                        type: true,
-                        Biome: {
-                            select: {
-                                id: true,
-                                name: true
-                            }
-                        },
-                        Plots: {
-                            select: {
-                                id: true,
-                                Settlement: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        playerProfileId: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        const loadTimeMs = Math.round(performance.now() - startTime);
-
-        console.log('[MAP LOAD] Fallback world lookup:', {
-            worldId: worldBasic.id,
-            worldName: worldBasic.name,
-            regionCount: regions.length
-        });
-        console.log('[MAP LOAD] ⏱️  Query time: ' + loadTimeMs + 'ms (Phase 2 optimized - 3x3 grid)');
-
-        // Reconstruct world object with regions
-        const world = {
-            ...worldBasic,
-            regions: regions
-        };
-
-        console.log('[MAP LOAD] SUCCESS - Returning fallback world without settlement');
-        return {
-            world,
-            playerSettlement: null,
-            playerProfileId: undefined,
-            lazyLoadEnabled: true,
-            initialRegionBounds: {
-                xMin: centerX - 1,
-                xMax: centerX + 1,
-                yMin: centerY - 1,
-                yMax: centerY + 1
-            }
-        };
-
+        return data;
     } catch (error) {
-        console.error('\n========================================');
-        console.error('🚨 MAP LOAD ERROR');
-        console.error('========================================');
-        console.error('[MAP LOAD] Exception caught:', error);
+        logger.error('[MAP LOAD] Error', error);
         
-        if (error instanceof Error) {
-            console.error('[MAP LOAD] Error name:', error.name);
-            console.error('[MAP LOAD] Error message:', error.message);
-            console.error('[MAP LOAD] Stack trace:', error.stack);
-        } else {
-            console.error('[MAP LOAD] Non-Error object thrown:', typeof error, error);
+        // If it's a redirect, let it through
+        if (error instanceof Response) {
+            throw error;
         }
         
-        console.error('[MAP LOAD] Account details:', {
-            hasAccount: !!account,
-            accountId: account?.id,
-            hasProfile: !!account?.profile,
-            profileId: account?.profile?.id
-        });
-        console.error('========================================\n');
-        
-        // Re-throw with more context
-        throw new Error(`Failed to load map: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        // Re-throw as error for display
+        throw error;
     }
-
 }) satisfies PageServerLoad;

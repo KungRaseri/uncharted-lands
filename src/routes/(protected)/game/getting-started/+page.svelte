@@ -1,17 +1,19 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
-	import { Flame, Server, Globe, User, Rocket } from 'lucide-svelte';
+	import type { World } from '$lib/types/game';
+	import { Flame, Server, Globe, User, Rocket, AlertCircle } from 'lucide-svelte';
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 
 	let selectedServer = $state('');
 	let selectedWorld = $state('');
 	let username = $state('');
+	let isSubmitting = $state(false);
 	
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let availableWorlds = $derived(
-		data.worlds.filter((w) => w.serverId === selectedServer)
+		data.worlds.filter((w: World) => w.serverId === selectedServer)
 	);
 </script>
 
@@ -36,13 +38,26 @@
 			action="?/settle"
 			method="POST"
 			use:enhance={() => {
+				isSubmitting = true;
 				return async ({ result }) => {
+					isSubmitting = false;
 					invalidateAll();
 					applyAction(result);
 				};
 			}}
 			class="space-y-6"
 		>
+			<!-- Error Message -->
+			{#if form?.message}
+				<div class="alert preset-filled-error-500 flex items-start gap-3 p-4 rounded-lg">
+					<AlertCircle size={20} class="shrink-0 mt-0.5" />
+					<div>
+						<p class="font-semibold">Error</p>
+						<p class="text-sm">{form.message}</p>
+					</div>
+				</div>
+			{/if}
+
 			<!-- Server Selection -->
 			<div>
 				<label for="server" class="label mb-2">
@@ -127,12 +142,12 @@
 			<!-- Submit Button -->
 			<div class="pt-4">
 				<button
-					disabled={!selectedWorld || !username || username.length < 3}
+					disabled={!selectedWorld || !username || username.length < 3 || isSubmitting}
 					type="submit"
 					class="btn preset-filled-primary-500 rounded-md w-full text-lg disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					<Flame size={24} />
-					<span>Settle in this World</span>
+					<span>{isSubmitting ? 'Creating Settlement...' : 'Settle in this World'}</span>
 				</button>
 			</div>
 		</form>

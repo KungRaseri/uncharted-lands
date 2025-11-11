@@ -2,6 +2,7 @@
 	import World from '$lib/components/game/map/World.svelte';
 	import MapControls from '$lib/components/game/map/MapControls.svelte';
 	import type { PageData } from './$types';
+	import type { RegionWithTiles, TileWithRelations, Plot } from '$lib/types/game';
 	import { Map, Globe, Layers, MapPin, Info } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -29,7 +30,7 @@
 	// Initialize loaded region keys
 	$effect(() => {
 		if (regions.length > 0 && loadedRegionKeys.size === 0) {
-			regions.forEach(r => loadedRegionKeys.add(`${r.xCoord},${r.yCoord}`));
+			regions.forEach((r: RegionWithTiles) => loadedRegionKeys.add(`${r.xCoord},${r.yCoord}`));
 		}
 	});
 	
@@ -54,7 +55,7 @@
 				
 				// Update loaded region keys (for potential future caching)
 				loadedRegionKeys.clear();
-				regions.forEach((r: any) => {
+				regions.forEach((r: RegionWithTiles) => {
 					loadedRegionKeys.add(`${r.xCoord},${r.yCoord}`);
 				});
 				
@@ -62,7 +63,7 @@
 				currentBounds = result.bounds;
 				
 				console.log('[MAP PAN] Displaying regions:', regions.length);
-				console.log('[MAP PAN] Region coordinates:', regions.map((r: any) => `(${r.xCoord},${r.yCoord})`).join(', '));
+				console.log('[MAP PAN] Region coordinates:', regions.map((r: RegionWithTiles) => `(${r.xCoord},${r.yCoord})`).join(', '));
 			} else {
 				console.error('[MAP PAN] Failed to fetch regions:', result.error);
 			}
@@ -103,7 +104,7 @@
 			};
 			// Reset regions to initial load
 			regions = data.world?.regions || [];
-			loadedRegionKeys = new Set(regions.map(r => `${r.xCoord},${r.yCoord}`));
+			loadedRegionKeys = new Set(regions.map((r: RegionWithTiles) => `${r.xCoord},${r.yCoord}`));
 			currentBounds = data.initialRegionBounds || currentBounds;
 		}
 	}
@@ -122,13 +123,13 @@
 	const totalRegions = $derived(regions.length || 0);
 	
 	const totalTiles = $derived(
-		regions.reduce((sum, region) => sum + (region.tiles?.length || 0), 0) || 0
+		regions.reduce((sum: number, region: RegionWithTiles) => sum + (region.tiles?.length || 0), 0) || 0
 	);
 	
 	const settledPlots = $derived(
 		regions.reduce(
-			(sum, region) => sum + (region.tiles?.reduce(
-				(tileSum, tile) => tileSum + (tile.Plots?.filter(plot => plot.Settlement !== null).length || 0), 0
+			(sum: number, region: RegionWithTiles) => sum + (region.tiles?.reduce(
+				(tileSum: number, tile: TileWithRelations) => tileSum + (tile.plots?.filter((plot: Plot) => plot.settlement !== null).length || 0), 0
 			) || 0), 0
 		) || 0
 	);
@@ -136,13 +137,13 @@
 	// Calculate world dimensions (from all loaded regions)
 	const worldWidth = $derived(
 		regions.length > 0
-			? Math.max(...regions.map(r => r.xCoord)) + 1
+			? Math.max(...regions.map((r: RegionWithTiles) => r.xCoord)) + 1
 			: 10
 	);
 	
 	const worldHeight = $derived(
 		regions.length > 0
-			? Math.max(...regions.map(r => r.yCoord)) + 1
+			? Math.max(...regions.map((r: RegionWithTiles) => r.yCoord)) + 1
 			: 10
 	);
 </script>

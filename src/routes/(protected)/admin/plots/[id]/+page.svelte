@@ -56,7 +56,7 @@
 							View Tile
 						</a>
 					</div>
-					{#if data.plot.Settlement}
+					{#if data.plot.settlement}
 						<div class="flex items-center gap-2">
 							<Home size={16} class="text-surface-400" />
 							<span class="text-sm">Has Settlement</span>
@@ -140,7 +140,7 @@
 	</div>
 
 	<!-- Settlement Information -->
-	{#if data.plot.Settlement}
+	{#if data.plot.settlement}
 		<div class="card preset-filled-surface-100-900 p-6">
 			<h2 class="text-xl font-bold mb-4 flex items-center gap-2">
 				<Home size={24} />
@@ -150,7 +150,7 @@
 			<div class="space-y-2">
 				<div>
 					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Settlement ID</div>
-					<p class="font-mono text-sm">{data.plot.Settlement.id}</p>
+					<p class="font-mono text-sm">{data.plot.settlement.id}</p>
 				</div>
 			</div>
 		</div>

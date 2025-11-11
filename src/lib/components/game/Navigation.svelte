@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { Home, Building2, Map, Shield, User, History, Mail, Users } from 'lucide-svelte';
+	import { isActive, isExactActive } from '$lib/utils/navigation';
 	
-	// Check if current page matches the href
-	function isActive(href: string) {
-		return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
-	}
+	// Get the current pathname - use $derived for Svelte 5 reactivity
+	let currentPath = $derived(page.url.pathname);
 </script>
 
 <nav class="bg-surface-200 dark:bg-surface-700 shadow-md">
@@ -15,7 +14,7 @@
 			<div class="flex items-center gap-1">
 				<a
 					href="/game"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive('/game') && !isActive('/game/settlements') && !isActive('/game/map') && !isActive('/game/wardens')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -26,7 +25,7 @@
 				</a>
 				<a
 					href="/game/settlements"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive('/game/settlements')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive(currentPath, '/game/settlements')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -37,7 +36,7 @@
 				</a>
 				<a
 					href="/game/map"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive('/game/map')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/map')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -48,7 +47,7 @@
 				</a>
 				<a
 					href="/game/wardens"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive('/game/wardens')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/wardens')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -63,7 +62,7 @@
 			<div class="flex items-center gap-1">
 				<a
 					href="/game/profile"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive('/game/profile')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/profile')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -74,7 +73,7 @@
 				</a>
 				<a
 					href="/game/history"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive('/game/history')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/history')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -85,7 +84,7 @@
 				</a>
 				<a
 					href="/game/messages"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive('/game/messages')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/messages')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>
@@ -96,7 +95,7 @@
 				</a>
 				<a
 					href="/game/guild"
-					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isActive('/game/guild')
+					class="px-4 py-2 text-sm font-medium rounded-md transition-colors {isExactActive(currentPath, '/game/guild')
 						? 'bg-primary-500 text-white'
 						: 'text-surface-900 dark:text-surface-100 hover:bg-surface-300 dark:hover:bg-surface-600'}"
 				>

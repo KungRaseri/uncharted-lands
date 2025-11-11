@@ -21,7 +21,7 @@
 		</div>
 
 		<form
-			action="?/login&redirectTo={data.redirectTo}"
+			action="?/login"
 			method="POST"
 			class="space-y-1 md:space-y-3"
 			use:enhance={() => {
@@ -70,20 +70,28 @@
 				<a href="forgot-password" class="font-medium hover:underline">Forgot your password?</a>
 			</div>
 
-			{#if form?.email}
-				<div transition:slide class="hidden lg:block">
-					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
-						<div class="alert-message  justify-center items-center">
-							<Info size={24} />
-							<div class="grid grid-cols-1">
-								<span>{form?.incorrect ? 'Information is incorrect' : ''}</span>
-							</div>
+		{#if form?.email}
+			<div transition:slide class="hidden lg:block">
+				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
+					<div class="alert-message  justify-center items-center">
+						<Info size={24} />
+						<div class="grid grid-cols-1">
+							{#if form?.message}
+								<span>{form.message}</span>
+							{:else if form?.incorrect}
+								<span>The email or password you entered is incorrect.</span>
+							{:else if form?.missingFields}
+								<span>Please provide both email and password.</span>
+							{:else if form?.invalid}
+								<span>Login failed. Please check your credentials and try again.</span>
+							{:else}
+								<span>An error occurred. Please try again.</span>
+							{/if}
 						</div>
 					</div>
 				</div>
-			{/if}
-
-			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md"> Login </button>
+			</div>
+		{/if}			<button type="submit" class="w-full p-2 btn preset-filled-primary-500 rounded-md"> Login </button>
 		</form>
 	</div>
 </div>
