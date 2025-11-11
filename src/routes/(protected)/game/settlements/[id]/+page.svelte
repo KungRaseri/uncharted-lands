@@ -2,6 +2,7 @@
 	import type { PageData, ActionData as GeneratedActionData } from './$types';
 	import { Building2, Home, MapPin, Package, Sun, Wind, ArrowLeft, Droplet, Trees, Mountain, Pickaxe, Plus, X, ShieldAlert, Warehouse, Hammer, RefreshCw } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
+	import { invalidate } from '$app/navigation';
 	import { STRUCTURE_DEFINITIONS, getStructureCategories, getStructuresByCategory, canBuildStructure, type StructureDefinition } from '$lib/game/structures';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
@@ -276,7 +277,7 @@
 		<div class="flex items-center justify-between mb-4">
 			<h2 class="text-xl font-bold flex items-center gap-2 text-surface-900 dark:text-surface-100">
 				<Home size={24} />
-				Structures ({data.settlement.structures.length})
+				Structures ({data.settlement.structures?.length ?? 0})
 			</h2>
 			<button 
 				onclick={openBuildModal}
@@ -287,7 +288,7 @@
 			</button>
 		</div>
 
-		{#if data.settlement.structures.length === 0}
+		{#if !data.settlement.structures || data.settlement.structures.length === 0}
 			<div class="text-center py-8">
 				<Home size={48} class="mx-auto mb-4 text-surface-400" />
 				<p class="text-surface-600 dark:text-surface-400 mb-4">No structures built yet</p>
@@ -306,7 +307,7 @@
 						<h3 class="font-bold text-lg mb-2 text-surface-900 dark:text-surface-100">{structure.name}</h3>
 						<p class="text-sm text-surface-600 dark:text-surface-400 mb-3">{structure.description}</p>
 
-						{#if structure.modifiers.length > 0}
+						{#if structure.modifiers && structure.modifiers.length > 0}
 							<div class="space-y-2">
 								<p class="text-xs font-semibold text-surface-700 dark:text-surface-300">Modifiers:</p>
 								{#each structure.modifiers as modifier}
@@ -482,6 +483,8 @@
 									await update();
 									isBuilding = false;
 									if (form?.success) {
+										// Invalidate settlement data to refetch with new structure
+										await invalidate('game:settlement');
 										closeBuildModal();
 									}
 								};
