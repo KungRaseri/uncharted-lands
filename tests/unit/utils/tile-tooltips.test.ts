@@ -8,19 +8,19 @@ import {
 // Mock data helpers
 function createMockTile(overrides = {}) {
 	return {
-		Biome: { name: 'Grassland' },
+		biome: { name: 'Grassland' },
 		type: 'land',
 		elevation: 0.25,
 		precipitation: 0.6,
 		temperature: 0.7,
-		Plots: [],
+		plots: [],
 		...overrides
 	};
 }
 
 function createMockPlot(hasSettlement = false, playerProfileId = 'player1', settlementName = 'TestTown') {
 	return {
-		Settlement: hasSettlement ? { playerProfileId, name: settlementName } : undefined
+		settlement: hasSettlement ? { playerProfileId, name: settlementName } : undefined
 	};
 }
 
@@ -28,7 +28,7 @@ describe('tile-tooltips', () => {
 	describe('getAdminTileTooltip', () => {
 		it('should return admin tooltip with all raw values', () => {
 			const tile = createMockTile({
-				Biome: { name: 'Forest' },
+				biome: { name: 'Forest' },
 				type: 'land',
 				elevation: 0.123,
 				precipitation: 0.456,
@@ -70,7 +70,7 @@ describe('tile-tooltips', () => {
 
 		it('should handle ocean type tiles', () => {
 			const tile = createMockTile({
-				Biome: { name: 'Ocean' },
+				biome: { name: 'Ocean' },
 				type: 'ocean',
 				elevation: -0.8
 			});
@@ -100,9 +100,9 @@ describe('tile-tooltips', () => {
 	describe('getPlayerTileTooltip', () => {
 		it('should return player tooltip with user-friendly formatting', () => {
 			const tile = createMockTile({
-				Biome: { name: 'Desert' },
+				biome: { name: 'Desert' },
 				elevation: 0.25,
-				Plots: [createMockPlot(), createMockPlot()]
+				plots: [createMockPlot(), createMockPlot()]
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
@@ -124,7 +124,7 @@ describe('tile-tooltips', () => {
 
 		it('should handle singular plot count', () => {
 			const tile = createMockTile({
-				Plots: [createMockPlot()]
+				plots: [createMockPlot()]
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
@@ -135,7 +135,7 @@ describe('tile-tooltips', () => {
 
 		it('should handle zero plots', () => {
 			const tile = createMockTile({
-				Plots: []
+				plots: []
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
@@ -145,7 +145,7 @@ describe('tile-tooltips', () => {
 
 		it('should handle multiple plots', () => {
 			const tile = createMockTile({
-				Plots: [createMockPlot(), createMockPlot(), createMockPlot()]
+				plots: [createMockPlot(), createMockPlot(), createMockPlot()]
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
@@ -155,7 +155,7 @@ describe('tile-tooltips', () => {
 
 		it('should not show settlements when playerProfileId is not provided', () => {
 			const tile = createMockTile({
-				Plots: [
+				plots: [
 					createMockPlot(true, 'player1', 'Settlement1'),
 					createMockPlot(true, 'player1', 'Settlement2')
 				]
@@ -170,7 +170,7 @@ describe('tile-tooltips', () => {
 
 		it('should show player settlements when playerProfileId is provided', () => {
 			const tile = createMockTile({
-				Plots: [
+				plots: [
 					createMockPlot(true, 'player1', 'MyTown'),
 					createMockPlot(true, 'player2', 'OtherTown')
 				]
@@ -185,7 +185,7 @@ describe('tile-tooltips', () => {
 
 		it('should show multiple player settlements', () => {
 			const tile = createMockTile({
-				Plots: [
+				plots: [
 					createMockPlot(true, 'player1', 'TownA'),
 					createMockPlot(true, 'player1', 'TownB'),
 					createMockPlot(true, 'player1', 'TownC')
@@ -200,7 +200,7 @@ describe('tile-tooltips', () => {
 
 		it('should filter out plots without settlements', () => {
 			const tile = createMockTile({
-				Plots: [
+				plots: [
 					createMockPlot(true, 'player1', 'MySettlement'),
 					createMockPlot(false),
 					createMockPlot(false)
@@ -215,11 +215,11 @@ describe('tile-tooltips', () => {
 
 		it('should handle settlements with null/undefined names', () => {
 			const tile = createMockTile({
-				Plots: [
-					{ Settlement: { playerProfileId: 'player1', name: 'ValidTown' } },
-					{ Settlement: { playerProfileId: 'player1', name: undefined } },
-					{ Settlement: { playerProfileId: 'player1', name: null } },
-					{ Settlement: { playerProfileId: 'player1', name: '' } }
+				plots: [
+					{ settlement: { playerProfileId: 'player1', name: 'ValidTown' } },
+					{ settlement: { playerProfileId: 'player1', name: undefined } },
+					{ settlement: { playerProfileId: 'player1', name: null } },
+					{ settlement: { playerProfileId: 'player1', name: '' } }
 				]
 			});
 
@@ -233,7 +233,7 @@ describe('tile-tooltips', () => {
 
 		it('should not show settlement section when player has no settlements', () => {
 			const tile = createMockTile({
-				Plots: [
+				plots: [
 					createMockPlot(true, 'player2', 'OtherTown'),
 					createMockPlot(false)
 				]
@@ -247,7 +247,7 @@ describe('tile-tooltips', () => {
 
 		it('should handle negative elevation (ocean)', () => {
 			const tile = createMockTile({
-				Biome: { name: 'Ocean' },
+				biome: { name: 'Ocean' },
 				elevation: -0.5
 			});
 
@@ -294,7 +294,7 @@ describe('tile-tooltips', () => {
 
 		it('should pass playerProfileId to player tooltip', () => {
 			const tile = createMockTile({
-				Plots: [createMockPlot(true, 'player1', 'MySettlement')]
+				plots: [createMockPlot(true, 'player1', 'MySettlement')]
 			});
 
 			const tooltip = getTileTooltip(tile, 'player', 'player1');
@@ -304,7 +304,7 @@ describe('tile-tooltips', () => {
 
 		it('should not include playerProfileId in admin tooltip', () => {
 			const tile = createMockTile({
-				Plots: [createMockPlot(true, 'player1', 'MySettlement')]
+				plots: [createMockPlot(true, 'player1', 'MySettlement')]
 			});
 
 			const tooltip = getTileTooltip(tile, 'admin', 'player1');
@@ -315,7 +315,7 @@ describe('tile-tooltips', () => {
 
 		it('should handle undefined playerProfileId', () => {
 			const tile = createMockTile({
-				Plots: [createMockPlot(true, 'player1', 'MySettlement')]
+				plots: [createMockPlot(true, 'player1', 'MySettlement')]
 			});
 
 			const tooltip = getTileTooltip(tile, 'player');
@@ -324,3 +324,4 @@ describe('tile-tooltips', () => {
 		});
 	});
 });
+

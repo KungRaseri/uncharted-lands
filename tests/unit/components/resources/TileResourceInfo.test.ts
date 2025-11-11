@@ -64,7 +64,7 @@ describe('TileResourceInfo.svelte', () => {
 		(resourceUtils.getQualityInfo as Mock).mockImplementation(async (quality: number) => {
 			if (quality >= 80) return { rating: 'Excellent', color: 'text-success-500', multiplier: 1.5 };
 			if (quality >= 60) return { rating: 'Good', color: 'text-primary-500', multiplier: 1.25 };
-			if (quality >= 40) return { rating: 'Fair', color: 'text-warning-500', multiplier: 1.0 };
+			if (quality >= 40) return { rating: 'Fair', color: 'text-warning-500', multiplier: 1 };
 			return { rating: 'Poor', color: 'text-error-500', multiplier: 0.75 };
 		});
 	});
@@ -204,7 +204,7 @@ describe('TileResourceInfo.svelte', () => {
 
 	describe('Null/Undefined Quality Handling', () => {
 		it('should handle null food quality', async () => {
-			const tile = { ...baseTile, foodQuality: null };
+			const tile = { ...baseTile, foodQuality: null } as any as Tile;
 			render(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
@@ -214,7 +214,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should handle undefined wood quality', async () => {
-			const tile = { ...baseTile, woodQuality: undefined };
+			const tile = { ...baseTile, woodQuality: undefined } as any as Tile;
 			render(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
@@ -224,7 +224,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should not display quality value for null resources', async () => {
-			const tile = { ...baseTile, stoneQuality: null };
+			const tile = { ...baseTile, stoneQuality: null } as any as Tile;
 			render(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
@@ -268,7 +268,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should not display plot slots section when plotSlots is null', async () => {
-			const tile = { ...baseTile, plotSlots: null };
+			const tile = { ...baseTile, plotSlots: null } as any as Tile;
 			render(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
@@ -313,7 +313,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should not display biome section when biome is null', async () => {
-			const tile = { ...baseTile, biome: null };
+			const tile = { ...baseTile, biome: null } as any as Tile;
 			render(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
@@ -391,13 +391,13 @@ describe('TileResourceInfo.svelte', () => {
 
 	describe('Edge Cases', () => {
 		it('should handle tile with all null qualities', async () => {
-			const tile: Tile = {
+			const tile = {
 				...baseTile,
 				foodQuality: null,
 				woodQuality: null,
 				stoneQuality: null,
 				oreQuality: null
-			};
+			} as any as Tile;
 
 			render(TileResourceInfo, { props: { tile } });
 
@@ -446,13 +446,13 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should handle tile with mixed quality values', async () => {
-			const tile: Tile = {
+			const tile = {
 				...baseTile,
 				foodQuality: 90,
 				woodQuality: 65,
 				stoneQuality: 30,
 				oreQuality: null
-			};
+			} as any as Tile;
 
 			render(TileResourceInfo, { props: { tile } });
 
@@ -466,12 +466,12 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should handle tile with no biome and no special resources', async () => {
-			const tile: Tile = {
+			const tile = {
 				...baseTile,
 				biome: null,
 				specialResource: null,
 				plotSlots: null
-			};
+			} as any as Tile;
 
 			render(TileResourceInfo, { props: { tile } });
 
@@ -487,7 +487,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should handle very long biome names', async () => {
-			const tile = { ...baseTile, biome: { name: 'Extremely Dense Ancient Mystical Forest of Wonder' } };
+			const tile = { ...baseTile, biome: { ...baseBiome, name: 'Extremely Dense Ancient Mystical Forest of Wonder' } } as Tile;
 			render(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {

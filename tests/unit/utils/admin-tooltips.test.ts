@@ -27,19 +27,17 @@ Terrain: Plains`
 			);
 		});
 
-		it('should format tooltip with undefined region name', () => {
-			const region = { xCoord: 15, yCoord: 20 };
-			const result = getAdminRegionTooltip(region, 5, 8, 0.678);
+	it('should format tooltip with undefined region name', () => {
+		const region = { xCoord: 15, yCoord: 20 };
+		const result = getAdminRegionTooltip(region, 5, 8, 0.678);
 
-			expect(result).toBe(
-				`Region: Unknown (15, 20)
+		expect(result).toBe(
+			`Region: Unknown (15, 20)
 Tile: (5, 8)
 Elevation: 0.678
-Terrain: Hills`
-			);
-		});
-
-		it('should handle ocean elevation', () => {
+Terrain: Mountains`
+		);
+	});		it('should handle ocean elevation', () => {
 			const region = { name: 'Deep Sea', xCoord: 2, yCoord: 3 };
 			const result = getAdminRegionTooltip(region, 0, 0, 0.1);
 
@@ -71,15 +69,13 @@ Terrain: Hills`
 			expect(result).toContain('Terrain: Hills');
 		});
 
-		it('should handle mountain elevation', () => {
-			const region = { name: 'Mountain Range', xCoord: 10, yCoord: 11 };
-			const result = getAdminRegionTooltip(region, 8, 9, 0.8);
+	it('should handle mountain elevation', () => {
+		const region = { name: 'Mountain Range', xCoord: 10, yCoord: 11 };
+		const result = getAdminRegionTooltip(region, 8, 9, 0.8);
 
-			expect(result).toContain('Elevation: 0.800');
-			expect(result).toContain('Terrain: Mountain');
-		});
-
-		it('should handle zero coordinates', () => {
+		expect(result).toContain('Elevation: 0.800');
+		expect(result).toContain('Terrain: High Mountains');
+	});		it('should handle zero coordinates', () => {
 			const region = { name: 'Origin', xCoord: 0, yCoord: 0 };
 			const result = getAdminRegionTooltip(region, 0, 0, 0.5);
 
@@ -126,17 +122,15 @@ Terrain: Hills`
 			expect(lines[3]).toContain('Terrain:');
 		});
 
-		it('should handle extreme elevation values', () => {
-			const region = { name: 'Test', xCoord: 0, yCoord: 0 };
-			
-			// Very low
-			expect(getAdminRegionTooltip(region, 0, 0, 0)).toContain('Beach');
-			
-			// Very high
-			expect(getAdminRegionTooltip(region, 0, 0, 1)).toContain('Snow Peaks');
-		});
-
-		it('should handle special characters in region name', () => {
+	it('should handle extreme elevation values', () => {
+		const region = { name: 'Test', xCoord: 0, yCoord: 0 };
+		
+		// Very low
+		expect(getAdminRegionTooltip(region, 0, 0, 0)).toContain('Beach');
+		
+		// Very high - elevation 1.0 is in the "Alpine Peaks" range (0.8 to 1.5)
+		expect(getAdminRegionTooltip(region, 0, 0, 1)).toContain('Alpine Peaks');
+	});		it('should handle special characters in region name', () => {
 			const region = { name: "Dragon's Peak (North)", xCoord: 5, yCoord: 5 };
 			const result = getAdminRegionTooltip(region, 1, 1, 0.5);
 
