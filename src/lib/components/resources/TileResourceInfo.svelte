@@ -2,7 +2,10 @@
 	import { getQualityInfo, getResourceIcon } from '$lib/utils/resource-production';
 	import type { Tile } from '$lib/types/game';
 
-	export let tile: Tile;
+	let { tile }: { tile: Tile } = $props();
+
+	// Handle both biome and Biome property names for compatibility
+	let biomeName = $derived('biome' in tile ? tile.biome?.name : 'Biome' in tile ? (tile as any).Biome?.name : undefined);
 
 	// Get quality info for each resource
 	async function getResourceQualityDisplay(quality: number | null) {
@@ -140,9 +143,9 @@
 	{/if}
 
 	<!-- Biome Info -->
-	{#if tile.biome}
+	{#if biomeName}
 		<div class="text-xs opacity-60 italic">
-			Biome: {tile.biome.name}
+			Biome: {biomeName}
 		</div>
 	{/if}
 </div>

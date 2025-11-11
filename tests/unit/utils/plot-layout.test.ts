@@ -18,7 +18,7 @@ function createMockPlot(overrides: Partial<Plot> = {}): Plot {
 		wood: 15,
 		stone: 25,
 		ore: 5,
-		Settlement: undefined,
+		settlement: undefined,
 		...overrides
 	};
 }
@@ -63,9 +63,9 @@ describe('Plot Layout Utilities', () => {
 
 		it('should count settlements correctly', () => {
 			const plots = [
-				createMockPlot({ Settlement: { name: 'Settlement 1' } }),
-				createMockPlot({ Settlement: undefined }),
-				createMockPlot({ Settlement: { name: 'Settlement 2' } })
+				createMockPlot({ settlement: { name: 'Settlement 1' } as any }),
+				createMockPlot({ settlement: undefined }),
+				createMockPlot({ settlement: { name: 'Settlement 2' } as any })
 			];
 			const stats = calculatePlotStats(plots);
 			
@@ -125,7 +125,7 @@ describe('Plot Layout Utilities', () => {
 
 		it('should format tooltip for plot with settlement', () => {
 			const plot = createMockPlot({
-				Settlement: { name: 'Test Settlement' }
+				settlement: { name: 'Test Settlement' } as any
 			});
 			
 			const tooltip = getPlotTooltip(plot);

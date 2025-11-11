@@ -6,7 +6,7 @@
 
 	let searchTerm = $state('');
 	
-	let filteredSettlements = $derived(data.settlements.filter(settlement => {
+	let filteredSettlements = $derived(data.settlements.filter((settlement: any) => {
 		if (!searchTerm) return true;
 		const search = searchTerm.toLowerCase();
 		return (

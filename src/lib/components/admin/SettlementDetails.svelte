@@ -16,10 +16,10 @@
 	<section class="p-4">
 		<p><strong>Name:</strong> {settlement.name}</p>
 		<p><strong>Player Profile ID:</strong> {settlement.playerProfileId}</p>
-		{#if settlement.Structures && settlement.Structures.length > 0}
+		{#if settlement.structures && settlement.structures.length > 0}
 			<p><strong>Structures:</strong></p>
 			<ul>
-				{#each settlement.Structures as structure}
+				{#each settlement.structures as structure}
 					<li>{structure.type} (ID: {structure.id})</li>
 				{/each}
 			</ul>
@@ -27,19 +27,19 @@
 	</section>
 	<footer class="card-footer">
 		<span class="badge preset-filled-secondary-500">
-			Food Storage: {settlement.Storage?.food || 0}
+			Food Storage: {settlement.storage?.food || 0}
 		</span>
 		<span class="badge preset-filled-secondary-500">
-			Water Storage: {settlement.Storage?.water || 0}
+			Water Storage: {settlement.storage?.water || 0}
 		</span>
 		<span class="badge preset-filled-secondary-500">
-			Wood Storage: {settlement.Storage?.wood || 0}
+			Wood Storage: {settlement.storage?.wood || 0}
 		</span>
 		<span class="badge preset-filled-secondary-500">
-			Stone Storage: {settlement.Storage?.stone || 0}
+			Stone Storage: {settlement.storage?.stone || 0}
 		</span>
 		<span class="badge preset-filled-secondary-500">
-			Ore Storage: {settlement.Storage?.ore || 0}
+			Ore Storage: {settlement.storage?.ore || 0}
 		</span>
 	</footer>
 </div>
