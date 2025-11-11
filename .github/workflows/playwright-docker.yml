@@ -4,7 +4,7 @@ permissions:
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -58,12 +58,12 @@ jobs:
       - name: Pull server Docker image
         run: |
           # Try to pull the latest image, fallback to main branch
-          docker pull ghcr.io/${{ github.repository_owner }}/uncharted-server:latest || \
-          docker pull ghcr.io/${{ github.repository_owner }}/uncharted-server:main
+          docker pull ghcr.io/kungraseri/uncharted-server:latest || \
+          docker pull ghcr.io/kungraseri/uncharted-server:main
           
           # Tag it as 'server' for easier reference
-          docker tag ghcr.io/${{ github.repository_owner }}/uncharted-server:latest server:test || \
-          docker tag ghcr.io/${{ github.repository_owner }}/uncharted-server:main server:test
+          docker tag ghcr.io/kungraseri/uncharted-server:latest server:test || \
+          docker tag ghcr.io/kungraseri/uncharted-server:main server:test
 
       - name: Start server container
         run: |
