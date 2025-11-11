@@ -58,13 +58,14 @@ jobs:
       - name: Pull server Docker image
         run: |
           # Pull the published server image from the server repository
-          docker pull ghcr.io/kungraseri/uncharted-lands-server:latest || \
+          # Prefer 'main' tag as it has ESM import fixes (development branch has import bugs)
           docker pull ghcr.io/kungraseri/uncharted-lands-server:main || \
+          docker pull ghcr.io/kungraseri/uncharted-lands-server:latest || \
           docker pull ghcr.io/kungraseri/uncharted-lands-server:development
           
-          # Tag it as 'server' for easier reference
-          docker tag ghcr.io/kungraseri/uncharted-lands-server:latest server:test || \
+          # Tag it as 'server:test' for easier reference
           docker tag ghcr.io/kungraseri/uncharted-lands-server:main server:test || \
+          docker tag ghcr.io/kungraseri/uncharted-lands-server:latest server:test || \
           docker tag ghcr.io/kungraseri/uncharted-lands-server:development server:test
 
       - name: Start server container
