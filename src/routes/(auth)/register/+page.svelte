@@ -76,7 +76,7 @@
 					</div>
 				</div>
 			</div>
-		{/if}			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md">Register</button>
+		{/if}			<button type="submit" class="w-full p-2 btn preset-filled-primary-500 rounded-md">Register</button>
 		</form>
 	</div>
 </div>

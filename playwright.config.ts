@@ -37,7 +37,7 @@ const config: PlaywrightTestConfig = {
 		/* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
 		actionTimeout: 0,
 		/* Base URL to use in actions like `await page.goto('/')`. */
-		baseURL: 'http://localhost:4173',
+		baseURL: 'http://localhost:3000',
 
 		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
 		trace: 'on-first-retry'
@@ -99,14 +99,26 @@ const config: PlaywrightTestConfig = {
 	// outputDir: 'test-results/',
 
 	/* Run your local dev server before starting the tests */
-	webServer: {
-		command: 'npm run build && npm run preview',
-		port: 4173,
-		timeout: 120 * 1000,
-		reuseExistingServer: false, // Always start fresh to avoid cached builds
-		stdout: 'ignore',
-		stderr: 'pipe'
-	}
+	webServer: [
+		{
+			// Start the backend API server first
+			command: 'cd ../server && npm run dev',
+			port: 3001,
+			timeout: 120 * 1000,
+			reuseExistingServer: !process.env.CI,
+			stdout: 'ignore',
+			stderr: 'pipe'
+		},
+		{
+			// Then start the client SvelteKit server
+			command: 'npm run dev',
+			port: 3000,
+			timeout: 120 * 1000,
+			reuseExistingServer: !process.env.CI,
+			stdout: 'ignore',
+			stderr: 'pipe'
+		}
+	]
 };
 
 export default config;

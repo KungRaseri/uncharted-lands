@@ -91,7 +91,7 @@
 					</div>
 				</div>
 			</div>
-		{/if}			<button class="w-full p-2 btn preset-filled-primary-500 rounded-md"> Login </button>
+		{/if}			<button type="submit" class="w-full p-2 btn preset-filled-primary-500 rounded-md"> Login </button>
 		</form>
 	</div>
 </div>
