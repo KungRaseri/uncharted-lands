@@ -1,4 +1,6 @@
 name: Playwright E2E Tests with Docker
+permissions:
+  contents: read
 
 on:
   push:
