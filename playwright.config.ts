@@ -102,10 +102,12 @@ const config: PlaywrightTestConfig = {
 	webServer: [
 		{
 			// Start the backend API server first
+			// In CI with Docker, the server is already running in a container
+			// Locally, this will start the server from ../server
 			command: 'cd ../server && npm run dev',
 			port: 3001,
 			timeout: 120 * 1000,
-			reuseExistingServer: !process.env.CI,
+			reuseExistingServer: true, // Always reuse - Docker (CI) or local dev server
 			stdout: 'ignore',
 			stderr: 'pipe'
 		},
@@ -114,7 +116,7 @@ const config: PlaywrightTestConfig = {
 			command: 'npm run dev',
 			port: 3000,
 			timeout: 120 * 1000,
-			reuseExistingServer: !process.env.CI,
+			reuseExistingServer: !process.env.CI, // Fresh start in CI, reuse locally
 			stdout: 'ignore',
 			stderr: 'pipe'
 		}
