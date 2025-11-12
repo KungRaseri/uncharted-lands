@@ -190,6 +190,49 @@
 	}
 
 	/**
+	 * Poll for world status until it's ready or failed
+	 */
+	async function pollWorldStatus(worldId: string): Promise<boolean> {
+		const maxAttempts = 60; // Poll for up to 5 minutes (60 * 5s = 300s)
+		let attempts = 0;
+
+		while (attempts < maxAttempts) {
+			try {
+				const response = await fetch(`${API_URL}/worlds/${worldId}`, {
+					credentials: 'include'
+				});
+
+				if (response.ok) {
+					const world = await response.json();
+					
+					if (world.status === 'ready') {
+						generationProgress = 'World generated successfully!';
+						return true;
+					} else if (world.status === 'failed') {
+						saveError = 'World generation failed on the server.';
+						generationProgress = '';
+						return false;
+					} else {
+						// Still generating
+						generationProgress = `World is generating... (${Math.round((attempts / maxAttempts) * 100)}%)`;
+					}
+				}
+			} catch (err) {
+				console.error('[WORLD STATUS] Error checking status:', err);
+			}
+
+			// Wait 5 seconds before next poll
+			await new Promise(resolve => setTimeout(resolve, 5000));
+			attempts++;
+		}
+
+		// Timeout after max attempts
+		saveError = 'World generation is taking longer than expected. Check the worlds list later.';
+		generationProgress = '';
+		return false;
+	}
+
+	/**
 	 * Save world directly to API (bypasses Vercel serverless function timeout)
 	 * Includes polling mechanism for large worlds that might timeout
 	 */
@@ -235,10 +278,22 @@
 			}
 
 			const world = await response.json();
-			generationProgress = 'World created successfully!';
 			
-			// Navigate to the created world
-			await goto(`/admin/worlds/${world.id}`);
+			// Check if world is still generating (happens when server returns before completion)
+			if (world.status === 'generating') {
+				generationProgress = 'World is generating on the server. Checking progress...';
+				const success = await pollWorldStatus(world.id);
+				
+				if (success) {
+					await goto(`/admin/worlds/${world.id}`);
+				}
+			} else if (world.status === 'ready') {
+				generationProgress = 'World created successfully!';
+				await goto(`/admin/worlds/${world.id}`);
+			} else if (world.status === 'failed') {
+				saveError = 'World generation failed.';
+				generationProgress = '';
+			}
 		} catch (err) {
 			console.error('[WORLD CREATE] Error:', err);
 			
@@ -262,10 +317,15 @@
 						);
 						
 						if (createdWorld) {
-							generationProgress = 'World was created successfully despite timeout!';
-							await new Promise(resolve => setTimeout(resolve, 1500));
-							await goto(`/admin/worlds/${createdWorld.id}`);
-							return;
+							generationProgress = 'World found! Checking generation status...';
+							
+							// Poll for completion
+							const success = await pollWorldStatus(createdWorld.id);
+							
+							if (success) {
+								await goto(`/admin/worlds/${createdWorld.id}`);
+								return;
+							}
 						}
 					}
 				} catch (checkErr) {
