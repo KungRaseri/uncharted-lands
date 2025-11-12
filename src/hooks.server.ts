@@ -5,8 +5,43 @@ import { logger } from '$lib/utils/logger';
 
 Sentry.init({
 	dsn: process.env.SENTRY_DSN === 'disabled' ? undefined : process.env.SENTRY_DSN,
-	tracesSampleRate: 1,
-	environment: process.env.NODE_ENV
+	tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1,
+	environment: process.env.NODE_ENV || 'development',
+	
+	// Ignore common errors that are not actionable
+	ignoreErrors: [
+		// Network errors
+		'ECONNRESET',
+		'EPIPE',
+		'ETIMEDOUT',
+		// Expected auth errors
+		'Unauthorized',
+		'Forbidden',
+	],
+
+	beforeSend(event, hint) {
+		// Filter out errors we don't want to track
+		const error = hint.originalException;
+
+		if (error instanceof Error) {
+			// Don't send network/timeout errors
+			if (
+				error.message.includes('ECONNRESET') ||
+				error.message.includes('EPIPE') ||
+				error.message.includes('timeout')
+			) {
+				return null;
+			}
+		}
+
+		// Add custom tags
+		event.tags = {
+			...event.tags,
+			client: 'server-adapter',
+		};
+
+		return event;
+	},
 });
 
 export const handle: Handle = (async ({ event, resolve }) => {
