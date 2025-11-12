@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
 	import { generateMap } from '$lib/game/world-generator';
+	import { API_URL } from '$lib/config';
 
 	import { Info } from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
@@ -12,6 +14,7 @@
 
 	let regions = $state<any[]>([]);
 	let isSaving = $state(false);
+	let saveError = $state<string | null>(null);
 
 	// Simple, user-friendly controls
 	let terrainRoughness = $state(50); // 0-100: Smooth to Rugged
@@ -49,8 +52,8 @@
 	let mapOptions = $state({
 		serverId: data.servers?.[0]?.id || '',
 		worldName: '',
-		width: 100,
-		height: 100,
+		width: 50,  // Reduced default for better UX on free hosting
+		height: 50, // 2,500 tiles = ~30s generation time
 		elevationSeed: Date.now(),
 		precipitationSeed: Date.now(),
 		temperatureSeed: Date.now()
@@ -182,6 +185,61 @@
 			regions = generatedMap.flat(1);
 		} finally {
 			isGenerating = false;
+		}
+	}
+
+	/**
+	 * Save world directly to API (bypasses Vercel serverless function timeout)
+	 */
+	async function saveWorld() {
+		if (!mapOptions.worldName || !mapOptions.serverId) {
+			saveError = 'World name and server are required';
+			return;
+		}
+
+		isSaving = true;
+		saveError = null;
+
+		try {
+			const response = await fetch(`${API_URL}/worlds`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				credentials: 'include', // Send cookies for authentication
+				body: JSON.stringify({
+					name: mapOptions.worldName,
+					serverId: mapOptions.serverId,
+					generate: true,
+					width: mapOptions.width,
+					height: mapOptions.height,
+					elevationSeed: mapOptions.elevationSeed,
+					precipitationSeed: mapOptions.precipitationSeed,
+					temperatureSeed: mapOptions.temperatureSeed,
+					elevationSettings: elevationOptions,
+					precipitationSettings: precipitationOptions,
+					temperatureSettings: temperatureOptions,
+				})
+			});
+
+			if (!response.ok) {
+				const error = await response.json().catch(() => ({ error: 'Failed to create world' }));
+				saveError = error.error || 'Failed to create world';
+				return;
+			}
+
+			const world = await response.json();
+			// Navigate to the created world
+			await goto(`/admin/worlds/${world.id}`);
+		} catch (err) {
+			console.error('[WORLD CREATE] Error:', err);
+			if (err instanceof Error && err.name === 'AbortError') {
+				saveError = 'World creation timed out. This world may be too large. Try reducing dimensions.';
+			} else {
+				saveError = 'Failed to create world. Please try again.';
+			}
+		} finally {
+			isSaving = false;
 		}
 	}
 </script>
@@ -783,59 +841,51 @@
 			</p>
 		</div>
 
+		<!-- World Size Warning -->
+		{#if mapOptions.width * mapOptions.height > 2500}
+			<div class="alert bg-warning-500/10 text-warning-900 dark:text-warning-50 mt-4">
+				<div class="alert-message">
+					<Info />
+					<div>
+						<p class="font-semibold">Large World Warning</p>
+						<p class="text-sm">
+							Generating a {mapOptions.width}×{mapOptions.height} world ({(mapOptions.width * mapOptions.height).toLocaleString()} tiles) 
+							may take 2-5 minutes. Please be patient and do not close this page.
+						</p>
+					</div>
+				</div>
+			</div>
+		{/if}
+
 		<!-- Save Form -->
-		<form
-			action="?/save"
-			method="POST"
-			class="mt-4"
-			use:enhance={() => {
-				isSaving = true;
-				return async ({ result }) => {
-					if (result.type !== 'redirect') {
-						await invalidateAll();
-						isSaving = false;
-					}
-					// Note: if redirect, page will navigate away so no need to reset isSaving
-					await applyAction(result);
-				};
-			}}
-		>
-			<input type="hidden" name="map-options" value={JSON.stringify(mapOptions)} />
-			<input
-				type="hidden"
-				name="elevation-options"
-				value={JSON.stringify(elevationOptions)}
-			/>
-			<input
-				type="hidden"
-				name="precipitation-options"
-				value={JSON.stringify(precipitationOptions)}
-			/>
-			<input
-				type="hidden"
-				name="temperature-options"
-				value={JSON.stringify(temperatureOptions)}
-			/>
-		
+		<!-- Using client-side submission to bypass Vercel's 10-second serverless function timeout -->
+		<div class="mt-4 space-y-4">
 			{#if form?.invalid}
-				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 w-11/12 mx-auto m-5">
+				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50">
 					<div class="alert-message"><Info />{form?.message}</div>
+				</div>
+			{/if}
+
+			{#if saveError}
+				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50">
+					<div class="alert-message"><Info />{saveError}</div>
 				</div>
 			{/if}
 			
 			<button
-				type="submit"
+				type="button"
 				class="btn preset-filled-primary-500 rounded-md"
-				disabled={!mapOptions.worldName || isSaving}
+				disabled={!mapOptions.worldName || !mapOptions.serverId || isSaving}
+				onclick={saveWorld}
 			>
 				{#if isSaving}
 					<span class="animate-spin">⏳</span>
-					<span>Creating World...</span>
+					<span>Creating World... This may take several minutes for large worlds.</span>
 				{:else}
 					<span>Save World</span>
 				{/if}
 			</button>
-		</form>
+		</div>
 	</div>
 
 	{#if regions && regions.length > 0}
