@@ -4,11 +4,11 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
 # Skip Husky installation in Docker
 ENV HUSKY=0
+
+# Copy package files
+COPY package*.json ./
 
 # Install dependencies
 RUN npm ci
@@ -30,11 +30,11 @@ RUN npm run build
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
 # Skip Husky installation in Docker
 ENV HUSKY=0
+
+# Copy package files
+COPY package*.json ./
 
 # Install only production dependencies
 RUN npm ci --only=production
