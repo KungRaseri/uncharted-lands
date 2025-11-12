@@ -4,9 +4,6 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 
-# Skip Husky installation in Docker
-ENV HUSKY=0
-
 # Copy package files
 COPY package*.json ./
 
@@ -29,9 +26,6 @@ RUN npm run build
 # Stage 3: Production dependencies
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
-
-# Skip Husky installation in Docker
-ENV HUSKY=0
 
 # Copy package files
 COPY package*.json ./
