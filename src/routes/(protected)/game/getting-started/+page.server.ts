@@ -10,7 +10,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 const API_URL = process.env.API_URL || 'http://localhost:3001/api';
 
-export const load: PageServerLoad = async ({ locals, cookies }) => {
+export const load: PageServerLoad = async ({ locals, cookies, setHeaders }) => {
     if (!locals.account) {
         throw redirect(302, '/login')
     }
@@ -18,6 +18,11 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
     if (locals.account.profile) {
         throw redirect(302, '/game')
     }
+
+    // Disable caching to ensure fresh server and world data
+    setHeaders({
+        'cache-control': 'no-store, no-cache, must-revalidate, max-age=0'
+    });
 
     try {
         const sessionToken = cookies.get('session');
@@ -31,7 +36,8 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         const serversResponse = await fetch(`${API_URL}/servers`, {
             headers: {
                 'Cookie': `session=${sessionToken}`
-            }
+            },
+            cache: 'no-store'
         });
 
         if (!serversResponse.ok) {
@@ -48,7 +54,8 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         const worldsResponse = await fetch(`${API_URL}/worlds`, {
             headers: {
                 'Cookie': `session=${sessionToken}`
-            }
+            },
+            cache: 'no-store'
         });
 
         if (!worldsResponse.ok) {
