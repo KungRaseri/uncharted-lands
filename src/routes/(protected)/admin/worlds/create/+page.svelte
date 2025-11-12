@@ -15,6 +15,7 @@
 	let regions = $state<any[]>([]);
 	let isSaving = $state(false);
 	let saveError = $state<string | null>(null);
+	let generationProgress = $state<string>('');
 
 	// Simple, user-friendly controls
 	let terrainRoughness = $state(50); // 0-100: Smooth to Rugged
@@ -52,8 +53,8 @@
 	let mapOptions = $state({
 		serverId: data.servers?.[0]?.id || '',
 		worldName: '',
-		width: 50,  // Reduced default for better UX on free hosting
-		height: 50, // 2,500 tiles = ~30s generation time
+		width: 100,
+		height: 100,
 		elevationSeed: Date.now(),
 		precipitationSeed: Date.now(),
 		temperatureSeed: Date.now()
@@ -190,6 +191,7 @@
 
 	/**
 	 * Save world directly to API (bypasses Vercel serverless function timeout)
+	 * Includes polling mechanism for large worlds that might timeout
 	 */
 	async function saveWorld() {
 		if (!mapOptions.worldName || !mapOptions.serverId) {
@@ -199,8 +201,11 @@
 
 		isSaving = true;
 		saveError = null;
+		generationProgress = 'Starting world generation...';
 
 		try {
+			generationProgress = 'Creating world...';
+			
 			const response = await fetch(`${API_URL}/worlds`, {
 				method: 'POST',
 				headers: {
@@ -225,19 +230,54 @@
 			if (!response.ok) {
 				const error = await response.json().catch(() => ({ error: 'Failed to create world' }));
 				saveError = error.error || 'Failed to create world';
+				generationProgress = '';
 				return;
 			}
 
 			const world = await response.json();
+			generationProgress = 'World created successfully!';
+			
 			// Navigate to the created world
 			await goto(`/admin/worlds/${world.id}`);
 		} catch (err) {
 			console.error('[WORLD CREATE] Error:', err);
-			if (err instanceof Error && err.name === 'AbortError') {
-				saveError = 'World creation timed out. This world may be too large. Try reducing dimensions.';
+			
+			// If request fails (timeout, network error, etc.), check if world was created anyway
+			if (err instanceof Error && (err.name === 'AbortError' || err.message.includes('fetch'))) {
+				generationProgress = 'Connection lost. Checking if world was created...';
+				
+				// Wait a moment for server to potentially finish
+				await new Promise(resolve => setTimeout(resolve, 3000));
+				
+				// Try to find the world by name and server
+				try {
+					const checkResponse = await fetch(`${API_URL}/worlds`, {
+						credentials: 'include'
+					});
+					
+					if (checkResponse.ok) {
+						const worlds = await checkResponse.json();
+						const createdWorld = worlds.find(
+							(w: any) => w.name === mapOptions.worldName && w.serverId === mapOptions.serverId
+						);
+						
+						if (createdWorld) {
+							generationProgress = 'World was created successfully despite timeout!';
+							await new Promise(resolve => setTimeout(resolve, 1500));
+							await goto(`/admin/worlds/${createdWorld.id}`);
+							return;
+						}
+					}
+				} catch (checkErr) {
+					console.error('[WORLD CREATE] Error checking for world:', checkErr);
+				}
+				
+				saveError = 'World creation timed out. The world may still be generating on the server. Check the worlds list in a moment.';
 			} else {
 				saveError = 'Failed to create world. Please try again.';
 			}
+			
+			generationProgress = '';
 		} finally {
 			isSaving = false;
 		}
@@ -860,15 +900,15 @@
 		<!-- Save Form -->
 		<!-- Using client-side submission to bypass Vercel's 10-second serverless function timeout -->
 		<div class="mt-4 space-y-4">
-			{#if form?.invalid}
-				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50">
-					<div class="alert-message"><Info />{form?.message}</div>
-				</div>
-			{/if}
-
 			{#if saveError}
 				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50">
 					<div class="alert-message"><Info />{saveError}</div>
+				</div>
+			{/if}
+
+			{#if generationProgress}
+				<div class="alert bg-primary-500/10 text-primary-900 dark:text-primary-50">
+					<div class="alert-message"><Info />{generationProgress}</div>
 				</div>
 			{/if}
 			
