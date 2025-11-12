@@ -4,10 +4,15 @@ import type { Actions, PageServerLoad } from "./$types"
 
 const API_URL = process.env.API_URL || 'http://localhost:3001/api';
 
-export const load: PageServerLoad = async ({ cookies, locals }) => {
+export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
     if (!locals.account || locals.account.role !== 'ADMINISTRATOR') {
         throw redirect(302, '/')
     }
+
+    // Disable caching to ensure fresh server data
+    setHeaders({
+        'cache-control': 'no-store, no-cache, must-revalidate, max-age=0'
+    });
 
     try {
         const sessionToken = cookies.get('session');
@@ -19,7 +24,8 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
         const response = await fetch(`${API_URL}/servers`, {
             headers: {
                 'Cookie': `session=${sessionToken}`
-            }
+            },
+            cache: 'no-store'
         });
 
         if (!response.ok) {
