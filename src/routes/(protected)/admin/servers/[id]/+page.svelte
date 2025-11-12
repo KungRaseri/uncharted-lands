@@ -1,29 +1,40 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Server, Globe, Users, Calendar, ArrowLeft, Plus, Edit, Trash2, Save, X } from 'lucide-svelte';
+	import {
+		Server,
+		Globe,
+		Users,
+		Calendar,
+		ArrowLeft,
+		Plus,
+		Edit,
+		Trash2,
+		Save,
+		X
+	} from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
 	let { data, form }: { data: PageData; form: any } = $props();
-	
+
 	let isEditing = $state(false);
 	let showDeleteConfirm = $state(false);
 	let isDeleting = $state(false);
-	
+
 	// Edit form state
 	let editName = $state(data.server.name);
 	let editHostname = $state(data.server.hostname);
 	let editPort = $state(data.server.port.toString());
 	let editStatus = $state(data.server.status);
-	
+
 	// Auto-enable edit mode if ?edit=true in URL
 	onMount(() => {
 		if (page.url.searchParams.get('edit') === 'true') {
 			startEdit();
 		}
 	});
-	
+
 	function startEdit() {
 		editName = data.server.name;
 		editHostname = data.server.hostname;
@@ -31,7 +42,7 @@
 		editStatus = data.server.status;
 		isEditing = true;
 	}
-	
+
 	function cancelEdit() {
 		isEditing = false;
 	}
@@ -40,9 +51,13 @@
 <div class="space-y-6">
 	<!-- Breadcrumb -->
 	<div class="flex items-center gap-2 text-sm">
-		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Dashboard</a>
+		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>Dashboard</a
+		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/servers" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Servers</a>
+		<a href="/admin/servers" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>Servers</a
+		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">{data.server.name}</span>
 	</div>
@@ -73,8 +88,8 @@
 						<Edit size={16} />
 						<span>Edit</span>
 					</button>
-					<button 
-						onclick={() => showDeleteConfirm = true} 
+					<button
+						onclick={() => (showDeleteConfirm = true)}
 						class="btn btn-sm preset-filled-error-500 rounded-md"
 					>
 						<Trash2 size={16} />
@@ -101,7 +116,9 @@
 
 			<!-- Success/Error Messages -->
 			{#if form?.success}
-				<div class="mt-4 p-4 bg-success-500/10 border border-success-500 rounded-lg text-success-500">
+				<div
+					class="mt-4 p-4 bg-success-500/10 border border-success-500 rounded-lg text-success-500"
+				>
 					{form.message}
 				</div>
 			{:else if form?.message}
@@ -111,12 +128,16 @@
 			{/if}
 		{:else}
 			<!-- Edit Mode -->
-			<form method="POST" action="?/update" use:enhance={() => {
-				return async ({ update }) => {
-					await update();
-					isEditing = false;
-				};
-			}}>
+			<form
+				method="POST"
+				action="?/update"
+				use:enhance={() => {
+					return async ({ update }) => {
+						await update();
+						isEditing = false;
+					};
+				}}
+			>
 				<div class="flex items-start justify-between mb-6">
 					<div class="flex items-center gap-4">
 						<div class="p-3 bg-primary-500/10 rounded-lg">
@@ -124,7 +145,9 @@
 						</div>
 						<div>
 							<h1 class="text-2xl font-bold mb-2">Edit Server</h1>
-							<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">{data.server.id}</p>
+							<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">
+								{data.server.id}
+							</p>
 						</div>
 					</div>
 					<div class="flex items-center gap-2">
@@ -132,7 +155,11 @@
 							<Save size={16} />
 							<span>Save</span>
 						</button>
-						<button type="button" onclick={cancelEdit} class="btn btn-sm preset-tonal-surface-500 rounded-md">
+						<button
+							type="button"
+							onclick={cancelEdit}
+							class="btn btn-sm preset-tonal-surface-500 rounded-md"
+						>
 							<X size={16} />
 							<span>Cancel</span>
 						</button>
@@ -142,18 +169,22 @@
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<label class="label">
 						<span class="label-text">Server Name *</span>
-						<input 
-							type="text" 
-							name="name" 
+						<input
+							type="text"
+							name="name"
 							bind:value={editName}
-							class="input preset-filled-surface-200-700" 
-							required 
+							class="input preset-filled-surface-200-700"
+							required
 						/>
 					</label>
 
 					<label class="label">
 						<span class="label-text">Status</span>
-						<select name="status" bind:value={editStatus} class="select preset-filled-surface-200-700">
+						<select
+							name="status"
+							bind:value={editStatus}
+							class="select preset-filled-surface-200-700"
+						>
 							<option value="ONLINE">Online</option>
 							<option value="OFFLINE">Offline</option>
 							<option value="MAINTENANCE">Maintenance</option>
@@ -162,22 +193,22 @@
 
 					<label class="label">
 						<span class="label-text">Hostname</span>
-						<input 
-							type="text" 
-							name="hostname" 
+						<input
+							type="text"
+							name="hostname"
 							bind:value={editHostname}
-							class="input preset-filled-surface-200-700" 
+							class="input preset-filled-surface-200-700"
 							placeholder="localhost"
 						/>
 					</label>
 
 					<label class="label">
 						<span class="label-text">Port</span>
-						<input 
-							type="number" 
-							name="port" 
+						<input
+							type="number"
+							name="port"
 							bind:value={editPort}
-							class="input preset-filled-surface-200-700" 
+							class="input preset-filled-surface-200-700"
 							placeholder="5000"
 						/>
 					</label>
@@ -200,7 +231,9 @@
 				{#if data.server.worlds.length > 0}
 					<div class="mb-4 p-3 bg-error-500/10 border border-error-500 rounded-lg text-error-500">
 						<p class="font-semibold">Cannot delete this server!</p>
-						<p class="text-sm mt-1">This server has {data.server.worlds.length} world(s). Delete all worlds first.</p>
+						<p class="text-sm mt-1">
+							This server has {data.server.worlds.length} world(s). Delete all worlds first.
+						</p>
 					</div>
 				{:else}
 					<p class="mb-6 text-sm text-error-500">
@@ -209,23 +242,27 @@
 				{/if}
 
 				<div class="flex gap-3 justify-end">
-					<button 
-						onclick={() => showDeleteConfirm = false} 
+					<button
+						onclick={() => (showDeleteConfirm = false)}
 						class="btn preset-tonal-surface-500 rounded-md"
 						disabled={isDeleting}
 					>
 						Cancel
 					</button>
 					{#if data.server.worlds.length === 0}
-						<form method="POST" action="?/delete" use:enhance={() => {
-							isDeleting = true;
-							return async ({ update }) => {
-								await update();
-								isDeleting = false;
-							};
-						}}>
-							<button 
-								type="submit" 
+						<form
+							method="POST"
+							action="?/delete"
+							use:enhance={() => {
+								isDeleting = true;
+								return async ({ update }) => {
+									await update();
+									isDeleting = false;
+								};
+							}}
+						>
+							<button
+								type="submit"
 								class="btn preset-filled-error-500 rounded-md"
 								disabled={isDeleting}
 							>
@@ -302,9 +339,15 @@
 						class="card preset-filled-surface-200-700 p-4 hover:preset-tonal-primary-500 transition-colors"
 					>
 						<div class="flex items-center gap-3">
-							<div class="w-12 h-12 rounded-full bg-primary-500/10 flex items-center justify-center overflow-hidden">
+							<div
+								class="w-12 h-12 rounded-full bg-primary-500/10 flex items-center justify-center overflow-hidden"
+							>
 								{#if player.profile.picture}
-									<img src={player.profile.picture} alt={player.profile.username} class="w-full h-full object-cover" />
+									<img
+										src={player.profile.picture}
+										alt={player.profile.username}
+										class="w-full h-full object-cover"
+									/>
 								{:else}
 									<Users size={24} class="text-primary-500" />
 								{/if}

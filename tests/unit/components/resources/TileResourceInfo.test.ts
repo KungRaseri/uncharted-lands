@@ -379,7 +379,10 @@ describe('TileResourceInfo.svelte', () => {
 	describe('Loading States', () => {
 		it('should show loading text while fetching quality info', async () => {
 			(resourceUtils.getQualityInfo as Mock).mockImplementation(
-				() => new Promise((resolve) => setTimeout(() => resolve({ rating: 'Good', color: 'text-primary-500' }), 100))
+				() =>
+					new Promise((resolve) =>
+						setTimeout(() => resolve({ rating: 'Good', color: 'text-primary-500' }), 100)
+					)
 			);
 
 			render(TileResourceInfo, { props: { tile: baseTile } });
@@ -487,11 +490,16 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should handle very long biome names', async () => {
-			const tile = { ...baseTile, biome: { ...baseBiome, name: 'Extremely Dense Ancient Mystical Forest of Wonder' } } as Tile;
+			const tile = {
+				...baseTile,
+				biome: { ...baseBiome, name: 'Extremely Dense Ancient Mystical Forest of Wonder' }
+			} as Tile;
 			render(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
-				expect(screen.getByText(/Biome: Extremely Dense Ancient Mystical Forest of Wonder/)).toBeDefined();
+				expect(
+					screen.getByText(/Biome: Extremely Dense Ancient Mystical Forest of Wonder/)
+				).toBeDefined();
 			});
 		});
 
@@ -514,7 +522,7 @@ describe('TileResourceInfo.svelte', () => {
 			await waitFor(() => {
 				expect(screen.getByText('Resource Quality')).toBeDefined();
 			});
-			
+
 			// Verify the functions are defined (they're being called but async)
 			expect(resourceUtils.getResourceIcon).toBeDefined();
 		});

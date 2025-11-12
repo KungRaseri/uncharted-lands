@@ -1,6 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Globe, Server, MapPin, Home, Mountain, Waves, ArrowLeft, Edit, Trash2, Save, X } from 'lucide-svelte';
+	import {
+		Globe,
+		Server,
+		MapPin,
+		Home,
+		Mountain,
+		Waves,
+		ArrowLeft,
+		Edit,
+		Trash2,
+		Save,
+		X
+	} from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
@@ -8,33 +20,33 @@
 	import type { TileWithRelations, Plot } from '$lib/types/api';
 
 	let { data, form }: { data: PageData; form: any } = $props();
-	
+
 	// Guard: if world failed to load, show error (this shouldn't happen but satisfies TypeScript)
 	if (!data.world) {
 		throw new Error('World not found');
 	}
-	
+
 	let isEditing = $state(false);
 	let showDeleteConfirm = $state(false);
 	let isDeleting = $state(false);
-	
+
 	// Edit form state
 	let editName = $state(data.world.name);
 	let editServerId = $state(data.world.serverId);
-	
+
 	// Auto-enable edit mode if ?edit=true in URL
 	onMount(() => {
 		if (page.url.searchParams.get('edit') === 'true') {
 			startEdit();
 		}
 	});
-	
+
 	function startEdit() {
 		editName = data.world!.name;
 		editServerId = data.world!.serverId;
 		isEditing = true;
 	}
-	
+
 	function cancelEdit() {
 		isEditing = false;
 	}
@@ -71,11 +83,16 @@
 
 				<div class="flex-1">
 					<h1 class="text-3xl font-bold mb-2">{data.world.name}</h1>
-					<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{data.world.id}</p>
+					<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">
+						{data.world.id}
+					</p>
 
 					<div class="flex items-center gap-2">
 						<Server size={16} class="text-surface-400" />
-						<a href="/admin/servers/{data.world!.serverId}" class="text-primary-500 hover:underline">
+						<a
+							href="/admin/servers/{data.world!.serverId}"
+							class="text-primary-500 hover:underline"
+						>
 							{data.world!.server?.name || 'Unknown Server'}
 						</a>
 					</div>
@@ -86,8 +103,8 @@
 						<Edit size={16} />
 						<span>Edit</span>
 					</button>
-					<button 
-						onclick={() => showDeleteConfirm = true} 
+					<button
+						onclick={() => (showDeleteConfirm = true)}
 						class="btn btn-sm preset-filled-error-500 rounded-md"
 					>
 						<Trash2 size={16} />
@@ -98,7 +115,9 @@
 
 			<!-- Success/Error Messages -->
 			{#if form?.success}
-				<div class="mt-4 p-4 bg-success-500/10 border border-success-500 rounded-lg text-success-500">
+				<div
+					class="mt-4 p-4 bg-success-500/10 border border-success-500 rounded-lg text-success-500"
+				>
 					{form.message}
 				</div>
 			{:else if form?.message}
@@ -108,12 +127,16 @@
 			{/if}
 		{:else}
 			<!-- Edit Mode -->
-			<form method="POST" action="?/update" use:enhance={() => {
-				return async ({ update }) => {
-					await update();
-					isEditing = false;
-				};
-			}}>
+			<form
+				method="POST"
+				action="?/update"
+				use:enhance={() => {
+					return async ({ update }) => {
+						await update();
+						isEditing = false;
+					};
+				}}
+			>
 				<div class="flex items-start gap-6">
 					<div
 						class="flex-none w-16 h-16 rounded-full bg-primary-500/10 flex items-center justify-center"
@@ -124,17 +147,19 @@
 					<div class="flex-1 space-y-4">
 						<div>
 							<h1 class="text-2xl font-bold mb-2">Edit World</h1>
-							<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">{data.world.id}</p>
+							<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">
+								{data.world.id}
+							</p>
 						</div>
 
 						<label class="label">
 							<span class="label-text">World Name *</span>
-							<input 
-								type="text" 
-								name="name" 
+							<input
+								type="text"
+								name="name"
 								bind:value={editName}
-								class="input preset-filled-surface-200-700" 
-								required 
+								class="input preset-filled-surface-200-700"
+								required
 							/>
 						</label>
 
@@ -143,8 +168,8 @@
 								<Server size={16} />
 								Server *
 							</span>
-							<select 
-								name="serverId" 
+							<select
+								name="serverId"
 								bind:value={editServerId}
 								class="select preset-filled-surface-200-700"
 								required
@@ -166,7 +191,11 @@
 							<Save size={16} />
 							<span>Save</span>
 						</button>
-						<button type="button" onclick={cancelEdit} class="btn btn-sm preset-tonal-surface-500 rounded-md">
+						<button
+							type="button"
+							onclick={cancelEdit}
+							class="btn btn-sm preset-tonal-surface-500 rounded-md"
+						>
 							<X size={16} />
 							<span>Cancel</span>
 						</button>
@@ -187,7 +216,9 @@
 				<p class="mb-4 text-surface-600 dark:text-surface-400">
 					Are you sure you want to delete <strong>{data.world.name}</strong>?
 				</p>
-				<div class="mb-4 p-3 bg-warning-500/10 border border-warning-500 rounded-lg text-warning-500">
+				<div
+					class="mb-4 p-3 bg-warning-500/10 border border-warning-500 rounded-lg text-warning-500"
+				>
 					<p class="font-semibold">⚠️ Warning</p>
 					<p class="text-sm mt-1">This will permanently delete:</p>
 					<ul class="text-sm mt-2 list-disc list-inside">
@@ -197,27 +228,29 @@
 						<li>{data.worldInfo.settlements} settlements</li>
 					</ul>
 				</div>
-				<p class="mb-6 text-sm text-error-500">
-					This action cannot be undone!
-				</p>
+				<p class="mb-6 text-sm text-error-500">This action cannot be undone!</p>
 
 				<div class="flex gap-3 justify-end">
-					<button 
-						onclick={() => showDeleteConfirm = false} 
+					<button
+						onclick={() => (showDeleteConfirm = false)}
 						class="btn preset-tonal-surface-500 rounded-md"
 						disabled={isDeleting}
 					>
 						Cancel
 					</button>
-					<form method="POST" action="?/delete" use:enhance={() => {
-						isDeleting = true;
-						return async ({ update }) => {
-							await update();
-							isDeleting = false;
-						};
-					}}>
-						<button 
-							type="submit" 
+					<form
+						method="POST"
+						action="?/delete"
+						use:enhance={() => {
+							isDeleting = true;
+							return async ({ update }) => {
+								await update();
+								isDeleting = false;
+							};
+						}}
+					>
+						<button
+							type="submit"
 							class="btn preset-filled-error-500 rounded-md"
 							disabled={isDeleting}
 						>
@@ -323,9 +356,17 @@
 						{#each data.world!.regions as region}
 							{@const tiles = region.tiles || []}
 							{@const landTiles = tiles.filter((t: TileWithRelations) => t.type === 'LAND').length}
-							{@const oceanTiles = tiles.filter((t: TileWithRelations) => t.type === 'OCEAN').length}
-							{@const avgElevation = tiles.length > 0 ? tiles.reduce((sum: number, t: TileWithRelations) => sum + t.elevation, 0) / tiles.length : 0}
-							{@const settlements = tiles.flatMap((t: TileWithRelations) => (t.Plots || []) as any).filter((p: any) => p.Settlement).length}
+							{@const oceanTiles = tiles.filter(
+								(t: TileWithRelations) => t.type === 'OCEAN'
+							).length}
+							{@const avgElevation =
+								tiles.length > 0
+									? tiles.reduce((sum: number, t: TileWithRelations) => sum + t.elevation, 0) /
+										tiles.length
+									: 0}
+							{@const settlements = tiles
+								.flatMap((t: TileWithRelations) => (t.Plots || []) as any)
+								.filter((p: any) => p.Settlement).length}
 							{@const elevationClass =
 								avgElevation < 0
 									? 'bg-primary-500/10 text-primary-500'
@@ -407,10 +448,9 @@
 			<!-- Grid view toggle option (optional) -->
 			<div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
 				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
-					Showing {data.world!.regions?.length || 0} regions with {(data.world!.regions || []).reduce(
-						(sum, r) => sum + (r.tiles?.length || 0),
-						0
-					)} total tiles
+					Showing {data.world!.regions?.length || 0} regions with {(
+						data.world!.regions || []
+					).reduce((sum, r) => sum + (r.tiles?.length || 0), 0)} total tiles
 				</p>
 			</div>
 		</div>

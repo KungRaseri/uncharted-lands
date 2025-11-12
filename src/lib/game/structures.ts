@@ -1,14 +1,14 @@
 /**
  * Structure Definitions for Uncharted Lands
- * 
+ *
  * ⚠️ IMPORTANT: This file is UI-ONLY
- * 
+ *
  * This file provides structure metadata for the client UI:
  * - Display names and descriptions
- * - Categorization for UI organization  
+ * - Categorization for UI organization
  * - Cost previews for build menus
  * - Helper functions for UI validation (canBuildStructure)
- * 
+ *
  * 🔒 Server Authority:
  * The server (server/src/events/handlers.ts) is the authoritative
  * source for structure building. It validates all operations:
@@ -16,13 +16,13 @@
  * - Ownership verification
  * - Cost enforcement
  * - Database persistence
- * 
+ *
  * 🔄 Sync Warning:
  * Structure definitions here should match server definitions.
  * When adding new structures:
  * 1. Add to this file for UI display
  * 2. Add to server/src/events/handlers.ts for building
- * 
+ *
  * 🚀 Future Improvement:
  * Move structure definitions to database or shared config file
  * to eliminate duplication and synchronization issues.
@@ -33,19 +33,19 @@ export interface StructureDefinition {
 	name: string;
 	description: string;
 	category: 'housing' | 'production' | 'storage' | 'defense' | 'utility';
-	
+
 	// Build requirements
 	requirements: {
-		area: number;      // Plot area required
-		solar: number;     // Solar energy required
-		wind: number;      // Wind energy required
-		food: number;      // Food cost
-		water: number;     // Water cost
-		wood: number;      // Wood cost
-		stone: number;     // Stone cost
-		ore: number;       // Ore cost
+		area: number; // Plot area required
+		solar: number; // Solar energy required
+		wind: number; // Wind energy required
+		food: number; // Food cost
+		water: number; // Water cost
+		wood: number; // Wood cost
+		stone: number; // Stone cost
+		ore: number; // Ore cost
 	};
-	
+
 	// Effects/modifiers this structure provides
 	modifiers: {
 		name: string;
@@ -82,11 +82,12 @@ export const STRUCTURE_DEFINITIONS: Record<string, StructureDefinition> = {
 			}
 		]
 	},
-	
+
 	cottage: {
 		id: 'cottage',
 		name: 'Cottage',
-		description: 'Small wooden dwelling. More durable than a tent and provides better living conditions.',
+		description:
+			'Small wooden dwelling. More durable than a tent and provides better living conditions.',
 		category: 'housing',
 		requirements: {
 			area: 2,
@@ -379,7 +380,7 @@ export const STRUCTURE_DEFINITIONS: Record<string, StructureDefinition> = {
 	workshop: {
 		id: 'workshop',
 		name: 'Workshop',
-		description: 'Craftsman\'s workplace. Allows creation of advanced tools and items.',
+		description: "Craftsman's workplace. Allows creation of advanced tools and items.",
 		category: 'utility',
 		requirements: {
 			area: 3,
@@ -445,8 +446,10 @@ export function getStructureDefinition(id: string): StructureDefinition | undefi
 /**
  * Get all structures by category
  */
-export function getStructuresByCategory(category: StructureDefinition['category']): StructureDefinition[] {
-	return Object.values(STRUCTURE_DEFINITIONS).filter(s => s.category === category);
+export function getStructuresByCategory(
+	category: StructureDefinition['category']
+): StructureDefinition[] {
+	return Object.values(STRUCTURE_DEFINITIONS).filter((s) => s.category === category);
 }
 
 /**

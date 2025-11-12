@@ -1,6 +1,6 @@
 /**
  * World API - Client interface for server-generated worlds
- * 
+ *
  * Provides functions to interact with the server's world generation
  * and data loading systems via Socket.IO.
  */
@@ -33,8 +33,8 @@ export interface WorldDataRequest {
 
 export interface WorldDataResponse {
 	success: boolean;
-	world?: any;  // Will match server's World type
-	regions?: any[];  // Will match server's Region type
+	world?: any; // Will match server's World type
+	regions?: any[]; // Will match server's Region type
 	error?: string;
 	timestamp: number;
 }
@@ -46,16 +46,16 @@ export interface RegionDataRequest {
 
 export interface RegionDataResponse {
 	success: boolean;
-	region?: any;  // Will match server's Region type with optional tiles
+	region?: any; // Will match server's Region type with optional tiles
 	error?: string;
 }
 
 /**
  * Create a new world on the server
- * 
+ *
  * @param options - World creation parameters
  * @returns Promise resolving to world creation result
- * 
+ *
  * @example
  * ```typescript
  * const result = await createWorld({
@@ -64,7 +64,7 @@ export interface RegionDataResponse {
  *   width: 100,
  *   height: 100
  * });
- * 
+ *
  * if (result.success) {
  *   console.log('World created:', result.worldId);
  *   console.log('Stats:', result.stats);
@@ -74,7 +74,7 @@ export interface RegionDataResponse {
 export function createWorld(options: WorldCreationOptions): Promise<WorldCreationResult> {
 	return new Promise((resolve, reject) => {
 		const socket = socketStore.getSocket();
-		
+
 		if (!socket || !socket.connected) {
 			reject(new Error('Socket not connected'));
 			return;
@@ -87,7 +87,7 @@ export function createWorld(options: WorldCreationOptions): Promise<WorldCreatio
 
 		socket.emit('create-world', options, (response: WorldCreationResult) => {
 			clearTimeout(timeout);
-			
+
 			if (response.success) {
 				resolve(response);
 			} else {
@@ -99,10 +99,10 @@ export function createWorld(options: WorldCreationOptions): Promise<WorldCreatio
 
 /**
  * Request world data from the server
- * 
+ *
  * @param request - World data request parameters
  * @returns Promise resolving to world data
- * 
+ *
  * @example
  * ```typescript
  * const worldData = await requestWorldData({
@@ -114,7 +114,7 @@ export function createWorld(options: WorldCreationOptions): Promise<WorldCreatio
 export function requestWorldData(request: WorldDataRequest): Promise<WorldDataResponse> {
 	return new Promise((resolve, reject) => {
 		const socket = socketStore.getSocket();
-		
+
 		if (!socket?.connected) {
 			reject(new Error('Socket not connected'));
 			return;
@@ -126,7 +126,7 @@ export function requestWorldData(request: WorldDataRequest): Promise<WorldDataRe
 
 		socket.emit('request-world-data', request, (response: WorldDataResponse) => {
 			clearTimeout(timeout);
-			
+
 			if (response.success) {
 				resolve(response);
 			} else {
@@ -138,10 +138,10 @@ export function requestWorldData(request: WorldDataRequest): Promise<WorldDataRe
 
 /**
  * Request region data from the server
- * 
+ *
  * @param request - Region data request parameters
  * @returns Promise resolving to region data
- * 
+ *
  * @example
  * ```typescript
  * const regionData = await requestRegionData({
@@ -153,7 +153,7 @@ export function requestWorldData(request: WorldDataRequest): Promise<WorldDataRe
 export function requestRegionData(request: RegionDataRequest): Promise<RegionDataResponse> {
 	return new Promise((resolve, reject) => {
 		const socket = socketStore.getSocket();
-		
+
 		if (!socket?.connected) {
 			reject(new Error('Socket not connected'));
 			return;
@@ -165,7 +165,7 @@ export function requestRegionData(request: RegionDataRequest): Promise<RegionDat
 
 		socket.emit('request-region', request, (response: RegionDataResponse) => {
 			clearTimeout(timeout);
-			
+
 			if (response.success) {
 				resolve(response);
 			} else {

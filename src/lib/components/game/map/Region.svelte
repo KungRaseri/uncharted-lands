@@ -13,7 +13,12 @@
 		mapViewMode?: MapViewMode;
 	};
 
-	let { region, mode = 'player', currentPlayerProfileId, mapViewMode = 'satellite' }: Props = $props();
+	let {
+		region,
+		mode = 'player',
+		currentPlayerProfileId,
+		mapViewMode = 'satellite'
+	}: Props = $props();
 
 	// Tiles are ordered by (xCoord, yCoord) from database query
 	// This matches the creation order: row-by-row (x=row index, y=column index)

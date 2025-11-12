@@ -1,19 +1,32 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { SettlementWithStorage } from '$lib/types/game';
-	import { Building2, MapPin, Package, TrendingUp, AlertTriangle, Home, RefreshCw, Shield, User, Clock, MessageSquare, Users } from 'lucide-svelte';
+	import {
+		Building2,
+		MapPin,
+		Package,
+		TrendingUp,
+		AlertTriangle,
+		Home,
+		RefreshCw,
+		Shield,
+		User,
+		Clock,
+		MessageSquare,
+		Users
+	} from 'lucide-svelte';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 
 	let { data }: { data: PageData } = $props();
-	
+
 	// Check for error message in URL
 	let showNoWorldError = $derived($page.url.searchParams.get('error') === 'no-world');
-	
+
 	// State for UI feedback
 	let isRefreshing = $state(false);
-	
+
 	// Manual refresh function
 	async function handleManualRefresh() {
 		isRefreshing = true;
@@ -23,7 +36,7 @@
 			isRefreshing = false;
 		}, 500);
 	}
-	
+
 	onMount(() => {
 		// Auto-refresh every minute to catch tick updates
 		const cleanup = createGameRefreshInterval('game:settlements');
@@ -32,15 +45,33 @@
 
 	// Calculate total resources across all settlements
 	let totalResources = $derived({
-		food: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.food || 0), 0),
-		water: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.water || 0), 0),
-		wood: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.wood || 0), 0),
-		stone: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.stone || 0), 0),
-		ore: data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.storage?.ore || 0), 0)
+		food: data.settlements.reduce(
+			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.food || 0),
+			0
+		),
+		water: data.settlements.reduce(
+			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.water || 0),
+			0
+		),
+		wood: data.settlements.reduce(
+			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.wood || 0),
+			0
+		),
+		stone: data.settlements.reduce(
+			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.stone || 0),
+			0
+		),
+		ore: data.settlements.reduce(
+			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.ore || 0),
+			0
+		)
 	});
 
 	let totalStructures = $derived(
-		data.settlements.reduce((sum: number, s: SettlementWithStorage) => sum + (s.structures?.length || 0), 0)
+		data.settlements.reduce(
+			(sum: number, s: SettlementWithStorage) => sum + (s.structures?.length || 0),
+			0
+		)
 	);
 </script>
 
@@ -52,7 +83,10 @@
 				<AlertTriangle size={20} />
 				<div>
 					<h3 class="font-bold">World Not Available</h3>
-					<p>The game world hasn't been created yet. Please contact an administrator to set up the world before accessing the map.</p>
+					<p>
+						The game world hasn't been created yet. Please contact an administrator to set up the
+						world before accessing the map.
+					</p>
 				</div>
 			</div>
 		</aside>
@@ -61,9 +95,7 @@
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2">
-				Game Overview
-			</h1>
+			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2">Game Overview</h1>
 			<p class="text-surface-600 dark:text-surface-400">
 				Welcome back! Here's your empire at a glance.
 			</p>
@@ -87,9 +119,7 @@
 				<div class="p-3 bg-primary-500/10 rounded-lg">
 					<Building2 size={24} class="text-primary-500" />
 				</div>
-				<a href="/game/settlements" class="text-xs text-primary-500 hover:underline">
-					View All
-				</a>
+				<a href="/game/settlements" class="text-xs text-primary-500 hover:underline"> View All </a>
 			</div>
 			<div>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
@@ -112,9 +142,7 @@
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
 					{totalStructures}
 				</p>
-				<p class="text-sm text-surface-600 dark:text-surface-400">
-					Total Structures
-				</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400">Total Structures</p>
 			</div>
 		</div>
 
@@ -129,9 +157,7 @@
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
 					{totalResources.food.toLocaleString()}
 				</p>
-				<p class="text-sm text-surface-600 dark:text-surface-400">
-					Food Stores
-				</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400">Food Stores</p>
 			</div>
 		</div>
 
@@ -146,9 +172,7 @@
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
 					{(totalResources.wood + totalResources.stone + totalResources.ore).toLocaleString()}
 				</p>
-				<p class="text-sm text-surface-600 dark:text-surface-400">
-					Building Materials
-				</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400">Building Materials</p>
 			</div>
 		</div>
 	</div>
@@ -156,9 +180,7 @@
 	<!-- Settlements List -->
 	<div class="card preset-filled-surface-100-900">
 		<div class="p-6 border-b border-surface-300 dark:border-surface-700">
-			<h2 class="text-xl font-bold text-surface-900 dark:text-surface-100">
-				Your Settlements
-			</h2>
+			<h2 class="text-xl font-bold text-surface-900 dark:text-surface-100">Your Settlements</h2>
 		</div>
 
 		{#if data.settlements.length === 0}
@@ -168,7 +190,8 @@
 					No settlements yet
 				</h3>
 				<p class="text-surface-600 dark:text-surface-400 mb-4">
-					You haven't created your first settlement yet. Start by going through the getting started flow.
+					You haven't created your first settlement yet. Start by going through the getting started
+					flow.
 				</p>
 				<a href="/game/getting-started" class="btn preset-filled-primary-500 rounded-md">
 					<Building2 size={20} />
@@ -186,7 +209,9 @@
 							<div class="flex items-start justify-between mb-3">
 								<div class="flex items-center gap-2">
 									<Building2 size={20} class="text-primary-500 group-hover:text-white" />
-									<h3 class="font-bold text-lg text-surface-900 dark:text-surface-100 group-hover:text-white">
+									<h3
+										class="font-bold text-lg text-surface-900 dark:text-surface-100 group-hover:text-white"
+									>
 										{settlement.name}
 									</h3>
 								</div>
@@ -194,20 +219,36 @@
 							</div>
 
 							<div class="space-y-2 text-sm">
-								<div class="flex items-center gap-2 text-surface-600 dark:text-surface-400 group-hover:text-white/80">
+								<div
+									class="flex items-center gap-2 text-surface-600 dark:text-surface-400 group-hover:text-white/80"
+								>
 									<MapPin size={14} />
 									<span>Plot: {settlement.plotId.slice(0, 8)}...</span>
 								</div>
-								<div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-surface-300 dark:border-surface-600 group-hover:border-white/20">
+								<div
+									class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-surface-300 dark:border-surface-600 group-hover:border-white/20"
+								>
 									<div>
-										<p class="text-xs text-surface-500 dark:text-surface-500 group-hover:text-white/60">Structures</p>
-										<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
+										<p
+											class="text-xs text-surface-500 dark:text-surface-500 group-hover:text-white/60"
+										>
+											Structures
+										</p>
+										<p
+											class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white"
+										>
 											{settlement.structures?.length || 0}
 										</p>
 									</div>
 									<div>
-										<p class="text-xs text-surface-500 dark:text-surface-500 group-hover:text-white/60">Food</p>
-										<p class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white">
+										<p
+											class="text-xs text-surface-500 dark:text-surface-500 group-hover:text-white/60"
+										>
+											Food
+										</p>
+										<p
+											class="font-semibold text-surface-900 dark:text-surface-100 group-hover:text-white"
+										>
 											{settlement.storage?.food || 0}
 										</p>
 									</div>
@@ -227,7 +268,9 @@
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors group"
 		>
 			<MapPin size={32} class="text-primary-500 group-hover:text-white mb-3" />
-			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+			<h3
+				class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white"
+			>
 				Explore Map
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
@@ -240,7 +283,9 @@
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-secondary-500 transition-colors group"
 		>
 			<Building2 size={32} class="text-secondary-500 group-hover:text-white mb-3" />
-			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+			<h3
+				class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white"
+			>
 				Manage Settlements
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
@@ -253,7 +298,9 @@
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-tertiary-500 transition-colors group"
 		>
 			<Shield size={32} class="text-tertiary-500 group-hover:text-white mb-3" />
-			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+			<h3
+				class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white"
+			>
 				Wardens
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
@@ -266,7 +313,9 @@
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-success-500 transition-colors group"
 		>
 			<User size={32} class="text-success-500 group-hover:text-white mb-3" />
-			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+			<h3
+				class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white"
+			>
 				Profile
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
@@ -279,7 +328,9 @@
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-warning-500 transition-colors group"
 		>
 			<Clock size={32} class="text-warning-500 group-hover:text-white mb-3" />
-			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+			<h3
+				class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white"
+			>
 				History
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
@@ -292,7 +343,9 @@
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-error-500 transition-colors group"
 		>
 			<MessageSquare size={32} class="text-error-500 group-hover:text-white mb-3" />
-			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+			<h3
+				class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white"
+			>
 				Messages
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">
@@ -305,7 +358,9 @@
 			class="card preset-filled-surface-100-900 p-6 hover:preset-tonal-primary-500 transition-colors group"
 		>
 			<Users size={32} class="text-primary-500 group-hover:text-white mb-3" />
-			<h3 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white">
+			<h3
+				class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100 group-hover:text-white"
+			>
 				Guild
 			</h3>
 			<p class="text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80">

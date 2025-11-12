@@ -48,7 +48,7 @@ describe('structures', () => {
 				expect(structure.requirements).toHaveProperty('wood');
 				expect(structure.requirements).toHaveProperty('stone');
 				expect(structure.requirements).toHaveProperty('ore');
-				
+
 				// All requirements should be non-negative numbers
 				expect(structure.requirements.area).toBeGreaterThanOrEqual(0);
 				expect(structure.requirements.solar).toBeGreaterThanOrEqual(0);
@@ -86,7 +86,7 @@ describe('structures', () => {
 	describe('getStructureDefinition', () => {
 		it('should return tent structure by id', () => {
 			const tent = getStructureDefinition('tent');
-			
+
 			expect(tent).toBeDefined();
 			expect(tent?.id).toBe('tent');
 			expect(tent?.name).toBe('Tent');
@@ -94,7 +94,7 @@ describe('structures', () => {
 
 		it('should return cottage structure by id', () => {
 			const cottage = getStructureDefinition('cottage');
-			
+
 			expect(cottage).toBeDefined();
 			expect(cottage?.id).toBe('cottage');
 			expect(cottage?.name).toBe('Cottage');
@@ -102,19 +102,19 @@ describe('structures', () => {
 
 		it('should return undefined for non-existent structure', () => {
 			const result = getStructureDefinition('nonexistent');
-			
+
 			expect(result).toBeUndefined();
 		});
 
 		it('should return undefined for empty string', () => {
 			const result = getStructureDefinition('');
-			
+
 			expect(result).toBeUndefined();
 		});
 
 		it('should return the complete structure object', () => {
 			const structure = getStructureDefinition('tent');
-			
+
 			expect(structure).toHaveProperty('requirements');
 			expect(structure).toHaveProperty('modifiers');
 			expect(structure).toHaveProperty('category');
@@ -124,7 +124,7 @@ describe('structures', () => {
 	describe('getStructuresByCategory', () => {
 		it('should return housing structures', () => {
 			const housing = getStructuresByCategory('housing');
-			
+
 			expect(Array.isArray(housing)).toBe(true);
 			expect(housing.length).toBeGreaterThan(0);
 			for (const structure of housing) {
@@ -134,7 +134,7 @@ describe('structures', () => {
 
 		it('should return production structures', () => {
 			const production = getStructuresByCategory('production');
-			
+
 			expect(Array.isArray(production)).toBe(true);
 			for (const structure of production) {
 				expect(structure.category).toBe('production');
@@ -143,7 +143,7 @@ describe('structures', () => {
 
 		it('should return storage structures', () => {
 			const storage = getStructuresByCategory('storage');
-			
+
 			expect(Array.isArray(storage)).toBe(true);
 			for (const structure of storage) {
 				expect(structure.category).toBe('storage');
@@ -152,7 +152,7 @@ describe('structures', () => {
 
 		it('should return defense structures', () => {
 			const defense = getStructuresByCategory('defense');
-			
+
 			expect(Array.isArray(defense)).toBe(true);
 			for (const structure of defense) {
 				expect(structure.category).toBe('defense');
@@ -161,7 +161,7 @@ describe('structures', () => {
 
 		it('should return utility structures', () => {
 			const utility = getStructuresByCategory('utility');
-			
+
 			expect(Array.isArray(utility)).toBe(true);
 			for (const structure of utility) {
 				expect(structure.category).toBe('utility');
@@ -171,14 +171,14 @@ describe('structures', () => {
 		it('should return empty array for non-existent category', () => {
 			// TypeScript won't allow invalid category, but test runtime behavior
 			const result = getStructuresByCategory('invalid' as any);
-			
+
 			expect(Array.isArray(result)).toBe(true);
 			expect(result.length).toBe(0);
 		});
 
 		it('should return tent in housing category', () => {
 			const housing = getStructuresByCategory('housing');
-			
+
 			const hasTent = housing.some((s) => s.id === 'tent');
 			expect(hasTent).toBe(true);
 		});
@@ -187,7 +187,7 @@ describe('structures', () => {
 	describe('getStructureCategories', () => {
 		it('should return all valid categories', () => {
 			const categories = getStructureCategories();
-			
+
 			expect(Array.isArray(categories)).toBe(true);
 			expect(categories).toContain('housing');
 			expect(categories).toContain('production');
@@ -198,14 +198,14 @@ describe('structures', () => {
 
 		it('should return exactly 5 categories', () => {
 			const categories = getStructureCategories();
-			
+
 			expect(categories.length).toBe(5);
 		});
 
 		it('should return the same array each time', () => {
 			const categories1 = getStructureCategories();
 			const categories2 = getStructureCategories();
-			
+
 			expect(categories1).toEqual(categories2);
 		});
 	});

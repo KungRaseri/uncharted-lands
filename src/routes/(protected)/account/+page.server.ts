@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 	try {
 		// Get session token from cookies instead of locals
 		const sessionToken = cookies.get('session');
-		
+
 		if (!sessionToken) {
 			logger.warn('[ACCOUNT PAGE] No session token found in cookies');
 			throw error(401);
@@ -41,25 +41,25 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 				statusText: response.statusText,
 				error: errorData
 			});
-			
+
 			throw error(response.status);
 		}
 
 		const account = await response.json();
-		
+
 		logger.info('[ACCOUNT PAGE] Successfully loaded account data', {
 			accountId: account.id,
 			email: logger.maskEmail(account.email)
 		});
-		
+
 		return { account };
 	} catch (err) {
 		// Re-throw SvelteKit error() calls
 		if (err && typeof err === 'object' && 'status' in err) {
 			throw err;
 		}
-		
+
 		logger.error('[ACCOUNT PAGE] Unexpected error loading account', err);
 		throw error(500);
 	}
-} 
+};

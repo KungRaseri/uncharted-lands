@@ -6,17 +6,19 @@
 	let { data }: { data: PageData } = $props();
 
 	let searchTerm = $state('');
-	
-	let filteredAccounts = $derived(data.accounts.filter(account => {
-		if (!searchTerm) return true;
-		const search = searchTerm.toLowerCase();
-		return (
-			account.id.toLowerCase().includes(search) ||
-			account.email.toLowerCase().includes(search) ||
-			account.role.toLowerCase().includes(search) ||
-			(account.profile?.username && account.profile.username.toLowerCase().includes(search))
-		);
-	}));
+
+	let filteredAccounts = $derived(
+		data.accounts.filter((account) => {
+			if (!searchTerm) return true;
+			const search = searchTerm.toLowerCase();
+			return (
+				account.id.toLowerCase().includes(search) ||
+				account.email.toLowerCase().includes(search) ||
+				account.role.toLowerCase().includes(search) ||
+				(account.profile?.username && account.profile.username.toLowerCase().includes(search))
+			);
+		})
+	);
 
 	function getRoleBadgeClass(role: string): string {
 		switch (role) {
@@ -71,7 +73,9 @@
 					{searchTerm ? 'No players found' : 'No players yet'}
 				</h3>
 				<p class="text-surface-600 dark:text-surface-400">
-					{searchTerm ? 'Try a different search term' : 'Players will appear here once they register'}
+					{searchTerm
+						? 'Try a different search term'
+						: 'Players will appear here once they register'}
 				</p>
 			</div>
 		{:else}
@@ -93,17 +97,21 @@
 									<div class="flex items-center gap-3">
 										{#if account.profile?.picture}
 											<div class="relative w-10 h-10">
-												<img 
-													src={account.profile.picture} 
-													alt="{account.profile.username || 'User'} avatar" 
+												<img
+													src={account.profile.picture}
+													alt="{account.profile.username || 'User'} avatar"
 													class="w-10 h-10 rounded-full object-cover"
 													onerror={(e) => {
 														// If image fails to load, replace with icon
 														const parent = e.currentTarget.parentElement;
 														e.currentTarget.remove();
 														const fallback = document.createElement('div');
-														fallback.className = 'w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center';
-														const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+														fallback.className =
+															'w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center';
+														const svg = document.createElementNS(
+															'http://www.w3.org/2000/svg',
+															'svg'
+														);
 														svg.setAttribute('width', '20');
 														svg.setAttribute('height', '20');
 														svg.setAttribute('viewBox', '0 0 24 24');
@@ -111,14 +119,17 @@
 														svg.setAttribute('stroke', 'currentColor');
 														svg.setAttribute('stroke-width', '2');
 														svg.setAttribute('class', 'text-primary-500');
-														svg.innerHTML = '<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"></path><circle cx=\"12\" cy=\"7\" r=\"4\"></circle>';
+														svg.innerHTML =
+															'<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"></path><circle cx=\"12\" cy=\"7\" r=\"4\"></circle>';
 														fallback.appendChild(svg);
 														parent?.appendChild(fallback);
 													}}
 												/>
 											</div>
 										{:else}
-											<div class="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center">
+											<div
+												class="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center"
+											>
 												<User size={20} class="text-primary-500" />
 											</div>
 										{/if}

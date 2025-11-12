@@ -1,11 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { MapPin, Globe, Layers, ArrowLeft, Mountain, Droplets, Thermometer, Home } from 'lucide-svelte';
+	import {
+		MapPin,
+		Globe,
+		Layers,
+		ArrowLeft,
+		Mountain,
+		Droplets,
+		Thermometer,
+		Home
+	} from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 	import type { Plot, TileWithRelations } from '$lib/types/game';
 
 	let { data }: { data: PageData } = $props();
-	
+
 	// Convert the region data to the format WorldMap expects
 	const regionForMap = $derived({
 		...data.region,
@@ -16,11 +25,19 @@
 <div class="space-y-6">
 	<!-- Breadcrumb -->
 	<div class="flex items-center gap-2 text-sm">
-		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Dashboard</a>
+		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>Dashboard</a
+		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Worlds</a>
+		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>Worlds</a
+		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/worlds/{data.region.worldId}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.region.world.name}</a>
+		<a
+			href="/admin/worlds/{data.region.worldId}"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>{data.region.world.name}</a
+		>
 		<span class="text-surface-400">/</span>
 		<span class="text-surface-600 dark:text-surface-400">Regions</span>
 		<span class="text-surface-400">/</span>
@@ -30,14 +47,18 @@
 	<!-- Region Header -->
 	<div class="card preset-filled-surface-100-900 p-6">
 		<div class="flex items-start gap-6">
-			<div class="flex-none w-16 h-16 rounded-full bg-warning-500/10 flex items-center justify-center">
+			<div
+				class="flex-none w-16 h-16 rounded-full bg-warning-500/10 flex items-center justify-center"
+			>
 				<MapPin size={32} class="text-warning-500" />
 			</div>
 
 			<div class="flex-1">
 				<h1 class="text-3xl font-bold mb-2">{data.region.name || 'Unnamed Region'}</h1>
-				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{data.region.id}</p>
-				
+				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">
+					{data.region.id}
+				</p>
+
 				<div class="flex items-center gap-2">
 					<Globe size={16} class="text-surface-400" />
 					<a href="/admin/worlds/{data.region.worldId}" class="text-primary-500 hover:underline">
@@ -50,8 +71,8 @@
 
 	<!-- Region Map Preview -->
 	{#if data.region.tiles.length > 0}
-		<WorldMap 
-			regions={[regionForMap]} 
+		<WorldMap
+			regions={[regionForMap]}
 			viewLevel="region"
 			title="{data.region.name || 'Region'} Preview"
 			mode="admin"
@@ -68,9 +89,7 @@
 				<Layers size={24} />
 				Tiles ({data.region.tiles.length})
 			</h2>
-			<div class="text-sm text-surface-600 dark:text-surface-400">
-				Click a tile to view details
-			</div>
+			<div class="text-sm text-surface-600 dark:text-surface-400">Click a tile to view details</div>
 		</div>
 
 		{#if data.region.tiles.length === 0}
@@ -98,19 +117,31 @@
 						{#each data.region.tiles as tile}
 							{@const hasSettlement = tile.plots?.some((p: Plot) => p.settlement)}
 							{@const tileColor = tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
-							<tr class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
+							<tr
+								class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+							>
 								<td class="p-3">
 									<div class="flex items-center gap-2">
 										<div
 											class="w-8 h-8 rounded"
-											style="background-color: {tile.elevation < -0.3 ? '#001a33' : tile.elevation < 0 ? '#003d66' : tile.elevation < 0.3 ? '#7cb342' : tile.elevation < 0.7 ? '#8d6e63' : '#757575'}"
+											style="background-color: {tile.elevation < -0.3
+												? '#001a33'
+												: tile.elevation < 0
+													? '#003d66'
+													: tile.elevation < 0.3
+														? '#7cb342'
+														: tile.elevation < 0.7
+															? '#8d6e63'
+															: '#757575'}"
 											title="Elevation: {tile.elevation.toFixed(3)}"
 										></div>
 										<p class="font-mono text-xs">{tile.id.substring(0, 8)}...</p>
 									</div>
 								</td>
 								<td class="p-3 text-center">
-									<span class="px-2 py-1 rounded text-xs font-semibold {tileColor} bg-current/10 capitalize">
+									<span
+										class="px-2 py-1 rounded text-xs font-semibold {tileColor} bg-current/10 capitalize"
+									>
 										{tile.type.toLowerCase()}
 									</span>
 								</td>
@@ -167,8 +198,10 @@
 			<div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
 				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
 					Showing {data.region.tiles.length} tiles
-					{#if data.region.tiles.some((t: TileWithRelations) => t.plots?.some((p: Plot) => p.settlement))}
-						• {data.region.tiles.filter((t: TileWithRelations) => t.plots?.some((p: Plot) => p.settlement)).length} with settlements
+					{#if data.region.tiles.some( (t: TileWithRelations) => t.plots?.some((p: Plot) => p.settlement) )}
+						• {data.region.tiles.filter((t: TileWithRelations) =>
+							t.plots?.some((p: Plot) => p.settlement)
+						).length} with settlements
 					{/if}
 				</p>
 			</div>

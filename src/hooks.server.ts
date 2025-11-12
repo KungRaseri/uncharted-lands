@@ -7,7 +7,7 @@ Sentry.init({
 	dsn: process.env.SENTRY_DSN === 'disabled' ? undefined : process.env.SENTRY_DSN,
 	tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1,
 	environment: process.env.NODE_ENV || 'development',
-	
+
 	// Ignore common errors that are not actionable
 	ignoreErrors: [
 		// Network errors
@@ -16,7 +16,7 @@ Sentry.init({
 		'ETIMEDOUT',
 		// Expected auth errors
 		'Unauthorized',
-		'Forbidden',
+		'Forbidden'
 	],
 
 	beforeSend(event, hint) {
@@ -37,11 +37,11 @@ Sentry.init({
 		// Add custom tags
 		event.tags = {
 			...event.tags,
-			client: 'server-adapter',
+			client: 'server-adapter'
 		};
 
 		return event;
-	},
+	}
 });
 
 export const handle: Handle = (async ({ event, resolve }) => {

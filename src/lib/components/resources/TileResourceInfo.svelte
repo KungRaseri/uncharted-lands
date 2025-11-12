@@ -5,7 +5,9 @@
 	let { tile }: { tile: Tile } = $props();
 
 	// Handle both biome and Biome property names for compatibility
-	let biomeName = $derived('biome' in tile ? tile.biome?.name : 'Biome' in tile ? (tile as any).Biome?.name : undefined);
+	let biomeName = $derived(
+		'biome' in tile ? tile.biome?.name : 'Biome' in tile ? (tile as any).Biome?.name : undefined
+	);
 
 	// Get quality info for each resource
 	async function getResourceQualityDisplay(quality: number | null) {

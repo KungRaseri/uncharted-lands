@@ -3,7 +3,7 @@
 	import { User, MapPin, Calendar, Award, TrendingUp, Info, Mail, Shield } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
-	
+
 	const joinDate = $derived(data.account?.createdAt ? new Date(data.account.createdAt) : null);
 </script>
 
@@ -15,13 +15,13 @@
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3">
+			<h1
+				class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3"
+			>
 				<User size={32} class="text-primary-500" />
 				Player Profile
 			</h1>
-			<p class="text-surface-600 dark:text-surface-400">
-				Your player information and statistics
-			</p>
+			<p class="text-surface-600 dark:text-surface-400">Your player information and statistics</p>
 		</div>
 	</div>
 
@@ -29,10 +29,12 @@
 	<div class="card preset-filled-surface-100-900 p-6">
 		<div class="flex items-start gap-6">
 			<!-- Avatar Placeholder -->
-			<div class="w-24 h-24 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0">
+			<div
+				class="w-24 h-24 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0"
+			>
 				<User size={48} class="text-primary-500" />
 			</div>
-			
+
 			<div class="flex-1">
 				<h2 class="text-2xl font-bold text-surface-900 dark:text-surface-100 mb-2">
 					{data.profile?.username || 'Unnamed Player'}
@@ -40,7 +42,7 @@
 				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">
 					ID: {data.profile?.id?.slice(0, 12)}...
 				</p>
-				
+
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div class="flex items-center gap-2 text-sm">
 						<Calendar size={16} class="text-surface-400" />
@@ -139,8 +141,6 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
-			← Back to Game Overview
-		</a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
 	</div>
 </div>

@@ -23,7 +23,7 @@
 
 <div class="card p-4 rounded-md">
 	<h2 class="text-xl font-semibold mb-4">Tile Location in {regionName}</h2>
-	
+
 	<div class="bg-surface-200 dark:bg-surface-700 p-4 rounded-md">
 		<!-- Position Info -->
 		<div class="mb-4 p-3 bg-surface-100 dark:bg-surface-800 rounded-md text-center">
@@ -35,7 +35,9 @@
 		</div>
 
 		<!-- Region Grid with Current Tile Highlighted -->
-		<div class="grid grid-cols-10 gap-0 w-full max-w-2xl mx-auto border-2 border-surface-400 dark:border-surface-500">
+		<div
+			class="grid grid-cols-10 gap-0 w-full max-w-2xl mx-auto border-2 border-surface-400 dark:border-surface-500"
+		>
 			{#each tileGrid() as row, rowIndex}
 				{#each row as t, colIndex}
 					{@const isCurrentTile = t && t.id === tile.id}
@@ -47,7 +49,9 @@
 							class:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]={!isCurrentTile}
 							class:dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]={!isCurrentTile}
 							style="background-color: {getElevationColor(t.elevation)}"
-							title={isCurrentTile ? 'Current Tile' : `Tile at (${rowIndex}, ${colIndex})\nElevation: ${t.elevation.toFixed(3)}\nType: ${t.type}`}
+							title={isCurrentTile
+								? 'Current Tile'
+								: `Tile at (${rowIndex}, ${colIndex})\nElevation: ${t.elevation.toFixed(3)}\nType: ${t.type}`}
 						></div>
 					{:else}
 						<div class="aspect-square bg-surface-500"></div>
@@ -62,7 +66,7 @@
 				<span class="w-3 h-3 rounded-full bg-warning-500 animate-pulse"></span>
 				Current Tile Details
 			</h3>
-			
+
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 				<div>
 					<p class="text-xs text-surface-600 dark:text-surface-400">Terrain</p>

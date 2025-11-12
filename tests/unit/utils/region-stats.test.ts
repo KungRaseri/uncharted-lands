@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
 	getRegionStats,
 	formatRegionTileTooltip,
-	type RegionStats,
+	type RegionStats
 } from '../../../src/lib/utils/region-stats';
 
 describe('Region Statistics Utilities', () => {
@@ -38,7 +38,7 @@ describe('Region Statistics Utilities', () => {
 		it('should calculate stats for 1x1 elevation map', () => {
 			const elevationMap = [[0.5]];
 			const stats = getRegionStats(elevationMap);
-			
+
 			expect(stats.avgElevation).toBe(0.5);
 			expect(stats.minElevation).toBe(0.5);
 			expect(stats.maxElevation).toBe(0.5);
@@ -50,7 +50,7 @@ describe('Region Statistics Utilities', () => {
 				[0.3, 0.4]
 			];
 			const stats = getRegionStats(elevationMap);
-			
+
 			expect(stats.avgElevation).toBe(0.25); // (0.1 + 0.2 + 0.3 + 0.4) / 4
 			expect(stats.minElevation).toBe(0.1);
 			expect(stats.maxElevation).toBe(0.4);
@@ -63,7 +63,7 @@ describe('Region Statistics Utilities', () => {
 				[0.2, 0.4, 0.6]
 			];
 			const stats = getRegionStats(elevationMap);
-			
+
 			expect(stats.avgElevation).toBeCloseTo(0.3, 5); // Sum: 2.7 / 9
 			expect(stats.minElevation).toBe(0);
 			expect(stats.maxElevation).toBe(0.6);
@@ -75,29 +75,30 @@ describe('Region Statistics Utilities', () => {
 				[-0.3, 0.1]
 			];
 			const stats = getRegionStats(elevationMap);
-			
+
 			expect(stats.avgElevation).toBe(-0.225); // (-0.5 - 0.2 - 0.3 + 0.1) / 4
 			expect(stats.minElevation).toBe(-0.5);
 			expect(stats.maxElevation).toBe(0.1);
 		});
 
-	it('should handle all negative elevations', () => {
-		const elevationMap = [
-			[-0.8, -0.6],
-			[-0.4, -0.2]
-		];
-		const stats = getRegionStats(elevationMap);
-		
-		expect(stats.avgElevation).toBeCloseTo(-0.5, 10);
-		expect(stats.minElevation).toBe(-0.8);
-		expect(stats.maxElevation).toBe(-0.2);
-	});		it('should handle all zero elevations', () => {
+		it('should handle all negative elevations', () => {
+			const elevationMap = [
+				[-0.8, -0.6],
+				[-0.4, -0.2]
+			];
+			const stats = getRegionStats(elevationMap);
+
+			expect(stats.avgElevation).toBeCloseTo(-0.5, 10);
+			expect(stats.minElevation).toBe(-0.8);
+			expect(stats.maxElevation).toBe(-0.2);
+		});
+		it('should handle all zero elevations', () => {
 			const elevationMap = [
 				[0, 0],
 				[0, 0]
 			];
 			const stats = getRegionStats(elevationMap);
-			
+
 			expect(stats.avgElevation).toBe(0);
 			expect(stats.minElevation).toBe(0);
 			expect(stats.maxElevation).toBe(0);
@@ -109,7 +110,7 @@ describe('Region Statistics Utilities', () => {
 				[3, 4]
 			];
 			const stats = getRegionStats(elevationMap);
-			
+
 			expect(stats.avgElevation).toBe(2.5);
 			expect(stats.minElevation).toBe(1);
 			expect(stats.maxElevation).toBe(4);
@@ -121,18 +122,18 @@ describe('Region Statistics Utilities', () => {
 				[0.4, 0.5, 0.6]
 			];
 			const stats = getRegionStats(elevationMap);
-			
+
 			expect(stats.avgElevation).toBeCloseTo(0.35, 5); // 2.1 / 6
 			expect(stats.minElevation).toBe(0.1);
 			expect(stats.maxElevation).toBe(0.6);
 		});
 
-	it('should filter out NaN values', () => {
-		const elevationMap = [
-			[0.1, Number.NaN],
-			[0.3, 0.4]
-		];
-		const stats = getRegionStats(elevationMap);			// Should calculate with only valid numbers: (0.1 + 0.3 + 0.4) / 3
+		it('should filter out NaN values', () => {
+			const elevationMap = [
+				[0.1, Number.NaN],
+				[0.3, 0.4]
+			];
+			const stats = getRegionStats(elevationMap); // Should calculate with only valid numbers: (0.1 + 0.3 + 0.4) / 3
 			expect(stats.avgElevation).toBeCloseTo(0.267, 2);
 			expect(stats.minElevation).toBe(0.1);
 			expect(stats.maxElevation).toBe(0.4);
@@ -199,11 +200,11 @@ describe('Region Statistics Utilities', () => {
 
 			// Average elevation: 3 decimals
 			expect(tooltip).toContain('0.988');
-			
+
 			// Range: 2 decimals
 			expect(tooltip).toContain('-0.56');
 			expect(tooltip).toContain('1.11');
-			
+
 			// Tile elevation: 3 decimals
 			expect(tooltip).toContain('0.123');
 		});
@@ -252,7 +253,7 @@ describe('Region Statistics Utilities', () => {
 
 		it('should preserve terrain type exactly', () => {
 			const terrainTypes = ['Ocean', 'Beach', 'Plains', 'Hills', 'Mountains', 'Snow Peaks'];
-			
+
 			for (const terrainType of terrainTypes) {
 				const tooltip = formatRegionTileTooltip({
 					regionName: 'Test',

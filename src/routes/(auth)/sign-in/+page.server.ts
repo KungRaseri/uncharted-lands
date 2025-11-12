@@ -1,130 +1,129 @@
-import { API_URL } from "$lib/config";
-import { fail, redirect } from "@sveltejs/kit";
-import type { Action, Actions, PageServerLoad } from "./$types";
-import { TimeSpan } from "$lib/timespan";
-import { logger } from "$lib/utils/logger";
+import { API_URL } from '$lib/config';
+import { fail, redirect } from '@sveltejs/kit';
+import type { Action, Actions, PageServerLoad } from './$types';
+import { TimeSpan } from '$lib/timespan';
+import { logger } from '$lib/utils/logger';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-    if (locals.account)
-        throw redirect(302, '/')
+	if (locals.account) throw redirect(302, '/');
 
-    return {
-        redirectTo: url.searchParams.get('redirectTo') ?? '/'
-    }
-}
+	return {
+		redirectTo: url.searchParams.get('redirectTo') ?? '/'
+	};
+};
 
 const login: Action = async ({ cookies, request, url, fetch }) => {
-    const data = await request.formData();
-    const email = data.get('email');
-    const password = data.get('password');
-    const rememberMeIsChecked = data.get('remember_me');
+	const data = await request.formData();
+	const email = data.get('email');
+	const password = data.get('password');
+	const rememberMeIsChecked = data.get('remember_me');
 
-    logger.debug('[AUTH] Login attempt', {
-        email: email ? `${email.toString().substring(0, 3)}***` : 'missing',
-        hasPassword: !!password,
-        rememberMe: !!rememberMeIsChecked,
-        timestamp: new Date().toISOString()
-    });
+	logger.debug('[AUTH] Login attempt', {
+		email: email ? `${email.toString().substring(0, 3)}***` : 'missing',
+		hasPassword: !!password,
+		rememberMe: !!rememberMeIsChecked,
+		timestamp: new Date().toISOString()
+	});
 
-    // Validate required fields
-    if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
-        logger.warn('[AUTH] Login validation failed - missing fields');
-        return fail(400, { email, invalid: true, missingFields: true })
-    }
+	// Validate required fields
+	if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+		logger.warn('[AUTH] Login validation failed - missing fields');
+		return fail(400, { email, invalid: true, missingFields: true });
+	}
 
-    try {
-        // Send plain password to API (server will handle hashing/comparison)
-        // This is secure when using HTTPS
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email,
-                password // Plain password - server will compare with bcrypt
-            })
-        });
+	try {
+		// Send plain password to API (server will handle hashing/comparison)
+		// This is secure when using HTTPS
+		const response = await fetch(`${API_URL}/auth/login`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				email,
+				password // Plain password - server will compare with bcrypt
+			})
+		});
 
-        if (!response.ok) {
-            const error = await response.json();
-            
-            logger.debug('[AUTH] Login failed', {
-                status: response.status,
-                code: error.code,
-                error: error.error
-            });
+		if (!response.ok) {
+			const error = await response.json();
 
-            // Handle specific error codes
-            if (error.code === 'INVALID_CREDENTIALS') {
-                return fail(401, { 
-                    email, 
-                    incorrect: true,
-                    message: 'The email or password you entered is incorrect.'
-                });
-            }
+			logger.debug('[AUTH] Login failed', {
+				status: response.status,
+				code: error.code,
+				error: error.error
+			});
 
-            if (error.code === 'MISSING_FIELDS') {
-                return fail(400, { 
-                    email, 
-                    invalid: true, 
-                    missingFields: true,
-                    message: 'Please provide both email and password.'
-                });
-            }
+			// Handle specific error codes
+			if (error.code === 'INVALID_CREDENTIALS') {
+				return fail(401, {
+					email,
+					incorrect: true,
+					message: 'The email or password you entered is incorrect.'
+				});
+			}
 
-            return fail(400, { 
-                email, 
-                incorrect: true,
-                message: 'Login failed. Please check your credentials and try again.'
-            });
-        }
+			if (error.code === 'MISSING_FIELDS') {
+				return fail(400, {
+					email,
+					invalid: true,
+					missingFields: true,
+					message: 'Please provide both email and password.'
+				});
+			}
 
-        const result = await response.json();
-        const userAuthToken = result.account.userAuthToken;
+			return fail(400, {
+				email,
+				incorrect: true,
+				message: 'Login failed. Please check your credentials and try again.'
+			});
+		}
 
-        logger.info('[AUTH] ✓ Login successful');
+		const result = await response.json();
+		const userAuthToken = result.account.userAuthToken;
 
-        const ts = new TimeSpan();
-        ts.days = 30;
-        const age30d = ts.totalSeconds;
-        
-        ts.days = 0;
-        ts.hours = 6;
-        const age6h = ts.totalSeconds;
+		logger.info('[AUTH] ✓ Login successful');
 
-        const rememberMe = !!rememberMeIsChecked;
-        const cookieMaxAge = rememberMe ? age30d : age6h;
+		const ts = new TimeSpan();
+		ts.days = 30;
+		const age30d = ts.totalSeconds;
 
-        logger.debug('[AUTH] Cookie settings', {
-            rememberMe,
-            rememberMeValue: rememberMeIsChecked,
-            maxAge: cookieMaxAge,
-            maxAgeDays: cookieMaxAge / (60 * 60 * 24)
-        });
+		ts.days = 0;
+		ts.hours = 6;
+		const age6h = ts.totalSeconds;
 
-        cookies.set('session', userAuthToken, {
-            path: '/',
-            httpOnly: true,
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: cookieMaxAge
-        });
+		const rememberMe = !!rememberMeIsChecked;
+		const cookieMaxAge = rememberMe ? age30d : age6h;
 
-        throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
-    } catch (error) {
-        // Re-throw redirects (SvelteKit redirect objects have a status property)
-        if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
-            throw error;
-        }
+		logger.debug('[AUTH] Cookie settings', {
+			rememberMe,
+			rememberMeValue: rememberMeIsChecked,
+			maxAge: cookieMaxAge,
+			maxAgeDays: cookieMaxAge / (60 * 60 * 24)
+		});
 
-        logger.error('[AUTH] Login error', error);
-        return fail(500, { 
-            email,
-            invalid: true,
-            message: 'An unexpected error occurred. Please try again later.'
-        });
-    }
-}
+		cookies.set('session', userAuthToken, {
+			path: '/',
+			httpOnly: true,
+			sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+			secure: process.env.NODE_ENV === 'production',
+			maxAge: cookieMaxAge
+		});
 
-export const actions: Actions = { login }
+		throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
+	} catch (error) {
+		// Re-throw redirects (SvelteKit redirect objects have a status property)
+		if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
+			throw error;
+		}
+
+		logger.error('[AUTH] Login error', error);
+		return fail(500, {
+			email,
+			invalid: true,
+			message: 'An unexpected error occurred. Please try again later.'
+		});
+	}
+};
+
+export const actions: Actions = { login };

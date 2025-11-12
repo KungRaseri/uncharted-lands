@@ -5,16 +5,19 @@
 	let { data }: { data: PageData } = $props();
 
 	let searchTerm = $state('');
-	
-	let filteredSettlements = $derived(data.settlements.filter((settlement: any) => {
-		if (!searchTerm) return true;
-		const search = searchTerm.toLowerCase();
-		return (
-			settlement.id.toLowerCase().includes(search) ||
-			settlement.name.toLowerCase().includes(search) ||
-			(settlement.playerProfile?.username && settlement.playerProfile.username.toLowerCase().includes(search))
-		);
-	}));
+
+	let filteredSettlements = $derived(
+		data.settlements.filter((settlement: any) => {
+			if (!searchTerm) return true;
+			const search = searchTerm.toLowerCase();
+			return (
+				settlement.id.toLowerCase().includes(search) ||
+				settlement.name.toLowerCase().includes(search) ||
+				(settlement.playerProfile?.username &&
+					settlement.playerProfile.username.toLowerCase().includes(search))
+			);
+		})
+	);
 </script>
 
 <div class="space-y-4">
@@ -58,7 +61,9 @@
 					{searchTerm ? 'No settlements found' : 'No settlements yet'}
 				</h3>
 				<p class="text-surface-600 dark:text-surface-400">
-					{searchTerm ? 'Try a different search term' : 'Settlements will appear here once players create them'}
+					{searchTerm
+						? 'Try a different search term'
+						: 'Settlements will appear here once players create them'}
 				</p>
 			</div>
 		{:else}
@@ -79,7 +84,9 @@
 							<tr class="hover:preset-tonal-surface-500">
 								<td>
 									<div class="flex items-center gap-3">
-										<div class="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center">
+										<div
+											class="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center"
+										>
 											<Building2 size={20} class="text-primary-500" />
 										</div>
 										<div>

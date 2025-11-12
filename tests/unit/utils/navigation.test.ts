@@ -24,11 +24,12 @@ describe('Navigation Utilities', () => {
 			expect(isActive('/games', '/game')).toBe(false);
 		});
 
-	it('should handle root path', () => {
-		expect(isActive('/', '/')).toBe(true);
-		// /game does NOT start with "/" + "/" (which would be "//")
-		expect(isActive('/game', '/')).toBe(false);
-	});		it('should be case-sensitive', () => {
+		it('should handle root path', () => {
+			expect(isActive('/', '/')).toBe(true);
+			// /game does NOT start with "/" + "/" (which would be "//")
+			expect(isActive('/game', '/')).toBe(false);
+		});
+		it('should be case-sensitive', () => {
 			expect(isActive('/Game', '/game')).toBe(false);
 			expect(isActive('/game', '/Game')).toBe(false);
 		});
@@ -57,30 +58,24 @@ describe('Navigation Utilities', () => {
 
 	describe('isActiveExcluding', () => {
 		it('should return true when active and not excluded', () => {
-			expect(
-				isActiveExcluding('/game', '/game', ['/game/settlements', '/game/map'])
-			).toBe(true);
+			expect(isActiveExcluding('/game', '/game', ['/game/settlements', '/game/map'])).toBe(true);
 		});
 
 		it('should return false when path matches excluded route', () => {
-			expect(
-				isActiveExcluding('/game/settlements', '/game', ['/game/settlements'])
-			).toBe(false);
+			expect(isActiveExcluding('/game/settlements', '/game', ['/game/settlements'])).toBe(false);
 
-			expect(
-				isActiveExcluding('/game/settlements/123', '/game', ['/game/settlements'])
-			).toBe(false);
+			expect(isActiveExcluding('/game/settlements/123', '/game', ['/game/settlements'])).toBe(
+				false
+			);
 		});
 
 		it('should return false when not active at all', () => {
-			expect(
-				isActiveExcluding('/admin', '/game', ['/game/settlements'])
-			).toBe(false);
+			expect(isActiveExcluding('/admin', '/game', ['/game/settlements'])).toBe(false);
 		});
 
 		it('should handle multiple exclusions', () => {
 			const excludes = ['/game/settlements', '/game/map', '/game/wardens'];
-			
+
 			expect(isActiveExcluding('/game', '/game', excludes)).toBe(true);
 			expect(isActiveExcluding('/game/profile', '/game', excludes)).toBe(true);
 			expect(isActiveExcluding('/game/settlements', '/game', excludes)).toBe(false);

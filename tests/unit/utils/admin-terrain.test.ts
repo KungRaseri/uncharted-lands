@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
 	getAdminElevationColor,
-	getAdminTerrainDescription,
+	getAdminTerrainDescription
 } from '../../../src/lib/utils/admin-terrain';
 
 describe('Admin Terrain Utilities', () => {
@@ -71,13 +71,13 @@ describe('Admin Terrain Utilities', () => {
 			it('should handle exact boundaries', () => {
 				expect(getAdminElevationColor(5, 'land')).toBe('#228b22');
 				expect(getAdminElevationColor(4.999, 'land')).toBe('#c2b280');
-				
+
 				expect(getAdminElevationColor(15, 'land')).toBe('#4a7c59');
 				expect(getAdminElevationColor(14.999, 'land')).toBe('#228b22');
-				
+
 				expect(getAdminElevationColor(25, 'land')).toBe('#8b7355');
 				expect(getAdminElevationColor(24.999, 'land')).toBe('#4a7c59');
-				
+
 				expect(getAdminElevationColor(35, 'land')).toBe('#ffffff');
 				expect(getAdminElevationColor(34.999, 'land')).toBe('#8b7355');
 			});

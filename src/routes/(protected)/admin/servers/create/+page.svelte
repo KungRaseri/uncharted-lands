@@ -11,9 +11,13 @@
 <div class="space-y-6 max-w-2xl mx-auto">
 	<!-- Breadcrumb -->
 	<div class="flex items-center gap-2 text-sm">
-		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Dashboard</a>
+		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>Dashboard</a
+		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/servers" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Servers</a>
+		<a href="/admin/servers" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>Servers</a
+		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">Create</span>
 	</div>
@@ -60,7 +64,6 @@
 					type="text"
 					placeholder="e.g., North America Server"
 					required
-
 				/>
 				{#if form?.fieldErrors?.name}
 					<span class="text-sm text-error-500 mt-1">{form.fieldErrors.name}</span>

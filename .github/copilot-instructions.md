@@ -317,12 +317,12 @@ node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
 ```svelte
 <!-- ✅ CORRECT (Svelte 5) -->
 {#snippet header()}
-  <h1>Title</h1>
+	<h1>Title</h1>
 {/snippet}
 
 <!-- ❌ WRONG (Svelte 4) -->
 <svelte:fragment slot="header">
-  <h1>Title</h1>
+	<h1>Title</h1>
 </svelte:fragment>
 ```
 
@@ -467,23 +467,19 @@ When the build works and we can use Skeleton components:
 
 ```svelte
 <script lang="ts">
-  // ✅ Import from skeleton-svelte package
-  import { ComponentName } from '@skeletonlabs/skeleton-svelte';
+	// ✅ Import from skeleton-svelte package
+	import { ComponentName } from '@skeletonlabs/skeleton-svelte';
 
-  // Use Svelte 5 runes for state
-  let value = $state(initialValue);
+	// Use Svelte 5 runes for state
+	let value = $state(initialValue);
 
-  // Use proper event handlers
-  function handleChange(e) {
-    value = e.value; // Note: Skeleton v4 event structure
-  }
+	// Use proper event handlers
+	function handleChange(e) {
+		value = e.value; // Note: Skeleton v4 event structure
+	}
 </script>
 
-<ComponentName
-  {value}
-  onValueChange={handleChange}
-  class="my-custom-classes"
-/>
+<ComponentName {value} onValueChange={handleChange} class="my-custom-classes" />
 ```
 
 ### Creating Custom Layouts (Replacing AppShell)
@@ -491,33 +487,33 @@ When the build works and we can use Skeleton components:
 ```svelte
 <!-- ✅ Custom Layout Pattern -->
 <script>
-  import Header from '$lib/components/Header.svelte';
-  import Navigation from '$lib/components/Navigation.svelte';
-  import Footer from '$lib/components/Footer.svelte';
+	import Header from '$lib/components/Header.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 </script>
 
 <div class="flex flex-col h-screen">
-  <!-- Header -->
-  <header class="flex-none">
-    <Header />
-  </header>
+	<!-- Header -->
+	<header class="flex-none">
+		<Header />
+	</header>
 
-  <div class="flex flex-1 overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="flex-none w-64 overflow-y-auto">
-      <Navigation />
-    </aside>
+	<div class="flex flex-1 overflow-hidden">
+		<!-- Sidebar -->
+		<aside class="flex-none w-64 overflow-y-auto">
+			<Navigation />
+		</aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto">
-      <slot />
-    </main>
-  </div>
+		<!-- Main Content -->
+		<main class="flex-1 overflow-y-auto">
+			<slot />
+		</main>
+	</div>
 
-  <!-- Footer -->
-  <footer class="flex-none">
-    <Footer />
-  </footer>
+	<!-- Footer -->
+	<footer class="flex-none">
+		<Footer />
+	</footer>
 </div>
 ```
 
@@ -784,31 +780,31 @@ Child spans can exist within a parent span
 
 ```javascript
 function TestComponent() {
-  const handleTestButtonClick = () => {
-    // Create a transaction/span to measure performance
-    Sentry.startSpan(
-      {
-        op: "ui.click",
-        name: "Test Button Click",
-      },
-      (span) => {
-        const value = "some config";
-        const metric = "some metric";
+	const handleTestButtonClick = () => {
+		// Create a transaction/span to measure performance
+		Sentry.startSpan(
+			{
+				op: 'ui.click',
+				name: 'Test Button Click'
+			},
+			(span) => {
+				const value = 'some config';
+				const metric = 'some metric';
 
-        // Metrics can be added to the span
-        span.setAttribute("config", value);
-        span.setAttribute("metric", metric);
+				// Metrics can be added to the span
+				span.setAttribute('config', value);
+				span.setAttribute('metric', metric);
 
-        doSomething();
-      },
-    );
-  };
+				doSomething();
+			}
+		);
+	};
 
-  return (
-    <button type="button" onClick={handleTestButtonClick}>
-      Test Sentry
-    </button>
-  );
+	return (
+		<button type="button" onClick={handleTestButtonClick}>
+			Test Sentry
+		</button>
+	);
 }
 ```
 
@@ -816,17 +812,17 @@ function TestComponent() {
 
 ```javascript
 async function fetchUserData(userId) {
-  return Sentry.startSpan(
-    {
-      op: "http.client",
-      name: `GET /api/users/${userId}`,
-    },
-    async () => {
-      const response = await fetch(`/api/users/${userId}`);
-      const data = await response.json();
-      return data;
-    },
-  );
+	return Sentry.startSpan(
+		{
+			op: 'http.client',
+			name: `GET /api/users/${userId}`
+		},
+		async () => {
+			const response = await fetch(`/api/users/${userId}`);
+			const data = await response.json();
+			return data;
+		}
+	);
 }
 ```
 
@@ -844,13 +840,13 @@ In Node.js the Sentry initialization is typically in `instrumentation.ts`
 ### Baseline
 
 ```javascript
-import * as Sentry from "@sentry/node";
+import * as Sentry from '@sentry/node';
 
 Sentry.init({
-  dsn: "https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736",
+	dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
 
-  // Send structured logs to Sentry
-  enableLogs: true,
+	// Send structured logs to Sentry
+	enableLogs: true
 });
 ```
 
@@ -858,11 +854,11 @@ Sentry.init({
 
 ```javascript
 Sentry.init({
-  dsn: "https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736",
-  integrations: [
-    // send console.log, console.warn, and console.error calls as logs to Sentry
-    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
-  ],
+	dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
+	integrations: [
+		// send console.log, console.warn, and console.error calls as logs to Sentry
+		Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })
+	]
 });
 ```
 
@@ -871,20 +867,20 @@ Sentry.init({
 `logger.fmt` is a template literal function that should be used to bring variables into the structured logs.
 
 ```javascript
-logger.trace("Starting database connection", { database: "users" });
+logger.trace('Starting database connection', { database: 'users' });
 logger.debug(logger.fmt`Cache miss for user: ${userId}`);
-logger.info("Updated profile", { profileId: 345 });
-logger.warn("Rate limit reached for endpoint", {
-  endpoint: "/api/results/",
-  isEnterprise: false,
+logger.info('Updated profile', { profileId: 345 });
+logger.warn('Rate limit reached for endpoint', {
+	endpoint: '/api/results/',
+	isEnterprise: false
 });
-logger.error("Failed to process payment", {
-  orderId: "order_123",
-  amount: 99.99,
+logger.error('Failed to process payment', {
+	orderId: 'order_123',
+	amount: 99.99
 });
-logger.fatal("Database connection pool exhausted", {
-  database: "users",
-  activeConnections: 100,
+logger.fatal('Database connection pool exhausted', {
+	database: 'users',
+	activeConnections: 100
 });
 ```
 

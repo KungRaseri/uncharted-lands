@@ -14,9 +14,7 @@
 	<div class="card preset-filled-surface-100-900 p-8 space-y-6">
 		<div class="flex items-center gap-4">
 			<img class="w-20" src="/logo.png" alt="Uncharted Lands" />
-			<h1 class="text-2xl font-bold">
-				Forgot your password?
-			</h1>
+			<h1 class="text-2xl font-bold">Forgot your password?</h1>
 		</div>
 
 		<form
@@ -32,14 +30,7 @@
 		>
 			<label for="email" class="label">
 				<span>Email address</span>
-				<input
-					id="email"
-					name="email"
-					type="email"
-					autocomplete="email"
-					required
-					class="input"
-				/>
+				<input id="email" name="email" type="email" autocomplete="email" required class="input" />
 			</label>
 
 			<div class="space-y-1">

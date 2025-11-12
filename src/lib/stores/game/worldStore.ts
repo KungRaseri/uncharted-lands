@@ -1,6 +1,6 @@
 /**
  * World Store - Reactive state management for game world data
- * 
+ *
  * Manages current world, regions, and provides actions for loading world data
  */
 
@@ -84,13 +84,13 @@ function createWorldStore() {
 		 * Load world data from server
 		 */
 		async loadWorld(worldId: string, includeRegions: boolean = true): Promise<void> {
-			update(state => ({ ...state, loading: true, error: null }));
+			update((state) => ({ ...state, loading: true, error: null }));
 
 			try {
 				const response = await requestWorldData({ worldId, includeRegions });
 
 				if (response.success && response.world) {
-					update(state => ({
+					update((state) => ({
 						...state,
 						currentWorld: response.world!,
 						regions: response.regions || [],
@@ -102,7 +102,7 @@ function createWorldStore() {
 				}
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-				update(state => ({
+				update((state) => ({
 					...state,
 					loading: false,
 					error: errorMessage
@@ -115,7 +115,7 @@ function createWorldStore() {
 		 * Load detailed region data with tiles and plots
 		 */
 		async loadRegion(regionId: string, includeTiles: boolean = true): Promise<RegionWithTiles> {
-			update(state => ({ ...state, loading: true, error: null }));
+			update((state) => ({ ...state, loading: true, error: null }));
 
 			try {
 				const response = await requestRegionData({ regionId, includeTiles });
@@ -134,7 +134,7 @@ function createWorldStore() {
 					};
 
 					// Cache the loaded region
-					update(state => {
+					update((state) => {
 						const newLoadedRegions = new Map(state.loadedRegions);
 						newLoadedRegions.set(regionId, regionData);
 						return {
@@ -151,7 +151,7 @@ function createWorldStore() {
 				}
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-				update(state => ({
+				update((state) => ({
 					...state,
 					loading: false,
 					error: errorMessage
@@ -164,7 +164,7 @@ function createWorldStore() {
 		 * Set world directly (useful after creation)
 		 */
 		setWorld(world: WorldInfo, regions?: RegionInfo[]): void {
-			update(state => ({
+			update((state) => ({
 				...state,
 				currentWorld: world,
 				regions: regions || state.regions,
@@ -189,14 +189,14 @@ function createWorldStore() {
 		 * Set loading state
 		 */
 		setLoading(loading: boolean): void {
-			update(state => ({ ...state, loading }));
+			update((state) => ({ ...state, loading }));
 		},
 
 		/**
 		 * Set error
 		 */
 		setError(error: string | null): void {
-			update(state => ({ ...state, error }));
+			update((state) => ({ ...state, error }));
 		},
 
 		/**
@@ -204,7 +204,7 @@ function createWorldStore() {
 		 */
 		getRegion(regionId: string): RegionWithTiles | undefined {
 			let region: RegionWithTiles | undefined;
-			update(state => {
+			update((state) => {
 				region = state.loadedRegions.get(regionId);
 				return state;
 			});
@@ -216,27 +216,12 @@ function createWorldStore() {
 export const worldStore = createWorldStore();
 
 // Derived stores for convenience
-export const currentWorld = derived(
-	worldStore,
-	$world => $world.currentWorld
-);
+export const currentWorld = derived(worldStore, ($world) => $world.currentWorld);
 
-export const worldRegions = derived(
-	worldStore,
-	$world => $world.regions
-);
+export const worldRegions = derived(worldStore, ($world) => $world.regions);
 
-export const worldLoading = derived(
-	worldStore,
-	$world => $world.loading
-);
+export const worldLoading = derived(worldStore, ($world) => $world.loading);
 
-export const worldError = derived(
-	worldStore,
-	$world => $world.error
-);
+export const worldError = derived(worldStore, ($world) => $world.error);
 
-export const hasWorld = derived(
-	worldStore,
-	$world => $world.currentWorld !== null
-);
+export const hasWorld = derived(worldStore, ($world) => $world.currentWorld !== null);

@@ -2,7 +2,9 @@
 	import { Github } from 'lucide-svelte';
 </script>
 
-<footer class="hidden sm:block p-5 space-y-3 justify-center items-center bg-surface-100 dark:bg-surface-800">
+<footer
+	class="hidden sm:block p-5 space-y-3 justify-center items-center bg-surface-100 dark:bg-surface-800"
+>
 	<div class="w-fit mx-auto">
 		<a href="https://github.com/redsyndicate/browser-game" class="">
 			<span class="sr-only">GitHub</span>
@@ -15,7 +17,7 @@
 			<a
 				href="/game"
 				class="
-					btn rounded-md 
+					btn rounded-md
 					hover:bg-primary-500
 					"
 			>
@@ -27,7 +29,7 @@
 			<a
 				href="/forum"
 				class="
-					btn rounded-md 
+					btn rounded-md
 					hover:bg-primary-500
 					"
 			>
@@ -39,7 +41,7 @@
 			<a
 				href="/kb"
 				class="
-					btn rounded-md 
+					btn rounded-md
 					hover:bg-primary-500
 					"
 			>
@@ -51,7 +53,7 @@
 			<a
 				href="/support"
 				class="
-					btn rounded-md 
+					btn rounded-md
 					hover:bg-primary-500
 					"
 			>

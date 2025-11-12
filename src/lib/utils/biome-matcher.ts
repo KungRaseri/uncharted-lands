@@ -33,8 +33,7 @@ export function findBiomeForTile(
 	if (matches.length === 0) {
 		matches = biomes.filter(
 			(biome) =>
-				normalizedPrecip >= biome.precipitationMin &&
-				normalizedPrecip <= biome.precipitationMax
+				normalizedPrecip >= biome.precipitationMin && normalizedPrecip <= biome.precipitationMax
 		);
 	}
 
@@ -94,18 +93,18 @@ export function getBiomeNameForPreview(
 
 	// Find matching biome (uses actual ranges, not normalized)
 	const biome = findBiomeForTile(precipInRange, tempInRange);
-	
+
 	// Debug logging - sample every 100th tile to avoid spam
 	if (Math.random() < 0.01) {
-		console.log('[BIOME DEBUG]', { 
-			elevation, 
-			precipitation: precipitation.toFixed(3), 
-			temperature: temperature.toFixed(3), 
+		console.log('[BIOME DEBUG]', {
+			elevation,
+			precipitation: precipitation.toFixed(3),
+			temperature: temperature.toFixed(3),
 			precipInRange: precipInRange.toFixed(2),
 			tempInRange: tempInRange.toFixed(2),
 			biomeName: biome?.name || 'Unknown'
 		});
 	}
-	
+
 	return biome?.name || 'Unknown';
 }

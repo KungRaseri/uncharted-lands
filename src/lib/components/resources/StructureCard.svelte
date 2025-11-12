@@ -2,7 +2,10 @@
 	import type { StructureWithRelations } from '$lib/types/api';
 	import { getResourceIcon, getBuildingName } from '$lib/utils/resource-production';
 
-	let { structure, onUpgrade }: { structure: StructureWithRelations; onUpgrade?: (structureId: string) => void } = $props();
+	let {
+		structure,
+		onUpgrade
+	}: { structure: StructureWithRelations; onUpgrade?: (structureId: string) => void } = $props();
 
 	// Get structure display info
 	async function getStructureDisplay() {
@@ -100,11 +103,7 @@
 
 			<!-- Upgrade Button -->
 			{#if onUpgrade}
-				<button
-					class="btn variant-filled-primary w-full"
-					onclick={handleUpgrade}
-					type="button"
-				>
+				<button class="btn variant-filled-primary w-full" onclick={handleUpgrade} type="button">
 					Upgrade Structure
 				</button>
 			{/if}
@@ -126,7 +125,9 @@
 
 <style>
 	.structure-card {
-		transition: transform 0.2s ease, box-shadow 0.2s ease;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
 	}
 
 	.structure-card:hover {

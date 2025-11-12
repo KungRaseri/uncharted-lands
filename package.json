@@ -23,11 +23,7 @@
 		"postinstall": "node scripts/patch-skeleton.js || true"
 	},
 	"lint-staged": {
-		"*.{ts,svelte}": [
-			"prettier --write",
-			"eslint --fix"
-		],
-		"*.{json,md,css}": [
+		"*.{ts,svelte,json,md,css}": [
 			"prettier --write"
 		]
 	},

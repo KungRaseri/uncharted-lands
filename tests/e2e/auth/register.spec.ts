@@ -1,6 +1,6 @@
 /**
  * E2E Tests: User Registration
- * 
+ *
  * Tests the complete user registration flow including:
  * - Successful registration
  * - Validation errors
@@ -10,245 +10,251 @@
 
 import { test, expect } from '@playwright/test';
 import {
-    TEST_USERS,
-    registerUser,
-    assertRedirectedToHome,
-    assertErrorMessage,
-    assertInputErrors,
-    generateUniqueEmail,
-    isAuthenticated
+	TEST_USERS,
+	registerUser,
+	assertRedirectedToHome,
+	assertErrorMessage,
+	assertInputErrors,
+	generateUniqueEmail,
+	isAuthenticated
 } from './auth.helpers';
 
 test.describe('Registration', () => {
-    test.describe('Successful Registration', () => {
-        test('should register a new user with valid credentials', async ({ page }) => {
-            const uniqueEmail = generateUniqueEmail('register');
-            const password = TEST_USERS.VALID.password;
+	test.describe('Successful Registration', () => {
+		test('should register a new user with valid credentials', async ({ page }) => {
+			const uniqueEmail = generateUniqueEmail('register');
+			const password = TEST_USERS.VALID.password;
 
-            await registerUser(page, uniqueEmail, password);
+			await registerUser(page, uniqueEmail, password);
 
-            // Should redirect to home page
-            await assertRedirectedToHome(page);
+			// Should redirect to home page
+			await assertRedirectedToHome(page);
 
-            // Should be authenticated (session cookie set)
-            const authenticated = await isAuthenticated(page);
-            expect(authenticated).toBe(true);
-        });
+			// Should be authenticated (session cookie set)
+			const authenticated = await isAuthenticated(page);
+			expect(authenticated).toBe(true);
+		});
 
-        test('should register and auto-login the user', async ({ page }) => {
-            const uniqueEmail = generateUniqueEmail('autologin');
-            const password = TEST_USERS.VALID.password;
+		test('should register and auto-login the user', async ({ page }) => {
+			const uniqueEmail = generateUniqueEmail('autologin');
+			const password = TEST_USERS.VALID.password;
 
-            await registerUser(page, uniqueEmail, password);
+			await registerUser(page, uniqueEmail, password);
 
-            // Wait for redirect
-            await page.waitForURL('/', { timeout: 5000 });
+			// Wait for redirect
+			await page.waitForURL('/', { timeout: 5000 });
 
-            // Verify user is on authenticated page
-            await expect(page).toHaveURL('/');
-            
-            // Session cookie should exist
-            const cookies = await page.context().cookies();
-            const sessionCookie = cookies.find(c => c.name === 'session');
-            expect(sessionCookie).toBeDefined();
-            expect(sessionCookie?.value).toBeTruthy();
-        });
+			// Verify user is on authenticated page
+			await expect(page).toHaveURL('/');
 
-        test('should set session cookie with correct attributes', async ({ page }) => {
-            const uniqueEmail = generateUniqueEmail('cookie');
-            const password = TEST_USERS.VALID.password;
+			// Session cookie should exist
+			const cookies = await page.context().cookies();
+			const sessionCookie = cookies.find((c) => c.name === 'session');
+			expect(sessionCookie).toBeDefined();
+			expect(sessionCookie?.value).toBeTruthy();
+		});
 
-            await registerUser(page, uniqueEmail, password);
-            await page.waitForURL('/', { timeout: 5000 });
+		test('should set session cookie with correct attributes', async ({ page }) => {
+			const uniqueEmail = generateUniqueEmail('cookie');
+			const password = TEST_USERS.VALID.password;
 
-            const cookies = await page.context().cookies();
-            const sessionCookie = cookies.find(c => c.name === 'session');
+			await registerUser(page, uniqueEmail, password);
+			await page.waitForURL('/', { timeout: 5000 });
 
-            expect(sessionCookie).toBeDefined();
-            expect(sessionCookie?.httpOnly).toBe(true);
-            expect(sessionCookie?.sameSite).toBe('Strict');
-            expect(sessionCookie?.path).toBe('/');
-            // maxAge should be 6 hours (21600 seconds) by default
-            expect(sessionCookie?.expires).toBeGreaterThan(Date.now() / 1000);
-        });
-    });
+			const cookies = await page.context().cookies();
+			const sessionCookie = cookies.find((c) => c.name === 'session');
 
-    test.describe('Validation Errors', () => {
-        test('should show error for password less than 16 characters', async ({ page }) => {
-            await page.goto('/register');
-            await page.waitForLoadState('networkidle');
+			expect(sessionCookie).toBeDefined();
+			expect(sessionCookie?.httpOnly).toBe(true);
+			expect(sessionCookie?.sameSite).toBe('Strict');
+			expect(sessionCookie?.path).toBe('/');
+			// maxAge should be 6 hours (21600 seconds) by default
+			expect(sessionCookie?.expires).toBeGreaterThan(Date.now() / 1000);
+		});
+	});
 
-            await page.fill('input[name="email"]', TEST_USERS.SHORT_PASSWORD.email);
-            await page.fill('input[name="password"]', TEST_USERS.SHORT_PASSWORD.password);
-            await page.click('button[type="submit"]');
+	test.describe('Validation Errors', () => {
+		test('should show error for password less than 16 characters', async ({ page }) => {
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
 
-            // Should show error message about password length
-            await assertErrorMessage(page, 'Password must be 16 or more characters');
-            
-            // Should still be on registration page
-            await expect(page).toHaveURL(/\/register/);
-        });
+			await page.fill('input[name="email"]', TEST_USERS.SHORT_PASSWORD.email);
+			await page.fill('input[name="password"]', TEST_USERS.SHORT_PASSWORD.password);
+			await page.click('button[type="submit"]');
 
-        test('should show error for empty email', async ({ page }) => {
-            await page.goto('/register');
-            await page.waitForLoadState('networkidle');
+			// Should show error message about password length
+			await assertErrorMessage(page, 'Password must be 16 or more characters');
 
-            // Try to submit with empty email
-            await page.fill('input[name="password"]', TEST_USERS.VALID.password);
-            await page.click('button[type="submit"]');
+			// Should still be on registration page
+			await expect(page).toHaveURL(/\/register/);
+		});
 
-            // HTML5 validation should prevent submission
-            const emailInput = page.locator('input[name="email"]');
-            const validationMessage = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage);
-            expect(validationMessage).toBeTruthy();
-        });
+		test('should show error for empty email', async ({ page }) => {
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
 
-        test('should show error for empty password', async ({ page }) => {
-            await page.goto('/register');
-            await page.waitForLoadState('networkidle');
+			// Try to submit with empty email
+			await page.fill('input[name="password"]', TEST_USERS.VALID.password);
+			await page.click('button[type="submit"]');
 
-            // Try to submit with empty password
-            await page.fill('input[name="email"]', generateUniqueEmail());
-            await page.click('button[type="submit"]');
+			// HTML5 validation should prevent submission
+			const emailInput = page.locator('input[name="email"]');
+			const validationMessage = await emailInput.evaluate(
+				(el: HTMLInputElement) => el.validationMessage
+			);
+			expect(validationMessage).toBeTruthy();
+		});
 
-            // HTML5 validation should prevent submission
-            const passwordInput = page.locator('input[name="password"]');
-            const validationMessage = await passwordInput.evaluate((el: HTMLInputElement) => el.validationMessage);
-            expect(validationMessage).toBeTruthy();
-        });
+		test('should show error for empty password', async ({ page }) => {
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
 
-        test('should show error for invalid email format', async ({ page }) => {
-            await page.goto('/register');
-            await page.waitForLoadState('networkidle');
+			// Try to submit with empty password
+			await page.fill('input[name="email"]', generateUniqueEmail());
+			await page.click('button[type="submit"]');
 
-            await page.fill('input[name="email"]', 'not-an-email');
-            await page.fill('input[name="password"]', TEST_USERS.VALID.password);
-            await page.click('button[type="submit"]');
+			// HTML5 validation should prevent submission
+			const passwordInput = page.locator('input[name="password"]');
+			const validationMessage = await passwordInput.evaluate(
+				(el: HTMLInputElement) => el.validationMessage
+			);
+			expect(validationMessage).toBeTruthy();
+		});
 
-            // HTML5 validation should catch this
-            const emailInput = page.locator('input[name="email"]');
-            const validationMessage = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage);
-            expect(validationMessage).toBeTruthy();
-        });
+		test('should show error for invalid email format', async ({ page }) => {
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
 
-        test('should highlight inputs with error styling when validation fails', async ({ page }) => {
-            await page.goto('/register');
-            await page.waitForLoadState('networkidle');
+			await page.fill('input[name="email"]', 'not-an-email');
+			await page.fill('input[name="password"]', TEST_USERS.VALID.password);
+			await page.click('button[type="submit"]');
 
-            await page.fill('input[name="email"]', generateUniqueEmail());
-            await page.fill('input[name="password"]', 'short'); // Too short
-            await page.click('button[type="submit"]');
+			// HTML5 validation should catch this
+			const emailInput = page.locator('input[name="email"]');
+			const validationMessage = await emailInput.evaluate(
+				(el: HTMLInputElement) => el.validationMessage
+			);
+			expect(validationMessage).toBeTruthy();
+		});
 
-            // Wait for error state
-            await page.waitForSelector('.input-error', { timeout: 5000 });
-            
-            await assertInputErrors(page);
-        });
-    });
+		test('should highlight inputs with error styling when validation fails', async ({ page }) => {
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
 
-    test.describe('Duplicate Account Handling', () => {
-        test('should show error when registering with existing email', async ({ page }) => {
-            const email = generateUniqueEmail('duplicate');
-            const password = TEST_USERS.VALID.password;
+			await page.fill('input[name="email"]', generateUniqueEmail());
+			await page.fill('input[name="password"]', 'short'); // Too short
+			await page.click('button[type="submit"]');
 
-            // First registration
-            await registerUser(page, email, password);
-            await page.waitForURL('/', { timeout: 5000 });
+			// Wait for error state
+			await page.waitForSelector('.input-error', { timeout: 5000 });
 
-            // Clear session and try to register again with same email
-            await page.context().clearCookies();
-            await registerUser(page, email, password);
+			await assertInputErrors(page);
+		});
+	});
 
-            // Should show error about existing account
-            await assertErrorMessage(page, 'Please enter the account information again');
-            
-            // Should stay on registration page
-            await expect(page).toHaveURL(/\/register/);
-        });
-    });
+	test.describe('Duplicate Account Handling', () => {
+		test('should show error when registering with existing email', async ({ page }) => {
+			const email = generateUniqueEmail('duplicate');
+			const password = TEST_USERS.VALID.password;
 
-    test.describe('UI Elements', () => {
-        test('should display registration form with all required elements', async ({ page }) => {
-            await page.goto('/register');
-            await page.waitForLoadState('networkidle');
+			// First registration
+			await registerUser(page, email, password);
+			await page.waitForURL('/', { timeout: 5000 });
 
-            // Check for logo
-            await expect(page.locator('img[alt="Uncharted Lands"]')).toBeVisible();
+			// Clear session and try to register again with same email
+			await page.context().clearCookies();
+			await registerUser(page, email, password);
 
-            // Check for heading
-            await expect(page.locator('h1')).toContainText('Register your account');
+			// Should show error about existing account
+			await assertErrorMessage(page, 'Please enter the account information again');
 
-            // Check for email input
-            const emailInput = page.locator('input[name="email"]');
-            await expect(emailInput).toBeVisible();
-            await expect(emailInput).toHaveAttribute('type', 'email');
-            await expect(emailInput).toHaveAttribute('required');
+			// Should stay on registration page
+			await expect(page).toHaveURL(/\/register/);
+		});
+	});
 
-            // Check for password input
-            const passwordInput = page.locator('input[name="password"]');
-            await expect(passwordInput).toBeVisible();
-            await expect(passwordInput).toHaveAttribute('type', 'password');
-            await expect(passwordInput).toHaveAttribute('required');
+	test.describe('UI Elements', () => {
+		test('should display registration form with all required elements', async ({ page }) => {
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
 
-            // Check for submit button
-            const submitButton = page.locator('button[type="submit"]');
-            await expect(submitButton).toBeVisible();
-            await expect(submitButton).toContainText('Register');
-        });
+			// Check for logo
+			await expect(page.locator('img[alt="Uncharted Lands"]')).toBeVisible();
 
-        test('should have proper input labels', async ({ page }) => {
-            await page.goto('/register');
-            await page.waitForLoadState('networkidle');
+			// Check for heading
+			await expect(page.locator('h1')).toContainText('Register your account');
 
-            // Email label
-            const emailLabel = page.locator('label[for="email"]');
-            await expect(emailLabel).toBeVisible();
-            await expect(emailLabel).toContainText('Email address');
+			// Check for email input
+			const emailInput = page.locator('input[name="email"]');
+			await expect(emailInput).toBeVisible();
+			await expect(emailInput).toHaveAttribute('type', 'email');
+			await expect(emailInput).toHaveAttribute('required');
 
-            // Password label
-            const passwordLabel = page.locator('label[for="password"]');
-            await expect(passwordLabel).toBeVisible();
-            await expect(passwordLabel).toContainText('Password');
-        });
+			// Check for password input
+			const passwordInput = page.locator('input[name="password"]');
+			await expect(passwordInput).toBeVisible();
+			await expect(passwordInput).toHaveAttribute('type', 'password');
+			await expect(passwordInput).toHaveAttribute('required');
 
-        test('should have autocomplete attributes', async ({ page }) => {
-            await page.goto('/register');
-            await page.waitForLoadState('networkidle');
+			// Check for submit button
+			const submitButton = page.locator('button[type="submit"]');
+			await expect(submitButton).toBeVisible();
+			await expect(submitButton).toContainText('Register');
+		});
 
-            const emailInput = page.locator('input[name="email"]');
-            await expect(emailInput).toHaveAttribute('autocomplete', 'email');
+		test('should have proper input labels', async ({ page }) => {
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
 
-            const passwordInput = page.locator('input[name="password"]');
-            await expect(passwordInput).toHaveAttribute('autocomplete', 'current-password');
-        });
-    });
+			// Email label
+			const emailLabel = page.locator('label[for="email"]');
+			await expect(emailLabel).toBeVisible();
+			await expect(emailLabel).toContainText('Email address');
 
-    test.describe('Navigation', () => {
-        test('should be accessible from sign-in page', async ({ page }) => {
-            await page.goto('/sign-in');
-            
-            // Look for a link to register (if it exists)
-            // Note: Add this link if it doesn't exist in your UI
-            const registerLink = page.locator('a[href*="register"]');
-            if (await registerLink.count() > 0) {
-                await registerLink.click();
-                await expect(page).toHaveURL(/\/register/);
-            }
-        });
+			// Password label
+			const passwordLabel = page.locator('label[for="password"]');
+			await expect(passwordLabel).toBeVisible();
+			await expect(passwordLabel).toContainText('Password');
+		});
 
-        test('should redirect to home if already authenticated', async ({ page }) => {
-            // First, register and login
-            const email = generateUniqueEmail('redirect');
-            const password = TEST_USERS.VALID.password;
-            await registerUser(page, email, password);
-            await page.waitForURL('/', { timeout: 5000 });
+		test('should have autocomplete attributes', async ({ page }) => {
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
 
-            // Try to access register page while authenticated
-            await page.goto('/register');
-            
-            // Should redirect to home
-            await page.waitForURL('/', { timeout: 5000 });
-            await expect(page).toHaveURL('/');
-        });
-    });
+			const emailInput = page.locator('input[name="email"]');
+			await expect(emailInput).toHaveAttribute('autocomplete', 'email');
+
+			const passwordInput = page.locator('input[name="password"]');
+			await expect(passwordInput).toHaveAttribute('autocomplete', 'current-password');
+		});
+	});
+
+	test.describe('Navigation', () => {
+		test('should be accessible from sign-in page', async ({ page }) => {
+			await page.goto('/sign-in');
+
+			// Look for a link to register (if it exists)
+			// Note: Add this link if it doesn't exist in your UI
+			const registerLink = page.locator('a[href*="register"]');
+			if ((await registerLink.count()) > 0) {
+				await registerLink.click();
+				await expect(page).toHaveURL(/\/register/);
+			}
+		});
+
+		test('should redirect to home if already authenticated', async ({ page }) => {
+			// First, register and login
+			const email = generateUniqueEmail('redirect');
+			const password = TEST_USERS.VALID.password;
+			await registerUser(page, email, password);
+			await page.waitForURL('/', { timeout: 5000 });
+
+			// Try to access register page while authenticated
+			await page.goto('/register');
+
+			// Should redirect to home
+			await page.waitForURL('/', { timeout: 5000 });
+			await expect(page).toHaveURL('/');
+		});
+	});
 });

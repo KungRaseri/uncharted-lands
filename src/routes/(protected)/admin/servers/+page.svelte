@@ -9,10 +9,10 @@
 
 	// State for delete confirmation modal
 	let deleteModalOpen = $state(false);
-	let serverToDelete = $state<typeof data.servers[0] | null>(null);
+	let serverToDelete = $state<(typeof data.servers)[0] | null>(null);
 	let isDeleting = $state(false);
 
-	function openDeleteModal(server: typeof data.servers[0]) {
+	function openDeleteModal(server: (typeof data.servers)[0]) {
 		serverToDelete = server;
 		deleteModalOpen = true;
 	}
@@ -27,8 +27,8 @@
 
 <div class="space-y-4">
 	<!-- Header -->
-	<PageHeader 
-		title="Servers" 
+	<PageHeader
+		title="Servers"
 		description="Manage game servers and their configurations"
 		icon={Server}
 	>
@@ -58,7 +58,7 @@
 	<!-- Servers List -->
 	<div class="card preset-filled-surface-100-900">
 		{#if data.servers.length === 0}
-			<EmptyState 
+			<EmptyState
 				icon={Server}
 				title="No servers yet"
 				message="Create your first server to get started"
@@ -88,7 +88,13 @@
 								<td>{server.hostname || 'N/A'}</td>
 								<td>{server.port || 'N/A'}</td>
 								<td>
-									<span class="badge {server.status === 'ONLINE' ? 'preset-filled-success-500' : server.status === 'MAINTENANCE' ? 'preset-filled-warning-500' : 'preset-filled-error-500'}">
+									<span
+										class="badge {server.status === 'ONLINE'
+											? 'preset-filled-success-500'
+											: server.status === 'MAINTENANCE'
+												? 'preset-filled-warning-500'
+												: 'preset-filled-error-500'}"
+									>
 										{server.status}
 									</span>
 								</td>
@@ -140,18 +146,29 @@
 	<div class="modal-backdrop" onclick={closeDeleteModal} role="presentation">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="modal preset-filled-surface-50-950 w-full max-w-md" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" tabindex="-1">
+		<div
+			class="modal preset-filled-surface-50-950 w-full max-w-md"
+			onclick={(e) => e.stopPropagation()}
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="delete-modal-title"
+			tabindex="-1"
+		>
 			<header class="modal-header">
 				<h3 class="h3" id="delete-modal-title">Delete Server</h3>
 			</header>
 			<section class="modal-body space-y-4">
 				<p>Are you sure you want to delete the server <strong>{serverToDelete.name}</strong>?</p>
-				
+
 				{#if serverToDelete.worlds && serverToDelete.worlds.length > 0}
 					<aside class="alert preset-filled-warning-500 rounded-md">
 						<div class="alert-message">
-							<p class="font-semibold">Warning: This server has {serverToDelete.worlds.length} world(s)</p>
-							<p class="text-sm">You must delete or reassign all worlds before deleting this server.</p>
+							<p class="font-semibold">
+								Warning: This server has {serverToDelete.worlds.length} world(s)
+							</p>
+							<p class="text-sm">
+								You must delete or reassign all worlds before deleting this server.
+							</p>
 						</div>
 					</aside>
 				{:else}
@@ -163,16 +180,16 @@
 				{/if}
 			</section>
 			<footer class="modal-footer">
-				<button 
-					type="button" 
-					class="btn preset-tonal-surface-500 rounded-md" 
+				<button
+					type="button"
+					class="btn preset-tonal-surface-500 rounded-md"
 					onclick={closeDeleteModal}
 					disabled={isDeleting}
 				>
 					Cancel
 				</button>
-				<form 
-					method="POST" 
+				<form
+					method="POST"
 					action="?/delete"
 					use:enhance={() => {
 						isDeleting = true;
@@ -184,8 +201,8 @@
 					}}
 				>
 					<input type="hidden" name="serverId" value={serverToDelete.id} />
-					<button 
-						type="submit" 
+					<button
+						type="submit"
 						class="btn preset-filled-error-500 rounded-md"
 						disabled={isDeleting || (serverToDelete.worlds && serverToDelete.worlds.length > 0)}
 					>

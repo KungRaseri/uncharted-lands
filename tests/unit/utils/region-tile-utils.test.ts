@@ -67,10 +67,7 @@ describe('region-tile-utils', () => {
 				temperature: 0.7,
 				type: 'LAND',
 				Biome: { name: 'Grassland' },
-				Plots: [
-					{ Settlement: undefined },
-					{ Settlement: { id: '123' } }
-				]
+				Plots: [{ Settlement: undefined }, { Settlement: { id: '123' } }]
 			};
 
 			const result = getRegionTileTooltip(tile, 2, 3);
@@ -86,10 +83,7 @@ describe('region-tile-utils', () => {
 				temperature: 0.6,
 				type: 'LAND',
 				Biome: { name: 'Plains' },
-				Plots: [
-					{ Settlement: undefined },
-					{ Settlement: undefined }
-				]
+				Plots: [{ Settlement: undefined }, { Settlement: undefined }]
 			};
 
 			const result = getRegionTileTooltip(tile, 1, 1);
@@ -264,7 +258,7 @@ describe('region-tile-utils', () => {
 
 		it('should handle 100 tiles (typical region)', () => {
 			const tiles: TileData[] = Array.from({ length: 100 }, (_, i) => ({
-				elevation: (i / 100) - 0.5, // Range from -0.5 to 0.495
+				elevation: i / 100 - 0.5, // Range from -0.5 to 0.495
 				precipitation: 0.5,
 				temperature: 0.5,
 				type: i < 50 ? 'OCEAN' : 'LAND'

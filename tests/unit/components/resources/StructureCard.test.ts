@@ -76,7 +76,7 @@ describe('StructureCard.svelte', () => {
 			await waitFor(() => {
 				expect(screen.getByText('House')).toBeDefined();
 			});
-			
+
 			expect(screen.getByText(/basic shelter/i)).toBeDefined();
 		});
 
@@ -286,8 +286,8 @@ describe('StructureCard.svelte', () => {
 
 	describe('Different Structure Types', () => {
 		it('should render farm structure correctly', async () => {
-			const farmStructure: StructureWithRelations = { 
-				...baseStructure, 
+			const farmStructure: StructureWithRelations = {
+				...baseStructure,
 				type: 'farm'
 			};
 			render(StructureCard, { props: { structure: farmStructure } });
@@ -299,8 +299,8 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should render well structure correctly', async () => {
-			const wellStructure: StructureWithRelations = { 
-				...baseStructure, 
+			const wellStructure: StructureWithRelations = {
+				...baseStructure,
 				type: 'well'
 			};
 			render(StructureCard, { props: { structure: wellStructure } });
@@ -312,8 +312,8 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should render lumber mill structure correctly', async () => {
-			const lumberMillStructure: StructureWithRelations = { 
-				...baseStructure, 
+			const lumberMillStructure: StructureWithRelations = {
+				...baseStructure,
 				type: 'lumber_mill'
 			};
 			render(StructureCard, { props: { structure: lumberMillStructure } });
@@ -325,8 +325,8 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should handle unknown structure type with fallback description', async () => {
-			const unknownStructure: any = { 
-				...baseStructure, 
+			const unknownStructure: any = {
+				...baseStructure,
 				type: 'unknown_type'
 			};
 			render(StructureCard, { props: { structure: unknownStructure } });
@@ -363,7 +363,7 @@ describe('StructureCard.svelte', () => {
 				...baseStructure,
 				createdAt: null as any
 			};
-			
+
 			// This test verifies the component doesn't crash with null date
 			expect(() => {
 				render(StructureCard, { props: { structure: structureWithNullDate } });

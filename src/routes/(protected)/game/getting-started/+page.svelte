@@ -9,12 +9,10 @@
 	let selectedWorld = $state('');
 	let username = $state('');
 	let isSubmitting = $state(false);
-	
+
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	let availableWorlds = $derived(
-		data.worlds.filter((w: World) => w.serverId === selectedServer)
-	);
+	let availableWorlds = $derived(data.worlds.filter((w: World) => w.serverId === selectedServer));
 </script>
 
 <div class="min-h-screen flex items-center justify-center p-6">
@@ -66,10 +64,10 @@
 						Choose Server
 					</span>
 				</label>
-				<select 
-					id="server" 
-					name="server" 
-					class="select preset-filled-surface-200-700 w-full" 
+				<select
+					id="server"
+					name="server"
+					class="select preset-filled-surface-200-700 w-full"
 					bind:value={selectedServer}
 					required
 				>
@@ -91,10 +89,10 @@
 						Choose World
 					</span>
 				</label>
-				<select 
-					id="world" 
-					name="world" 
-					class="select preset-filled-surface-200-700 w-full" 
+				<select
+					id="world"
+					name="world"
+					class="select preset-filled-surface-200-700 w-full"
 					bind:value={selectedWorld}
 					disabled={!selectedServer}
 					required
@@ -108,7 +106,8 @@
 				</select>
 				<p class="text-xs text-surface-600 dark:text-surface-400 mt-1">
 					{#if selectedServer}
-						{availableWorlds.length} world{availableWorlds.length === 1 ? '' : 's'} available on this server
+						{availableWorlds.length} world{availableWorlds.length === 1 ? '' : 's'} available on this
+						server
 					{:else}
 						Choose a server to see available worlds
 					{/if}
@@ -123,11 +122,11 @@
 						Choose Username
 					</span>
 				</label>
-				<input 
-					id="username" 
-					type="text" 
-					name="username" 
-					class="input preset-filled-surface-200-700 w-full" 
+				<input
+					id="username"
+					type="text"
+					name="username"
+					class="input preset-filled-surface-200-700 w-full"
 					bind:value={username}
 					placeholder="Enter your username..."
 					required

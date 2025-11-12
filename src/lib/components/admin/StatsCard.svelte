@@ -25,7 +25,9 @@
 <svelte:element
 	this={ElementType}
 	{href}
-	class="card preset-filled-surface-100-900 p-6 {href ? 'hover:preset-tonal-primary-500 transition-colors' : ''}"
+	class="card preset-filled-surface-100-900 p-6 {href
+		? 'hover:preset-tonal-primary-500 transition-colors'
+		: ''}"
 >
 	<div class="flex items-start justify-between">
 		<div>

@@ -1,6 +1,6 @@
 /**
  * Socket.IO Client Store for Uncharted Lands
- * 
+ *
  * Manages WebSocket connection to the game server for real-time updates
  */
 
@@ -51,7 +51,7 @@ function createSocketStore() {
 			const url = serverUrl || WS_URL;
 			console.log(`[SOCKET] Connecting to ${url}...`);
 
-			update(state => ({ ...state, connectionState: 'connecting' }));
+			update((state) => ({ ...state, connectionState: 'connecting' }));
 
 			socket = io(url, {
 				reconnection: true,
@@ -68,7 +68,7 @@ function createSocketStore() {
 			socket.on('connect', () => {
 				console.log('[SOCKET] Connected:', socket?.id);
 				reconnectAttempts = 0;
-				update(state => ({
+				update((state) => ({
 					...state,
 					socket,
 					connectionState: 'connected',
@@ -85,9 +85,9 @@ function createSocketStore() {
 			socket.on('connect_error', (error) => {
 				reconnectAttempts++;
 				console.error('[SOCKET] Connection error:', error.message);
-				
+
 				if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-					update(state => ({
+					update((state) => ({
 						...state,
 						connectionState: 'error',
 						error: `Failed to connect after ${MAX_RECONNECT_ATTEMPTS} attempts`
@@ -98,7 +98,7 @@ function createSocketStore() {
 			// Disconnected
 			socket.on('disconnect', (reason) => {
 				console.log('[SOCKET] Disconnected:', reason);
-				update(state => ({
+				update((state) => ({
 					...state,
 					connectionState: 'disconnected',
 					socket: null
@@ -112,10 +112,10 @@ function createSocketStore() {
 
 			// Ping/pong for latency monitoring
 			socket.on('ping', () => {
-				update(state => ({ ...state, lastPing: Date.now() }));
+				update((state) => ({ ...state, lastPing: Date.now() }));
 			});
 
-			update(state => ({ ...state, socket }));
+			update((state) => ({ ...state, socket }));
 		},
 
 		/**
@@ -176,18 +176,12 @@ export const socketStore = createSocketStore();
 // Derived stores for easier access
 export const isConnected = derived(
 	socketStore,
-	$socket => $socket.connectionState === 'connected'
+	($socket) => $socket.connectionState === 'connected'
 );
 
-export const connectionState = derived(
-	socketStore,
-	$socket => $socket.connectionState
-);
+export const connectionState = derived(socketStore, ($socket) => $socket.connectionState);
 
-export const connectionError = derived(
-	socketStore,
-	$socket => $socket.error
-);
+export const connectionError = derived(socketStore, ($socket) => $socket.error);
 
 /**
  * Game-specific socket actions

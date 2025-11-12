@@ -112,10 +112,10 @@ describe('resource-generator', () => {
 		});
 
 		it('should handle desert conditions', () => {
-			const desertTile = createMockTile({ 
-				elevation: 5, 
-				temperature: 35, 
-				precipitation: 50 
+			const desertTile = createMockTile({
+				elevation: 5,
+				temperature: 35,
+				precipitation: 50
 			});
 			const desertBiome = createMockBiome({
 				solarModifier: 5,
@@ -132,10 +132,10 @@ describe('resource-generator', () => {
 		});
 
 		it('should handle tropical rainforest conditions', () => {
-			const tropicalTile = createMockTile({ 
-				elevation: 2, 
-				temperature: 25, 
-				precipitation: 400 
+			const tropicalTile = createMockTile({
+				elevation: 2,
+				temperature: 25,
+				precipitation: 400
 			});
 			const tropicalBiome = createMockBiome({
 				waterModifier: 5,
@@ -245,10 +245,10 @@ describe('resource-generator', () => {
 
 	describe('food generation', () => {
 		it('should be optimal in temperate conditions', () => {
-			const optimalTile = createMockTile({ 
-				elevation: 5, 
-				temperature: 18, 
-				precipitation: 250 
+			const optimalTile = createMockTile({
+				elevation: 5,
+				temperature: 18,
+				precipitation: 250
 			});
 			const biome = createMockBiome({ foodModifier: 3, solarModifier: 4 });
 
@@ -459,7 +459,7 @@ describe('resource-generator', () => {
 			const resources2 = generatePlotResources(tile, biome);
 
 			// Some resources should be different due to randomness
-			const hasDifference = 
+			const hasDifference =
 				resources1.solar !== resources2.solar ||
 				resources1.wind !== resources2.wind ||
 				resources1.food !== resources2.food;
@@ -493,10 +493,10 @@ describe('resource-generator', () => {
 		});
 
 		it('should handle zero values', () => {
-			const zeroTile = createMockTile({ 
-				elevation: 0, 
-				temperature: 0, 
-				precipitation: 0 
+			const zeroTile = createMockTile({
+				elevation: 0,
+				temperature: 0,
+				precipitation: 0
 			});
 			const biome = createMockBiome();
 

@@ -17,49 +17,49 @@
 
 	<!-- Stats Grid -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-		<StatsCard 
-			label="Total Servers" 
-			value={data.stats.totalServers} 
-			icon={Server} 
-			href="/admin/servers" 
+		<StatsCard
+			label="Total Servers"
+			value={data.stats.totalServers}
+			icon={Server}
+			href="/admin/servers"
 		/>
 
-		<StatsCard 
-			label="Total Worlds" 
-			value={data.stats.totalWorlds} 
-			icon={Globe} 
-			href="/admin/worlds" 
+		<StatsCard
+			label="Total Worlds"
+			value={data.stats.totalWorlds}
+			icon={Globe}
+			href="/admin/worlds"
 		/>
 
-		<StatsCard 
-			label="Total Players" 
-			value={data.stats.totalPlayers} 
-			icon={Users} 
-			href="/admin/players" 
+		<StatsCard
+			label="Total Players"
+			value={data.stats.totalPlayers}
+			icon={Users}
+			href="/admin/players"
 		/>
 
-		<StatsCard 
-			label="Total Regions" 
-			value={data.stats.totalRegions} 
-			icon={MapPin} 
+		<StatsCard
+			label="Total Regions"
+			value={data.stats.totalRegions}
+			icon={MapPin}
 			iconColor="secondary"
-			href="/admin/regions" 
+			href="/admin/regions"
 		/>
 
-		<StatsCard 
-			label="Total Tiles" 
-			value={data.stats.totalTiles} 
-			icon={Grid3x3} 
+		<StatsCard
+			label="Total Tiles"
+			value={data.stats.totalTiles}
+			icon={Grid3x3}
 			iconColor="secondary"
-			href="/admin/tiles" 
+			href="/admin/tiles"
 		/>
 
-		<StatsCard 
-			label="Total Plots" 
-			value={data.stats.totalPlots} 
-			icon={LayoutGrid} 
+		<StatsCard
+			label="Total Plots"
+			value={data.stats.totalPlots}
+			icon={LayoutGrid}
 			iconColor="secondary"
-			href="/admin/plots" 
+			href="/admin/plots"
 		/>
 	</div>
 

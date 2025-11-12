@@ -2,27 +2,27 @@
  * Tile color utilities
  * Consolidated color mapping for biomes, terrain, and elevation
  * Supports multiple visualization modes: satellite, topographical, political, etc.
- * 
+ *
  * IMPORTANT: Elevation values are generated using fractal noise with:
  * - Base amplitude: 1.0
  * - Octaves: 4
  * - Persistence: 0.5
- * 
+ *
  * This results in a theoretical range of approximately [-1.875, 1.875]
  * due to octave accumulation: 1 + 0.5 + 0.25 + 0.125 = 1.875
- * 
+ *
  * In practice, values can exceed 2.0 in rare cases.
  */
 
 /**
  * Map visualization mode
  */
-export type MapViewMode = 
-	| 'satellite'      // Realistic biome colors (default)
-	| 'topographical'  // Elevation-based height map
-	| 'temperature'    // Temperature gradient visualization
-	| 'precipitation'  // Precipitation/moisture visualization
-	| 'political';     // Simplified colors for settlements/claims
+export type MapViewMode =
+	| 'satellite' // Realistic biome colors (default)
+	| 'topographical' // Elevation-based height map
+	| 'temperature' // Temperature gradient visualization
+	| 'precipitation' // Precipitation/moisture visualization
+	| 'political'; // Simplified colors for settlements/claims
 
 /**
  * Biome type definition
@@ -62,12 +62,12 @@ export const BIOME_COLORS: Record<BiomeType, string> = {
 	SAVANNA: 'rgb(200, 170, 80)', // Golden grassland
 	GRASSLAND_TEMPERATE: 'rgb(120, 180, 80)', // Bright grass green
 	DESERT_COLD: 'rgb(190, 180, 160)', // Gray-tan
-	DESERT_SUBTROPICAL: 'rgb(230, 200, 140)', // Sandy yellow
+	DESERT_SUBTROPICAL: 'rgb(230, 200, 140)' // Sandy yellow
 } as const;
 
 /**
  * Get color for ocean based on depth (elevation)
- * 
+ *
  * @param elevation - Elevation value (negative for ocean)
  * @returns RGB color string
  */
@@ -80,7 +80,7 @@ export function getOceanColor(elevation: number): string {
 
 /**
  * Get color for beach/coastal areas
- * 
+ *
  * @returns RGB color string
  */
 export function getBeachColor(): string {
@@ -90,7 +90,7 @@ export function getBeachColor(): string {
 /**
  * Get fallback color based on elevation
  * Used when biome type is unknown or not in the mapping
- * 
+ *
  * @param elevation - Elevation value (approximately in range [-2, 2])
  * @returns RGB color string
  */
@@ -104,7 +104,7 @@ export function getElevationFallbackColor(elevation: number): string {
 /**
  * Get color based on elevation value for admin/preview maps
  * These colors roughly correspond to common biomes at those elevations
- * 
+ *
  * @param elevation - Elevation value (approximately in range [-2, 2])
  * @returns Hex color string
  */
@@ -125,7 +125,7 @@ export function getElevationColor(elevation: number): string {
 
 /**
  * Get terrain type name from elevation value
- * 
+ *
  * @param elevation - Elevation value (approximately in range [-2, 2])
  * @returns Human-readable terrain type name
  */
@@ -160,7 +160,7 @@ export const ELEVATION_THRESHOLDS = {
 	HILLS: 0.65,
 	MOUNTAINS: 0.8,
 	HIGH_MOUNTAINS: 1,
-	ALPINE_PEAKS: 1.5,
+	ALPINE_PEAKS: 1.5
 } as const;
 
 /**
@@ -179,13 +179,13 @@ export const TERRAIN_COLORS = {
 	MOUNTAINS: '#969696',
 	HIGH_MOUNTAINS: '#c0c0c0',
 	ALPINE_PEAKS: '#e8e8e8',
-	EXTREME_PEAKS: '#ffffff',
+	EXTREME_PEAKS: '#ffffff'
 } as const;
 
 /**
  * Get terrain classification data
  * Returns both color and type name
- * 
+ *
  * @param elevation - Elevation value
  * @returns Object with color and type
  */
@@ -195,31 +195,27 @@ export function getTerrainData(elevation: number): {
 } {
 	return {
 		color: getElevationColor(elevation),
-		type: getTerrainType(elevation),
+		type: getTerrainType(elevation)
 	};
 }
 
 /**
  * Get tile color based on biome type and elevation
  * Main function that determines tile color using elevation, biome, and tile type
- * 
+ *
  * Priority order:
  * 1. Tile type OCEAN or negative elevation → ocean colors
  * 2. Low elevation (0-0.15) → beach color
  * 3. Special biome names (Deep Ocean, Ocean, Beach) → corresponding colors
  * 4. Known biome types → biome-specific colors
  * 5. Unknown biomes → elevation fallback colors
- * 
+ *
  * @param elevation - Tile elevation value
  * @param biomeName - Name of the biome (including special cases like "Deep Ocean", "Ocean", "Beach")
  * @param type - Type of tile (OCEAN or LAND)
  * @returns RGB color string
  */
-export function getTileColor(
-	elevation: number,
-	biomeName: string,
-	type: TileType
-): string {
+export function getTileColor(elevation: number, biomeName: string, type: TileType): string {
 	// Priority 1: OCEAN type or negative elevation always gets ocean colors
 	if (type === 'OCEAN' || elevation < 0) {
 		return getOceanColor(elevation);
@@ -234,7 +230,7 @@ export function getTileColor(
 	if (biomeName === 'Deep Ocean' || biomeName === 'Ocean') {
 		return getOceanColor(elevation);
 	}
-	
+
 	if (biomeName === 'Beach') {
 		return getBeachColor();
 	}
@@ -246,9 +242,9 @@ export function getTileColor(
 
 	// Priority 5: Fallback to elevation-based coloring for unknown biomes
 	// Debug logging for unknown biomes - remove after verification
-	console.warn('[TILE COLOR] Unknown biome, using fallback:', { 
-		biomeName, 
-		elevation, 
+	console.warn('[TILE COLOR] Unknown biome, using fallback:', {
+		biomeName,
+		elevation,
 		type,
 		availableBiomes: Object.keys(BIOME_COLORS)
 	});
@@ -259,14 +255,14 @@ export function getTileColor(
 /**
  * Get color based on temperature value
  * Temperature ranges from approximately -1 to 1 in the noise generation
- * 
+ *
  * @param temperature - Temperature value
  * @returns Hex color string
  */
 export function getTemperatureColor(temperature: number): string {
 	// Normalize temperature to 0-1 range (assuming input is roughly -1 to 1)
 	const normalized = (temperature + 1) / 2;
-	
+
 	if (normalized < 0.15) return '#0d1f4d'; // Frigid - deep blue
 	if (normalized < 0.3) return '#2e5c8a'; // Very cold - blue
 	if (normalized < 0.45) return '#4a9eff'; // Cold - light blue
@@ -280,7 +276,7 @@ export function getTemperatureColor(temperature: number): string {
 /**
  * Get color based on precipitation value
  * Precipitation ranges from approximately 0 to 1 in the noise generation
- * 
+ *
  * @param precipitation - Precipitation value
  * @returns Hex color string
  */
@@ -297,7 +293,7 @@ export function getPrecipitationColor(precipitation: number): string {
 /**
  * Get tile color based on view mode
  * Unified function that handles all visualization modes
- * 
+ *
  * @param viewMode - The visualization mode to use
  * @param elevation - Tile elevation value
  * @param biomeName - Name of the biome
@@ -318,11 +314,11 @@ export function getTileColorByViewMode(
 		case 'satellite':
 			// Realistic biome colors
 			return getTileColor(elevation, biomeName, type);
-			
+
 		case 'topographical':
 			// Elevation-based colors
 			return getElevationColor(elevation);
-			
+
 		case 'temperature':
 			// Temperature gradient
 			if (type === 'OCEAN' || elevation < 0) {
@@ -330,7 +326,7 @@ export function getTileColorByViewMode(
 				return getOceanColor(elevation);
 			}
 			return getTemperatureColor(temperature ?? 0);
-			
+
 		case 'precipitation':
 			// Precipitation/moisture gradient
 			if (type === 'OCEAN' || elevation < 0) {
@@ -338,7 +334,7 @@ export function getTileColorByViewMode(
 				return '#1e5a5a';
 			}
 			return getPrecipitationColor(precipitation ?? 0);
-			
+
 		case 'political':
 			// Simplified colors for political boundaries
 			if (type === 'OCEAN' || elevation < 0) {
@@ -348,7 +344,7 @@ export function getTileColorByViewMode(
 				return '#f5deb3'; // Wheat for beach
 			}
 			return '#d2b48c'; // Tan for land
-			
+
 		default:
 			return getTileColor(elevation, biomeName, type);
 	}

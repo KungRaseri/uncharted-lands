@@ -25,13 +25,15 @@ type AuthenticatedAccount = Account & {
 /**
  * Type guard to ensure account exists and has required profile
  */
-export function requireAuth<T extends RequestEvent>(event: T): asserts event is T & { 
-	locals: T['locals'] & { account: AuthenticatedAccount } 
+export function requireAuth<T extends RequestEvent>(
+	event: T
+): asserts event is T & {
+	locals: T['locals'] & { account: AuthenticatedAccount };
 } {
 	if (!event.locals.account) {
 		throw redirect(302, '/sign-in');
 	}
-	
+
 	if (!event.locals.account.profile) {
 		throw redirect(302, '/game/getting-started');
 	}
@@ -40,8 +42,10 @@ export function requireAuth<T extends RequestEvent>(event: T): asserts event is 
 /**
  * Type guard to ensure account exists (profile can be null)
  */
-export function requireAccount<T extends RequestEvent>(event: T): asserts event is T & { 
-	locals: T['locals'] & { account: Account & { profile: PlayerProfile | null } } 
+export function requireAccount<T extends RequestEvent>(
+	event: T
+): asserts event is T & {
+	locals: T['locals'] & { account: Account & { profile: PlayerProfile | null } };
 } {
 	if (!event.locals.account) {
 		throw redirect(302, '/sign-in');

@@ -1,46 +1,49 @@
-import { API_URL } from "$lib/config";
-import { logger } from "$lib/utils/logger";
-import { redirect } from "@sveltejs/kit"
-import type { PageServerLoad } from "./$types"
+import { API_URL } from '$lib/config';
+import { logger } from '$lib/utils/logger';
+import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, depends, cookies }) => {
-    // Mark this data as dependent on game state changes
-    // When tick occurs, calling invalidate('game:settlements') will refresh this
-    depends('game:settlements');
-    depends('game:data');
+	// Mark this data as dependent on game state changes
+	// When tick occurs, calling invalidate('game:settlements') will refresh this
+	depends('game:settlements');
+	depends('game:data');
 
-    if (!locals.account?.profile) {
-        throw redirect(302, '/game/getting-started')
-    }
+	if (!locals.account?.profile) {
+		throw redirect(302, '/game/getting-started');
+	}
 
-    const sessionToken = cookies.get('session');
+	const sessionToken = cookies.get('session');
 
-    // Fetch settlements from REST API
-    const response = await fetch(`${API_URL}/settlements?playerProfileId=${locals.account.profile.id}`, {
-        headers: {
-            'Cookie': `session=${sessionToken}`
-        }
-    });
-    
-    if (!response.ok) {
-        logger.error('[GAME HOME] Failed to fetch settlements', {
-            profileId: locals.account.profile.id,
-            status: response.status
-        });
-        return {
-            settlements: [],
-            lastUpdate: new Date().toISOString()
-        };
-    }
+	// Fetch settlements from REST API
+	const response = await fetch(
+		`${API_URL}/settlements?playerProfileId=${locals.account.profile.id}`,
+		{
+			headers: {
+				Cookie: `session=${sessionToken}`
+			}
+		}
+	);
 
-    const settlements = await response.json();
+	if (!response.ok) {
+		logger.error('[GAME HOME] Failed to fetch settlements', {
+			profileId: locals.account.profile.id,
+			status: response.status
+		});
+		return {
+			settlements: [],
+			lastUpdate: new Date().toISOString()
+		};
+	}
 
-    logger.debug('[GAME HOME] Settlements loaded', {
-        count: settlements.length
-    });
+	const settlements = await response.json();
 
-    return {
-        settlements,
-        lastUpdate: new Date().toISOString()
-    }
-}
+	logger.debug('[GAME HOME] Settlements loaded', {
+		count: settlements.length
+	});
+
+	return {
+		settlements,
+		lastUpdate: new Date().toISOString()
+	};
+};

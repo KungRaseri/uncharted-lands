@@ -422,7 +422,7 @@ describe('PlotCard.svelte', () => {
 	describe('Production Calculations', () => {
 		it('should call calculateProductionRate with correct parameters', async () => {
 			const { calculateProductionRate } = await import('$lib/utils/resource-production');
-			
+
 			render(PlotCard, { props: { plot: basePlot, onHarvest: null } });
 
 			await waitFor(() => {
@@ -448,7 +448,7 @@ describe('PlotCard.svelte', () => {
 
 		it('should call calculateAccumulatedResources with correct parameters', async () => {
 			const { calculateAccumulatedResources } = await import('$lib/utils/resource-production');
-			
+
 			render(PlotCard, { props: { plot: basePlot, onHarvest: null } });
 
 			await waitFor(() => {

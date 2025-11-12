@@ -26,9 +26,10 @@
 			icon: Users
 		}
 	];
-	
+
 	let isActive = $derived.by(() => {
-		return (href: string) => (href === page.url.pathname ? 'bg-primary-500 dark:bg-primary-600' : '');
+		return (href: string) =>
+			href === page.url.pathname ? 'bg-primary-500 dark:bg-primary-600' : '';
 	});
 </script>
 
@@ -38,7 +39,9 @@
 		<a
 			href="/admin"
 			title="Dashboard"
-			class="flex flex-col items-center justify-center p-2 btn btn-sm w-full {isActive('/admin')} hover:bg-surface-200 dark:hover:bg-surface-700 rounded-none"
+			class="flex flex-col items-center justify-center p-2 btn btn-sm w-full {isActive(
+				'/admin'
+			)} hover:bg-surface-200 dark:hover:bg-surface-700 rounded-none"
 		>
 			<LayoutDashboard size={36} />
 			<span class="text-xs mt-1">Dashboard</span>
@@ -52,7 +55,9 @@
 			<a
 				href={railTile.href}
 				title={railTile.title}
-				class="flex flex-col items-center justify-center py-2 px-0 btn btn-sm w-full {isActive(railTile.href)} hover:bg-surface-200 dark:hover:bg-surface-700 rounded-none"
+				class="flex flex-col items-center justify-center py-2 px-0 btn btn-sm w-full {isActive(
+					railTile.href
+				)} hover:bg-surface-200 dark:hover:bg-surface-700 rounded-none"
 			>
 				<IconComponent size={36} />
 				<span class="text-xs mt-1">{railTile.label}</span>

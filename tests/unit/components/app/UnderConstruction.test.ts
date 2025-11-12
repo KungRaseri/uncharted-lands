@@ -138,8 +138,9 @@ describe('UnderConstruction.svelte', () => {
 		it('should have text color variants for dark/light mode', () => {
 			const { container } = render(UnderConstruction);
 			const alertMessage = container.querySelector('.alert-message');
-			const hasTextColors = alertMessage?.className.includes('text-warning-800') && 
-			                      alertMessage?.className.includes('dark:text-warning-100');
+			const hasTextColors =
+				alertMessage?.className.includes('text-warning-800') &&
+				alertMessage?.className.includes('dark:text-warning-100');
 			expect(hasTextColors).toBe(true);
 		});
 	});

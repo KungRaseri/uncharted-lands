@@ -1,187 +1,187 @@
-import { error, fail, redirect } from "@sveltejs/kit"
-import { logger } from "$lib/utils/logger"
-import type { PageServerLoad, Actions, Action } from "./$types"
-import { API_URL } from "$lib/config"
-import type { WorldWithRelations, GameServer } from "$lib/types/api"
+import { error, fail, redirect } from '@sveltejs/kit';
+import { logger } from '$lib/utils/logger';
+import type { PageServerLoad, Actions, Action } from './$types';
+import { API_URL } from '$lib/config';
+import type { WorldWithRelations, GameServer } from '$lib/types/api';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
-    try {
-        const sessionToken = cookies.get('session');
-        
-        logger.debug('[ADMIN WORLD] Loading world details', {
-            worldId: params.id,
-            hasSessionToken: !!sessionToken
-        });
+	try {
+		const sessionToken = cookies.get('session');
 
-        // Retry logic for newly created worlds (race condition mitigation)
-        let response;
-        let retries = 3;
-        let lastError;
-        
-        for (let i = 0; i < retries; i++) {
-            response = await fetch(`${API_URL}/worlds/${params.id}`, {
-                headers: {
-                    'Cookie': `session=${sessionToken}`
-                }
-            });
-            
-            if (response.ok) {
-                break;
-            }
-            
-            lastError = response;
-            
-            // If not found and we have retries left, wait a bit and try again
-            if (response.status === 404 && i < retries - 1) {
-                logger.debug('[ADMIN WORLD] World not found, retrying...', {
-                    worldId: params.id,
-                    attempt: i + 1
-                });
-                await new Promise(resolve => setTimeout(resolve, 150));
-                continue;
-            }
-        }
-        
-        if (!response || !response.ok) {
-            logger.warn('[ADMIN WORLD] World not found after retries', {
-                worldId: params.id,
-                status: response?.status
-            });
-            throw error(404);
-        }
+		logger.debug('[ADMIN WORLD] Loading world details', {
+			worldId: params.id,
+			hasSessionToken: !!sessionToken
+		});
 
-        const world: WorldWithRelations = await response.json();
+		// Retry logic for newly created worlds (race condition mitigation)
+		let response;
+		let retries = 3;
+		let lastError;
 
-        // Load all servers for reassignment dropdown
-        const serversResponse = await fetch(`${API_URL}/servers`, {
-            headers: {
-                'Cookie': `session=${sessionToken}`
-            }
-        });
-        
-        const servers: GameServer[] = serversResponse.ok ? await serversResponse.json() : [];
+		for (let i = 0; i < retries; i++) {
+			response = await fetch(`${API_URL}/worlds/${params.id}`, {
+				headers: {
+					Cookie: `session=${sessionToken}`
+				}
+			});
 
-        // Use stats from API response (_count property added by server)
-        const worldInfo = {
-            landTiles: (world as any)._count?.landTiles || 0,
-            oceanTiles: (world as any)._count?.oceanTiles || 0,
-            settlements: (world as any)._count?.settlements || 0,
-            regions: (world as any)._count?.regions || 0
-        };
+			if (response.ok) {
+				break;
+			}
 
-        logger.info('[ADMIN WORLD] Successfully loaded world', {
-            worldId: params.id,
-            worldName: world.name,
-            serverCount: servers.length
-        });
+			lastError = response;
 
-        return {
-            world,
-            servers,
-            worldInfo
-        }
-    } catch (err) {
-        // Re-throw SvelteKit errors
-        if (err && typeof err === 'object' && 'status' in err) {
-            throw err;
-        }
-        
-        logger.error('[ADMIN WORLD] Failed to load world', err, {
-            worldId: params.id
-        });
-        throw error(500);
-    }
-}
+			// If not found and we have retries left, wait a bit and try again
+			if (response.status === 404 && i < retries - 1) {
+				logger.debug('[ADMIN WORLD] World not found, retrying...', {
+					worldId: params.id,
+					attempt: i + 1
+				});
+				await new Promise((resolve) => setTimeout(resolve, 150));
+				continue;
+			}
+		}
+
+		if (!response || !response.ok) {
+			logger.warn('[ADMIN WORLD] World not found after retries', {
+				worldId: params.id,
+				status: response?.status
+			});
+			throw error(404);
+		}
+
+		const world: WorldWithRelations = await response.json();
+
+		// Load all servers for reassignment dropdown
+		const serversResponse = await fetch(`${API_URL}/servers`, {
+			headers: {
+				Cookie: `session=${sessionToken}`
+			}
+		});
+
+		const servers: GameServer[] = serversResponse.ok ? await serversResponse.json() : [];
+
+		// Use stats from API response (_count property added by server)
+		const worldInfo = {
+			landTiles: (world as any)._count?.landTiles || 0,
+			oceanTiles: (world as any)._count?.oceanTiles || 0,
+			settlements: (world as any)._count?.settlements || 0,
+			regions: (world as any)._count?.regions || 0
+		};
+
+		logger.info('[ADMIN WORLD] Successfully loaded world', {
+			worldId: params.id,
+			worldName: world.name,
+			serverCount: servers.length
+		});
+
+		return {
+			world,
+			servers,
+			worldInfo
+		};
+	} catch (err) {
+		// Re-throw SvelteKit errors
+		if (err && typeof err === 'object' && 'status' in err) {
+			throw err;
+		}
+
+		logger.error('[ADMIN WORLD] Failed to load world', err, {
+			worldId: params.id
+		});
+		throw error(500);
+	}
+};
 
 const update: Action = async ({ request, params, cookies }) => {
-    const data = await request.formData();
-    const name = data.get('name');
-    const serverId = data.get('serverId');
+	const data = await request.formData();
+	const name = data.get('name');
+	const serverId = data.get('serverId');
 
-    if (!name || typeof name !== 'string') {
-        logger.warn('[ADMIN WORLD] Invalid world name', { worldId: params.id });
-        return fail(400, { invalid: true, message: 'World name is required' });
-    }
+	if (!name || typeof name !== 'string') {
+		logger.warn('[ADMIN WORLD] Invalid world name', { worldId: params.id });
+		return fail(400, { invalid: true, message: 'World name is required' });
+	}
 
-    if (!serverId || typeof serverId !== 'string') {
-        logger.warn('[ADMIN WORLD] Invalid server ID', { worldId: params.id });
-        return fail(400, { invalid: true, message: 'Server is required' });
-    }
+	if (!serverId || typeof serverId !== 'string') {
+		logger.warn('[ADMIN WORLD] Invalid server ID', { worldId: params.id });
+		return fail(400, { invalid: true, message: 'Server is required' });
+	}
 
-    try {
-        const sessionToken = cookies.get('session');
-        
-        logger.debug('[ADMIN WORLD] Updating world', {
-            worldId: params.id,
-            name,
-            serverId
-        });
+	try {
+		const sessionToken = cookies.get('session');
 
-        const response = await fetch(`${API_URL}/worlds/${params.id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Cookie': `session=${sessionToken}`
-            },
-            body: JSON.stringify({ name, serverId })
-        });
+		logger.debug('[ADMIN WORLD] Updating world', {
+			worldId: params.id,
+			name,
+			serverId
+		});
 
-        if (!response.ok) {
-            logger.error('[ADMIN WORLD] Failed to update world', {
-                worldId: params.id,
-                status: response.status
-            });
-            return fail(500, { success: false, message: 'Failed to update world' });
-        }
+		const response = await fetch(`${API_URL}/worlds/${params.id}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Cookie: `session=${sessionToken}`
+			},
+			body: JSON.stringify({ name, serverId })
+		});
 
-        logger.info('[ADMIN WORLD] World updated successfully', {
-            worldId: params.id,
-            name
-        });
+		if (!response.ok) {
+			logger.error('[ADMIN WORLD] Failed to update world', {
+				worldId: params.id,
+				status: response.status
+			});
+			return fail(500, { success: false, message: 'Failed to update world' });
+		}
 
-        return { success: true, message: 'World updated successfully' };
-    } catch (err) {
-        logger.error('[ADMIN WORLD] Error updating world', err, {
-            worldId: params.id
-        });
-        return fail(500, { success: false, message: 'Failed to update world' });
-    }
-}
+		logger.info('[ADMIN WORLD] World updated successfully', {
+			worldId: params.id,
+			name
+		});
+
+		return { success: true, message: 'World updated successfully' };
+	} catch (err) {
+		logger.error('[ADMIN WORLD] Error updating world', err, {
+			worldId: params.id
+		});
+		return fail(500, { success: false, message: 'Failed to update world' });
+	}
+};
 
 const deleteWorld: Action = async ({ params, cookies }) => {
-    try {
-        const sessionToken = cookies.get('session');
-        
-        logger.debug('[ADMIN WORLD] Deleting world', { worldId: params.id });
+	try {
+		const sessionToken = cookies.get('session');
 
-        const response = await fetch(`${API_URL}/worlds/${params.id}`, {
-            method: 'DELETE',
-            headers: {
-                'Cookie': `session=${sessionToken}`
-            }
-        });
+		logger.debug('[ADMIN WORLD] Deleting world', { worldId: params.id });
 
-        if (!response.ok) {
-            logger.error('[ADMIN WORLD] Failed to delete world', {
-                worldId: params.id,
-                status: response.status
-            });
-            return fail(500, { success: false, message: 'Failed to delete world' });
-        }
+		const response = await fetch(`${API_URL}/worlds/${params.id}`, {
+			method: 'DELETE',
+			headers: {
+				Cookie: `session=${sessionToken}`
+			}
+		});
 
-        logger.info('[ADMIN WORLD] World deleted successfully', { worldId: params.id });
-        throw redirect(303, '/admin/worlds');
-    } catch (err) {
-        // Re-throw redirects
-        if (err && typeof err === 'object' && 'location' in err) {
-            throw err;
-        }
-        
-        logger.error('[ADMIN WORLD] Error deleting world', err, {
-            worldId: params.id
-        });
-        return fail(500, { success: false, message: 'Failed to delete world' });
-    }
-}
+		if (!response.ok) {
+			logger.error('[ADMIN WORLD] Failed to delete world', {
+				worldId: params.id,
+				status: response.status
+			});
+			return fail(500, { success: false, message: 'Failed to delete world' });
+		}
 
-export const actions: Actions = { update, delete: deleteWorld }
+		logger.info('[ADMIN WORLD] World deleted successfully', { worldId: params.id });
+		throw redirect(303, '/admin/worlds');
+	} catch (err) {
+		// Re-throw redirects
+		if (err && typeof err === 'object' && 'location' in err) {
+			throw err;
+		}
+
+		logger.error('[ADMIN WORLD] Error deleting world', err, {
+			worldId: params.id
+		});
+		return fail(500, { success: false, message: 'Failed to delete world' });
+	}
+};
+
+export const actions: Actions = { update, delete: deleteWorld };

@@ -14,7 +14,7 @@ export type RegionStats = {
 
 /**
  * Calculate average, minimum, and maximum elevation for a region
- * 
+ *
  * @param elevationMap - 2D array of elevation values for the region
  * @returns Object containing average, minimum, and maximum elevation
  */
@@ -25,7 +25,9 @@ export function getRegionStats(elevationMap: number[][] | null | undefined): Reg
 	}
 
 	// Flatten the 2D array and filter out any non-numeric values
-	const allValues = elevationMap.flat().filter(val => typeof val === 'number' && !Number.isNaN(val));
+	const allValues = elevationMap
+		.flat()
+		.filter((val) => typeof val === 'number' && !Number.isNaN(val));
 
 	// Handle empty array after filtering
 	if (allValues.length === 0) {
@@ -60,7 +62,7 @@ export type RegionTileTooltipOptions = {
 
 /**
  * Format a detailed tooltip for a region tile
- * 
+ *
  * @param options - Options object containing all tooltip information
  * @returns Formatted tooltip string with newlines
  */

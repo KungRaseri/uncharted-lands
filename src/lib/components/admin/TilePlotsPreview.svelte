@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { Grid3x3, Home } from 'lucide-svelte';
-	import { 
-		calculatePlotStats, 
-		getPlotTooltip, 
+	import {
+		calculatePlotStats,
+		getPlotTooltip,
 		getPlotLayout,
-		type Plot 
+		type Plot
 	} from '$lib/utils/plot-layout';
 	import { getAdminElevationColor, getAdminTerrainDescription } from '$lib/utils/admin-terrain';
-	
+
 	type TileProps = {
 		id: string;
 		elevation: number;
@@ -20,13 +20,13 @@
 		Plots: Plot[];
 	};
 
-	let { 
-		tile, 
+	let {
+		tile,
 		tileName = 'Tile',
 		tileX = 0,
 		tileY = 0
-	}: { 
-		tile: TileProps; 
+	}: {
+		tile: TileProps;
 		tileName?: string;
 		tileX?: number;
 		tileY?: number;
@@ -55,7 +55,9 @@
 	</div>
 
 	<!-- Tile with Plots Overlay -->
-	<div class="relative aspect-square mb-4 rounded-lg overflow-hidden border-2 border-surface-300 dark:border-surface-600">
+	<div
+		class="relative aspect-square mb-4 rounded-lg overflow-hidden border-2 border-surface-300 dark:border-surface-600"
+	>
 		<!-- Base Tile (colored by elevation) -->
 		<div
 			class="absolute inset-0"
@@ -180,7 +182,12 @@
 						class="w-4 h-4 rounded border border-surface-300 dark:border-surface-600"
 						style="background-color: {getAdminElevationColor(tile.elevation, tile.type)}"
 					></div>
-					<span>{tile.elevation.toFixed(3)} ({getAdminTerrainDescription(tile.elevation, tile.type)})</span>
+					<span
+						>{tile.elevation.toFixed(3)} ({getAdminTerrainDescription(
+							tile.elevation,
+							tile.type
+						)})</span
+					>
 				</div>
 			</div>
 		</div>

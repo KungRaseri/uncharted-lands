@@ -1,6 +1,16 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Users, Crown, Shield, TrendingUp, Calendar, MapPin, Info, UserPlus, Settings } from 'lucide-svelte';
+	import {
+		Users,
+		Crown,
+		Shield,
+		TrendingUp,
+		Calendar,
+		MapPin,
+		Info,
+		UserPlus,
+		Settings
+	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -13,13 +23,13 @@
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3">
+			<h1
+				class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3"
+			>
 				<Users size={32} class="text-primary-500" />
 				Guild
 			</h1>
-			<p class="text-surface-600 dark:text-surface-400">
-				Your guild information and members
-			</p>
+			<p class="text-surface-600 dark:text-surface-400">Your guild information and members</p>
 		</div>
 		<button class="btn preset-filled-primary-500 rounded-md" disabled>
 			<UserPlus size={20} />
@@ -90,7 +100,9 @@
 
 		<!-- Guild Stats -->
 		<div class="card preset-filled-surface-100-900 p-6">
-			<h3 class="text-lg font-bold mb-4 text-surface-900 dark:text-surface-100">Guild Statistics</h3>
+			<h3 class="text-lg font-bold mb-4 text-surface-900 dark:text-surface-100">
+				Guild Statistics
+			</h3>
 			<div class="grid grid-cols-2 gap-4">
 				<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Settlements</p>
@@ -140,8 +152,6 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
-			← Back to Game Overview
-		</a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
 	</div>
 </div>

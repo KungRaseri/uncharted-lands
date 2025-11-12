@@ -5,252 +5,254 @@
  */
 
 export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
+	DEBUG = 0,
+	INFO = 1,
+	WARN = 2,
+	ERROR = 3
 }
 
 interface LogContext {
-  [key: string]: unknown;
+	[key: string]: unknown;
 }
 
 class ClientLogger {
-  private readonly minLevel: LogLevel;
-  private readonly isDevelopment: boolean;
+	private readonly minLevel: LogLevel;
+	private readonly isDevelopment: boolean;
 
-  constructor() {
-    // Detect environment
-    this.isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
-    
-    // Allow override via localStorage for production debugging
-    const storedLevel = typeof window !== 'undefined' 
-      ? localStorage.getItem('LOG_LEVEL')?.toUpperCase() 
-      : null;
-    
-    // Set log level from localStorage, environment, or default
-    const envLevel = storedLevel || import.meta.env.VITE_LOG_LEVEL?.toUpperCase();
-    if (envLevel && envLevel in LogLevel) {
-      this.minLevel = LogLevel[envLevel as keyof typeof LogLevel];
-    } else {
-      this.minLevel = this.isDevelopment ? LogLevel.DEBUG : LogLevel.WARN;
-    }
-  }
+	constructor() {
+		// Detect environment
+		this.isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
 
-  /**
-   * Format timestamp for logs
-   */
-  private timestamp(): string {
-    return new Date().toISOString().split('T')[1].replace('Z', '');
-  }
+		// Allow override via localStorage for production debugging
+		const storedLevel =
+			typeof window !== 'undefined' ? localStorage.getItem('LOG_LEVEL')?.toUpperCase() : null;
 
-  /**
-   * Get styled console method based on level
-   */
-  private getConsoleStyle(level: string): string[] {
-    const styles: Record<string, string[]> = {
-      DEBUG: ['color: #00bcd4; font-weight: bold', 'color: #666'],
-      INFO: ['color: #4caf50; font-weight: bold', 'color: #333'],
-      WARN: ['color: #ff9800; font-weight: bold', 'color: #333'],
-      ERROR: ['color: #f44336; font-weight: bold', 'color: #333'],
-    };
-    return styles[level] || styles.INFO;
-  }
+		// Set log level from localStorage, environment, or default
+		const envLevel = storedLevel || import.meta.env.VITE_LOG_LEVEL?.toUpperCase();
+		if (envLevel && envLevel in LogLevel) {
+			this.minLevel = LogLevel[envLevel as keyof typeof LogLevel];
+		} else {
+			this.minLevel = this.isDevelopment ? LogLevel.DEBUG : LogLevel.WARN;
+		}
+	}
 
-  /**
-   * Format log message with context
-   */
-  private format(level: string, message: string, context?: LogContext): [string, string, string, string?] {
-    const timestamp = this.timestamp();
-    const [levelStyle, msgStyle] = this.getConsoleStyle(level);
+	/**
+	 * Format timestamp for logs
+	 */
+	private timestamp(): string {
+		return new Date().toISOString().split('T')[1].replace('Z', '');
+	}
 
-    // Build context string
-    let contextStr: string | undefined;
-    if (context && Object.keys(context).length > 0) {
-      contextStr = JSON.stringify(context, null, this.isDevelopment ? 2 : 0);
-    }
+	/**
+	 * Get styled console method based on level
+	 */
+	private getConsoleStyle(level: string): string[] {
+		const styles: Record<string, string[]> = {
+			DEBUG: ['color: #00bcd4; font-weight: bold', 'color: #666'],
+			INFO: ['color: #4caf50; font-weight: bold', 'color: #333'],
+			WARN: ['color: #ff9800; font-weight: bold', 'color: #333'],
+			ERROR: ['color: #f44336; font-weight: bold', 'color: #333']
+		};
+		return styles[level] || styles.INFO;
+	}
 
-    return [
-      `%c[${timestamp}] [${level}]%c ${message}`,
-      levelStyle,
-      msgStyle,
-      contextStr,
-    ];
-  }
+	/**
+	 * Format log message with context
+	 */
+	private format(
+		level: string,
+		message: string,
+		context?: LogContext
+	): [string, string, string, string?] {
+		const timestamp = this.timestamp();
+		const [levelStyle, msgStyle] = this.getConsoleStyle(level);
 
-  /**
-   * Log debug messages (verbose, for development)
-   */
-  debug(message: string, context?: LogContext): void {
-    if (this.minLevel <= LogLevel.DEBUG) {
-      const [msg, ...args] = this.format('DEBUG', message, context);
-      // eslint-disable-next-line no-console
-      console.debug(msg, ...args.filter(Boolean));
-    }
-  }
+		// Build context string
+		let contextStr: string | undefined;
+		if (context && Object.keys(context).length > 0) {
+			contextStr = JSON.stringify(context, null, this.isDevelopment ? 2 : 0);
+		}
 
-  /**
-   * Log info messages
-   */
-  info(message: string, context?: LogContext): void {
-    if (this.minLevel <= LogLevel.INFO) {
-      const [msg, ...args] = this.format('INFO', message, context);
-      // eslint-disable-next-line no-console
-      console.log(msg, ...args.filter(Boolean));
-    }
-  }
+		return [`%c[${timestamp}] [${level}]%c ${message}`, levelStyle, msgStyle, contextStr];
+	}
 
-  /**
-   * Log warning messages
-   */
-  warn(message: string, context?: LogContext): void {
-    if (this.minLevel <= LogLevel.WARN) {
-      const [msg, ...args] = this.format('WARN', message, context);
-      // eslint-disable-next-line no-console
-      console.warn(msg, ...args.filter(Boolean));
-    }
-  }
+	/**
+	 * Log debug messages (verbose, for development)
+	 */
+	debug(message: string, context?: LogContext): void {
+		if (this.minLevel <= LogLevel.DEBUG) {
+			const [msg, ...args] = this.format('DEBUG', message, context);
+			// eslint-disable-next-line no-console
+			console.debug(msg, ...args.filter(Boolean));
+		}
+	}
 
-  /**
-   * Log error messages
-   */
-  error(message: string, error?: unknown, context?: LogContext): void {
-    if (this.minLevel <= LogLevel.ERROR) {
-      const errorContext: LogContext = { ...context };
-      if (error instanceof Error) {
-        errorContext.error = {
-          name: error.name,
-          message: error.message,
-          stack: this.isDevelopment ? error.stack : undefined,
-        };
-      } else if (error) {
-        errorContext.error = error;
-      }
+	/**
+	 * Log info messages
+	 */
+	info(message: string, context?: LogContext): void {
+		if (this.minLevel <= LogLevel.INFO) {
+			const [msg, ...args] = this.format('INFO', message, context);
+			// eslint-disable-next-line no-console
+			console.log(msg, ...args.filter(Boolean));
+		}
+	}
 
-      const [msg, ...args] = this.format('ERROR', message, errorContext);
-      // eslint-disable-next-line no-console
-      console.error(msg, ...args.filter(Boolean));
-    }
-  }
+	/**
+	 * Log warning messages
+	 */
+	warn(message: string, context?: LogContext): void {
+		if (this.minLevel <= LogLevel.WARN) {
+			const [msg, ...args] = this.format('WARN', message, context);
+			// eslint-disable-next-line no-console
+			console.warn(msg, ...args.filter(Boolean));
+		}
+	}
 
-  /**
-   * Group related log messages
-   */
-  group(label: string, collapsed = false): void {
-    if (collapsed) {
-      console.groupCollapsed(`📦 ${label}`);
-    } else {
-      console.group(`📦 ${label}`);
-    }
-  }
+	/**
+	 * Log error messages
+	 */
+	error(message: string, error?: unknown, context?: LogContext): void {
+		if (this.minLevel <= LogLevel.ERROR) {
+			const errorContext: LogContext = { ...context };
+			if (error instanceof Error) {
+				errorContext.error = {
+					name: error.name,
+					message: error.message,
+					stack: this.isDevelopment ? error.stack : undefined
+				};
+			} else if (error) {
+				errorContext.error = error;
+			}
 
-  /**
-   * End a log group
-   */
-  groupEnd(): void {
-    console.groupEnd();
-  }
+			const [msg, ...args] = this.format('ERROR', message, errorContext);
+			// eslint-disable-next-line no-console
+			console.error(msg, ...args.filter(Boolean));
+		}
+	}
 
-  /**
-   * Log API request
-   */
-  apiRequest(method: string, url: string, context?: LogContext): void {
-    this.debug(`➜ ${method} ${url}`, context);
-  }
+	/**
+	 * Group related log messages
+	 */
+	group(label: string, collapsed = false): void {
+		if (collapsed) {
+			console.groupCollapsed(`📦 ${label}`);
+		} else {
+			console.group(`📦 ${label}`);
+		}
+	}
 
-  /**
-   * Log API response
-   */
-  apiResponse(method: string, url: string, status: number, duration?: number, context?: LogContext): void {
-    const emoji = status >= 500 ? '❌' : status >= 400 ? '⚠️' : '✓';
-    const level = status >= 400 ? 'warn' : 'debug';
-    this[level](`${emoji} ${method} ${url}`, { 
-      ...context, 
-      status,
-      ...(duration ? { duration: `${duration}ms` } : {})
-    });
-  }
+	/**
+	 * End a log group
+	 */
+	groupEnd(): void {
+		console.groupEnd();
+	}
 
-  /**
-   * Log component lifecycle
-   */
-  component(name: string, event: 'mount' | 'unmount' | 'update', context?: LogContext): void {
-    this.debug(`🧩 ${name} ${event}`, context);
-  }
+	/**
+	 * Log API request
+	 */
+	apiRequest(method: string, url: string, context?: LogContext): void {
+		this.debug(`➜ ${method} ${url}`, context);
+	}
 
-  /**
-   * Log navigation
-   */
-  navigation(from: string, to: string): void {
-    this.debug(`🧭 Navigation: ${from} → ${to}`);
-  }
+	/**
+	 * Log API response
+	 */
+	apiResponse(
+		method: string,
+		url: string,
+		status: number,
+		duration?: number,
+		context?: LogContext
+	): void {
+		const emoji = status >= 500 ? '❌' : status >= 400 ? '⚠️' : '✓';
+		const level = status >= 400 ? 'warn' : 'debug';
+		this[level](`${emoji} ${method} ${url}`, {
+			...context,
+			status,
+			...(duration ? { duration: `${duration}ms` } : {})
+		});
+	}
 
-  /**
-   * Performance timing
-   */
-  startTimer(label: string): void {
-    if (this.minLevel <= LogLevel.DEBUG && typeof performance !== 'undefined') {
-      performance.mark(`${label}-start`);
-    }
-  }
+	/**
+	 * Log component lifecycle
+	 */
+	component(name: string, event: 'mount' | 'unmount' | 'update', context?: LogContext): void {
+		this.debug(`🧩 ${name} ${event}`, context);
+	}
 
-  /**
-   * End performance timer
-   */
-  endTimer(label: string, context?: LogContext): void {
-    if (this.minLevel <= LogLevel.DEBUG && typeof performance !== 'undefined') {
-      try {
-        performance.mark(`${label}-end`);
-        performance.measure(label, `${label}-start`, `${label}-end`);
-        const measure = performance.getEntriesByName(label)[0];
-        this.debug(`⏱️ ${label}`, { 
-          ...context, 
-          duration: `${measure.duration.toFixed(2)}ms` 
-        });
-        performance.clearMarks(`${label}-start`);
-        performance.clearMarks(`${label}-end`);
-        performance.clearMeasures(label);
-      } catch (e) {
-        // Ignore timing errors
-      }
-    }
-  }
+	/**
+	 * Log navigation
+	 */
+	navigation(from: string, to: string): void {
+		this.debug(`🧭 Navigation: ${from} → ${to}`);
+	}
 
-  /**
-   * Check if development mode is enabled
-   */
-  isDev(): boolean {
-    return this.isDevelopment;
-  }
+	/**
+	 * Performance timing
+	 */
+	startTimer(label: string): void {
+		if (this.minLevel <= LogLevel.DEBUG && typeof performance !== 'undefined') {
+			performance.mark(`${label}-start`);
+		}
+	}
 
-  /**
-   * Mask email address for privacy in logs
-   * Example: test@example.com -> tes***@example.com
-   */
-  maskEmail(email: string): string {
-    const [local, domain] = email.split('@');
-    if (local && domain && local.length > 0) {
-      const visibleChars = Math.min(3, local.length);
-      return `${local.substring(0, visibleChars)}***@${domain}`;
-    }
-    return '***';
-  }
+	/**
+	 * End performance timer
+	 */
+	endTimer(label: string, context?: LogContext): void {
+		if (this.minLevel <= LogLevel.DEBUG && typeof performance !== 'undefined') {
+			try {
+				performance.mark(`${label}-end`);
+				performance.measure(label, `${label}-start`, `${label}-end`);
+				const measure = performance.getEntriesByName(label)[0];
+				this.debug(`⏱️ ${label}`, {
+					...context,
+					duration: `${measure.duration.toFixed(2)}ms`
+				});
+				performance.clearMarks(`${label}-start`);
+				performance.clearMarks(`${label}-end`);
+				performance.clearMeasures(label);
+			} catch {
+				// Ignore timing errors
+			}
+		}
+	} /**
+	 * Check if development mode is enabled
+	 */
+	isDev(): boolean {
+		return this.isDevelopment;
+	}
 
-  /**
-   * Enable debug mode (useful for production debugging)
-   */
-  static enableDebug(): void {
-    localStorage.setItem('LOG_LEVEL', 'DEBUG');
-    console.log('🔧 Debug logging enabled. Reload the page to see debug logs.');
-  }
+	/**
+	 * Mask email address for privacy in logs
+	 * Example: test@example.com -> tes***@example.com
+	 */
+	maskEmail(email: string): string {
+		const [local, domain] = email.split('@');
+		if (local && domain && local.length > 0) {
+			const visibleChars = Math.min(3, local.length);
+			return `${local.substring(0, visibleChars)}***@${domain}`;
+		}
+		return '***';
+	}
 
-  /**
-   * Disable debug mode
-   */
-  static disableDebug(): void {
-    localStorage.removeItem('LOG_LEVEL');
-    console.log('🔧 Debug logging disabled. Reload the page.');
-  }
+	/**
+	 * Enable debug mode (useful for production debugging)
+	 */
+	static enableDebug(): void {
+		localStorage.setItem('LOG_LEVEL', 'DEBUG');
+		console.log('🔧 Debug logging enabled. Reload the page to see debug logs.');
+	}
+
+	/**
+	 * Disable debug mode
+	 */
+	static disableDebug(): void {
+		localStorage.removeItem('LOG_LEVEL');
+		console.log('🔧 Debug logging disabled. Reload the page.');
+	}
 }
 
 // Export singleton instance
@@ -258,11 +260,13 @@ export const logger = new ClientLogger();
 
 // Make debug controls available globally in browser
 if (typeof window !== 'undefined') {
-  (window as any).enableDebugLogs = ClientLogger.enableDebug;
-  (window as any).disableDebugLogs = ClientLogger.disableDebug;
-  
-  // Log current log level on load (development only)
-  if (logger.isDev()) {
-    console.log('🔧 Logger initialized. Use enableDebugLogs() or disableDebugLogs() to control logging.');
-  }
+	(window as any).enableDebugLogs = ClientLogger.enableDebug;
+	(window as any).disableDebugLogs = ClientLogger.disableDebug;
+
+	// Log current log level on load (development only)
+	if (logger.isDev()) {
+		console.log(
+			'🔧 Logger initialized. Use enableDebugLogs() or disableDebugLogs() to control logging.'
+		);
+	}
 }

@@ -1,6 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Layers, MapPin, Globe, Mountain, Droplets, Thermometer, Grid3x3, ArrowLeft, Home, Wind, Sun } from 'lucide-svelte';
+	import {
+		Layers,
+		MapPin,
+		Globe,
+		Mountain,
+		Droplets,
+		Thermometer,
+		Grid3x3,
+		ArrowLeft,
+		Home,
+		Wind,
+		Sun
+	} from 'lucide-svelte';
 	import TilePlotsPreview from '$lib/components/admin/TilePlotsPreview.svelte';
 	import type { Plot } from '$lib/types/game';
 
@@ -10,15 +22,27 @@
 <div class="space-y-6">
 	<!-- Breadcrumb -->
 	<div class="flex items-center gap-2 text-sm">
-		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Dashboard</a>
+		<a href="/admin" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>Dashboard</a
+		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Worlds</a>
+		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>Worlds</a
+		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/worlds/{data.tile.Region.world.id}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.tile.Region.world.name}</a>
+		<a
+			href="/admin/worlds/{data.tile.Region.world.id}"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>{data.tile.Region.world.name}</a
+		>
 		<span class="text-surface-400">/</span>
 		<span class="text-surface-600 dark:text-surface-400">Regions</span>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/regions/{data.tile.Region.id}" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">{data.tile.Region.name}</a>
+		<a
+			href="/admin/regions/{data.tile.Region.id}"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>{data.tile.Region.name}</a
+		>
 		<span class="text-surface-400">/</span>
 		<span class="text-surface-600 dark:text-surface-400">Tiles</span>
 		<span class="text-surface-400">/</span>
@@ -28,18 +52,23 @@
 	<!-- Tile Header -->
 	<div class="card preset-filled-surface-100-900 p-6">
 		<div class="flex items-start gap-6">
-			<div class="flex-none w-16 h-16 rounded-full bg-success-500/10 flex items-center justify-center">
+			<div
+				class="flex-none w-16 h-16 rounded-full bg-success-500/10 flex items-center justify-center"
+			>
 				<Layers size={32} class="text-success-500" />
 			</div>
 
 			<div class="flex-1">
 				<h1 class="text-3xl font-bold mb-2 capitalize">{data.tile.type} Tile</h1>
 				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{data.tile.id}</p>
-				
+
 				<div class="flex flex-wrap gap-4">
 					<div class="flex items-center gap-2">
 						<MapPin size={16} class="text-surface-400" />
-						<a href="/admin/regions/{data.tile.regionId}" class="text-primary-500 hover:underline text-sm">
+						<a
+							href="/admin/regions/{data.tile.regionId}"
+							class="text-primary-500 hover:underline text-sm"
+						>
 							View Region
 						</a>
 					</div>
@@ -53,7 +82,7 @@
 	</div>
 
 	<!-- Tile with Plots Preview -->
-	<TilePlotsPreview 
+	<TilePlotsPreview
 		tile={data.tile}
 		tileName={`${data.tile.type.charAt(0).toUpperCase() + data.tile.type.slice(1)} Tile`}
 		tileX={data.tileX}
@@ -70,7 +99,9 @@
 				<h3 class="font-semibold">Elevation</h3>
 			</div>
 			<p class="text-2xl font-bold mb-1">{(data.tile.elevation * 100).toPrecision(3)}</p>
-			<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">Raw: {data.tile.elevation.toFixed(4)}</p>
+			<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">
+				Raw: {data.tile.elevation.toFixed(4)}
+			</p>
 		</div>
 
 		<div class="card preset-filled-surface-100-900 p-6">
@@ -81,7 +112,9 @@
 				<h3 class="font-semibold">Precipitation</h3>
 			</div>
 			<p class="text-2xl font-bold mb-1">{data.tile.precipitation.toPrecision(3)}</p>
-			<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">Raw: {data.tile.precipitation.toFixed(4)}</p>
+			<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">
+				Raw: {data.tile.precipitation.toFixed(4)}
+			</p>
 		</div>
 
 		<div class="card preset-filled-surface-100-900 p-6">
@@ -92,7 +125,9 @@
 				<h3 class="font-semibold">Temperature</h3>
 			</div>
 			<p class="text-2xl font-bold mb-1">{data.tile.temperature.toPrecision(3)}</p>
-			<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">Raw: {data.tile.temperature.toFixed(4)}</p>
+			<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">
+				Raw: {data.tile.temperature.toFixed(4)}
+			</p>
 		</div>
 	</div>
 
@@ -103,9 +138,7 @@
 				<Grid3x3 size={24} />
 				Plots ({data.tile.Plots.length})
 			</h2>
-			<div class="text-sm text-surface-600 dark:text-surface-400">
-				Click a plot to view details
-			</div>
+			<div class="text-sm text-surface-600 dark:text-surface-400">Click a plot to view details</div>
 		</div>
 
 		{#if data.tile.Plots.length === 0}
@@ -130,7 +163,9 @@
 					<tbody>
 						{#each data.tile.Plots as plot}
 							{@const hasSettlement = plot.settlement}
-							<tr class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
+							<tr
+								class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+							>
 								<td class="p-3">
 									<p class="font-mono text-xs">{plot.id.substring(0, 12)}...</p>
 								</td>
@@ -152,11 +187,26 @@
 								</td>
 								<td class="p-3 text-center">
 									<div class="flex flex-wrap gap-1 justify-center">
-										<span class="text-xs px-1.5 py-0.5 rounded bg-success-500/10 text-success-500" title="Food">🌾 {plot.food}</span>
-										<span class="text-xs px-1.5 py-0.5 rounded bg-primary-500/10 text-primary-500" title="Water">💧 {plot.water}</span>
-										<span class="text-xs px-1.5 py-0.5 rounded bg-warning-500/10 text-warning-500" title="Wood">🪵 {plot.wood}</span>
-										<span class="text-xs px-1.5 py-0.5 rounded bg-surface-500/10 text-surface-900 dark:text-surface-50" title="Stone">🪨 {plot.stone}</span>
-										<span class="text-xs px-1.5 py-0.5 rounded bg-error-500/10 text-error-500" title="Ore">⛏️ {plot.ore}</span>
+										<span
+											class="text-xs px-1.5 py-0.5 rounded bg-success-500/10 text-success-500"
+											title="Food">🌾 {plot.food}</span
+										>
+										<span
+											class="text-xs px-1.5 py-0.5 rounded bg-primary-500/10 text-primary-500"
+											title="Water">💧 {plot.water}</span
+										>
+										<span
+											class="text-xs px-1.5 py-0.5 rounded bg-warning-500/10 text-warning-500"
+											title="Wood">🪵 {plot.wood}</span
+										>
+										<span
+											class="text-xs px-1.5 py-0.5 rounded bg-surface-500/10 text-surface-900 dark:text-surface-50"
+											title="Stone">🪨 {plot.stone}</span
+										>
+										<span
+											class="text-xs px-1.5 py-0.5 rounded bg-error-500/10 text-error-500"
+											title="Ore">⛏️ {plot.ore}</span
+										>
 									</div>
 								</td>
 								<td class="p-3 text-center">
@@ -193,15 +243,24 @@
 					</div>
 					<div>
 						<p class="text-xs text-surface-600 dark:text-surface-400">Total Area</p>
-						<p class="font-semibold">{data.tile.Plots.reduce((sum: number, p: Plot) => sum + p.area, 0)} m²</p>
+						<p class="font-semibold">
+							{data.tile.Plots.reduce((sum: number, p: Plot) => sum + p.area, 0)} m²
+						</p>
 					</div>
 					<div>
 						<p class="text-xs text-surface-600 dark:text-surface-400">With Settlements</p>
-						<p class="font-semibold text-warning-500">{data.tile.Plots.filter((p: Plot) => p.settlement).length}</p>
+						<p class="font-semibold text-warning-500">
+							{data.tile.Plots.filter((p: Plot) => p.settlement).length}
+						</p>
 					</div>
 					<div>
 						<p class="text-xs text-surface-600 dark:text-surface-400">Total Resources</p>
-						<p class="font-semibold">{data.tile.Plots.reduce((sum: number, p: Plot) => sum + p.food + p.water + p.wood + p.stone + p.ore, 0)}</p>
+						<p class="font-semibold">
+							{data.tile.Plots.reduce(
+								(sum: number, p: Plot) => sum + p.food + p.water + p.wood + p.stone + p.ore,
+								0
+							)}
+						</p>
 					</div>
 				</div>
 			</div>

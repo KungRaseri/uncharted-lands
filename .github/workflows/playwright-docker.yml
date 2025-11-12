@@ -12,7 +12,7 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15-alpine
@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -91,26 +91,26 @@ jobs:
           repository: KungRaseri/uncharted-lands-server
           ref: ${{ env.SERVER_REF }}
           path: server-repo
-          
+
       - name: Setup Node.js for migrations
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: server-repo/package-lock.json
-          
+
       - name: Install server dependencies
         run: |
           cd server-repo
           npm ci
-          
+
       - name: Run database migrations
         run: |
           cd server-repo
           npm run db:migrate:run
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
-          
+
       - name: Seed test data
         run: |
           cd server-repo

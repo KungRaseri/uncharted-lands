@@ -196,7 +196,7 @@ describe('Client Logger', () => {
 		it('should handle complex nested context', () => {
 			logger.info('Complex context', {
 				user: { id: 1, name: 'Test' },
-				metadata: { tags: ['a', 'b'], count: 5 },
+				metadata: { tags: ['a', 'b'], count: 5 }
 			});
 			expect(consoleLogSpy).toHaveBeenCalled();
 			const call = consoleLogSpy.mock.calls[0][0];

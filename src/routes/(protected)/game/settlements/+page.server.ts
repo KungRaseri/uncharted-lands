@@ -3,42 +3,42 @@ import { logger } from '$lib/utils/logger';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, depends, cookies }) => {
-    // Mark this data as dependent on game state changes
-    depends('game:settlements');
-    depends('game:data');
+	// Mark this data as dependent on game state changes
+	depends('game:settlements');
+	depends('game:data');
 
-    const profileId = locals.account?.profile?.id;
-    if (!profileId) {
-        return { settlements: [], lastUpdate: new Date().toISOString() };
-    }
+	const profileId = locals.account?.profile?.id;
+	if (!profileId) {
+		return { settlements: [], lastUpdate: new Date().toISOString() };
+	}
 
-    const sessionToken = cookies.get('session');
+	const sessionToken = cookies.get('session');
 
-    const response = await fetch(`${API_URL}/settlements?playerProfileId=${profileId}`, {
-        headers: {
-            'Cookie': `session=${sessionToken}`
-        }
-    });
-    
-    if (!response.ok) {
-        logger.error('[SETTLEMENTS] Failed to fetch settlements', {
-            profileId,
-            status: response.status
-        });
-        return {
-            settlements: [],
-            lastUpdate: new Date().toISOString()
-        };
-    }
+	const response = await fetch(`${API_URL}/settlements?playerProfileId=${profileId}`, {
+		headers: {
+			Cookie: `session=${sessionToken}`
+		}
+	});
 
-    const settlements = await response.json();
+	if (!response.ok) {
+		logger.error('[SETTLEMENTS] Failed to fetch settlements', {
+			profileId,
+			status: response.status
+		});
+		return {
+			settlements: [],
+			lastUpdate: new Date().toISOString()
+		};
+	}
 
-    logger.debug('[SETTLEMENTS] Settlements loaded', {
-        count: settlements.length
-    });
+	const settlements = await response.json();
 
-    return {
-        settlements,
-        lastUpdate: new Date().toISOString()
-    }
+	logger.debug('[SETTLEMENTS] Settlements loaded', {
+		count: settlements.length
+	});
+
+	return {
+		settlements,
+		lastUpdate: new Date().toISOString()
+	};
 }) satisfies PageServerLoad;
