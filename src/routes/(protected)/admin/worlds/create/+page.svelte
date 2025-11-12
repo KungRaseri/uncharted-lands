@@ -196,14 +196,34 @@
 		const maxAttempts = 60; // Poll for up to 5 minutes (60 * 5s = 300s)
 		let attempts = 0;
 
+		console.log('[WORLD STATUS] Starting polling for world:', worldId);
+		console.log('[WORLD STATUS] API_URL:', API_URL);
+
 		while (attempts < maxAttempts) {
 			try {
+				console.log(`[WORLD STATUS] Poll attempt ${attempts + 1}/${maxAttempts}`);
+				
 				const response = await fetch(`${API_URL}/worlds/${worldId}`, {
-					credentials: 'include'
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include', // Send cookies for authentication
 				});
+
+				console.log('[WORLD STATUS] Response status:', response.status);
+
+				if (response.status === 401) {
+					// Unauthorized - session may have expired
+					console.error('[WORLD STATUS] Unauthorized - session expired');
+					saveError = 'Session expired. Please refresh and try again.';
+					generationProgress = '';
+					return false;
+				}
 
 				if (response.ok) {
 					const world = await response.json();
+					console.log('[WORLD STATUS] World status:', world.status);
 					
 					if (world.status === 'ready') {
 						generationProgress = 'World generated successfully!';
@@ -216,6 +236,8 @@
 						// Still generating
 						generationProgress = `World is generating... (${Math.round((attempts / maxAttempts) * 100)}%)`;
 					}
+				} else {
+					console.error('[WORLD STATUS] Non-OK response:', response.status, response.statusText);
 				}
 			} catch (err) {
 				console.error('[WORLD STATUS] Error checking status:', err);
@@ -227,6 +249,7 @@
 		}
 
 		// Timeout after max attempts
+		console.log('[WORLD STATUS] Polling timed out after max attempts');
 		saveError = 'World generation is taking longer than expected. Check the worlds list later.';
 		generationProgress = '';
 		return false;
@@ -307,9 +330,20 @@
 				// Try to find the world by name and server
 				try {
 					const checkResponse = await fetch(`${API_URL}/worlds`, {
-						credentials: 'include'
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						credentials: 'include', // Send cookies for authentication
 					});
 					
+					if (checkResponse.status === 401) {
+						// Unauthorized - session may have expired
+						saveError = 'Session expired. Please refresh and try again.';
+						generationProgress = '';
+						return;
+					}
+
 					if (checkResponse.ok) {
 						const worlds = await checkResponse.json();
 						const createdWorld = worlds.find(
