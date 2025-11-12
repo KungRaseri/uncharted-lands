@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { applyAction, enhance } from '$app/forms';
+	import { applyAction, enhance, deserialize } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { goto } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
@@ -297,9 +297,15 @@
 				body: formData
 			});
 
-			const result = await response.json();
+			console.log('[WORLD CREATE] Response status:', response.status, response.statusText);
+			console.log('[WORLD CREATE] Response ok:', response.ok);
+
+			// Use SvelteKit's deserialize to properly parse the response
+			const result = deserialize(await response.text());
 
 			console.log('[WORLD CREATE] Action result:', result);
+			console.log('[WORLD CREATE] Result type:', result.type);
+			console.log('[WORLD CREATE] Result data:', result.data);
 
 			if (result.type === 'failure') {
 				saveError = result.data?.error || 'Failed to create world';
@@ -310,7 +316,17 @@
 			const world = result.data?.world;
 			const generationSettings = result.data?.generationSettings;
 
+			console.log('[WORLD CREATE] Extracted world:', world);
+			console.log('[WORLD CREATE] Extracted settings:', generationSettings);
+
 			if (!world || !generationSettings) {
+				console.error(
+					'[WORLD CREATE] Missing data - world:',
+					!!world,
+					'settings:',
+					!!generationSettings
+				);
+				console.error('[WORLD CREATE] Full result.data:', result.data);
 				saveError = 'World was created but no data was returned';
 				generationProgress = '';
 				return;

@@ -77,21 +77,44 @@
 		isGenerating = true;
 		generationError = null;
 
+		console.log('[WORLD DETAILS] Starting generation with settings:', settings);
+
 		try {
+			// Map the settings to what the API expects
+			const apiSettings = {
+				width: settings.width,
+				height: settings.height,
+				seed: settings.elevationSeed || settings.seed || Date.now(), // Use elevationSeed as the main seed
+				elevationOptions: settings.elevationSettings || settings.elevationOptions,
+				precipitationOptions: settings.precipitationSettings || settings.precipitationOptions,
+				temperatureOptions: settings.temperatureSettings || settings.temperatureOptions
+			};
+
+			console.log('[WORLD DETAILS] Mapped API settings:', apiSettings);
+
 			// Call the generate server action
 			const formData = new FormData();
-			formData.append('settings', JSON.stringify(settings));
+			formData.append('settings', JSON.stringify(apiSettings));
 
+			console.log('[WORLD DETAILS] Calling generate action...');
 			const response = await fetch(`?/generate`, {
 				method: 'POST',
 				body: formData
 			});
 
+			console.log('[WORLD DETAILS] Generate response:', response.status, response.ok);
+
 			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('[WORLD DETAILS] Generate failed:', errorText);
 				throw new Error('Failed to start generation');
 			}
 
+			const result = await response.text();
+			console.log('[WORLD DETAILS] Generate result:', result);
+
 			// Start polling for status
+			console.log('[WORLD DETAILS] Starting polling...');
 			startPolling();
 		} catch (error) {
 			console.error('Failed to start generation:', error);
@@ -101,15 +124,20 @@
 	}
 
 	function startPolling() {
+		console.log('[WORLD DETAILS] Polling started');
 		// Poll every 3 seconds
 		pollingInterval = setInterval(async () => {
 			try {
+				console.log('[WORLD DETAILS] Polling - current status:', data.world?.status);
 				// Invalidate all data to refetch the world
 				await invalidateAll();
+
+				console.log('[WORLD DETAILS] After invalidate - status:', data.world?.status);
 
 				// Check world status
 				if (data.world?.status === 'ready') {
 					// Generation complete!
+					console.log('[WORLD DETAILS] Generation complete!');
 					isGenerating = false;
 					if (pollingInterval) {
 						clearInterval(pollingInterval);
@@ -117,6 +145,7 @@
 					}
 				} else if (data.world?.status === 'failed') {
 					// Generation failed
+					console.log('[WORLD DETAILS] Generation failed!');
 					isGenerating = false;
 					generationError = 'World generation failed. Please try again.';
 					if (pollingInterval) {
