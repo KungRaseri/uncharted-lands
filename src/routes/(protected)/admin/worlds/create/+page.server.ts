@@ -1,8 +1,10 @@
 import { fail, redirect } from "@sveltejs/kit"
 import { logger } from "$lib/utils/logger"
 import type { Actions, PageServerLoad } from "./$types"
+import { env } from '$env/dynamic/public'
 
-const API_URL = process.env.API_URL || 'http://localhost:3001/api';
+// Use PUBLIC_API_URL which works in both client and server contexts
+const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
     if (!locals.account || locals.account.role !== 'ADMINISTRATOR') {
@@ -18,7 +20,8 @@ export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
         const sessionToken = cookies.get('session');
 
         logger.debug('[WORLD CREATE] Loading servers', {
-            hasSessionToken: !!sessionToken
+            hasSessionToken: !!sessionToken,
+            apiUrl: API_URL
         });
 
         const response = await fetch(`${API_URL}/servers`, {
@@ -28,23 +31,38 @@ export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
             cache: 'no-store'
         });
 
+        logger.debug('[WORLD CREATE] Server API response', {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
+        });
+
         if (!response.ok) {
+            const errorText = await response.text().catch(() => 'Unable to read error response');
             logger.error('[WORLD CREATE] Failed to fetch servers', {
-                status: response.status
+                status: response.status,
+                statusText: response.statusText,
+                errorBody: errorText
             });
-            return { servers: [] };
+            return { servers: [], error: 'Failed to load servers' };
         }
 
         const servers = await response.json();
 
-        logger.info('[WORLD CREATE] Servers loaded', {
-            count: servers.length
+        logger.info('[WORLD CREATE] Servers loaded successfully', {
+            count: servers.length,
+            serverIds: servers.map((s: any) => s.id),
+            serverNames: servers.map((s: any) => s.name)
         });
 
         return { servers };
     } catch (error) {
-        logger.error('[WORLD CREATE] Error loading servers', error);
-        return { servers: [] };
+        logger.error('[WORLD CREATE] Exception loading servers', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            apiUrl: API_URL
+        });
+        return { servers: [], error: 'An error occurred loading servers' };
     }
 }
 

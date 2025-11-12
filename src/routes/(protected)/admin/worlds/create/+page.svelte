@@ -47,7 +47,7 @@
 	});
 
 	let mapOptions = $state({
-		serverId: data.servers[0]?.id || '',
+		serverId: data.servers?.[0]?.id || '',
 		worldName: '',
 		width: 100,
 		height: 100,
@@ -187,6 +187,20 @@
 </script>
 
 <div class="w-full h-full p-5 space-y-5">
+	<!-- Error Alert -->
+	{#if data.error || !data.servers || data.servers.length === 0}
+		<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 w-11/12 mx-auto">
+			<div class="alert-message">
+				<Info />
+				{#if data.error}
+					<span>{data.error}</span>
+				{:else}
+					<span>No servers available. Please create a server first before creating a world.</span>
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	<div class="card p-3 w-fit mx-auto rounded-md space-y-3">
 		<h1 class="">New World</h1>
 		<hr class="my-1" />
@@ -203,10 +217,15 @@
 			</label>
 			<label for="server-id" class="label">
 				<span>Server ID</span>
-				<select class="select" bind:value={mapOptions.serverId}>
-					{#each data.servers as server, i}
-						<option value={server.id}> {server.name}</option>
-					{/each}
+				<select class="select" bind:value={mapOptions.serverId} required>
+					{#if !data.servers || data.servers.length === 0}
+						<option value="" disabled selected>No servers available</option>
+					{:else}
+						<option value="" disabled>Select a server...</option>
+						{#each data.servers as server}
+							<option value={server.id}>{server.name}</option>
+						{/each}
+					{/if}
 				</select>
 			</label>
 		</div>
