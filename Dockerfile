@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Skip Husky installation in Docker
+ENV HUSKY=0
+
 # Install dependencies
 RUN npm ci
 
@@ -29,6 +32,9 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+
+# Skip Husky installation in Docker
+ENV HUSKY=0
 
 # Install only production dependencies
 RUN npm ci --only=production
