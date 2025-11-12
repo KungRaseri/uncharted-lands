@@ -1,6 +1,6 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect, fail } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 import { env } from '$env/dynamic/public';
 
 // Use PUBLIC_API_URL which works in both client and server contexts
@@ -67,7 +67,56 @@ export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
 };
 
 /**
- * Note: World creation now happens via client-side API call (see +page.svelte)
- * This bypasses Vercel's 10-second serverless function timeout and allows
- * the browser to wait directly for the Render server to complete generation.
+ * Server action for creating worlds
+ * This runs on the SvelteKit server and properly forwards the session cookie
  */
+export const actions: Actions = {
+	create: async ({ request, cookies }) => {
+		const data = await request.formData();
+		const worldData = JSON.parse(data.get('worldData') as string);
+
+		try {
+			const sessionToken = cookies.get('session');
+
+			logger.info('[WORLD CREATE ACTION] Creating world', {
+				name: worldData.name,
+				serverId: worldData.serverId,
+				dimensions: `${worldData.width}x${worldData.height}`
+			});
+
+			const response = await fetch(`${API_URL}/worlds`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Cookie: `session=${sessionToken}`
+				},
+				body: JSON.stringify(worldData)
+			});
+
+			if (!response.ok) {
+				const error = await response.json().catch(() => ({ error: 'Failed to create world' }));
+				logger.error('[WORLD CREATE ACTION] Failed to create world', {
+					status: response.status,
+					error
+				});
+				return fail(response.status, { error: error.error || 'Failed to create world' });
+			}
+
+			const world = await response.json();
+
+			logger.info('[WORLD CREATE ACTION] World created successfully', {
+				worldId: world.id,
+				name: world.name,
+				status: world.status
+			});
+
+			// Return the world data so the client can poll for status
+			return { success: true, world };
+		} catch (error) {
+			logger.error('[WORLD CREATE ACTION] Exception creating world', {
+				error: error instanceof Error ? error.message : String(error)
+			});
+			return fail(500, { error: 'An error occurred creating the world' });
+		}
+	}
+};

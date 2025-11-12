@@ -256,8 +256,8 @@
 	}
 
 	/**
-	 * Save world directly to API (bypasses Vercel serverless function timeout)
-	 * Includes polling mechanism for large worlds that might timeout
+	 * Save world using SvelteKit server action
+	 * This properly forwards the session cookie through the SvelteKit server
 	 */
 	async function saveWorld() {
 		if (!mapOptions.worldName || !mapOptions.serverId) {
@@ -272,13 +272,11 @@
 		try {
 			generationProgress = 'Creating world...';
 
-			const response = await fetch(`${API_URL}/worlds`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include', // Send cookies for authentication
-				body: JSON.stringify({
+			// Use SvelteKit's form action via fetch
+			const formData = new FormData();
+			formData.append(
+				'worldData',
+				JSON.stringify({
 					name: mapOptions.worldName,
 					serverId: mapOptions.serverId,
 					generate: true,
@@ -291,18 +289,32 @@
 					precipitationSettings: precipitationOptions,
 					temperatureSettings: temperatureOptions
 				})
+			);
+
+			const response = await fetch('?/create', {
+				method: 'POST',
+				body: formData
 			});
 
-			if (!response.ok) {
-				const error = await response.json().catch(() => ({ error: 'Failed to create world' }));
-				saveError = error.error || 'Failed to create world';
+			const result = await response.json();
+
+			console.log('[WORLD CREATE] Action result:', result);
+
+			if (result.type === 'failure') {
+				saveError = result.data?.error || 'Failed to create world';
 				generationProgress = '';
 				return;
 			}
 
-			const world = await response.json();
+			const world = result.data?.world;
 
-			// Check if world is still generating (happens when server returns before completion)
+			if (!world) {
+				saveError = 'World was created but no data was returned';
+				generationProgress = '';
+				return;
+			}
+
+			// Check if world is still generating
 			if (world.status === 'generating') {
 				generationProgress = 'World is generating on the server. Checking progress...';
 				const success = await pollWorldStatus(world.id);
@@ -319,59 +331,7 @@
 			}
 		} catch (err) {
 			console.error('[WORLD CREATE] Error:', err);
-
-			// If request fails (timeout, network error, etc.), check if world was created anyway
-			if (err instanceof Error && (err.name === 'AbortError' || err.message.includes('fetch'))) {
-				generationProgress = 'Connection lost. Checking if world was created...';
-
-				// Wait a moment for server to potentially finish
-				await new Promise((resolve) => setTimeout(resolve, 3000));
-
-				// Try to find the world by name and server
-				try {
-					const checkResponse = await fetch(`${API_URL}/worlds`, {
-						method: 'GET',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						credentials: 'include' // Send cookies for authentication
-					});
-
-					if (checkResponse.status === 401) {
-						// Unauthorized - session may have expired
-						saveError = 'Session expired. Please refresh and try again.';
-						generationProgress = '';
-						return;
-					}
-
-					if (checkResponse.ok) {
-						const worlds = await checkResponse.json();
-						const createdWorld = worlds.find(
-							(w: any) => w.name === mapOptions.worldName && w.serverId === mapOptions.serverId
-						);
-
-						if (createdWorld) {
-							generationProgress = 'World found! Checking generation status...';
-
-							// Poll for completion
-							const success = await pollWorldStatus(createdWorld.id);
-
-							if (success) {
-								await goto(`/admin/worlds/${createdWorld.id}`);
-								return;
-							}
-						}
-					}
-				} catch (checkErr) {
-					console.error('[WORLD CREATE] Error checking for world:', checkErr);
-				}
-
-				saveError =
-					'World creation timed out. The world may still be generating on the server. Check the worlds list in a moment.';
-			} else {
-				saveError = 'Failed to create world. Please try again.';
-			}
-
+			saveError = 'Failed to create world. Please try again.';
 			generationProgress = '';
 		} finally {
 			isSaving = false;
