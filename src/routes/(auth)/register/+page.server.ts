@@ -90,7 +90,7 @@ const register: Action = async ({ cookies, request, fetch }) => {
         cookies.set('session', result.account.userAuthToken, {
             path: '/',
             httpOnly: true,
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             secure: process.env.NODE_ENV === 'production',
             maxAge: 60 * 60 * 6
         });
