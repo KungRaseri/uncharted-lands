@@ -115,9 +115,10 @@ describe('Client Logger', () => {
 			logger.error('Custom error', error);
 			expect(consoleErrorSpy).toHaveBeenCalled();
 			const call = consoleErrorSpy.mock.calls[0][0];
+			const contextArg = consoleErrorSpy.mock.calls[0][3]; // Context is 4th arg
 			expect(call).toContain('Custom error');
-			expect(call).toContain('code');
-			expect(call).toContain('CUSTOM_ERROR');
+			expect(contextArg).toContain('code');
+			expect(contextArg).toContain('CUSTOM_ERROR');
 		});
 
 		it('should include context along with error', () => {
@@ -125,9 +126,11 @@ describe('Client Logger', () => {
 			logger.error('Error with context', error, { userId: '456', action: 'delete' });
 			expect(consoleErrorSpy).toHaveBeenCalled();
 			const call = consoleErrorSpy.mock.calls[0][0];
-			expect(call).toContain('userId');
-			expect(call).toContain('456');
-			expect(call).toContain('Test error');
+			const contextArg = consoleErrorSpy.mock.calls[0][3]; // Context is 4th arg
+			expect(call).toContain('Error with context');
+			expect(contextArg).toContain('userId');
+			expect(contextArg).toContain('456');
+			expect(contextArg).toContain('Test error');
 		});
 
 		it('should handle null/undefined errors', () => {
@@ -201,8 +204,10 @@ describe('Client Logger', () => {
 			});
 			expect(consoleLogSpy).toHaveBeenCalled();
 			const call = consoleLogSpy.mock.calls[0][0];
-			expect(call).toContain('user');
-			expect(call).toContain('metadata');
+			const contextArg = consoleLogSpy.mock.calls[0][3]; // Context is 4th arg
+			expect(call).toContain('Complex context');
+			expect(contextArg).toContain('user');
+			expect(contextArg).toContain('metadata');
 		});
 	});
 
