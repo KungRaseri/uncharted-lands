@@ -184,4 +184,59 @@ const deleteWorld: Action = async ({ params, cookies }) => {
 	}
 };
 
-export const actions: Actions = { update, delete: deleteWorld };
+/**
+ * Start generation action
+ * Triggers background generation of regions, tiles, and plots
+ */
+const generate: Action = async ({ request, params, cookies }) => {
+	const data = await request.formData();
+	const settings = data.get('settings');
+
+	if (!settings || typeof settings !== 'string') {
+		logger.warn('[ADMIN WORLD] Missing generation settings', { worldId: params.id });
+		return fail(400, { success: false, message: 'Generation settings are required' });
+	}
+
+	try {
+		const sessionToken = cookies.get('session');
+		const generationSettings = JSON.parse(settings);
+
+		logger.info('[ADMIN WORLD] Starting world generation', {
+			worldId: params.id,
+			dimensions: `${generationSettings.width}x${generationSettings.height}`
+		});
+
+		const response = await fetch(`${API_URL}/worlds/${params.id}/generate`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Cookie: `session=${sessionToken}`
+			},
+			body: JSON.stringify(generationSettings)
+		});
+
+		if (!response.ok) {
+			const error = await response.json().catch(() => ({ error: 'Failed to start generation' }));
+			logger.error('[ADMIN WORLD] Failed to start generation', {
+				worldId: params.id,
+				status: response.status,
+				error
+			});
+			return fail(response.status, {
+				success: false,
+				message: error.error || 'Failed to start generation'
+			});
+		}
+
+		logger.info('[ADMIN WORLD] Generation started successfully', { worldId: params.id });
+
+		return { success: true, message: 'Generation started' };
+	} catch (err) {
+		logger.error('[ADMIN WORLD] Error starting generation', err, {
+			worldId: params.id
+		});
+		return fail(500, { success: false, message: 'Failed to start generation' });
+	}
+};
+
+export const actions: Actions = { update, delete: deleteWorld, generate };

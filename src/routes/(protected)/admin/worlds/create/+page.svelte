@@ -257,7 +257,11 @@
 
 	/**
 	 * Save world using SvelteKit server action
-	 * This properly forwards the session cookie through the SvelteKit server
+	 *
+	 * New Flow:
+	 * 1. Creates world record quickly (< 1 second)
+	 * 2. Navigates to world details page with generation settings
+	 * 3. World details page starts generation and polls for status
 	 */
 	async function saveWorld() {
 		if (!mapOptions.worldName || !mapOptions.serverId) {
@@ -267,11 +271,9 @@
 
 		isSaving = true;
 		saveError = null;
-		generationProgress = 'Starting world generation...';
+		generationProgress = 'Creating world record...';
 
 		try {
-			generationProgress = 'Creating world...';
-
 			// Use SvelteKit's form action via fetch
 			const formData = new FormData();
 			formData.append(
@@ -279,7 +281,6 @@
 				JSON.stringify({
 					name: mapOptions.worldName,
 					serverId: mapOptions.serverId,
-					generate: true,
 					width: mapOptions.width,
 					height: mapOptions.height,
 					elevationSeed: mapOptions.elevationSeed,
@@ -307,28 +308,20 @@
 			}
 
 			const world = result.data?.world;
+			const generationSettings = result.data?.generationSettings;
 
-			if (!world) {
+			if (!world || !generationSettings) {
 				saveError = 'World was created but no data was returned';
 				generationProgress = '';
 				return;
 			}
 
-			// Check if world is still generating
-			if (world.status === 'generating') {
-				generationProgress = 'World is generating on the server. Checking progress...';
-				const success = await pollWorldStatus(world.id);
+			// Navigate to world details page with generation settings
+			// The details page will handle starting generation and polling for status
+			generationProgress = 'World record created! Navigating to world details...';
 
-				if (success) {
-					await goto(`/admin/worlds/${world.id}`);
-				}
-			} else if (world.status === 'ready') {
-				generationProgress = 'World created successfully!';
-				await goto(`/admin/worlds/${world.id}`);
-			} else if (world.status === 'failed') {
-				saveError = 'World generation failed.';
-				generationProgress = '';
-			}
+			const settingsParam = encodeURIComponent(JSON.stringify(generationSettings));
+			await goto(`/admin/worlds/${world.id}?startGeneration=true&settings=${settingsParam}`);
 		} catch (err) {
 			console.error('[WORLD CREATE] Error:', err);
 			saveError = 'Failed to create world. Please try again.';

@@ -68,7 +68,13 @@ export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
 
 /**
  * Server action for creating worlds
- * This runs on the SvelteKit server and properly forwards the session cookie
+ *
+ * New Flow:
+ * 1. Creates world record in database (status: 'pending')
+ * 2. Returns immediately with world ID
+ * 3. Client navigates to world details page
+ * 4. World details page triggers background generation
+ * 5. Client polls for status updates
  */
 export const actions: Actions = {
 	create: async ({ request, cookies }) => {
@@ -78,24 +84,28 @@ export const actions: Actions = {
 		try {
 			const sessionToken = cookies.get('session');
 
-			logger.info('[WORLD CREATE ACTION] Creating world', {
+			logger.info('[WORLD CREATE ACTION] Creating world record', {
 				name: worldData.name,
 				serverId: worldData.serverId,
 				dimensions: `${worldData.width}x${worldData.height}`
 			});
 
+			// Step 1: Create world record only (quick operation)
 			const response = await fetch(`${API_URL}/worlds`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					Cookie: `session=${sessionToken}`
 				},
-				body: JSON.stringify(worldData)
+				body: JSON.stringify({
+					...worldData,
+					generate: false // Don't generate yet, just create the record
+				})
 			});
 
 			if (!response.ok) {
 				const error = await response.json().catch(() => ({ error: 'Failed to create world' }));
-				logger.error('[WORLD CREATE ACTION] Failed to create world', {
+				logger.error('[WORLD CREATE ACTION] Failed to create world record', {
 					status: response.status,
 					error
 				});
@@ -104,14 +114,15 @@ export const actions: Actions = {
 
 			const world = await response.json();
 
-			logger.info('[WORLD CREATE ACTION] World created successfully', {
+			logger.info('[WORLD CREATE ACTION] World record created successfully', {
 				worldId: world.id,
 				name: world.name,
 				status: world.status
 			});
 
-			// Return the world data so the client can poll for status
-			return { success: true, world };
+			// Return world data so client can navigate to details page
+			// The details page will trigger generation and poll for status
+			return { success: true, world, generationSettings: worldData };
 		} catch (error) {
 			logger.error('[WORLD CREATE ACTION] Exception creating world', {
 				error: error instanceof Error ? error.message : String(error)

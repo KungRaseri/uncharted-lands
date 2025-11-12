@@ -11,13 +11,18 @@
 		Edit,
 		Trash2,
 		Save,
-		X
+		X,
+		Loader2,
+		AlertCircle,
+		RefreshCw
 	} from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
 	import type { TileWithRelations, Plot } from '$lib/types/api';
+	import { env } from '$env/dynamic/public';
 
 	let { data, form }: { data: PageData; form: any } = $props();
 
@@ -34,12 +39,115 @@
 	let editName = $state(data.world.name);
 	let editServerId = $state(data.world.serverId);
 
+	// Generation state
+	let isGenerating = $state(false);
+	let generationError = $state<string | null>(null);
+	let pollingInterval: ReturnType<typeof setInterval> | null = null;
+
 	// Auto-enable edit mode if ?edit=true in URL
+	// Auto-start generation if ?startGeneration=true in URL
 	onMount(() => {
 		if (page.url.searchParams.get('edit') === 'true') {
 			startEdit();
 		}
+
+		// Check if we should start generation
+		const startGeneration = page.url.searchParams.get('startGeneration') === 'true';
+		const generationSettings = page.url.searchParams.get('settings');
+
+		if (startGeneration && generationSettings) {
+			try {
+				const settings = JSON.parse(decodeURIComponent(generationSettings));
+				triggerGeneration(settings);
+			} catch (error) {
+				console.error('Failed to parse generation settings:', error);
+				generationError = 'Failed to start generation: Invalid settings';
+			}
+		}
+
+		// Cleanup polling on unmount
+		return () => {
+			if (pollingInterval) {
+				clearInterval(pollingInterval);
+			}
+		};
 	});
+
+	async function triggerGeneration(settings: any) {
+		isGenerating = true;
+		generationError = null;
+
+		try {
+			// Call the generate action
+			const formData = new FormData();
+			formData.append('width', settings.width);
+			formData.append('height', settings.height);
+			formData.append('seed', settings.seed);
+			formData.append('elevationOptions', JSON.stringify(settings.elevationOptions));
+			formData.append('precipitationOptions', JSON.stringify(settings.precipitationOptions));
+			formData.append('temperatureOptions', JSON.stringify(settings.temperatureOptions));
+
+			const response = await fetch(`?/generate`, {
+				method: 'POST',
+				body: formData
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to start generation');
+			}
+
+			// Start polling for status
+			startPolling();
+		} catch (error) {
+			console.error('Failed to start generation:', error);
+			generationError = error instanceof Error ? error.message : 'Failed to start generation';
+			isGenerating = false;
+		}
+	}
+
+	function startPolling() {
+		// Poll every 3 seconds
+		pollingInterval = setInterval(async () => {
+			try {
+				// Invalidate all data to refetch the world
+				await invalidateAll();
+
+				// Check world status
+				if (data.world?.status === 'ready') {
+					// Generation complete!
+					isGenerating = false;
+					if (pollingInterval) {
+						clearInterval(pollingInterval);
+						pollingInterval = null;
+					}
+				} else if (data.world?.status === 'failed') {
+					// Generation failed
+					isGenerating = false;
+					generationError = 'World generation failed. Please try again.';
+					if (pollingInterval) {
+						clearInterval(pollingInterval);
+						pollingInterval = null;
+					}
+				}
+			} catch (error) {
+				console.error('Polling error:', error);
+			}
+		}, 3000);
+	}
+
+	async function retryGeneration() {
+		// Get the last used settings from the world
+		const settings = {
+			width: 10, // Default values - you might want to get these from somewhere
+			height: 10,
+			seed: data.world!.id.charCodeAt(0), // Use world ID as seed
+			elevationOptions: data.world!.elevationSettings,
+			precipitationOptions: data.world!.precipitationSettings,
+			temperatureOptions: data.world!.temperatureSettings
+		};
+
+		await triggerGeneration(settings);
+	}
 
 	function startEdit() {
 		editName = data.world!.name;
@@ -69,6 +177,49 @@
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">{data.world.name}</span>
 	</div>
+
+	<!-- Generation Status Banner -->
+	{#if isGenerating || data.world?.status === 'generating'}
+		<div class="card preset-filled-primary-500 p-6">
+			<div class="flex items-center gap-4">
+				<Loader2 size={32} class="text-white animate-spin" />
+				<div class="flex-1">
+					<h3 class="text-xl font-bold text-white mb-1">Generating World...</h3>
+					<p class="text-white/80 text-sm">
+						This may take a few minutes. The page will update automatically when complete.
+					</p>
+				</div>
+			</div>
+		</div>
+	{:else if generationError || data.world?.status === 'failed'}
+		<div class="card preset-filled-error-500 p-6">
+			<div class="flex items-center gap-4">
+				<AlertCircle size={32} class="text-white" />
+				<div class="flex-1">
+					<h3 class="text-xl font-bold text-white mb-1">Generation Failed</h3>
+					<p class="text-white/80 text-sm">
+						{generationError || 'World generation encountered an error. Please try again.'}
+					</p>
+				</div>
+				<button onclick={retryGeneration} class="btn preset-filled-surface-100 rounded-md">
+					<RefreshCw size={16} />
+					<span>Retry</span>
+				</button>
+			</div>
+		</div>
+	{:else if data.world?.status === 'pending'}
+		<div class="card preset-filled-warning-500 p-6">
+			<div class="flex items-center gap-4">
+				<AlertCircle size={32} class="text-white" />
+				<div class="flex-1">
+					<h3 class="text-xl font-bold text-white mb-1">World Not Generated</h3>
+					<p class="text-white/80 text-sm">
+						This world record exists but has not been generated yet.
+					</p>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<!-- World Header -->
 	<div class="card preset-filled-surface-100-900 p-6">
