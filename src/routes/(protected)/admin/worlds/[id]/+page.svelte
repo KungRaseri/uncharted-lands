@@ -78,14 +78,9 @@
 		generationError = null;
 
 		try {
-			// Call the generate action
+			// Call the generate server action
 			const formData = new FormData();
-			formData.append('width', settings.width);
-			formData.append('height', settings.height);
-			formData.append('seed', settings.seed);
-			formData.append('elevationOptions', JSON.stringify(settings.elevationOptions));
-			formData.append('precipitationOptions', JSON.stringify(settings.precipitationOptions));
-			formData.append('temperatureOptions', JSON.stringify(settings.temperatureOptions));
+			formData.append('settings', JSON.stringify(settings));
 
 			const response = await fetch(`?/generate`, {
 				method: 'POST',
