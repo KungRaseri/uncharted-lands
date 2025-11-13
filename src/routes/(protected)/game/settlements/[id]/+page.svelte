@@ -19,6 +19,7 @@
 		Hammer,
 		RefreshCw
 	} from 'lucide-svelte';
+	import PopulationPanel from '$lib/components/game/PopulationPanel.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import {
@@ -248,6 +249,9 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Population Panel -->
+		<PopulationPanel settlementId={data.settlement.id} />
 
 		<!-- Plot Resources -->
 		<div class="card preset-filled-surface-100-900 p-6">
