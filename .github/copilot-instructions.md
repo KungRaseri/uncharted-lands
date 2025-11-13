@@ -52,6 +52,25 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ---
 
+## 📚 Game Design Documentation
+
+**All game design documentation is centralized in the `docs/game-design/` folder.**
+
+- **📖 [Design Docs Quick Start](../docs/game-design/DESIGN_DOCS_README.md)** - Start here! Explains how to use all design docs
+- **📚 [Game Design Document (GDD)](../docs/game-design/GAME_DESIGN_DOCUMENT.md)** - Complete specifications for all game systems
+- **📊 [Implementation Tracker](../docs/game-design/GDD_IMPLEMENTATION_TRACKER.md)** - Current status of all features (✅/🚧/📋)
+- **🔧 [Feature Spec Template](../docs/templates/FEATURE_SPEC_TEMPLATE.md)** - Template for implementing new features
+
+**When implementing new features, follow this workflow:**
+
+1. Check GDD for design specifications
+2. Review Implementation Tracker for current status
+3. Create feature spec from template in `docs/features/[feature-name].md`
+4. Implement following Svelte 5 + SvelteKit patterns below
+5. Update tracker when complete
+
+---
+
 ## Documentation Policy
 
 **⚠️ CRITICAL: ALL project documentation MUST be placed in the `docs/` directory.**
