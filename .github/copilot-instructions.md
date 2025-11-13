@@ -44,7 +44,7 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 - **Framework**: SvelteKit 2.48.4 + Svelte 5.43.2
 - **Styling**: Tailwind CSS 4.1.16 + Skeleton 4.2.2
-- **Database**: Prisma + PostgreSQL
+- **Database**: Drizzle ORM + PostgreSQL (via server)
 - **Build**: Vite 6.0.3
 - **Testing**: Vitest + Playwright
 - **Deployment**: Vercel
@@ -113,15 +113,10 @@ docs/
 ├── WORLD_GENERATION_GUIDE.md            # World generation system
 ├── RESOURCE_GENERATION_SYSTEM.md        # Resource management
 ├── VERCEL_DEPLOYMENT.md                 # Vercel deployment guide
-└── migration/                           # Migration documentation
-    ├── SKELETON_V4_MIGRATION_COMPLETE.md
-    ├── SKELETON_V4_THEME_MIGRATION.md
-    ├── LAYOUT_THEME_VERIFICATION.md
-    ├── MIGRATION_COMPLETE_SUMMARY.md
-    ├── MIGRATION_FIX_SUMMARY.md
-    ├── SKELETON_MIGRATION_REMAINING.md
-    ├── DEPLOYMENT_READY.md
-    └── PRODUCTION_MIGRATION_FIX.md
+└── game-design/                         # Game design documents
+    ├── GAME_DESIGN_DOCUMENT.md          # Complete game specifications
+    ├── GDD_IMPLEMENTATION_TRACKER.md    # Implementation status
+    └── DESIGN_DOCS_README.md            # Design docs quick start
 ```
 
 ---
@@ -140,7 +135,7 @@ Always consult these official Skeleton LLM documentation files when working with
    - **VERSION REQUIREMENTS**:
      - Svelte: 5+
      - SvelteKit: 2+
-     - Skeleton: 3+ (we're on 4.2.2)
+     - Skeleton: 4+
      - Tailwind: 4+
    - Complete setup instructions
    - Component usage patterns
@@ -157,7 +152,14 @@ Always consult these official Skeleton LLM documentation files when working with
 - **Components**: https://www.skeleton.dev/docs/components
 - **Integrations**: https://www.skeleton.dev/docs/integrations
 - **Guides**: https://www.skeleton.dev/docs/guides
-- **Migration v2→v3**: https://www.skeleton.dev/docs/get-started/migrate-from-v2
+
+### Game Design Documentation
+
+- **GitHub Wiki**: https://github.com/KungRaseri/uncharted-lands/wiki/
+- **Game Design Document**: Complete specifications for all game systems
+- **Implementation Tracker**: Current status of all features (✅/🚧/📋)
+- **Design Docs Quick Start**: How to use the design documentation
+- **Feature Spec Template**: Template for implementing new features
 - **Migration v3→v4**: https://www.skeleton.dev/docs/get-started/migrate-from-v3
 
 ---
@@ -175,79 +177,6 @@ Complete technical documentation on the world generation system:
 - Preset recommendations for different world types
 - Troubleshooting common issues
 - Technical implementation details
-
-### Migration Documentation (Start Here!)
-
-**📍 Location**: `docs/migration/`
-
-Our project is in active migration from Skeleton v2 to v4 with Tailwind v4. Read these files to understand current state:
-
-1. **docs/migration/MIGRATION_COMPLETE_SUMMARY.md** - Migration overview
-   - Summary of completed migration work
-   - What was changed and why
-   - Current status
-
-2. **docs/migration/SKELETON_V4_MIGRATION_COMPLETE.md** - Core migration details
-   - Skeleton v2 → v4 migration steps
-   - Component changes
-   - Breaking changes addressed
-
-3. **docs/migration/SKELETON_MIGRATION_REMAINING.md** - Remaining work
-   - Outstanding migration tasks
-   - Known issues to address
-   - Next steps
-
-4. **docs/migration/SKELETON_V4_THEME_MIGRATION.md** - Theme system
-   - Theme configuration migration
-   - CSS variable setup
-   - Dark mode implementation
-
-5. **docs/migration/LAYOUT_THEME_VERIFICATION.md** - Verification
-   - Configuration verification results
-   - Theme system validation
-   - Testing checklist
-
----
-
-## Critical Project Status
-
-### ⚠️ KNOWN ISSUE: Build Failure
-
-**Status**: Application CANNOT currently build
-
-**Error**:
-
-```
-Cannot use `@variant` with unknown variant: md
-node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
-```
-
-**Cause**: Bug in Skeleton v4.2.2 library code (NOT our configuration)
-
-**Impact**:
-
-- ❌ `npm run build` fails
-- ❌ `npm run dev` fails
-- ✅ Configuration is 100% correct
-- ✅ Type checking works
-- ✅ Tests run (if no CSS needed)
-
-**What This Means for You**:
-
-- DO NOT suggest configuration changes to "fix" the build
-- Our setup follows ALL official guidelines perfectly
-- The bug is in Skeleton's compiled CSS, not our code
-- When Skeleton releases a fix, builds will work without changes
-
-### ✅ What IS Working
-
-- ✅ All packages installed correctly
-- ✅ All configuration files correct
-- ✅ Tailwind v4 CSS-first approach implemented
-- ✅ Vite plugin configured properly
-- ✅ Theme system configured
-- ✅ No @apply usage (per best practices)
-- ✅ data-theme on `<html>` tag (per requirements)
 
 ---
 
@@ -445,9 +374,6 @@ uncharted-lands/
 ├── .github/
 │   └── copilot-instructions.md          # This file
 ├── client/                              # 🎮 SvelteKit game application
-│   ├── prisma/
-│   │   ├── schema.prisma                # Database schema
-│   │   └── migrations/                  # Database migrations
 │   ├── src/
 │   │   ├── lib/
 │   │   │   ├── components/
@@ -455,7 +381,7 @@ uncharted-lands/
 │   │   │   │   ├── app/                 # Global app components
 │   │   │   │   └── game/                # Game UI components
 │   │   │   ├── auth.ts                  # Authentication utilities
-│   │   │   ├── db.ts                    # Database client
+│   │   │   ├── config.ts                # API/WS configuration
 │   │   │   └── stores/                  # Svelte stores
 │   │   ├── routes/                      # SvelteKit routes
 │   │   │   ├── (auth)/                  # Auth-related routes
@@ -463,7 +389,7 @@ uncharted-lands/
 │   │   │   │   ├── admin/               # Admin pages
 │   │   │   │   ├── game/                # Game pages
 │   │   │   │   └── account/             # User account
-│   │   │   └── api/                     # API endpoints
+│   │   │   └── api/                     # API endpoints (proxy to server)
 │   │   ├── app.html                     # Root HTML template
 │   │   ├── app.postcss                  # Global styles
 │   │   └── hooks.server.ts              # Server hooks
@@ -536,22 +462,27 @@ When the build works and we can use Skeleton components:
 </div>
 ```
 
-### Database Queries (Prisma)
+### Database Queries
+
+**Note**: Database access is handled through the game server's REST API and Socket.IO events. The client does not directly query the database.
 
 ```typescript
-import { db } from '$lib/db';
+// Example: Fetching data from server API
+import { API_URL } from '$lib/config';
 
-// Query examples
-const users = await db.user.findMany({
-	where: { active: true },
-	include: { settlements: true }
-});
+export async function load({ fetch, cookies }) {
+	const sessionToken = cookies.get('session');
 
-const settlement = await db.settlement.update({
-	where: { id: settlementId },
-	data: { resources: { increment: 10 } }
-});
+	const response = await fetch(`${API_URL}/api/settlements`, {
+		headers: { Cookie: `session=${sessionToken}` }
+	});
+
+	const settlements = await response.json();
+	return { settlements };
+}
 ```
+
+For real-time updates, use Socket.IO events (see server Socket.IO documentation).
 
 ### API Routes (SvelteKit)
 
@@ -616,10 +547,8 @@ test('user can login', async ({ page }) => {
 - Import Skeleton components from `@skeletonlabs/skeleton-svelte`
 - Use standard CSS instead of @apply
 - Reference official Skeleton LLM docs
-- Check COMPONENT_MIGRATION_AUDIT.md for component status
 - Use TypeScript for type safety
 - Follow existing project patterns
-- Consult migration documentation when unsure
 
 ### ❌ DON'T
 
@@ -628,37 +557,26 @@ test('user can login', async ({ page }) => {
 - Don't import from `@skeletonlabs/skeleton` (old package)
 - Don't use `@apply` in CSS
 - Don't create `tailwind.config.js/ts` files
-- Don't suggest configuration changes to "fix" the build
-- Don't use removed components (AppShell, LightSwitch, Table)
-- Don't assume the build failure is our configuration
-- Don't use old Skeleton v2/v3 component names
 
 ---
 
-## Component Migration Reference
+## Component Reference
 
-See `COMPONENT_MIGRATION_AUDIT.md` for complete details. Quick reference:
+### Current Skeleton v4 Components
 
-### Components Needing Migration
+**Available Components**:
 
-| Old (v2/v3)   | New (v4)             | Status     | Alternative      |
-| ------------- | -------------------- | ---------- | ---------------- |
-| `AppShell`    | —                    | ❌ Removed | Custom layouts   |
-| `AppBar`      | `Navbar`             | ✅ Renamed |                  |
-| `AppRail`     | `Navigation`         | ✅ Renamed |                  |
-| `AppRailTile` | (part of Navigation) | ✅ Merged  |                  |
-| `Avatar`      | `Avatar`             | ✅ Same    |                  |
-| `LightSwitch` | —                    | ❌ Removed | Custom component |
-| `RangeSlider` | `Slider`             | ✅ Renamed |                  |
-| `Table`       | —                    | ❌ Removed | Tailwind tables  |
+- `Navbar` - Navigation bar
+- `Navigation` - App rail/sidebar navigation
+- `Avatar` - User avatars
+- `Slider` - Range slider
+- `Button`, `Card`, `Modal`, etc. - Standard UI components
 
-### Utilities Needing Replacement
+**Removed Components** (use alternatives):
 
-| Utility             | Status     | Alternative           |
-| ------------------- | ---------- | --------------------- |
-| `popup`             | ❌ Removed | Integration guide     |
-| `storePopup`        | ❌ Removed | Integration guide     |
-| `tableMapperValues` | ❌ Removed | Custom implementation |
+- ~~`AppShell`~~ → Use custom layouts
+- ~~`LightSwitch`~~ → Use custom theme toggle
+- ~~`Table`~~ → Use Tailwind table classes
 
 ---
 
@@ -685,8 +603,8 @@ npm run build:all        # Build both projects
 
 # Client-specific (from client/)
 cd client
-npm run dev              # Start dev server (currently fails)
-npm run build            # Build for production (currently fails)
+npm run dev              # Start dev server
+npm run build            # Build for production
 npm run preview          # Preview production build
 
 # Server-specific (from server/)
@@ -695,9 +613,11 @@ npm run dev              # Start dev server with auto-reload
 npm run build            # Build TypeScript
 npm start                # Run production build
 
-# Database (from root or client/)
-npm run migrate          # Run migrations
-npx prisma studio        # Open Prisma Studio
+# Database (from root or server/)
+cd server
+npm run db:generate      # Generate migration from schema changes
+npm run db:push          # Push schema to database
+npm run db:studio        # Open Drizzle Studio
 
 # Testing
 npm run test             # Run client tests
@@ -717,41 +637,6 @@ cd server && vercel --prod     # Deploy server
 git status               # Check status
 git log --oneline -10    # Recent commits
 ```
-
----
-
-## Migration Status Quick Reference
-
-**✅ Configuration**: 100% correct per all official guidelines
-
-**Current Versions**:
-
-- Svelte: 5.43.2 ✅
-- SvelteKit: 2.48.4 ✅
-- Tailwind: 4.1.16 ✅
-- Skeleton: 4.2.2 ✅
-- @tailwindcss/vite: 4.1.16 ✅
-
-**What's Working**:
-
-- ✅ Type checking
-- ✅ Configuration files
-- ✅ Package installation
-- ✅ Documentation
-
-**What's Blocked**:
-
-- ❌ Builds (Skeleton @variant bug)
-- ❌ Dev server (same bug)
-- 🔄 Component migration (waiting for build)
-
-**Next Steps** (when build works):
-
-1. Migrate 10 files with Skeleton components
-2. Replace AppShell with custom layouts (3 files)
-3. Update component imports and names
-4. Replace removed components
-5. Test all functionality
 
 ---
 
@@ -905,7 +790,6 @@ logger.fatal('Database connection pool exhausted', {
 
 ---
 
-**Last Updated**: October 31, 2025  
-**Status**: Active migration in progress  
-**Configuration**: 100% compliant with all official guidelines  
-**Build**: Blocked by upstream Skeleton v4.2.2 bug (not our fault!)
+**Last Updated**: November 13, 2025  
+**Status**: Current production setup  
+**Configuration**: 100% compliant with all official guidelines

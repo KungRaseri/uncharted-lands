@@ -1,7 +1,5 @@
 # Uncharted Lands | Browser-based Settlement Game
 
-> **📢 Deployment Fix Applied**: If you're experiencing migration issues, see [`docs/migration/DEPLOYMENT_READY.md`](docs/migration/DEPLOYMENT_READY.md) - the automated fix is already in place!
-
 ## 📚 Game Design Documentation
 
 Complete game design documentation is available on the [GitHub Wiki](https://github.com/KungRaseri/uncharted-lands/wiki):
@@ -51,15 +49,17 @@ Complete game design documentation is available on the [GitHub Wiki](https://git
 ## Database
 
 ```bash
-# generate the typescript client
-npx prisma generate
+# Generate Drizzle migrations from schema changes
+npm run db:generate
 
-# run migration scripts against dev environment
-npx prisma migrate dev
+# Push schema changes to database (development)
+npm run db:push
 
-# push the schema to the database
-npx prisma db push
+# Open Drizzle Studio to view/edit data
+npm run db:studio
 ```
+
+**Note**: We migrated from Prisma to Drizzle ORM. See `server/src/db/` for the schema.
 
 ## Developing
 
@@ -89,4 +89,3 @@ For detailed documentation:
 - **[GitHub Wiki](https://github.com/KungRaseri/uncharted-lands/wiki)** - Complete documentation hub
 - **[Game Design Documentation](https://github.com/KungRaseri/uncharted-lands/wiki/Game-Design-Document)** - Game specifications
 - **[Local Docs](docs/)** - Offline documentation in `docs/` folder
-- **[Migration Docs](docs/migration/)** - Skeleton v4 + Tailwind v4 migration status
