@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Server, Globe, Users, MapPin, Grid3x3, LayoutGrid } from 'lucide-svelte';
+	import { Server, Globe, Users, MapPin, Grid3x3, LayoutGrid, Settings } from 'lucide-svelte';
 	import StatsCard from '$lib/components/admin/StatsCard.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -78,6 +78,10 @@
 			<a href="/admin/players" class="btn preset-filled-secondary-500 rounded-md">
 				<Users size={20} />
 				<span>Manage Players</span>
+			</a>
+			<a href="/admin/settings" class="btn preset-filled-tertiary-500 rounded-md">
+				<Settings size={20} />
+				<span>Settings</span>
 			</a>
 		</div>
 	</div>
