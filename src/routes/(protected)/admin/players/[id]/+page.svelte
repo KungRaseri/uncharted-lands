@@ -18,9 +18,9 @@
 
 	function getRoleBadgeClass(role: string): string {
 		switch (role) {
-			case 'ADMIN':
+			case 'ADMINISTRATOR':
 				return 'preset-filled-error-500';
-			case 'MODERATOR':
+			case 'SUPPORT':
 				return 'preset-filled-warning-500';
 			default:
 				return 'preset-filled-surface-500';
