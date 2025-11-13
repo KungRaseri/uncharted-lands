@@ -15,13 +15,26 @@ import {
 	registerUser,
 	logoutUser,
 	generateUniqueEmail,
-	isAuthenticated
+	isAuthenticated,
+	cleanupTestUser
 } from './auth.helpers';
+
+// Track emails created during tests for cleanup
+const createdEmails: string[] = [];
+
+test.afterEach(async ({ request }) => {
+	// Clean up all test users created during the test
+	for (const email of createdEmails) {
+		await cleanupTestUser(request, email);
+	}
+	createdEmails.length = 0; // Clear the array
+});
 
 test.describe('Authentication Flow', () => {
 	test.describe('Complete User Journey', () => {
 		test('should complete full registration → login → logout flow', async ({ page }) => {
 			const email = generateUniqueEmail('journey');
+			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;
 
 			// Step 1: Register
@@ -45,6 +58,7 @@ test.describe('Authentication Flow', () => {
 
 		test('should auto-login after successful registration', async ({ page }) => {
 			const email = generateUniqueEmail('autologin');
+			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;
 
 			await registerUser(page, email, password);
@@ -73,6 +87,11 @@ test.describe('Authentication Flow', () => {
 			await registerUser(page, userEmail, userPassword);
 			await page.waitForURL('/', { timeout: 5000 });
 			await page.close();
+		});
+
+		test.afterEach(async ({ request }) => {
+			// Cleanup the test user
+			await cleanupTestUser(request, userEmail);
 		});
 
 		test('should redirect unauthenticated users to sign-in', async ({ page }) => {
@@ -147,6 +166,11 @@ test.describe('Authentication Flow', () => {
 			await page.close();
 		});
 
+		test.afterEach(async ({ request }) => {
+			// Cleanup the test user
+			await cleanupTestUser(request, userEmail);
+		});
+
 		test('should maintain session across page navigation', async ({ page }) => {
 			await loginUser(page, userEmail, userPassword);
 			await page.waitForURL('/', { timeout: 5000 });
@@ -218,6 +242,11 @@ test.describe('Authentication Flow', () => {
 			await page.close();
 		});
 
+		test.afterAll(async ({ request }) => {
+			// Cleanup the test user
+			await cleanupTestUser(request, userEmail);
+		});
+
 		test('should allow same user to login in multiple contexts', async ({ browser }) => {
 			// Create two separate browser contexts (like different browsers)
 			const context1 = await browser.newContext();
@@ -256,6 +285,7 @@ test.describe('Authentication Flow', () => {
 	test.describe('Error Recovery', () => {
 		test('should recover from network errors during registration', async ({ page, context }) => {
 			const email = generateUniqueEmail('network-error');
+			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;
 
 			await page.goto('/register');
@@ -306,6 +336,7 @@ test.describe('Authentication Flow', () => {
 	test.describe('Form Validation', () => {
 		test('should prevent double-submission of registration form', async ({ page }) => {
 			const email = generateUniqueEmail('double-submit');
+			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;
 
 			await page.goto('/register');

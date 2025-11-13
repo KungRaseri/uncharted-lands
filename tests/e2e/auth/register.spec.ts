@@ -16,13 +16,26 @@ import {
 	assertErrorMessage,
 	assertInputErrors,
 	generateUniqueEmail,
-	isAuthenticated
+	isAuthenticated,
+	cleanupTestUser
 } from './auth.helpers';
+
+// Track emails created during tests for cleanup
+const createdEmails: string[] = [];
+
+test.afterEach(async ({ request }) => {
+	// Clean up all test users created during the test
+	for (const email of createdEmails) {
+		await cleanupTestUser(request, email);
+	}
+	createdEmails.length = 0; // Clear the array
+});
 
 test.describe('Registration', () => {
 	test.describe('Successful Registration', () => {
 		test('should register a new user with valid credentials', async ({ page }) => {
 			const uniqueEmail = generateUniqueEmail('register');
+			createdEmails.push(uniqueEmail);
 			const password = TEST_USERS.VALID.password;
 
 			await registerUser(page, uniqueEmail, password);
@@ -37,6 +50,7 @@ test.describe('Registration', () => {
 
 		test('should register and auto-login the user', async ({ page }) => {
 			const uniqueEmail = generateUniqueEmail('autologin');
+			createdEmails.push(uniqueEmail);
 			const password = TEST_USERS.VALID.password;
 
 			await registerUser(page, uniqueEmail, password);
@@ -56,6 +70,7 @@ test.describe('Registration', () => {
 
 		test('should set session cookie with correct attributes', async ({ page }) => {
 			const uniqueEmail = generateUniqueEmail('cookie');
+			createdEmails.push(uniqueEmail);
 			const password = TEST_USERS.VALID.password;
 
 			await registerUser(page, uniqueEmail, password);
@@ -141,7 +156,9 @@ test.describe('Registration', () => {
 			await page.goto('/register');
 			await page.waitForLoadState('networkidle');
 
-			await page.fill('input[name="email"]', generateUniqueEmail());
+			const email = generateUniqueEmail();
+			createdEmails.push(email);
+			await page.fill('input[name="email"]', email);
 			await page.fill('input[name="password"]', 'short'); // Too short
 			await page.click('button[type="submit"]');
 
@@ -155,6 +172,7 @@ test.describe('Registration', () => {
 	test.describe('Duplicate Account Handling', () => {
 		test('should show error when registering with existing email', async ({ page }) => {
 			const email = generateUniqueEmail('duplicate');
+			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;
 
 			// First registration
@@ -245,6 +263,7 @@ test.describe('Registration', () => {
 		test('should redirect to home if already authenticated', async ({ page }) => {
 			// First, register and login
 			const email = generateUniqueEmail('redirect');
+			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;
 			await registerUser(page, email, password);
 			await page.waitForURL('/', { timeout: 5000 });

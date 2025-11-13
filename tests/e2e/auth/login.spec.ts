@@ -19,7 +19,8 @@ import {
 	assertInputErrors,
 	generateUniqueEmail,
 	isAuthenticated,
-	logoutUser
+	logoutUser,
+	cleanupTestUser
 } from './auth.helpers';
 
 test.describe('Login', () => {
@@ -36,6 +37,11 @@ test.describe('Login', () => {
 		await registerUser(page, testUserEmail, testUserPassword);
 		await page.waitForURL('/', { timeout: 5000 });
 		await page.close();
+	});
+
+	test.afterAll(async ({ request }) => {
+		// Cleanup the test user created in beforeAll
+		await cleanupTestUser(request, testUserEmail);
 	});
 
 	test.describe('Successful Login', () => {

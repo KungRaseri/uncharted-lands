@@ -113,7 +113,7 @@ export function getElevationColor(elevation: number): string {
 	if (elevation < -0.5) return '#000d1a'; // Deepest ocean (abyss)
 	if (elevation < -0.3) return '#001a33'; // Deep ocean
 	if (elevation < 0) return '#003d66'; // Shallow ocean
-	if (elevation < 0.1) return '#f4e4c1'; // Beach/Sand
+	if (elevation < 0.05) return '#f4e4c1'; // Beach/Sand
 	if (elevation < 0.3) return '#78b450'; // Low grassland/plains
 	if (elevation < 0.5) return '#5a8232'; // Forest/woodland
 	if (elevation < 0.65) return '#8d6e63'; // Hills
@@ -134,7 +134,7 @@ export function getTerrainType(elevation: number): string {
 	if (elevation < -0.5) return 'Abyss';
 	if (elevation < -0.3) return 'Deep Ocean';
 	if (elevation < 0) return 'Ocean';
-	if (elevation < 0.1) return 'Beach';
+	if (elevation < 0.05) return 'Beach';
 	if (elevation < 0.3) return 'Plains';
 	if (elevation < 0.5) return 'Forest';
 	if (elevation < 0.65) return 'Hills';
@@ -154,7 +154,7 @@ export const ELEVATION_THRESHOLDS = {
 	ABYSS: -0.5,
 	DEEP_OCEAN: -0.3,
 	OCEAN: 0,
-	BEACH: 0.1,
+	BEACH: 0.05, // Reduced from 0.1 for narrower beaches
 	PLAINS: 0.3,
 	FOREST: 0.5,
 	HILLS: 0.65,
@@ -222,7 +222,7 @@ export function getTileColor(elevation: number, biomeName: string, type: TileTyp
 	}
 
 	// Priority 2: Low elevation land gets beach color
-	if (elevation >= 0 && elevation < 0.15) {
+	if (elevation >= 0 && elevation < 0.05) {
 		return getBeachColor();
 	}
 
@@ -340,7 +340,7 @@ export function getTileColorByViewMode(
 			if (type === 'OCEAN' || elevation < 0) {
 				return '#b0c4de'; // Light steel blue for ocean
 			}
-			if (elevation < 0.15) {
+			if (elevation < 0.05) {
 				return '#f5deb3'; // Wheat for beach
 			}
 			return '#d2b48c'; // Tan for land

@@ -48,12 +48,14 @@ export const API_ENDPOINTS = {
  */
 export async function cleanupTestUser(request: APIRequestContext, email: string): Promise<void> {
 	try {
-		// This would call a test-only API endpoint to delete users
-		// For now, we'll skip this as it requires backend support
-		// await request.delete(`/api/test/users/${email}`);
-		console.log(`Note: Manual cleanup may be needed for user: ${email}`);
+		const response = await request.delete(
+			`http://localhost:3001/api/test/cleanup/user/${encodeURIComponent(email)}`
+		);
+		if (!response.ok()) {
+			console.warn(`Failed to cleanup user ${email}: ${response.status()}`);
+		}
 	} catch (error) {
-		// Silently fail - user might not exist
+		// Silently fail - user might not exist or API might be unavailable
 		console.log(`Cleanup for ${email} skipped:`, error);
 	}
 }
