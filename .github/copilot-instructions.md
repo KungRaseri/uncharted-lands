@@ -56,18 +56,52 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 **All game design documentation is centralized in the `docs/game-design/` folder.**
 
-- **📖 [Design Docs Quick Start](../docs/game-design/DESIGN_DOCS_README.md)** - Start here! Explains how to use all design docs
-- **📚 [Game Design Document (GDD)](../docs/game-design/GAME_DESIGN_DOCUMENT.md)** - Complete specifications for all game systems
-- **📊 [Implementation Tracker](../docs/game-design/GDD_IMPLEMENTATION_TRACKER.md)** - Current status of all features (✅/🚧/📋)
-- **🔧 [Feature Spec Template](../docs/templates/FEATURE_SPEC_TEMPLATE.md)** - Template for implementing new features
+- **🏠 [GDD Home](../docs/game-design/GDD-HOME.md)** - Design docs overview and quick navigation
+- **📖 [Design Docs Quick Start](../docs/game-design/GDD-Quick-Start.md)** - Start here! Explains how to use all design docs
+- **📚 [Game Design Document (GDD)](../docs/game-design/GDD-Monolith.md)** - Complete specifications for all game systems
+- **📊 [Implementation Tracker](../docs/game-design/GDD-Implementation-Tracker.md)** - Current status of all features (✅/🚧/📋)
+- **� [Table of Contents](../docs/game-design/GDD-Table-of-Contents.md)** - Complete design document index
+- **�🔧 [Feature Spec Template](../docs/templates/Feature-Spec-Template.md)** - Template for implementing new features
 
 **When implementing new features, follow this workflow:**
 
-1. Check GDD for design specifications
-2. Review Implementation Tracker for current status
-3. Create feature spec from template in `docs/features/[feature-name].md`
-4. Implement following Svelte 5 + SvelteKit patterns below
-5. Update tracker when complete
+1. **Check GDD Monolith** for design specifications and game mechanics
+2. **Review Implementation Tracker** for current status and dependencies
+3. **Create feature spec** from template in `docs/features/[feature-name].md`
+4. **Implement** following Svelte 5 + SvelteKit patterns below
+5. **Update tracker** when complete (mark as ✅)
+
+### 🎯 When to Reference the GDD
+
+**UI/Component Development:**
+
+- Building resource displays → Check GDD for resource types, icons, and formatting
+- Creating structure menus → Check GDD for structure categories and prerequisites
+- Implementing tooltips → Check GDD for detailed descriptions and mechanics
+- Designing forms/inputs → Check GDD for validation rules and constraints
+
+**Feature Implementation:**
+
+- **Before starting:** Read the relevant GDD section completely
+- **During development:** Reference formulas, balance values, and validation rules
+- **When unsure:** Check Implementation Tracker for dependencies and status
+- **After completion:** Update tracker and create/update feature spec
+
+**Game Mechanics:**
+
+- Population happiness → GDD Section 3.3 (Population System)
+- Resource production → GDD Section 3.1 (Resource System)
+- Structure building → GDD Section 3.2 (Settlement System)
+- Disaster events → GDD Section 4.5 (Disaster System)
+- Trading system → GDD Section 4.3 (Trading System)
+
+**Common Questions Answered by GDD:**
+
+- "What resources exist?" → GDD 3.1 (5 base + 6 special)
+- "How does population grow?" → GDD 3.3 (formulas included)
+- "What structures can be built?" → GDD 3.2 (30+ structures)
+- "How do disasters work?" → GDD 4.5 (15+ disaster types)
+- "What's the tech tree?" → GDD 4.2 (Research System)
 
 ---
 
@@ -542,6 +576,8 @@ test('user can login', async ({ page }) => {
 
 ### ✅ DO
 
+- **Reference the GDD first** before implementing any game UI or feature
+- Use GDD for resource types, structure lists, and game mechanics
 - Use Svelte 5 runes ($state, $derived, $effect)
 - Use Svelte 5 snippets (not slots)
 - Import Skeleton components from `@skeletonlabs/skeleton-svelte`
@@ -552,6 +588,8 @@ test('user can login', async ({ page }) => {
 
 ### ❌ DON'T
 
+- **Don't implement game UI without checking the GDD first**
+- Don't hardcode resource types or structure lists (use GDD)
 - Don't use Svelte 4 reactive statements (`$:`)
 - Don't use Svelte 4 slots syntax
 - Don't import from `@skeletonlabs/skeleton` (old package)
