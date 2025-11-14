@@ -4,8 +4,8 @@
 
 Complete game design documentation is available on the [GitHub Wiki](https://github.com/KungRaseri/uncharted-lands/wiki):
 
-- **📖 [Design Docs Quick Start](https://github.com/KungRaseri/uncharted-lands/wiki/Design-Docs-Quick-Start)** - Start here to understand the documentation system
-- **📚 [Game Design Document (GDD)](https://github.com/KungRaseri/uncharted-lands/wiki/Game-Design-Document)** - Complete specifications for all game systems (1,200+ lines)
+- **📖 [Design Docs Quick Start](https://github.com/KungRaseri/uncharted-lands/wiki/GDD-Quick-Start)** - Start here to understand the documentation system
+- **📚 [Game Design Document (GDD)](https://github.com/KungRaseri/uncharted-lands/wiki/GDD-HOME)** - Complete specifications for all game systems (1,200+ lines)
 - **📊 [Implementation Tracker](https://github.com/KungRaseri/uncharted-lands/wiki/GDD-Implementation-Tracker)** - Current status of features (✅/🚧/📋)
 - **🔧 [Feature Spec Template](https://github.com/KungRaseri/uncharted-lands/wiki/Feature-Spec-Template)** - Template for new feature implementations
 
