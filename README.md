@@ -87,5 +87,5 @@ You can preview the production build with `npm run preview`.
 For detailed documentation:
 
 - **[GitHub Wiki](https://github.com/KungRaseri/uncharted-lands/wiki)** - Complete documentation hub
-- **[Game Design Documentation](https://github.com/KungRaseri/uncharted-lands/wiki/Game-Design-Document)** - Game specifications
+- **[Game Design Documentation](https://github.com/KungRaseri/uncharted-lands/wiki/GDD-Monolith)** - Game specifications
 - **[Local Docs](docs/)** - Offline documentation in `docs/` folder
