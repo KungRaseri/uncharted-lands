@@ -13,7 +13,9 @@
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3">
+			<h1
+				class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3"
+			>
 				<Shield size={32} class="text-primary-500" />
 				Wardens
 			</h1>
@@ -99,8 +101,6 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
-			← Back to Game Overview
-		</a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
 	</div>
 </div>

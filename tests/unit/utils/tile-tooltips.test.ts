@@ -18,7 +18,11 @@ function createMockTile(overrides = {}) {
 	};
 }
 
-function createMockPlot(hasSettlement = false, playerProfileId = 'player1', settlementName = 'TestTown') {
+function createMockPlot(
+	hasSettlement = false,
+	playerProfileId = 'player1',
+	settlementName = 'TestTown'
+) {
 	return {
 		settlement: hasSettlement ? { playerProfileId, name: settlementName } : undefined
 	};
@@ -233,10 +237,7 @@ describe('tile-tooltips', () => {
 
 		it('should not show settlement section when player has no settlements', () => {
 			const tile = createMockTile({
-				plots: [
-					createMockPlot(true, 'player2', 'OtherTown'),
-					createMockPlot(false)
-				]
+				plots: [createMockPlot(true, 'player2', 'OtherTown'), createMockPlot(false)]
 			});
 
 			const tooltip = getPlayerTileTooltip(tile, 'player1');
@@ -324,4 +325,3 @@ describe('tile-tooltips', () => {
 		});
 	});
 });
-

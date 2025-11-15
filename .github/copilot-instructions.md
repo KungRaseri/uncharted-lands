@@ -44,11 +44,64 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 - **Framework**: SvelteKit 2.48.4 + Svelte 5.43.2
 - **Styling**: Tailwind CSS 4.1.16 + Skeleton 4.2.2
-- **Database**: Prisma + PostgreSQL
+- **Database**: Drizzle ORM + PostgreSQL (via server)
 - **Build**: Vite 6.0.3
 - **Testing**: Vitest + Playwright
 - **Deployment**: Vercel
 - **Node Version**: 22.x
+
+---
+
+## 📚 Game Design Documentation
+
+**All game design documentation is centralized in the `docs/game-design/` folder.**
+
+- **🏠 [GDD Home](../docs/game-design/GDD-HOME.md)** - Design docs overview and quick navigation
+- **📖 [Design Docs Quick Start](../docs/game-design/GDD-Quick-Start.md)** - Start here! Explains how to use all design docs
+- **📚 [Game Design Document (GDD)](../docs/game-design/GDD-Monolith.md)** - Complete specifications for all game systems
+- **📊 [Implementation Tracker](../docs/game-design/GDD-Implementation-Tracker.md)** - Current status of all features (✅/🚧/📋)
+- **� [Table of Contents](../docs/game-design/GDD-Table-of-Contents.md)** - Complete design document index
+- **�🔧 [Feature Spec Template](../docs/templates/Feature-Spec-Template.md)** - Template for implementing new features
+
+**When implementing new features, follow this workflow:**
+
+1. **Check GDD Monolith** for design specifications and game mechanics
+2. **Review Implementation Tracker** for current status and dependencies
+3. **Create feature spec** from template in `docs/features/[feature-name].md`
+4. **Implement** following Svelte 5 + SvelteKit patterns below
+5. **Update tracker** when complete (mark as ✅)
+
+### 🎯 When to Reference the GDD
+
+**UI/Component Development:**
+
+- Building resource displays → Check GDD for resource types, icons, and formatting
+- Creating structure menus → Check GDD for structure categories and prerequisites
+- Implementing tooltips → Check GDD for detailed descriptions and mechanics
+- Designing forms/inputs → Check GDD for validation rules and constraints
+
+**Feature Implementation:**
+
+- **Before starting:** Read the relevant GDD section completely
+- **During development:** Reference formulas, balance values, and validation rules
+- **When unsure:** Check Implementation Tracker for dependencies and status
+- **After completion:** Update tracker and create/update feature spec
+
+**Game Mechanics:**
+
+- Population happiness → GDD Section 3.3 (Population System)
+- Resource production → GDD Section 3.1 (Resource System)
+- Structure building → GDD Section 3.2 (Settlement System)
+- Disaster events → GDD Section 4.5 (Disaster System)
+- Trading system → GDD Section 4.3 (Trading System)
+
+**Common Questions Answered by GDD:**
+
+- "What resources exist?" → GDD 3.1 (5 base + 6 special)
+- "How does population grow?" → GDD 3.3 (formulas included)
+- "What structures can be built?" → GDD 3.2 (30+ structures)
+- "How do disasters work?" → GDD 4.5 (15+ disaster types)
+- "What's the tech tree?" → GDD 4.2 (Research System)
 
 ---
 
@@ -94,15 +147,10 @@ docs/
 ├── WORLD_GENERATION_GUIDE.md            # World generation system
 ├── RESOURCE_GENERATION_SYSTEM.md        # Resource management
 ├── VERCEL_DEPLOYMENT.md                 # Vercel deployment guide
-└── migration/                           # Migration documentation
-    ├── SKELETON_V4_MIGRATION_COMPLETE.md
-    ├── SKELETON_V4_THEME_MIGRATION.md
-    ├── LAYOUT_THEME_VERIFICATION.md
-    ├── MIGRATION_COMPLETE_SUMMARY.md
-    ├── MIGRATION_FIX_SUMMARY.md
-    ├── SKELETON_MIGRATION_REMAINING.md
-    ├── DEPLOYMENT_READY.md
-    └── PRODUCTION_MIGRATION_FIX.md
+└── game-design/                         # Game design documents
+    ├── GAME_DESIGN_DOCUMENT.md          # Complete game specifications
+    ├── GDD_IMPLEMENTATION_TRACKER.md    # Implementation status
+    └── DESIGN_DOCS_README.md            # Design docs quick start
 ```
 
 ---
@@ -121,7 +169,7 @@ Always consult these official Skeleton LLM documentation files when working with
    - **VERSION REQUIREMENTS**:
      - Svelte: 5+
      - SvelteKit: 2+
-     - Skeleton: 3+ (we're on 4.2.2)
+     - Skeleton: 4+
      - Tailwind: 4+
    - Complete setup instructions
    - Component usage patterns
@@ -138,7 +186,14 @@ Always consult these official Skeleton LLM documentation files when working with
 - **Components**: https://www.skeleton.dev/docs/components
 - **Integrations**: https://www.skeleton.dev/docs/integrations
 - **Guides**: https://www.skeleton.dev/docs/guides
-- **Migration v2→v3**: https://www.skeleton.dev/docs/get-started/migrate-from-v2
+
+### Game Design Documentation
+
+- **GitHub Wiki**: https://github.com/KungRaseri/uncharted-lands/wiki/
+- **Game Design Document**: Complete specifications for all game systems
+- **Implementation Tracker**: Current status of all features (✅/🚧/📋)
+- **Design Docs Quick Start**: How to use the design documentation
+- **Feature Spec Template**: Template for implementing new features
 - **Migration v3→v4**: https://www.skeleton.dev/docs/get-started/migrate-from-v3
 
 ---
@@ -156,79 +211,6 @@ Complete technical documentation on the world generation system:
 - Preset recommendations for different world types
 - Troubleshooting common issues
 - Technical implementation details
-
-### Migration Documentation (Start Here!)
-
-**📍 Location**: `docs/migration/`
-
-Our project is in active migration from Skeleton v2 to v4 with Tailwind v4. Read these files to understand current state:
-
-1. **docs/migration/MIGRATION_COMPLETE_SUMMARY.md** - Migration overview
-   - Summary of completed migration work
-   - What was changed and why
-   - Current status
-
-2. **docs/migration/SKELETON_V4_MIGRATION_COMPLETE.md** - Core migration details
-   - Skeleton v2 → v4 migration steps
-   - Component changes
-   - Breaking changes addressed
-
-3. **docs/migration/SKELETON_MIGRATION_REMAINING.md** - Remaining work
-   - Outstanding migration tasks
-   - Known issues to address
-   - Next steps
-
-4. **docs/migration/SKELETON_V4_THEME_MIGRATION.md** - Theme system
-   - Theme configuration migration
-   - CSS variable setup
-   - Dark mode implementation
-
-5. **docs/migration/LAYOUT_THEME_VERIFICATION.md** - Verification
-   - Configuration verification results
-   - Theme system validation
-   - Testing checklist
-
----
-
-## Critical Project Status
-
-### ⚠️ KNOWN ISSUE: Build Failure
-
-**Status**: Application CANNOT currently build
-
-**Error**:
-
-```
-Cannot use `@variant` with unknown variant: md
-node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
-```
-
-**Cause**: Bug in Skeleton v4.2.2 library code (NOT our configuration)
-
-**Impact**:
-
-- ❌ `npm run build` fails
-- ❌ `npm run dev` fails
-- ✅ Configuration is 100% correct
-- ✅ Type checking works
-- ✅ Tests run (if no CSS needed)
-
-**What This Means for You**:
-
-- DO NOT suggest configuration changes to "fix" the build
-- Our setup follows ALL official guidelines perfectly
-- The bug is in Skeleton's compiled CSS, not our code
-- When Skeleton releases a fix, builds will work without changes
-
-### ✅ What IS Working
-
-- ✅ All packages installed correctly
-- ✅ All configuration files correct
-- ✅ Tailwind v4 CSS-first approach implemented
-- ✅ Vite plugin configured properly
-- ✅ Theme system configured
-- ✅ No @apply usage (per best practices)
-- ✅ data-theme on `<html>` tag (per requirements)
 
 ---
 
@@ -317,12 +299,12 @@ node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
 ```svelte
 <!-- ✅ CORRECT (Svelte 5) -->
 {#snippet header()}
-  <h1>Title</h1>
+	<h1>Title</h1>
 {/snippet}
 
 <!-- ❌ WRONG (Svelte 4) -->
 <svelte:fragment slot="header">
-  <h1>Title</h1>
+	<h1>Title</h1>
 </svelte:fragment>
 ```
 
@@ -426,9 +408,6 @@ uncharted-lands/
 ├── .github/
 │   └── copilot-instructions.md          # This file
 ├── client/                              # 🎮 SvelteKit game application
-│   ├── prisma/
-│   │   ├── schema.prisma                # Database schema
-│   │   └── migrations/                  # Database migrations
 │   ├── src/
 │   │   ├── lib/
 │   │   │   ├── components/
@@ -436,7 +415,7 @@ uncharted-lands/
 │   │   │   │   ├── app/                 # Global app components
 │   │   │   │   └── game/                # Game UI components
 │   │   │   ├── auth.ts                  # Authentication utilities
-│   │   │   ├── db.ts                    # Database client
+│   │   │   ├── config.ts                # API/WS configuration
 │   │   │   └── stores/                  # Svelte stores
 │   │   ├── routes/                      # SvelteKit routes
 │   │   │   ├── (auth)/                  # Auth-related routes
@@ -444,7 +423,7 @@ uncharted-lands/
 │   │   │   │   ├── admin/               # Admin pages
 │   │   │   │   ├── game/                # Game pages
 │   │   │   │   └── account/             # User account
-│   │   │   └── api/                     # API endpoints
+│   │   │   └── api/                     # API endpoints (proxy to server)
 │   │   ├── app.html                     # Root HTML template
 │   │   ├── app.postcss                  # Global styles
 │   │   └── hooks.server.ts              # Server hooks
@@ -467,23 +446,19 @@ When the build works and we can use Skeleton components:
 
 ```svelte
 <script lang="ts">
-  // ✅ Import from skeleton-svelte package
-  import { ComponentName } from '@skeletonlabs/skeleton-svelte';
+	// ✅ Import from skeleton-svelte package
+	import { ComponentName } from '@skeletonlabs/skeleton-svelte';
 
-  // Use Svelte 5 runes for state
-  let value = $state(initialValue);
+	// Use Svelte 5 runes for state
+	let value = $state(initialValue);
 
-  // Use proper event handlers
-  function handleChange(e) {
-    value = e.value; // Note: Skeleton v4 event structure
-  }
+	// Use proper event handlers
+	function handleChange(e) {
+		value = e.value; // Note: Skeleton v4 event structure
+	}
 </script>
 
-<ComponentName
-  {value}
-  onValueChange={handleChange}
-  class="my-custom-classes"
-/>
+<ComponentName {value} onValueChange={handleChange} class="my-custom-classes" />
 ```
 
 ### Creating Custom Layouts (Replacing AppShell)
@@ -491,52 +466,57 @@ When the build works and we can use Skeleton components:
 ```svelte
 <!-- ✅ Custom Layout Pattern -->
 <script>
-  import Header from '$lib/components/Header.svelte';
-  import Navigation from '$lib/components/Navigation.svelte';
-  import Footer from '$lib/components/Footer.svelte';
+	import Header from '$lib/components/Header.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 </script>
 
 <div class="flex flex-col h-screen">
-  <!-- Header -->
-  <header class="flex-none">
-    <Header />
-  </header>
+	<!-- Header -->
+	<header class="flex-none">
+		<Header />
+	</header>
 
-  <div class="flex flex-1 overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="flex-none w-64 overflow-y-auto">
-      <Navigation />
-    </aside>
+	<div class="flex flex-1 overflow-hidden">
+		<!-- Sidebar -->
+		<aside class="flex-none w-64 overflow-y-auto">
+			<Navigation />
+		</aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto">
-      <slot />
-    </main>
-  </div>
+		<!-- Main Content -->
+		<main class="flex-1 overflow-y-auto">
+			<slot />
+		</main>
+	</div>
 
-  <!-- Footer -->
-  <footer class="flex-none">
-    <Footer />
-  </footer>
+	<!-- Footer -->
+	<footer class="flex-none">
+		<Footer />
+	</footer>
 </div>
 ```
 
-### Database Queries (Prisma)
+### Database Queries
+
+**Note**: Database access is handled through the game server's REST API and Socket.IO events. The client does not directly query the database.
 
 ```typescript
-import { db } from '$lib/db';
+// Example: Fetching data from server API
+import { API_URL } from '$lib/config';
 
-// Query examples
-const users = await db.user.findMany({
-	where: { active: true },
-	include: { settlements: true }
-});
+export async function load({ fetch, cookies }) {
+	const sessionToken = cookies.get('session');
 
-const settlement = await db.settlement.update({
-	where: { id: settlementId },
-	data: { resources: { increment: 10 } }
-});
+	const response = await fetch(`${API_URL}/api/settlements`, {
+		headers: { Cookie: `session=${sessionToken}` }
+	});
+
+	const settlements = await response.json();
+	return { settlements };
+}
 ```
+
+For real-time updates, use Socket.IO events (see server Socket.IO documentation).
 
 ### API Routes (SvelteKit)
 
@@ -596,54 +576,45 @@ test('user can login', async ({ page }) => {
 
 ### ✅ DO
 
+- **Reference the GDD first** before implementing any game UI or feature
+- Use GDD for resource types, structure lists, and game mechanics
 - Use Svelte 5 runes ($state, $derived, $effect)
 - Use Svelte 5 snippets (not slots)
 - Import Skeleton components from `@skeletonlabs/skeleton-svelte`
 - Use standard CSS instead of @apply
 - Reference official Skeleton LLM docs
-- Check COMPONENT_MIGRATION_AUDIT.md for component status
 - Use TypeScript for type safety
 - Follow existing project patterns
-- Consult migration documentation when unsure
 
 ### ❌ DON'T
 
+- **Don't implement game UI without checking the GDD first**
+- Don't hardcode resource types or structure lists (use GDD)
 - Don't use Svelte 4 reactive statements (`$:`)
 - Don't use Svelte 4 slots syntax
 - Don't import from `@skeletonlabs/skeleton` (old package)
 - Don't use `@apply` in CSS
 - Don't create `tailwind.config.js/ts` files
-- Don't suggest configuration changes to "fix" the build
-- Don't use removed components (AppShell, LightSwitch, Table)
-- Don't assume the build failure is our configuration
-- Don't use old Skeleton v2/v3 component names
 
 ---
 
-## Component Migration Reference
+## Component Reference
 
-See `COMPONENT_MIGRATION_AUDIT.md` for complete details. Quick reference:
+### Current Skeleton v4 Components
 
-### Components Needing Migration
+**Available Components**:
 
-| Old (v2/v3)   | New (v4)             | Status     | Alternative      |
-| ------------- | -------------------- | ---------- | ---------------- |
-| `AppShell`    | —                    | ❌ Removed | Custom layouts   |
-| `AppBar`      | `Navbar`             | ✅ Renamed |                  |
-| `AppRail`     | `Navigation`         | ✅ Renamed |                  |
-| `AppRailTile` | (part of Navigation) | ✅ Merged  |                  |
-| `Avatar`      | `Avatar`             | ✅ Same    |                  |
-| `LightSwitch` | —                    | ❌ Removed | Custom component |
-| `RangeSlider` | `Slider`             | ✅ Renamed |                  |
-| `Table`       | —                    | ❌ Removed | Tailwind tables  |
+- `Navbar` - Navigation bar
+- `Navigation` - App rail/sidebar navigation
+- `Avatar` - User avatars
+- `Slider` - Range slider
+- `Button`, `Card`, `Modal`, etc. - Standard UI components
 
-### Utilities Needing Replacement
+**Removed Components** (use alternatives):
 
-| Utility             | Status     | Alternative           |
-| ------------------- | ---------- | --------------------- |
-| `popup`             | ❌ Removed | Integration guide     |
-| `storePopup`        | ❌ Removed | Integration guide     |
-| `tableMapperValues` | ❌ Removed | Custom implementation |
+- ~~`AppShell`~~ → Use custom layouts
+- ~~`LightSwitch`~~ → Use custom theme toggle
+- ~~`Table`~~ → Use Tailwind table classes
 
 ---
 
@@ -670,8 +641,8 @@ npm run build:all        # Build both projects
 
 # Client-specific (from client/)
 cd client
-npm run dev              # Start dev server (currently fails)
-npm run build            # Build for production (currently fails)
+npm run dev              # Start dev server
+npm run build            # Build for production
 npm run preview          # Preview production build
 
 # Server-specific (from server/)
@@ -680,9 +651,11 @@ npm run dev              # Start dev server with auto-reload
 npm run build            # Build TypeScript
 npm start                # Run production build
 
-# Database (from root or client/)
-npm run migrate          # Run migrations
-npx prisma studio        # Open Prisma Studio
+# Database (from root or server/)
+cd server
+npm run db:generate      # Generate migration from schema changes
+npm run db:push          # Push schema to database
+npm run db:studio        # Open Drizzle Studio
 
 # Testing
 npm run test             # Run client tests
@@ -702,41 +675,6 @@ cd server && vercel --prod     # Deploy server
 git status               # Check status
 git log --oneline -10    # Recent commits
 ```
-
----
-
-## Migration Status Quick Reference
-
-**✅ Configuration**: 100% correct per all official guidelines
-
-**Current Versions**:
-
-- Svelte: 5.43.2 ✅
-- SvelteKit: 2.48.4 ✅
-- Tailwind: 4.1.16 ✅
-- Skeleton: 4.2.2 ✅
-- @tailwindcss/vite: 4.1.16 ✅
-
-**What's Working**:
-
-- ✅ Type checking
-- ✅ Configuration files
-- ✅ Package installation
-- ✅ Documentation
-
-**What's Blocked**:
-
-- ❌ Builds (Skeleton @variant bug)
-- ❌ Dev server (same bug)
-- 🔄 Component migration (waiting for build)
-
-**Next Steps** (when build works):
-
-1. Migrate 10 files with Skeleton components
-2. Replace AppShell with custom layouts (3 files)
-3. Update component imports and names
-4. Replace removed components
-5. Test all functionality
 
 ---
 
@@ -766,17 +704,130 @@ git log --oneline -10    # Recent commits
 
 ---
 
-## Questions or Unsure?
+These examples should be used as guidance when configuring Sentry functionality within a project.
 
-1. **Check migration docs first** (README_MIGRATION.md)
-2. **Consult official Skeleton LLM docs**: https://www.skeleton.dev/llms-svelte.txt
-3. **Review component audit**: COMPONENT_MIGRATION_AUDIT.md
-4. **Check compliance guide**: TAILWIND_V4_COMPLIANCE.md
-5. **Ask the team** - Don't make assumptions!
+# Error / Exception Tracking
+
+Use `Sentry.captureException(error)` to capture an exception and log the error in Sentry.
+Use this in try catch blocks or areas where exceptions are expected
+
+# Tracing Examples
+
+Spans should be created for meaningful actions within an applications like button clicks, API calls, and function calls
+Ensure you are creating custom spans with meaningful names and operations
+Use the `Sentry.startSpan` function to create a span
+Child spans can exist within a parent span
+
+## Custom Span instrumentation in component actions
+
+```javascript
+function TestComponent() {
+	const handleTestButtonClick = () => {
+		// Create a transaction/span to measure performance
+		Sentry.startSpan(
+			{
+				op: 'ui.click',
+				name: 'Test Button Click'
+			},
+			(span) => {
+				const value = 'some config';
+				const metric = 'some metric';
+
+				// Metrics can be added to the span
+				span.setAttribute('config', value);
+				span.setAttribute('metric', metric);
+
+				doSomething();
+			}
+		);
+	};
+
+	return (
+		<button type="button" onClick={handleTestButtonClick}>
+			Test Sentry
+		</button>
+	);
+}
+```
+
+## Custom span instrumentation in API calls
+
+```javascript
+async function fetchUserData(userId) {
+	return Sentry.startSpan(
+		{
+			op: 'http.client',
+			name: `GET /api/users/${userId}`
+		},
+		async () => {
+			const response = await fetch(`/api/users/${userId}`);
+			const data = await response.json();
+			return data;
+		}
+	);
+}
+```
+
+# Logs
+
+Where logs are used, ensure they are imported using `import * as Sentry from "@sentry/node"`
+Enable logging in Sentry using `Sentry.init({ enableLogs: true })`
+Reference the logger using `const { logger } = Sentry`
+Sentry offers a consoleLoggingIntegration that can be used to log specific console error types automatically without instrumenting the individual logger calls
+
+## Configuration
+
+In Node.js the Sentry initialization is typically in `instrumentation.ts`
+
+### Baseline
+
+```javascript
+import * as Sentry from '@sentry/node';
+
+Sentry.init({
+	dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
+
+	// Send structured logs to Sentry
+	enableLogs: true
+});
+```
+
+### Logger Integration
+
+```javascript
+Sentry.init({
+	dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
+	integrations: [
+		// send console.log, console.warn, and console.error calls as logs to Sentry
+		Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })
+	]
+});
+```
+
+## Logger Examples
+
+`logger.fmt` is a template literal function that should be used to bring variables into the structured logs.
+
+```javascript
+logger.trace('Starting database connection', { database: 'users' });
+logger.debug(logger.fmt`Cache miss for user: ${userId}`);
+logger.info('Updated profile', { profileId: 345 });
+logger.warn('Rate limit reached for endpoint', {
+	endpoint: '/api/results/',
+	isEnterprise: false
+});
+logger.error('Failed to process payment', {
+	orderId: 'order_123',
+	amount: 99.99
+});
+logger.fatal('Database connection pool exhausted', {
+	database: 'users',
+	activeConnections: 100
+});
+```
 
 ---
 
-**Last Updated**: October 31, 2025  
-**Status**: Active migration in progress  
-**Configuration**: 100% compliant with all official guidelines  
-**Build**: Blocked by upstream Skeleton v4.2.2 bug (not our fault!)
+**Last Updated**: November 13, 2025  
+**Status**: Current production setup  
+**Configuration**: 100% compliant with all official guidelines

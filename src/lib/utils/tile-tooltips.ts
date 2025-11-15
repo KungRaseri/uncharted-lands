@@ -30,7 +30,7 @@ export type TileData = {
 /**
  * Generate admin mode tooltip for a tile
  * Shows technical details like raw elevation, precipitation, and temperature values
- * 
+ *
  * @param tile - Tile data with biome, type, elevation, precipitation, temperature, and plots
  * @returns Formatted tooltip string with newlines
  */
@@ -48,18 +48,15 @@ Plots: ${plotCount}`;
 /**
  * Generate player mode tooltip for a tile
  * Shows user-friendly information with percentage elevation and filtered settlement names
- * 
+ *
  * @param tile - Tile data with biome, elevation, temperature, precipitation, and plots
  * @param currentPlayerProfileId - Optional player ID to filter settlements
  * @returns Formatted tooltip string with newlines
  */
-export function getPlayerTileTooltip(
-	tile: TileData,
-	currentPlayerProfileId?: string
-): string {
+export function getPlayerTileTooltip(tile: TileData, currentPlayerProfileId?: string): string {
 	const biomeName = tile.biome?.name || 'Unknown';
 	const plots = tile.plots || [];
-	
+
 	// Base tooltip with tile information
 	let tooltip = `${biomeName}
 Elevation: ${(tile.elevation * 100).toFixed(1)}%
@@ -89,7 +86,7 @@ Precipitation: ${tile.precipitation.toFixed(1)}mm`;
 /**
  * Generate tooltip for a tile based on display mode
  * Delegates to admin or player tooltip generation
- * 
+ *
  * @param tile - Tile data
  * @param mode - Display mode ('admin' or 'player')
  * @param currentPlayerProfileId - Optional player ID for player mode

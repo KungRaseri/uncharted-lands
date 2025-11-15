@@ -1,6 +1,6 @@
 /**
  * Game-related TypeScript types for client components
- * 
+ *
  * These types extend the API types with component-specific structures
  * and include nested relations commonly used in the UI.
  */
@@ -18,23 +18,23 @@ export type ServerStatus = 'OFFLINE' | 'MAINTENANCE' | 'ONLINE';
 // ============================================================================
 
 export interface Biome {
-  id: string;
-  name: string;
-  precipitationMin: number;
-  precipitationMax: number;
-  temperatureMin: number;
-  temperatureMax: number;
-  plotsMin: number;
-  plotsMax: number;
-  plotAreaMin: number;
-  plotAreaMax: number;
-  solarModifier: number;
-  windModifier: number;
-  foodModifier: number;
-  waterModifier: number;
-  woodModifier: number;
-  stoneModifier: number;
-  oreModifier: number;
+	id: string;
+	name: string;
+	precipitationMin: number;
+	precipitationMax: number;
+	temperatureMin: number;
+	temperatureMax: number;
+	plotsMin: number;
+	plotsMax: number;
+	plotAreaMin: number;
+	plotAreaMax: number;
+	solarModifier: number;
+	windModifier: number;
+	foodModifier: number;
+	waterModifier: number;
+	woodModifier: number;
+	stoneModifier: number;
+	oreModifier: number;
 }
 
 // ============================================================================
@@ -42,17 +42,17 @@ export interface Biome {
 // ============================================================================
 
 export interface Plot {
-  id: string;
-  tileId: string;
-  area: number;
-  solar: number;
-  wind: number;
-  food: number;
-  water: number;
-  wood: number;
-  stone: number;
-  ore: number;
-  settlement?: Settlement | null;
+	id: string;
+	tileId: string;
+	area: number;
+	solar: number;
+	wind: number;
+	food: number;
+	water: number;
+	wood: number;
+	stone: number;
+	ore: number;
+	settlement?: Settlement | null;
 }
 
 // ============================================================================
@@ -60,11 +60,11 @@ export interface Plot {
 // ============================================================================
 
 export interface Settlement {
-  id: string;
-  name: string;
-  playerProfileId: string;
-  plotId: string;
-  founded: Date | string;
+	id: string;
+	name: string;
+	playerProfileId: string;
+	plotId: string;
+	founded: Date | string;
 }
 
 // ============================================================================
@@ -72,34 +72,34 @@ export interface Settlement {
 // ============================================================================
 
 export interface TileBase {
-  id: string;
-  biomeId: string;
-  regionId: string;
-  elevation: number;
-  temperature: number;
-  precipitation: number;
-  type: TileType;
-  // Resource quality fields (0-100)
-  foodQuality: number;
-  woodQuality: number;
-  stoneQuality: number;
-  oreQuality: number;
-  specialResource?: string | null;
-  settlementId?: string | null;
-  plotSlots: number;
+	id: string;
+	biomeId: string;
+	regionId: string;
+	elevation: number;
+	temperature: number;
+	precipitation: number;
+	type: TileType;
+	// Resource quality fields (0-100)
+	foodQuality: number;
+	woodQuality: number;
+	stoneQuality: number;
+	oreQuality: number;
+	specialResource?: string | null;
+	settlementId?: string | null;
+	plotSlots: number;
 }
 
 export interface TileWithBiome extends TileBase {
-  Biome: Biome;
+	Biome: Biome;
 }
 
 export interface TileWithPlots extends TileBase {
-  Plots: Plot[];
+	Plots: Plot[];
 }
 
 export interface TileWithRelations extends TileBase {
-  biome?: Biome;
-  plots?: Plot[];
+	biome?: Biome;
+	plots?: Plot[];
 }
 
 // Convenient type alias for most common use case
@@ -110,22 +110,22 @@ export type Tile = TileWithBiome | TileWithRelations;
 // ============================================================================
 
 export interface RegionBase {
-  id: string;
-  xCoord: number;
-  yCoord: number;
-  name: string;
-  worldId: string;
-  elevationMap?: number[][];
-  precipitationMap?: number[][];
-  temperatureMap?: number[][];
+	id: string;
+	xCoord: number;
+	yCoord: number;
+	name: string;
+	worldId: string;
+	elevationMap?: number[][];
+	precipitationMap?: number[][];
+	temperatureMap?: number[][];
 }
 
 export interface Region extends RegionBase {
-  tiles?: TileWithRelations[];
+	tiles?: TileWithRelations[];
 }
 
 export interface RegionWithTiles extends RegionBase {
-  tiles: TileWithRelations[];
+	tiles: TileWithRelations[];
 }
 
 // ============================================================================
@@ -133,33 +133,33 @@ export interface RegionWithTiles extends RegionBase {
 // ============================================================================
 
 export interface WorldBase {
-  id: string;
-  name: string;
-  elevationSettings: any;
-  precipitationSettings: any;
-  temperatureSettings: any;
-  serverId: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
+	id: string;
+	name: string;
+	elevationSettings: any;
+	precipitationSettings: any;
+	temperatureSettings: any;
+	serverId: string;
+	createdAt: Date | string;
+	updatedAt: Date | string;
 }
 
 export interface World extends WorldBase {
-  regions?: Region[];
-  server?: GameServer;
+	regions?: Region[];
+	server?: GameServer;
 }
 
 export interface WorldWithRegions extends WorldBase {
-  regions: Region[];
+	regions: Region[];
 }
 
 export interface WorldWithServer extends WorldBase {
-  server: GameServer;
+	server: GameServer;
 }
 
 export interface WorldWithRelations extends WorldBase {
-  regions?: Region[];
-  server?: GameServer;
-  servers?: GameServer[]; // Legacy field from API
+	regions?: Region[];
+	server?: GameServer;
+	servers?: GameServer[]; // Legacy field from API
 }
 
 // ============================================================================
@@ -167,16 +167,16 @@ export interface WorldWithRelations extends WorldBase {
 // ============================================================================
 
 export interface GameServer {
-  id: string;
-  name: string;
-  hostname: string;
-  port: number;
-  status: ServerStatus;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  _count?: {
-    worlds: number;
-  };
+	id: string;
+	name: string;
+	hostname: string;
+	port: number;
+	status: ServerStatus;
+	createdAt: Date | string;
+	updatedAt: Date | string;
+	_count?: {
+		worlds: number;
+	};
 }
 
 // ============================================================================
@@ -184,21 +184,21 @@ export interface GameServer {
 // ============================================================================
 
 export interface PlayerProfile {
-  id: string;
-  username: string;
-  picture: string;
-  accountId: string;
+	id: string;
+	username: string;
+	picture: string;
+	accountId: string;
 }
 
 export interface Account {
-  id: string;
-  email: string;
-  passwordHash: string;
-  userAuthToken: string;
-  role: Role;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  profile?: PlayerProfile | null;
+	id: string;
+	email: string;
+	passwordHash: string;
+	userAuthToken: string;
+	role: Role;
+	createdAt: Date | string;
+	updatedAt: Date | string;
+	profile?: PlayerProfile | null;
 }
 
 // ============================================================================
@@ -206,26 +206,26 @@ export interface Account {
 // ============================================================================
 
 export interface WorldInfo {
-  landTiles: number;
-  oceanTiles: number;
-  settlements: number;
+	landTiles: number;
+	oceanTiles: number;
+	settlements: number;
 }
 
 export interface SettlementWithStorage {
-  id: string;
-  name: string;
-  playerProfileId: string;
-  plotId: string;
-  founded: Date | string;
-  storage?: {
-    food: number;
-    water: number;
-    wood: number;
-    stone: number;
-    ore: number;
-  } | null;
-  structures?: Array<{
-    id: string;
-    type: string;
-  }> | null;
+	id: string;
+	name: string;
+	playerProfileId: string;
+	plotId: string;
+	founded: Date | string;
+	storage?: {
+		food: number;
+		water: number;
+		wood: number;
+		stone: number;
+		ore: number;
+	} | null;
+	structures?: Array<{
+		id: string;
+		type: string;
+	}> | null;
 }

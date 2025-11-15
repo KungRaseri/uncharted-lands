@@ -1,17 +1,21 @@
 <script lang="ts">
 	import type { PlotWithRelations } from '$lib/types/api';
-	import { getResourceIcon, getResourceName, getExtractorName } from '$lib/utils/resource-production';
+	import {
+		getResourceIcon,
+		getResourceName,
+		getExtractorName
+	} from '$lib/utils/resource-production';
 
-	let { 
-		plot, 
-		isOpen = false, 
-		onClose, 
-		onBuildExtractor 
-	}: { 
-		plot: PlotWithRelations; 
-		isOpen?: boolean; 
-		onClose: () => void; 
-		onBuildExtractor: (plotId: string, extractorType: string) => Promise<void>; 
+	let {
+		plot,
+		isOpen = false,
+		onClose,
+		onBuildExtractor
+	}: {
+		plot: PlotWithRelations;
+		isOpen?: boolean;
+		onClose: () => void;
+		onBuildExtractor: (plotId: string, extractorType: string) => Promise<void>;
 	} = $props();
 
 	let isBuilding = $state(false);
@@ -134,7 +138,13 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="modal-backdrop" onclick={handleClose} role="presentation">
-		<div class="modal-content" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
+		<div
+			class="modal-content"
+			onclick={(e) => e.stopPropagation()}
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
+		>
 			<div class="modal-header">
 				<div>
 					<h2 class="text-2xl font-bold">Build Extractor</h2>

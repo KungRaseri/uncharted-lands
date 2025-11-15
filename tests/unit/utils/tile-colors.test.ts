@@ -9,7 +9,7 @@ import {
 	getTerrainData,
 	BIOME_COLORS,
 	ELEVATION_THRESHOLDS,
-	TERRAIN_COLORS,
+	TERRAIN_COLORS
 } from '../../../src/lib/utils/tile-colors';
 
 describe('Tile Color Utilities', () => {
@@ -277,9 +277,7 @@ describe('Tile Color Utilities', () => {
 			expect(getElevationColor(ELEVATION_THRESHOLDS.PLAINS)).toBe(TERRAIN_COLORS.FOREST);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.FOREST)).toBe(TERRAIN_COLORS.HILLS);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.HILLS)).toBe(TERRAIN_COLORS.MOUNTAINS);
-			expect(getElevationColor(ELEVATION_THRESHOLDS.MOUNTAINS)).toBe(
-				TERRAIN_COLORS.HIGH_MOUNTAINS
-			);
+			expect(getElevationColor(ELEVATION_THRESHOLDS.MOUNTAINS)).toBe(TERRAIN_COLORS.HIGH_MOUNTAINS);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.HIGH_MOUNTAINS)).toBe(
 				TERRAIN_COLORS.ALPINE_PEAKS
 			);

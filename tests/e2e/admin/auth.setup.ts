@@ -7,21 +7,21 @@ import { test as setup, expect } from '@playwright/test';
 /**
  * Authentication setup for admin tests
  * This file creates test users and generates authentication state
- * 
+ *
  * NOTE: Temporarily disabled during Prisma → REST API migration
  * Will be re-enabled once test infrastructure is updated
  */
 
 const ADMIN_USER = {
-    email: 'admin@test.com',
-    password: 'TestPassword123!',
-    role: 'ADMINISTRATOR'
+	email: 'admin@test.com',
+	password: 'TestPassword123!',
+	role: 'ADMINISTRATOR'
 };
 
 const REGULAR_USER = {
-    email: 'user@test.com', 
-    password: 'TestPassword123!',
-    role: 'MEMBER'
+	email: 'user@test.com',
+	password: 'TestPassword123!',
+	role: 'MEMBER'
 };
 
 /* TEMPORARILY DISABLED - needs REST API migration

@@ -13,20 +13,27 @@
 		mapViewMode?: MapViewMode;
 	};
 
-	let { tile, mode = 'player', currentPlayerProfileId, mapViewMode = 'satellite' }: Props = $props();
+	let {
+		tile,
+		mode = 'player',
+		currentPlayerProfileId,
+		mapViewMode = 'satellite'
+	}: Props = $props();
 	// Check if tile has any settled plots
 	const hasSettlement = $derived(() => {
 		const settledPlots = (tile.plots || []).filter((plot: any) => plot.settlement);
-		
+
 		if (settledPlots.length === 0) {
 			return false;
 		}
-		
+
 		// In player mode, only show marker if player owns the settlement
 		if (mode === 'player' && currentPlayerProfileId) {
-			return settledPlots.some((plot: any) => plot.settlement?.playerProfileId === currentPlayerProfileId);
+			return settledPlots.some(
+				(plot: any) => plot.settlement?.playerProfileId === currentPlayerProfileId
+			);
 		}
-		
+
 		// In admin mode, show marker if ANY settlement exists
 		return true;
 	});

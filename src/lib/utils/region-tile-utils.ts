@@ -30,7 +30,7 @@ export function getRegionTileTooltip(tile: TileData, row: number, col: number): 
 	const terrainType = getTerrainType(tile.elevation);
 	const hasSettlement = tile.Plots?.some((p) => p.Settlement);
 	const plotCount = tile.Plots?.length || 0;
-	
+
 	return `Tile Position: (${row}, ${col})
 Biome: ${tile.Biome?.name || 'Unknown'}
 Type: ${tile.type}

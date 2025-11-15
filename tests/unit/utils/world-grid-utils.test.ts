@@ -276,19 +276,10 @@ describe('world-grid-utils', () => {
 		it('should calculate stats from tile arrays', () => {
 			const regions = [
 				{
-					tiles: [
-						{ type: 'LAND' },
-						{ type: 'LAND' },
-						{ type: 'OCEAN' },
-						{ type: 'LAND' }
-					]
+					tiles: [{ type: 'LAND' }, { type: 'LAND' }, { type: 'OCEAN' }, { type: 'LAND' }]
 				},
 				{
-					tiles: [
-						{ type: 'OCEAN' },
-						{ type: 'OCEAN' },
-						{ type: 'LAND' }
-					]
+					tiles: [{ type: 'OCEAN' }, { type: 'OCEAN' }, { type: 'LAND' }]
 				}
 			];
 

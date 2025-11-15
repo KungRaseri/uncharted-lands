@@ -1,15 +1,12 @@
 <script lang="ts">
 	import type { PlotWithRelations } from '$lib/types/api';
-	import { 
-		getResourceIcon, 
-		getResourceName
-	} from '$lib/utils/resource-production';
+	import { getResourceIcon, getResourceName } from '$lib/utils/resource-production';
 
-	let { 
-		plots, 
+	let {
+		plots,
 		settlementName,
-		onHarvestAll 
-	}: { 
+		onHarvestAll
+	}: {
 		plots: PlotWithRelations[];
 		settlementName: string;
 		onHarvestAll?: () => void;
@@ -64,9 +61,9 @@
 	}
 
 	// Filter plots that are actually producing something
-	let producingPlots = $derived(plots.filter(p => 
-		p.food > 0 || p.water > 0 || p.wood > 0 || p.stone > 0 || p.ore > 0
-	));
+	let producingPlots = $derived(
+		plots.filter((p) => p.food > 0 || p.water > 0 || p.wood > 0 || p.stone > 0 || p.ore > 0)
+	);
 
 	// Count of active plots
 	let activePlotsCount = $derived(producingPlots.length);
@@ -83,11 +80,7 @@
 			</p>
 		</div>
 		{#if onHarvestAll && activePlotsCount > 0}
-			<button
-				class="btn variant-filled-primary"
-				onclick={onHarvestAll}
-				type="button"
-			>
+			<button class="btn variant-filled-primary" onclick={onHarvestAll} type="button">
 				🌾 Harvest All
 			</button>
 		{/if}
@@ -258,8 +251,8 @@
 
 	<!-- Idle Plots Section -->
 	{#if plots.length > producingPlots.length}
-		{@const idlePlots = plots.filter(p => 
-			!(p.food > 0 || p.water > 0 || p.wood > 0 || p.stone > 0 || p.ore > 0)
+		{@const idlePlots = plots.filter(
+			(p) => !(p.food > 0 || p.water > 0 || p.wood > 0 || p.stone > 0 || p.ore > 0)
 		)}
 		<div class="idle-plots-section">
 			<h3 class="text-lg font-semibold mb-3">Idle Plots ({idlePlots.length})</h3>
@@ -269,9 +262,7 @@
 						<p class="text-sm text-surface-600-300-token">
 							Plot at ({plot.x}, {plot.y})
 						</p>
-						<p class="text-xs text-surface-500-400-token mt-1">
-							No resources being produced
-						</p>
+						<p class="text-xs text-surface-500-400-token mt-1">No resources being produced</p>
 						<button class="btn variant-soft-primary btn-sm mt-2" type="button">
 							Add Extractor
 						</button>
