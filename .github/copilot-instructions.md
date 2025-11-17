@@ -105,6 +105,117 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ---
 
+## 🚨 CRITICAL DEVELOPMENT PRINCIPLES
+
+### **NEVER Leave Partial Implementations**
+
+When implementing frontend features:
+
+1. ❌ **DON'T** create UI components without backend API integration
+2. ❌ **DON'T** mock API responses with TODO comments for "later implementation"
+3. ❌ **DON'T** make partial UI changes that break user experience
+4. ✅ **DO** implement features fully, from state management to UI components
+5. ✅ **DO** ask for clarification if UX requirements are unclear
+6. ✅ **DO** consult the GDD for complete UI/UX specifications
+
+**Example of WRONG approach:**
+
+```svelte
+<!-- ❌ BAD: Mocking backend with TODO -->
+<script>
+	let resources = $state({ food: 0, water: 0 });
+
+	// TODO: In future, connect to real Socket.IO
+	function mockUpdateResources() {
+		resources.food += 10;
+	}
+</script>
+```
+
+**Example of CORRECT approach:**
+
+```svelte
+<!-- ✅ GOOD: Full implementation with real backend -->
+<script>
+	import { resourceStore } from '$lib/stores/game/resources.svelte';
+	import { socket } from '$lib/stores/socket.svelte';
+
+	const resources = $derived(resourceStore.getResources(settlementId));
+
+	// Real Socket.IO listener
+	socket.on('resource-tick', (data) => {
+		resourceStore.updateResources(data.settlementId, data.resources);
+	});
+
+	async function collectResources() {
+		try {
+			await fetch(`${API_URL}/settlements/${settlementId}/collect`, {
+				method: 'POST',
+				credentials: 'include'
+			});
+		} catch (error) {
+			// Proper error handling
+			toastStore.error('Failed to collect resources');
+		}
+	}
+</script>
+
+<div class="resources">
+	<span>Food: {resources.food}</span>
+	<span>Water: {resources.water}</span>
+	<button onclick={collectResources}>Collect</button>
+</div>
+```
+
+### **Full-Stack Implementation Required**
+
+Every frontend feature must be coordinated with backend:
+
+1. **Backend API** - Ensure endpoints exist and return correct data
+2. **Socket.IO Events** - Real-time updates defined and working
+3. **Frontend State** - Svelte stores manage state correctly
+4. **UI Components** - Components styled and responsive
+5. **Form Validation** - Client-side validation matches server-side
+6. **Error Handling** - User-friendly error messages for all failure cases
+7. **Testing** - Unit tests for stores, E2E tests for user flows
+
+**When you identify missing frontend functionality:**
+
+- Check if backend API/Socket.IO event exists first
+- If backend is missing, implement backend first OR ask user about approach
+- Check the GDD for complete UI/UX specifications
+- Implement the full user experience, not just partial UI
+- Update the Implementation Tracker when complete
+
+### **Frontend Feature Implementation Checklist**
+
+Before considering a client-side feature "done":
+
+- [ ] Backend API endpoints exist and work correctly
+- [ ] Socket.IO events connected and tested
+- [ ] State management using Svelte 5 stores (no old $: reactive statements)
+- [ ] UI components use Svelte 5 patterns (runes, snippets)
+- [ ] Styling follows Skeleton UI + Tailwind patterns
+- [ ] Responsive design works on mobile and desktop
+- [ ] Form validation matches backend validation rules
+- [ ] Error handling shows user-friendly messages
+- [ ] Loading states and skeletons for async operations
+- [ ] Accessibility features implemented (ARIA, keyboard nav)
+- [ ] Tests written and passing (unit + E2E)
+- [ ] **No TODO comments left in production code**
+- [ ] Code formatted (Prettier) and linted (ESLint)
+
+**API Integration Best Practices:**
+
+- Always use `credentials: 'include'` for authenticated requests
+- Check response status codes and handle errors gracefully
+- Show loading states during async operations
+- Emit Socket.IO events for real-time features, not polling
+- Use stores to manage shared state across components
+- Don't duplicate backend validation logic - trust the API
+
+---
+
 ## Documentation Policy
 
 **⚠️ CRITICAL: ALL project documentation MUST be placed in the `docs/` directory.**
