@@ -1,31 +1,28 @@
 /**
  * Structure Definitions for Uncharted Lands
  *
- * ⚠️ IMPORTANT: This file is UI-ONLY
+ * ⚠️ CRITICAL: SYNCED WITH SERVER
+ *
+ * This file is synchronized with server/src/data/structure-costs.ts
+ * Last Sync: 2025-11-18
+ * Source: GDD-Monolith.md Section 6.3 "Construction Time Balance"
  *
  * This file provides structure metadata for the client UI:
- * - Display names and descriptions
- * - Categorization for UI organization
- * - Cost previews for build menus
- * - Helper functions for UI validation (canBuildStructure)
+ * - Display names and descriptions from server configuration
+ * - Cost previews for build menus (read-only, validated by server)
+ * - Construction time display
+ * - Helper functions for UI validation
  *
  * 🔒 Server Authority:
- * The server (server/src/events/handlers.ts) is the authoritative
- * source for structure building. It validates all operations:
- * - Resource availability
- * - Ownership verification
- * - Cost enforcement
- * - Database persistence
+ * The server is the authoritative source for all structure operations.
+ * All costs, requirements, and validations are enforced server-side.
+ * This file is for UI display purposes ONLY.
  *
- * 🔄 Sync Warning:
- * Structure definitions here should match server definitions.
- * When adding new structures:
- * 1. Add to this file for UI display
- * 2. Add to server/src/events/handlers.ts for building
- *
- * 🚀 Future Improvement:
- * Move structure definitions to database or shared config file
- * to eliminate duplication and synchronization issues.
+ * 🔄 Maintenance:
+ * When server/src/data/structure-costs.ts changes:
+ * 1. Update this file to match (costs, construction time, descriptions)
+ * 2. Update structure-requirements.ts if needed (area, solar, wind)
+ * 3. Update structure-modifiers.ts if needed (production bonuses)
  */
 
 export interface StructureDefinition {
