@@ -2,6 +2,7 @@ import { API_URL } from '$lib/config';
 import { logger } from '$lib/utils/logger';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
+import { fetchStructureMetadata, type StructureMetadata } from '$lib/api/structures';
 
 export const load = (async ({ params, depends, cookies }) => {
 	// Mark this data as dependent on game state changes
@@ -10,25 +11,41 @@ export const load = (async ({ params, depends, cookies }) => {
 
 	const sessionToken = cookies.get('session');
 
-	const response = await fetch(`${API_URL}/settlements/${params.id}`, {
+	// Fetch settlement data
+	const settlementResponse = await fetch(`${API_URL}/settlements/${params.id}`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
 		}
 	});
 
-	if (!response.ok) {
+	if (!settlementResponse.ok) {
 		logger.error('[SETTLEMENT DETAIL] Failed to fetch settlement', {
 			settlementId: params.id,
-			status: response.status
+			status: settlementResponse.status
 		});
 		return {
 			settlement: null,
+			structures: [] as StructureMetadata[],
 			lastUpdate: new Date().toISOString(),
 			error: 'Settlement not found'
 		};
 	}
 
-	const settlement = await response.json();
+	const settlement = await settlementResponse.json();
+
+	// Fetch structure metadata from API
+	let structures: StructureMetadata[] = [];
+	try {
+		structures = await fetchStructureMetadata();
+		logger.debug('[SETTLEMENT DETAIL] Structure metadata loaded', {
+			count: structures.length
+		});
+	} catch (error) {
+		logger.error('[SETTLEMENT DETAIL] Failed to fetch structure metadata', {
+			error
+		});
+		// Continue without structure metadata - component can show error
+	}
 
 	logger.debug('[SETTLEMENT DETAIL] Settlement loaded', {
 		settlementId: settlement.id,
@@ -37,6 +54,7 @@ export const load = (async ({ params, depends, cookies }) => {
 
 	return {
 		settlement,
+		structures,
 		lastUpdate: new Date().toISOString()
 	};
 }) satisfies PageServerLoad;

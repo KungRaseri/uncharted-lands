@@ -5,11 +5,9 @@
  * hardcoded data. The server is the authoritative source for all structure
  * costs, requirements, and modifiers.
  *
- * Endpoint: GET /api/structures/metadata
- * Source: server/src/api/routes/structures-metadata.ts
+ * Endpoint: GET /api/structures/metadata (SvelteKit proxy)
+ * Backend: server/src/api/routes/structures-metadata.ts
  */
-
-import { PUBLIC_API_URL } from '$env/static/public';
 
 /**
  * Structure metadata from the API
@@ -77,7 +75,8 @@ export async function fetchStructureMetadata(forceRefresh = false): Promise<Stru
 	}
 
 	try {
-		const response = await fetch(`${PUBLIC_API_URL}/structures/metadata`);
+		// Use SvelteKit proxy route (avoids CORS, handles auth)
+		const response = await fetch('/api/structures/metadata');
 
 		if (!response.ok) {
 			throw new Error(`API request failed: ${response.status} ${response.statusText}`);
