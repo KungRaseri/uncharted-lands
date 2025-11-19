@@ -1,17 +1,26 @@
 /**
  * Structure Definitions for Uncharted Lands
  *
- * ⚠️ CRITICAL: SYNCED WITH SERVER
+ * ⚠️⚠️⚠️ DEPRECATED - DO NOT USE IN NEW CODE ⚠️⚠️⚠️
  *
- * This file is synchronized with server/src/data/structure-costs.ts
- * Last Sync: 2025-11-18
- * Source: GDD-Monolith.md Section 6.3 "Construction Time Balance"
+ * This file contains hardcoded structure definitions that are NO LONGER
+ * the source of truth. All structure metadata should be fetched from the
+ * server API endpoint: GET /api/structures/metadata
  *
- * This file provides structure metadata for the client UI:
- * - Display names and descriptions from server configuration
- * - Cost previews for build menus (read-only, validated by server)
- * - Construction time display
- * - Helper functions for UI validation
+ * Use instead:
+ * - Client API: import { fetchStructureMetadata } from '$lib/api/structures'
+ * - Type: import type { StructureMetadata } from '$lib/api/structures'
+ * - Server-side: Already available in +page.server.ts load function as data.structures
+ *
+ * This file is kept temporarily for:
+ * - Legacy compatibility during migration
+ * - Helper functions that may still be useful (will be extracted later)
+ *
+ * TODO: Remove this file after all components are migrated to use API metadata
+ * Migration Status: Settlement page (✅ Complete), Other pages (⏸️ Pending)
+ *
+ * Last API Sync: 2025-11-18
+ * Source: server/src/api/routes/structures.ts (GET /api/structures/metadata)
  *
  * 🔒 Server Authority:
  * The server is the authoritative source for all structure operations.

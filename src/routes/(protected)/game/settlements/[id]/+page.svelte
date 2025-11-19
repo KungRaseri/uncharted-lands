@@ -22,13 +22,7 @@
 	import PopulationPanel from '$lib/components/game/PopulationPanel.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidate } from '$app/navigation';
-	import {
-		STRUCTURE_DEFINITIONS,
-		getStructureCategories,
-		getStructuresByCategory,
-		canBuildStructure,
-		type StructureDefinition
-	} from '$lib/game/structures';
+	import type { StructureMetadata } from '$lib/api/structures';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
 
@@ -60,11 +54,20 @@
 
 	// Build modal state
 	let buildModalOpen = $state(false);
-	let selectedCategory = $state<StructureDefinition['category']>('housing');
-	let selectedStructure = $state<StructureDefinition | null>(null);
+	let selectedCategory = $state<string>('housing');
+	let selectedStructure = $state<StructureMetadata | null>(null);
 	let isBuilding = $state(false);
 
-	const categories = getStructureCategories();
+	// Get unique categories from structures
+	const categories = $derived.by(() => {
+		const cats = new Set(data.structures.map((s) => s.category));
+		return Array.from(cats);
+	});
+
+	// Get structures by category
+	const structuresByCategory = $derived.by(() => {
+		return data.structures.filter((s) => s.category === selectedCategory);
+	});
 
 	function openBuildModal() {
 		buildModalOpen = true;
@@ -77,12 +80,12 @@
 		}
 	}
 
-	function selectStructure(structure: StructureDefinition) {
+	function selectStructure(structure: StructureMetadata) {
 		selectedStructure = structure;
 	}
 
 	// Get category icon
-	function getCategoryIcon(category: StructureDefinition['category']) {
+	function getCategoryIcon(category: string) {
 		switch (category) {
 			case 'housing':
 				return Home;
@@ -94,15 +97,43 @@
 				return ShieldAlert;
 			case 'utility':
 				return Package;
+			default:
+				return Building2;
 		}
 	}
 
-	// Check affordability
-	let affordability = $derived(
-		selectedStructure
-			? canBuildStructure(selectedStructure, data.settlement.storage, data.settlement.plot)
-			: { canBuild: false, reasons: [] }
-	);
+	// Check affordability using API metadata
+	let affordability = $derived.by(() => {
+		if (!selectedStructure) {
+			return { canBuild: false, reasons: [] };
+		}
+
+		const reasons: string[] = [];
+		const storage = data.settlement.storage;
+		const costs = selectedStructure.costs;
+
+		// Check resources
+		if (storage.food < costs.food) {
+			reasons.push(`Need ${costs.food} food (have ${storage.food})`);
+		}
+		if (storage.water < costs.water) {
+			reasons.push(`Need ${costs.water} water (have ${storage.water})`);
+		}
+		if (storage.wood < costs.wood) {
+			reasons.push(`Need ${costs.wood} wood (have ${storage.wood})`);
+		}
+		if (storage.stone < costs.stone) {
+			reasons.push(`Need ${costs.stone} stone (have ${storage.stone})`);
+		}
+		if (storage.ore < costs.ore) {
+			reasons.push(`Need ${costs.ore} ore (have ${storage.ore})`);
+		}
+
+		return {
+			canBuild: reasons.length === 0,
+			reasons
+		};
+	});
 </script>
 
 <div class="max-w-7xl mx-auto p-6 space-y-6">
@@ -480,12 +511,7 @@
 						{selectedCategory} Structures
 					</h4>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{#each getStructuresByCategory(selectedCategory) as structure}
-							{@const availability = canBuildStructure(
-								structure,
-								data.settlement.storage,
-								data.settlement.plot
-							)}
+						{#each structuresByCategory as structure}
 							<button
 								onclick={() => selectStructure(structure)}
 								class="text-left card preset-filled-surface-200-700 p-4 hover:preset-tonal-primary-500 transition-colors {selectedStructure?.id ===
@@ -504,54 +530,31 @@
 								<div class="space-y-1 text-xs">
 									<p class="font-semibold text-surface-700 dark:text-surface-300">Costs:</p>
 									<div class="flex flex-wrap gap-2">
-										{#if structure.requirements.area > 0}
+										{#if structure.costs.food > 0}
 											<span class="badge preset-tonal-surface-500"
-												>Area: {structure.requirements.area}</span
+												>Food: {structure.costs.food}</span
 											>
 										{/if}
-										{#if structure.requirements.solar > 0}
+										{#if structure.costs.water > 0}
 											<span class="badge preset-tonal-surface-500"
-												>Solar: {structure.requirements.solar}</span
+												>Water: {structure.costs.water}</span
 											>
 										{/if}
-										{#if structure.requirements.wind > 0}
+										{#if structure.costs.wood > 0}
 											<span class="badge preset-tonal-surface-500"
-												>Wind: {structure.requirements.wind}</span
+												>Wood: {structure.costs.wood}</span
 											>
 										{/if}
-										{#if structure.requirements.food > 0}
+										{#if structure.costs.stone > 0}
 											<span class="badge preset-tonal-surface-500"
-												>Food: {structure.requirements.food}</span
+												>Stone: {structure.costs.stone}</span
 											>
 										{/if}
-										{#if structure.requirements.water > 0}
-											<span class="badge preset-tonal-surface-500"
-												>Water: {structure.requirements.water}</span
-											>
-										{/if}
-										{#if structure.requirements.wood > 0}
-											<span class="badge preset-tonal-surface-500"
-												>Wood: {structure.requirements.wood}</span
-											>
-										{/if}
-										{#if structure.requirements.stone > 0}
-											<span class="badge preset-tonal-surface-500"
-												>Stone: {structure.requirements.stone}</span
-											>
-										{/if}
-										{#if structure.requirements.ore > 0}
-											<span class="badge preset-tonal-surface-500"
-												>Ore: {structure.requirements.ore}</span
-											>
+										{#if structure.costs.ore > 0}
+											<span class="badge preset-tonal-surface-500">Ore: {structure.costs.ore}</span>
 										{/if}
 									</div>
 								</div>
-
-								{#if !availability.canBuild}
-									<div class="mt-2">
-										<span class="badge preset-filled-error-500 text-xs">Cannot build</span>
-									</div>
-								{/if}
 							</button>
 						{/each}
 					</div>
