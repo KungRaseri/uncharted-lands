@@ -9,15 +9,6 @@
 
 ---
 
-## Decision Summary
-
-**Decision**: [One-sentence summary]  
-**Date**: [YYYY-MM-DD]  
-**Status**: 🤔 Proposed / 💬 Discussing / ✅ Decided / 🔄 Revised  
-**Impact**: 🔴 High / 🟠 Medium / 🟢 Low
-
----
-
 ## Context
 
 **What are we deciding?**  
@@ -228,9 +219,31 @@
 
 - [Approach X] - Rejected because [reason]
 
+<!-- END TEMPLATE -->
+
 ---
 
-## Example Usage
+## About This Template
+
+> **Use this template** when making architectural decisions, design changes, or significant technical choices.
+
+### When to Use
+
+- Deciding between multiple technical approaches
+- Making architectural changes
+- Choosing frameworks, libraries, or tools
+- Resolving design disagreements
+- Documenting important decisions
+
+### How to Use
+
+1. Run the template helper script: `.\client\templates\get-template.ps1`
+2. Select option 4 (Design Decision)
+3. Template is copied to clipboard
+4. Paste into your conversation with Copilot
+5. Fill in all sections, especially the options comparison
+
+### Example Usage
 
 ```markdown
 ## Decision Summary

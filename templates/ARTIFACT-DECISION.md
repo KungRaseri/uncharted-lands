@@ -1,9 +1,5 @@
 # Artifact Decision Template
 
-> **Use this template** when you're about to create/modify significant code and want to decide together whether it should be an artifact.
-
----
-
 ## Context
 
 **What we're creating**: [File type - e.g., "New TypeScript module", "SQL migration", "Svelte component"]  
@@ -117,6 +113,37 @@
 | Multi-file coordination needed?         | ✅ Artifact    | ❌ Direct        |
 
 **Default rule**: **When in doubt, use artifact.** It's easier to convert artifact → direct edit than to reconstruct lost code.
+
+---
+
+<!-- END TEMPLATE -->
+
+---
+
+## About This Template
+
+This template helps you and your AI coding assistant decide whether code changes should be created as artifacts (reviewable in the artifact panel) or applied directly using file editing tools. It provides a framework for making artifact decisions based on complexity, size, and need for iteration.
+
+## When to Use
+
+Use this template when:
+
+- About to create or modify significant code (50+ lines)
+- Uncertain whether to use artifact or direct edit approach
+- Working on complex multi-file changes
+- Need to align with your AI assistant on artifact strategy
+- Starting a new feature and planning implementation approach
+- Want to establish artifact preferences for a coding session
+
+## How to Use
+
+1. **Fill Context**: Describe what you're creating, estimated size, file location, and related files
+2. **Complete Checklist**: Check boxes in Strong Yes / Maybe / No categories
+3. **Evaluate Framework**: Review Option A (Artifact), Option B (Direct Edit), or Option C (Hybrid)
+4. **Use Quick Decision Guide**: Answer yes/no questions in the table
+5. **Decide**: Choose artifact, direct edit, or hybrid based on criteria
+6. **Communicate**: Use shortcuts to tell your AI assistant your preference
+7. **Note Reasoning**: Document why this approach is best for future reference
 
 ---
 

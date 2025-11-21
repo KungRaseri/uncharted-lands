@@ -1,9 +1,5 @@
 # Code Review Template
 
-> **Use this template** when reviewing code changes, pull requests, or discussing implementation details.
-
----
-
 ## Review Info
 
 **PR/Branch**: [Branch name or PR number]  
@@ -236,6 +232,40 @@ Change: [+/- X%]
 **Lessons learned**:
 
 - [What did we learn from this review?]
+
+---
+
+<!-- END TEMPLATE -->
+
+---
+
+## About This Template
+
+This template provides a comprehensive structure for reviewing code changes, ensuring systematic evaluation of quality, functionality, testing, performance, security, and architecture. It helps maintain consistent code review standards across the project and ensures nothing is overlooked.
+
+## When to Use
+
+Use this template when:
+
+- Reviewing pull requests before merge
+- Conducting pre-commit code reviews
+- Discussing implementation details for complex features
+- Evaluating post-merge changes
+- Performing architectural reviews
+- Analyzing security or performance implications of code changes
+
+## How to Use
+
+1. **Fill Review Info**: Document PR/branch, author, reviewer, date, and review type
+2. **Summarize Changes**: Describe what changed, why, and the scope
+3. **List Files Changed**: Categorize by Backend/Frontend/Database/Tests
+4. **Complete Checklists**: Check Code Quality, Functionality, Testing, Performance, Security, Documentation
+5. **Detailed Review**: Document strengths, issues by priority (Critical/High/Low), and questions
+6. **Verify Testing**: Record manual and automated test results
+7. **Security/Performance Review**: Note any concerns
+8. **Architecture Review**: Ensure alignment with existing architecture
+9. **Make Decision**: Approve, Request Changes, or Comment Only with reasoning
+10. **Document Notes**: Add follow-up tasks and lessons learned
 
 ---
 
