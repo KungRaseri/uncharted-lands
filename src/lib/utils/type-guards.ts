@@ -119,7 +119,9 @@ export function isValidTemperature(temperature: number): boolean {
  * @param obj - Object to check
  * @returns True if object has id, elevation, type properties
  */
-export function hasTileProperties(obj: unknown): obj is { id: string; elevation: number; type: string } {
+export function hasTileProperties(
+	obj: unknown
+): obj is { id: string; elevation: number; type: string } {
 	return (
 		typeof obj === 'object' &&
 		obj !== null &&

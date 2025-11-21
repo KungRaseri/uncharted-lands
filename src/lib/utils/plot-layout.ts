@@ -44,7 +44,7 @@ export type PlotStats = {
 
 /**
  * Calculate plot statistics from an array of plots
- * 
+ *
  * @param plots - Array of plots to analyze
  * @returns Object containing plot statistics
  */
@@ -67,7 +67,7 @@ export function calculatePlotStats(plots: Plot[]): PlotStats {
 /**
  * Generate a tooltip string for a plot
  * Shows plot ID, area, solar/wind, resources, and settlement status
- * 
+ *
  * @param plot - The plot to generate tooltip for
  * @returns Formatted tooltip string with newlines
  */
@@ -82,7 +82,7 @@ ${plot.settlement ? '🏠 Has Settlement' : 'No Settlement'}`;
 /**
  * Calculate plot layout positions and sizes for grid visualization
  * Arranges plots in a grid pattern within a tile, with positions as percentages
- * 
+ *
  * @param plots - Array of plots to layout
  * @returns Array of plot layouts with position, size, and scale information
  */
@@ -92,14 +92,14 @@ export function getPlotLayout(plots: Plot[]): PlotLayout[] {
 	}
 
 	const totalArea = plots.reduce((sum, p) => sum + p.area, 0);
-	
+
 	return plots.map((plot, index) => {
 		// Calculate position based on index and area proportion
 		const areaProportion = plot.area / totalArea;
 		const cols = Math.ceil(Math.sqrt(plots.length));
 		const row = Math.floor(index / cols);
 		const col = index % cols;
-		
+
 		return {
 			plot,
 			// Position as percentage (grid layout)

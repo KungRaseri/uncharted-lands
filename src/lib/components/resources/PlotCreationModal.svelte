@@ -3,16 +3,16 @@
 	import type { CreatePlotRequest } from '$lib/types/api';
 	import TileResourceInfo from './TileResourceInfo.svelte';
 
-	let { 
-		tile, 
-		isOpen = false, 
-		onClose, 
-		onCreatePlot 
-	}: { 
-		tile: Tile | null; 
-		isOpen?: boolean; 
-		onClose: () => void; 
-		onCreatePlot: (plotData: CreatePlotRequest) => Promise<void>; 
+	let {
+		tile,
+		isOpen = false,
+		onClose,
+		onCreatePlot
+	}: {
+		tile: Tile | null;
+		isOpen?: boolean;
+		onClose: () => void;
+		onCreatePlot: (plotData: CreatePlotRequest) => Promise<void>;
 	} = $props();
 
 	// Form state
@@ -25,7 +25,7 @@
 	// Get tile resource qualities for preview
 	let tileInfo = $derived(() => {
 		if (!tile) return null;
-		
+
 		return {
 			foodQuality: tile.foodQuality || 0,
 			woodQuality: tile.woodQuality || 0,
@@ -109,7 +109,13 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="modal-backdrop" onclick={handleClose} role="presentation">
-		<div class="modal-content" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
+		<div
+			class="modal-content"
+			onclick={(e) => e.stopPropagation()}
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
+		>
 			<div class="modal-header">
 				<h2 class="text-2xl font-bold">Create New Plot</h2>
 				<button
@@ -128,7 +134,13 @@
 				<TileResourceInfo {tile} />
 			</div>
 
-			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSubmit();
+				}}
+				class="space-y-4"
+			>
 				<div class="grid grid-cols-2 gap-4">
 					<label class="label">
 						<span>X Coordinate</span>
@@ -218,11 +230,7 @@
 					>
 						Cancel
 					</button>
-					<button
-						class="btn variant-filled-primary"
-						type="submit"
-						disabled={isCreating}
-					>
+					<button class="btn variant-filled-primary" type="submit" disabled={isCreating}>
 						{#if isCreating}
 							Creating...
 						{:else}

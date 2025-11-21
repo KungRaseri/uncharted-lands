@@ -55,7 +55,9 @@ describe('PlotCreationModal.svelte', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		onCloseMock = vi.fn<() => void>();
-		onCreatePlotMock = vi.fn<(plotData: CreatePlotRequest) => Promise<void>>().mockResolvedValue(undefined);
+		onCreatePlotMock = vi
+			.fn<(plotData: CreatePlotRequest) => Promise<void>>()
+			.mockResolvedValue(undefined);
 
 		// Setup default mocks for TileResourceInfo
 		(resourceUtils.getResourceIcon as any).mockImplementation(async (type: string) => {
@@ -476,7 +478,9 @@ describe('PlotCreationModal.svelte', () => {
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText(/Production rates are estimates based on tile quality/)).toBeDefined();
+				expect(
+					screen.getByText(/Production rates are estimates based on tile quality/)
+				).toBeDefined();
 			});
 		});
 	});
@@ -585,9 +589,7 @@ describe('PlotCreationModal.svelte', () => {
 		});
 
 		it('should display loading state during creation', async () => {
-			onCreatePlotMock.mockImplementation(
-				() => new Promise((resolve) => setTimeout(resolve, 100))
-			);
+			onCreatePlotMock.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
 			render(PlotCreationModal, {
 				props: {
@@ -609,9 +611,7 @@ describe('PlotCreationModal.svelte', () => {
 		});
 
 		it('should disable inputs during creation', async () => {
-			onCreatePlotMock.mockImplementation(
-				() => new Promise((resolve) => setTimeout(resolve, 100))
-			);
+			onCreatePlotMock.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
 			render(PlotCreationModal, {
 				props: {
@@ -634,9 +634,7 @@ describe('PlotCreationModal.svelte', () => {
 		});
 
 		it('should disable buttons during creation', async () => {
-			onCreatePlotMock.mockImplementation(
-				() => new Promise((resolve) => setTimeout(resolve, 100))
-			);
+			onCreatePlotMock.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
 			render(PlotCreationModal, {
 				props: {
@@ -833,9 +831,7 @@ describe('PlotCreationModal.svelte', () => {
 		});
 
 		it('should prevent closing during creation', async () => {
-			onCreatePlotMock.mockImplementation(
-				() => new Promise((resolve) => setTimeout(resolve, 100))
-			);
+			onCreatePlotMock.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
 			render(PlotCreationModal, {
 				props: {

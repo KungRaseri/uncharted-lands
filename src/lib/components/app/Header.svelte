@@ -49,39 +49,39 @@
 			</div>
 			<div class="hidden sm:flex gap-2">
 				{#each page.data?.mainMenuLinks ?? [] as link}
-				{#if link.requiredRole}
-					{#if page.data?.account}
-						<a
-							href={link.route}
-							class="btn rounded-md
+					{#if link.requiredRole}
+						{#if page.data?.account}
+							<a
+								href={link.route}
+								class="btn rounded-md
 								{link.isActive ? 'bg-primary-600' : ''}
 								{page.data?.account?.role !== link.requiredRole ? 'hidden' : ''}
 								hover:bg-primary-500
 								"
+							>
+								<span class="">
+									{link.name}
+								</span>
+							</a>
+						{/if}
+					{:else}
+						<a
+							href={link.route}
+							class="btn rounded-md
+							{link.isActive ? 'bg-primary-600' : ''}
+							{page.data?.account && link.requiredRole && page.data?.account?.role !== link.requiredRole
+								? 'hidden'
+								: ''}
+							hover:bg-primary-500
+							"
+							aria-current={link.isActive ? 'page' : undefined}
 						>
 							<span class="">
 								{link.name}
 							</span>
 						</a>
 					{/if}
-				{:else}
-					<a
-						href={link.route}
-						class="btn rounded-md
-							{link.isActive ? 'bg-primary-600' : ''}
-							{page.data?.account && link.requiredRole && page.data?.account?.role !== link.requiredRole
-							? 'hidden'
-							: ''}
-							hover:bg-primary-500
-							"
-						aria-current={link.isActive ? 'page' : undefined}
-					>
-						<span class="">
-							{link.name}
-						</span>
-					</a>
-				{/if}
-			{/each}
+				{/each}
 			</div>
 		</div>
 
@@ -143,7 +143,8 @@
 									icon.setAttribute('fill', 'none');
 									icon.setAttribute('stroke', 'currentColor');
 									icon.setAttribute('stroke-width', '2');
-									icon.innerHTML = '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>';
+									icon.innerHTML =
+										'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>';
 									parent?.appendChild(icon);
 								}}
 							/>

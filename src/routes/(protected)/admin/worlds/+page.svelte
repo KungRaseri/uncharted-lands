@@ -6,23 +6,25 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let searchTerm = $state('');
-	
-	let filteredWorlds = $derived(data.worlds.filter(world => {
-		if (!searchTerm) return true;
-		const search = searchTerm.toLowerCase();
-		return (
-			world.id.toLowerCase().includes(search) ||
-			world.name.toLowerCase().includes(search) ||
-			(world.server?.name && world.server.name.toLowerCase().includes(search))
-		);
-	}));
+
+	let filteredWorlds = $derived(
+		data.worlds.filter((world) => {
+			if (!searchTerm) return true;
+			const search = searchTerm.toLowerCase();
+			return (
+				world.id.toLowerCase().includes(search) ||
+				world.name.toLowerCase().includes(search) ||
+				(world.server?.name && world.server.name.toLowerCase().includes(search))
+			);
+		})
+	);
 
 	// State for delete confirmation modal
 	let deleteModalOpen = $state(false);
-	let worldToDelete = $state<typeof data.worlds[0] | null>(null);
+	let worldToDelete = $state<(typeof data.worlds)[0] | null>(null);
 	let isDeleting = $state(false);
 
-	function openDeleteModal(world: typeof data.worlds[0]) {
+	function openDeleteModal(world: (typeof data.worlds)[0]) {
 		worldToDelete = world;
 		deleteModalOpen = true;
 	}
@@ -176,19 +178,25 @@
 	{@const regionCount = worldToDelete.regions?.length || 0}
 	{@const tileCount = regionCount * 100}
 	{@const plotCount = tileCount * 5}
-	
+
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="modal-backdrop" onclick={closeDeleteModal} role="presentation">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="modal preset-filled-surface-50-950 w-full max-w-md" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
+		<div
+			class="modal preset-filled-surface-50-950 w-full max-w-md"
+			onclick={(e) => e.stopPropagation()}
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
+		>
 			<header class="modal-header">
 				<h3 class="h3">Delete World</h3>
 			</header>
 			<section class="modal-body space-y-4">
 				<p>Are you sure you want to delete the world <strong>{worldToDelete.name}</strong>?</p>
-				
+
 				<aside class="alert preset-filled-warning-500 rounded-md">
 					<div class="alert-message">
 						<p class="font-semibold">⚠️ Cascade Delete Warning</p>
@@ -209,16 +217,16 @@
 				</aside>
 			</section>
 			<footer class="modal-footer">
-				<button 
-					type="button" 
-					class="btn preset-tonal-surface-500 rounded-md" 
+				<button
+					type="button"
+					class="btn preset-tonal-surface-500 rounded-md"
 					onclick={closeDeleteModal}
 					disabled={isDeleting}
 				>
 					Cancel
 				</button>
-				<form 
-					method="POST" 
+				<form
+					method="POST"
 					action="?/delete"
 					use:enhance={() => {
 						isDeleting = true;
@@ -230,8 +238,8 @@
 					}}
 				>
 					<input type="hidden" name="worldId" value={worldToDelete.id} />
-					<button 
-						type="submit" 
+					<button
+						type="submit"
 						class="btn preset-filled-error-500 rounded-md"
 						disabled={isDeleting}
 					>

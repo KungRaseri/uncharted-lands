@@ -3,7 +3,7 @@ import {
 	findBiomeForTile,
 	normalizeValue,
 	normalizeNoiseValue,
-	getBiomeNameForPreview,
+	getBiomeNameForPreview
 } from '../../../src/lib/utils/biome-matcher';
 
 // Mock console.log to avoid spam in tests

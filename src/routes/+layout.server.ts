@@ -1,4 +1,4 @@
-import type { ServerLoad } from "@sveltejs/kit";
+import type { ServerLoad } from '@sveltejs/kit';
 
 const mainMenuLinks = [
 	{
@@ -9,7 +9,7 @@ const mainMenuLinks = [
 	{
 		name: 'Forum',
 		route: '/forum',
-		isActive: false,
+		isActive: false
 	},
 	{
 		name: 'Game',
@@ -20,7 +20,7 @@ const mainMenuLinks = [
 		name: 'Admin',
 		route: '/admin',
 		isActive: false,
-		requiredRole: "ADMINISTRATOR"
+		requiredRole: 'ADMINISTRATOR'
 	}
 ];
 
@@ -34,23 +34,23 @@ const userMenuLinks = [
 		name: 'Admin',
 		route: '/admin',
 		isActive: false,
-		requiredRole: "ADMINISTRATOR"
+		requiredRole: 'ADMINISTRATOR'
 	}
 ];
 
 export const load: ServerLoad = async function ({ locals, route }) {
 	mainMenuLinks.forEach(async (link) => {
 		if (route.id === '/' && link.route === '/') {
-			link.isActive = true
+			link.isActive = true;
 			return;
 		}
 
 		if (link.route !== '/' && route.id?.includes(link.route)) {
-			link.isActive = true
+			link.isActive = true;
 			return;
 		}
 
-		link.isActive = false
+		link.isActive = false;
 	});
 
 	userMenuLinks.forEach(async (link) => {
@@ -66,5 +66,5 @@ export const load: ServerLoad = async function ({ locals, route }) {
 		account: locals.account,
 		mainMenuLinks: mainMenuLinks,
 		userMenuLinks: userMenuLinks
-	}
-}
+	};
+};

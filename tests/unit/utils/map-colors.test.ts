@@ -4,7 +4,7 @@ import {
 	getTerrainType,
 	getTerrainData,
 	ELEVATION_THRESHOLDS,
-	TERRAIN_COLORS,
+	TERRAIN_COLORS
 } from '../../../src/lib/utils/tile-colors';
 
 describe('Map Colors Utilities', () => {
@@ -92,8 +92,12 @@ describe('Map Colors Utilities', () => {
 			expect(getElevationColor(ELEVATION_THRESHOLDS.FOREST)).toBe(TERRAIN_COLORS.HILLS);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.HILLS)).toBe(TERRAIN_COLORS.MOUNTAINS);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.MOUNTAINS)).toBe(TERRAIN_COLORS.HIGH_MOUNTAINS);
-			expect(getElevationColor(ELEVATION_THRESHOLDS.HIGH_MOUNTAINS)).toBe(TERRAIN_COLORS.ALPINE_PEAKS);
-			expect(getElevationColor(ELEVATION_THRESHOLDS.ALPINE_PEAKS)).toBe(TERRAIN_COLORS.EXTREME_PEAKS);
+			expect(getElevationColor(ELEVATION_THRESHOLDS.HIGH_MOUNTAINS)).toBe(
+				TERRAIN_COLORS.ALPINE_PEAKS
+			);
+			expect(getElevationColor(ELEVATION_THRESHOLDS.ALPINE_PEAKS)).toBe(
+				TERRAIN_COLORS.EXTREME_PEAKS
+			);
 		});
 	});
 

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { 
-		Home, 
-		Users, 
-		Zap, 
-		Shield, 
-		TreePine, 
-		Droplet, 
+	import {
+		Home,
+		Users,
+		Zap,
+		Shield,
+		TreePine,
+		Droplet,
 		Mountain,
 		Hammer,
 		TrendingUp,
@@ -16,7 +16,10 @@
 
 <svelte:head>
 	<title>Introduction - Coming Soon™ | Uncharted Lands</title>
-	<meta name="description" content="Learn about Uncharted Lands - Build settlements, manage resources, and survive in a procedurally generated world" />
+	<meta
+		name="description"
+		content="Learn about Uncharted Lands - Build settlements, manage resources, and survive in a procedurally generated world"
+	/>
 </svelte:head>
 
 <div class="container mx-auto p-6 space-y-12 max-w-6xl">
@@ -26,17 +29,15 @@
 			Welcome to Uncharted Lands
 		</h1>
 		<p class="text-xl text-surface-600 dark:text-surface-400 max-w-3xl mx-auto">
-			A settlement-building game where you must overcome extreme weather, scarce resources, 
-			and hostile creatures while expanding your community and advancing your technology.
+			A settlement-building game where you must overcome extreme weather, scarce resources, and
+			hostile creatures while expanding your community and advancing your technology.
 		</p>
 		<div class="flex gap-4 justify-center flex-wrap">
 			<a href="/game/getting-started" class="btn preset-filled-primary-500">
 				<span>Start Your Journey</span>
 				<ArrowRight size={20} />
 			</a>
-			<a href="#gameplay" class="btn preset-tonal-surface-500">
-				Learn More
-			</a>
+			<a href="#gameplay" class="btn preset-tonal-surface-500"> Learn More </a>
 		</div>
 	</section>
 
@@ -45,7 +46,7 @@
 		<h2 class="text-3xl font-bold text-center text-surface-900 dark:text-surface-100">
 			Core Gameplay
 		</h2>
-		
+
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			<!-- Settlement Building -->
 			<div class="card preset-filled-surface-100-900 p-6 space-y-4">
@@ -58,8 +59,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Construct various structures from basic tents to advanced buildings. 
-					Each structure provides unique benefits to help your settlement thrive.
+					Construct various structures from basic tents to advanced buildings. Each structure
+					provides unique benefits to help your settlement thrive.
 				</p>
 			</div>
 
@@ -74,8 +75,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Gather and manage five essential resources: food, water, wood, stone, and ore. 
-					Balance production and consumption to keep your settlement running.
+					Gather and manage five essential resources: food, water, wood, stone, and ore. Balance
+					production and consumption to keep your settlement running.
 				</p>
 			</div>
 
@@ -90,8 +91,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Expand your population by building housing structures. 
-					More settlers mean more potential, but also greater resource demands.
+					Expand your population by building housing structures. More settlers mean more potential,
+					but also greater resource demands.
 				</p>
 			</div>
 
@@ -101,13 +102,11 @@
 					<div class="text-primary-500">
 						<Zap size={32} />
 					</div>
-					<h3 class="text-xl font-bold text-surface-900 dark:text-surface-100">
-						Energy Systems
-					</h3>
+					<h3 class="text-xl font-bold text-surface-900 dark:text-surface-100">Energy Systems</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Harness solar and wind energy to power advanced structures. 
-					Manage your plot's energy capacity to support growing infrastructure.
+					Harness solar and wind energy to power advanced structures. Manage your plot's energy
+					capacity to support growing infrastructure.
 				</p>
 			</div>
 
@@ -122,8 +121,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Build defensive structures like palisades and watchtowers to protect 
-					your settlement from hostile creatures and environmental hazards.
+					Build defensive structures like palisades and watchtowers to protect your settlement from
+					hostile creatures and environmental hazards.
 				</p>
 			</div>
 
@@ -138,8 +137,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Progress from basic survival to advanced civilization. 
-					Unlock new structures and capabilities as your settlement grows.
+					Progress from basic survival to advanced civilization. Unlock new structures and
+					capabilities as your settlement grows.
 				</p>
 			</div>
 		</div>
@@ -157,27 +156,34 @@
 						Every World is Unique
 					</h3>
 					<p class="text-surface-600 dark:text-surface-400">
-						Each game takes place in a procedurally generated world with unique terrain, 
-						climate, and resource distribution. Adapt your strategy to the environment 
-						you're given.
+						Each game takes place in a procedurally generated world with unique terrain, climate,
+						and resource distribution. Adapt your strategy to the environment you're given.
 					</p>
 					<div class="space-y-3">
 						<div class="flex items-center gap-3">
 							<Mountain size={24} class="text-primary-500" />
-							<span class="text-surface-700 dark:text-surface-300">Varied elevation and terrain types</span>
+							<span class="text-surface-700 dark:text-surface-300"
+								>Varied elevation and terrain types</span
+							>
 						</div>
 						<div class="flex items-center gap-3">
 							<Droplet size={24} class="text-primary-500" />
-							<span class="text-surface-700 dark:text-surface-300">Dynamic precipitation patterns</span>
+							<span class="text-surface-700 dark:text-surface-300"
+								>Dynamic precipitation patterns</span
+							>
 						</div>
 						<div class="flex items-center gap-3">
 							<TreePine size={24} class="text-primary-500" />
-							<span class="text-surface-700 dark:text-surface-300">Diverse biomes with unique resources</span>
+							<span class="text-surface-700 dark:text-surface-300"
+								>Diverse biomes with unique resources</span
+							>
 						</div>
 					</div>
 				</div>
 				<div class="flex justify-center">
-					<div class="w-full aspect-square max-w-md bg-surface-200 dark:bg-surface-700 rounded-lg flex items-center justify-center">
+					<div
+						class="w-full aspect-square max-w-md bg-surface-200 dark:bg-surface-700 rounded-lg flex items-center justify-center"
+					>
 						<p class="text-surface-400 dark:text-surface-500 text-center px-4">
 							World Map Preview
 							<br />
@@ -201,7 +207,8 @@
 				</div>
 				<h3 class="text-xl font-bold">Extreme Weather</h3>
 				<p class="text-sm">
-					Adapt to harsh weather conditions that affect resource production and settlement stability.
+					Adapt to harsh weather conditions that affect resource production and settlement
+					stability.
 				</p>
 			</div>
 			<div class="card preset-filled-error-500 p-6 space-y-3 text-center">
@@ -229,17 +236,15 @@
 	<section class="card preset-filled-primary-500 p-8 text-center space-y-6">
 		<h2 class="text-3xl font-bold">Ready to Begin?</h2>
 		<p class="text-lg max-w-2xl mx-auto">
-			Create your first settlement and start your journey in the uncharted lands. 
-			Every decision matters. Every resource counts. Can you build a thriving community?
+			Create your first settlement and start your journey in the uncharted lands. Every decision
+			matters. Every resource counts. Can you build a thriving community?
 		</p>
 		<div class="flex gap-4 justify-center flex-wrap">
 			<a href="/game/getting-started" class="btn preset-filled-surface-50-950">
 				<span>Start Playing</span>
 				<ArrowRight size={20} />
 			</a>
-			<a href="/kb" class="btn preset-tonal-surface-50-950">
-				Knowledge Base
-			</a>
+			<a href="/kb" class="btn preset-tonal-surface-50-950"> Knowledge Base </a>
 		</div>
 	</section>
 </div>

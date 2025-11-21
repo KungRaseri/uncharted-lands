@@ -11,4 +11,10 @@
 	let { regions, playerProfileId, lazyLoadEnabled = false }: Props = $props();
 </script>
 
-<WorldMap {regions} mode="player" currentPlayerProfileId={playerProfileId} showLegend={true} {lazyLoadEnabled} />
+<WorldMap
+	{regions}
+	mode="player"
+	currentPlayerProfileId={playerProfileId}
+	showLegend={true}
+	{lazyLoadEnabled}
+/>

@@ -5,7 +5,7 @@
 		getResourceIcon,
 		getResourceName,
 		getExtractorName,
-		formatHarvestTime,
+		formatHarvestTime
 	} from '$lib/utils/resource-production';
 
 	export let plot: {
@@ -42,7 +42,7 @@
 			resourceType: plot.resourceType,
 			extractorType: plot.extractorType,
 			biomeName: plot.tile.biome.name,
-			structureLevel: plot.structureLevel,
+			structureLevel: plot.structureLevel
 		});
 
 		const lastHarvestedDate = plot.lastHarvested ? new Date(plot.lastHarvested) : null;
