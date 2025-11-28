@@ -2,7 +2,8 @@
 	import World from '$lib/components/game/map/World.svelte';
 	import MapControls from '$lib/components/game/map/MapControls.svelte';
 	import type { PageData } from './$types';
-	import type { RegionWithTiles, TileWithRelations, Plot } from '$lib/types/game';
+	import type { RegionWithTiles,					Hover over tiles to see details. Your settlement and other settled tiles are marked with
+					yellow dots.ileWithRelations } from '$lib/types/game';
 	import { Map, Globe, Layers, MapPin, Info } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -134,15 +135,12 @@
 		) || 0
 	);
 
-	const settledPlots = $derived(
+	const settledTiles = $derived(
 		regions.reduce(
 			(sum: number, region: RegionWithTiles) =>
 				sum +
-				(region.tiles?.reduce(
-					(tileSum: number, tile: TileWithRelations) =>
-						tileSum + (tile.plots?.filter((plot: Plot) => plot.settlement !== null).length || 0),
-					0
-				) || 0),
+				(region.tiles?.filter((tile: TileWithRelations) => tile.settlementId !== null).length ||
+					0),
 			0
 		) || 0
 	);
@@ -188,10 +186,10 @@
 					<Map size={16} />
 					<span>{totalTiles.toLocaleString()} Tiles</span>
 				</div>
-				{#if settledPlots > 0}
+				{#if settledTiles > 0}
 					<div class="flex items-center gap-2">
 						<MapPin size={16} />
-						<span class="text-warning-500 font-semibold">{settledPlots} Settled Plots</span>
+						<span class="text-warning-500 font-semibold">{settledTiles} Settled Tiles</span>
 					</div>
 				{/if}
 			</div>

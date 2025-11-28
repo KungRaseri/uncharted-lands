@@ -105,7 +105,7 @@
 					<h3 class="text-xl font-bold text-surface-900 dark:text-surface-100">Energy Systems</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Harness solar and wind energy to power advanced structures. Manage your plot's energy
+					Harness solar and wind energy to power advanced structures. Manage your tile's energy
 					capacity to support growing infrastructure.
 				</p>
 			</div>

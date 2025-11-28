@@ -24,10 +24,6 @@ export interface Biome {
 	precipitationMax: number;
 	temperatureMin: number;
 	temperatureMax: number;
-	plotsMin: number;
-	plotsMax: number;
-	plotAreaMin: number;
-	plotAreaMax: number;
 	solarModifier: number;
 	windModifier: number;
 	foodModifier: number;
@@ -35,24 +31,6 @@ export interface Biome {
 	woodModifier: number;
 	stoneModifier: number;
 	oreModifier: number;
-}
-
-// ============================================================================
-// Plot Types
-// ============================================================================
-
-export interface Plot {
-	id: string;
-	tileId: string;
-	area: number;
-	solar: number;
-	wind: number;
-	food: number;
-	water: number;
-	wood: number;
-	stone: number;
-	ore: number;
-	settlement?: Settlement | null;
 }
 
 // ============================================================================
@@ -93,13 +71,9 @@ export interface TileWithBiome extends TileBase {
 	Biome: Biome;
 }
 
-export interface TileWithPlots extends TileBase {
-	Plots: Plot[];
-}
-
 export interface TileWithRelations extends TileBase {
 	biome?: Biome;
-	plots?: Plot[];
+	settlement?: Settlement;
 }
 
 // Convenient type alias for most common use case

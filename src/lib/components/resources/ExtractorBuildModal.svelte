@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PlotWithRelations } from '$lib/types/api';
+	import type { TileWithRelations } from '$lib/types/api';
 	import {
 		getResourceIcon,
 		getResourceName,
@@ -7,22 +7,32 @@
 	} from '$lib/utils/resource-production';
 
 	let {
-		plot,
+		tile,
 		isOpen = false,
 		onClose,
 		onBuildExtractor
 	}: {
-		plot: PlotWithRelations;
+		tile: TileWithRelations;
 		isOpen?: boolean;
 		onClose: () => void;
-		onBuildExtractor: (plotId: string, extractorType: string) => Promise<void>;
+		onBuildExtractor: (
+			tileId: string,
+			slotPosition: number,
+			extractorType: string
+		) => Promise<void>;
 	} = $props();
 
 	let isBuilding = $state(false);
 	let selectedExtractor = $state<string | null>(null);
+	let selectedSlotPosition = $state<number>(1); // Default to slot 1
 	let error = $state<string | null>(null);
 
-	// Determine available extractors based on plot's resource potential
+	// Calculate available slots (max 3 per tile)
+	const maxSlots = 3;
+	let usedSlots = $derived(tile.structures?.length || 0);
+	let availableSlots = $derived(maxSlots - usedSlots);
+
+	// Determine available extractors based on tile's resource potential
 	let extractorOptions = $derived(() => {
 		const options: Array<{
 			type: string;
@@ -32,13 +42,13 @@
 		}> = [];
 
 		// Food extractors
-		if (plot.food > 0) {
+		if (tile.foodQuality > 0) {
 			options.push({
 				type: 'BASIC_FARM',
 				resourceType: 'FOOD',
 				available: true
 			});
-			if (plot.food >= 50) {
+			if (tile.foodQuality >= 50) {
 				options.push({
 					type: 'ADVANCED_FARM',
 					resourceType: 'FOOD',
@@ -50,12 +60,12 @@
 				type: 'BASIC_FARM',
 				resourceType: 'FOOD',
 				available: false,
-				reason: 'Insufficient food quality on this plot'
+				reason: 'Insufficient food quality on this tile'
 			});
 		}
 
 		// Water extractors
-		if (plot.water > 0) {
+		if (tile.waterQuality > 0) {
 			options.push({
 				type: 'BASIC_WELL',
 				resourceType: 'WATER',
@@ -64,7 +74,7 @@
 		}
 
 		// Wood extractors
-		if (plot.wood > 0) {
+		if (tile.woodQuality > 0) {
 			options.push({
 				type: 'BASIC_LUMBER_MILL',
 				resourceType: 'WOOD',
@@ -73,7 +83,7 @@
 		}
 
 		// Stone extractors
-		if (plot.stone > 0) {
+		if (tile.stoneQuality > 0) {
 			options.push({
 				type: 'BASIC_QUARRY',
 				resourceType: 'STONE',
@@ -82,7 +92,7 @@
 		}
 
 		// Ore extractors
-		if (plot.ore > 0) {
+		if (tile.oreQuality > 0) {
 			options.push({
 				type: 'BASIC_MINE',
 				resourceType: 'ORE',
@@ -107,6 +117,7 @@
 	$effect(() => {
 		if (isOpen) {
 			selectedExtractor = null;
+			selectedSlotPosition = usedSlots + 1; // Next available slot
 			error = null;
 		}
 	});
@@ -118,7 +129,7 @@
 		error = null;
 
 		try {
-			await onBuildExtractor(plot.id, selectedExtractor);
+			await onBuildExtractor(tile.id, selectedSlotPosition, selectedExtractor);
 			onClose();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to build extractor';
@@ -149,7 +160,7 @@
 				<div>
 					<h2 class="text-2xl font-bold">Build Extractor</h2>
 					<p class="text-sm text-surface-600-300-token">
-						Plot at ({plot.x}, {plot.y}) - Area: {plot.area} units
+						Tile at ({tile.x}, {tile.y}) - Slots Used: {usedSlots} / {maxSlots}
 					</p>
 				</div>
 				<button
@@ -163,47 +174,53 @@
 				</button>
 			</div>
 
+			{#if availableSlots === 0}
+				<div class="alert variant-filled-error mb-4">
+					<span>⚠️ No available slots on this tile. Maximum 3 extractors per tile.</span>
+				</div>
+			{/if}
+
 			<div class="variant-ghost-surface p-4 rounded-lg mb-6">
-				<h3 class="font-semibold mb-2">Plot Resources</h3>
+				<h3 class="font-semibold mb-2">Tile Resource Quality</h3>
 				<div class="grid grid-cols-2 gap-2 text-sm">
-					{#if plot.food > 0}
+					{#if tile.foodQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('FOOD') then icon}
 								<span>{icon}</span>
 							{/await}
-							Food: {plot.food}
+							Food: {tile.foodQuality}%
 						</div>
 					{/if}
-					{#if plot.water > 0}
+					{#if tile.waterQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('WATER') then icon}
 								<span>{icon}</span>
 							{/await}
-							Water: {plot.water}
+							Water: {tile.waterQuality}%
 						</div>
 					{/if}
-					{#if plot.wood > 0}
+					{#if tile.woodQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('WOOD') then icon}
 								<span>{icon}</span>
 							{/await}
-							Wood: {plot.wood}
+							Wood: {tile.woodQuality}%
 						</div>
 					{/if}
-					{#if plot.stone > 0}
+					{#if tile.stoneQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('STONE') then icon}
 								<span>{icon}</span>
 							{/await}
-							Stone: {plot.stone}
+							Stone: {tile.stoneQuality}%
 						</div>
 					{/if}
-					{#if plot.ore > 0}
+					{#if tile.oreQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('ORE') then icon}
 								<span>{icon}</span>
 							{/await}
-							Ore: {plot.ore}
+							Ore: {tile.oreQuality}%
 						</div>
 					{/if}
 				</div>

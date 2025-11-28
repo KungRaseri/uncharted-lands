@@ -57,7 +57,6 @@ export interface CreateWorldRequest {
 	height?: number;
 	regions?: CreateRegionRequest[];
 	tiles?: CreateTileRequest[];
-	plots?: CreatePlotRequest[];
 }
 
 export interface UpdateWorldRequest {
@@ -119,10 +118,8 @@ export interface Tile {
 export interface TileWithRelations extends Tile {
 	region?: Region;
 	biome?: Biome;
-	plots?: Plot[];
 	Region?: Region; // Capitalized Prisma relation
 	Biome?: Biome; // Capitalized Prisma relation
-	Plots?: Plot[]; // Capitalized Prisma relation
 }
 
 export interface CreateTileRequest {
@@ -133,47 +130,6 @@ export interface CreateTileRequest {
 	precipitation: number;
 	temperature: number;
 	biomeId?: string;
-}
-
-// ============================================================================
-// Plot Types
-// ============================================================================
-
-export interface Plot {
-	id: string;
-	tileId: string;
-	x: number;
-	y: number;
-	area: number;
-	solar: number;
-	wind: number;
-	food: number;
-	water: number;
-	wood: number;
-	stone: number;
-	ore: number;
-	createdAt: Date | string;
-	updatedAt: Date | string;
-}
-
-export interface PlotWithRelations extends Plot {
-	tile?: TileWithRelations;
-	settlement?: Settlement;
-	Settlement?: Settlement; // Capitalized Prisma relation
-}
-
-export interface CreatePlotRequest {
-	tileId: string;
-	x: number;
-	y: number;
-	area: number;
-	solar: number;
-	wind: number;
-	food: number;
-	water: number;
-	wood: number;
-	stone: number;
-	ore: number;
 }
 
 // ============================================================================
@@ -335,7 +291,6 @@ export interface DashboardStats {
 		players: number;
 		regions: number;
 		tiles: number;
-		plots: number;
 	};
 	recentWorlds: World[];
 	recentServers: GameServer[];

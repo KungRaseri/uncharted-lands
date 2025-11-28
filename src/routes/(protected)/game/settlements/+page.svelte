@@ -146,7 +146,7 @@
 							class="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-400 group-hover:text-white/80"
 						>
 							<MapPin size={14} />
-							<span>Plot: {settlement.plotId.slice(0, 8)}...</span>
+							<span>Tile: {settlement.tileId.slice(0, 8)}...</span>
 						</div>
 
 						<!-- Structures -->

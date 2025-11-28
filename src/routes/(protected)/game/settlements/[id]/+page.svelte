@@ -296,16 +296,16 @@
 		<!-- Population Panel -->
 		<PopulationPanel settlementId={data.settlement.id} />
 
-		<!-- Plot Resources -->
+		<!-- Tile Resources -->
 		<div class="card preset-filled-surface-100-900 p-6">
 			<h2
 				class="text-xl font-bold mb-4 flex items-center gap-2 text-surface-900 dark:text-surface-100"
 			>
 				<MapPin size={24} />
-				Plot Resources
+				Tile Resources
 			</h2>
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-				Available resources from this plot's natural properties
+				Available resources from this tile's natural properties
 			</p>
 			<div class="space-y-3">
 				<div
@@ -314,11 +314,11 @@
 					<div class="flex items-center gap-2">
 						<Droplet size={18} class="text-success-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
-							>Food Capacity</span
+							>Food Quality</span
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.food}/10</span
+						>{data.settlement.tile.foodQuality}%</span
 					>
 				</div>
 				<div
@@ -327,11 +327,11 @@
 					<div class="flex items-center gap-2">
 						<Droplet size={18} class="text-primary-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
-							>Water Capacity</span
+							>Water Quality</span
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.water}/10</span
+						>{data.settlement.tile.waterQuality}%</span
 					>
 				</div>
 				<div
@@ -340,11 +340,11 @@
 					<div class="flex items-center gap-2">
 						<Trees size={18} class="text-secondary-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
-							>Wood Capacity</span
+							>Wood Quality</span
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.wood}/10</span
+						>{data.settlement.tile.woodQuality}%</span
 					>
 				</div>
 				<div
@@ -353,11 +353,11 @@
 					<div class="flex items-center gap-2">
 						<Mountain size={18} class="text-tertiary-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
-							>Stone Capacity</span
+							>Stone Quality</span
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.stone}/10</span
+						>{data.settlement.tile.stoneQuality}%</span
 					>
 				</div>
 				<div
@@ -366,11 +366,11 @@
 					<div class="flex items-center gap-2">
 						<Pickaxe size={18} class="text-warning-500" />
 						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
-							>Ore Capacity</span
+							>Ore Quality</span
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.ore}/10</span
+						>{data.settlement.tile.oreQuality}%</span
 					>
 				</div>
 			</div>
