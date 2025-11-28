@@ -275,7 +275,7 @@ export interface Settlement {
 	id: string;
 	name: string;
 	playerId: string;
-	plotId: string;
+	tileId: string;
 	population: number;
 	populationCapacity: number;
 	area: number;
@@ -301,7 +301,7 @@ export interface Settlement {
 
 export interface SettlementWithRelations extends Settlement {
 	player?: Player;
-	plot?: PlotWithRelations;
+	tile?: TileWithRelations;
 	structures?: Structure[];
 }
 

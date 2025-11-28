@@ -20,6 +20,12 @@
 		RefreshCw
 	} from 'lucide-svelte';
 	import PopulationPanel from '$lib/components/game/PopulationPanel.svelte';
+	// Disaster UI Components
+	import DisasterWarningBanner from '$lib/components/game/DisasterWarningBanner.svelte';
+	import CountdownTimer from '$lib/components/game/CountdownTimer.svelte';
+	import DisasterImpactBanner from '$lib/components/game/DisasterImpactBanner.svelte';
+	import AftermathSummaryModal from '$lib/components/game/AftermathSummaryModal.svelte';
+	import RepairPriorityInterface from '$lib/components/game/RepairPriorityInterface.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import type { StructureMetadata } from '$lib/api/structures';
@@ -136,6 +142,12 @@
 	});
 </script>
 
+<!-- Disaster UI Components (Global overlays) -->
+<DisasterWarningBanner />
+<CountdownTimer />
+<DisasterImpactBanner />
+<AftermathSummaryModal />
+
 <div class="max-w-7xl mx-auto p-6 space-y-6">
 	<!-- Breadcrumb -->
 	<div class="flex items-center gap-2 text-sm">
@@ -187,21 +199,21 @@
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
-				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Plot Area</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Area</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.plot.area}
+					{data.settlement.area}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Solar</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.plot.solar}
+					{data.settlement.solar}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Wind</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.plot.wind}
+					{data.settlement.wind}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
@@ -284,16 +296,16 @@
 		<!-- Population Panel -->
 		<PopulationPanel settlementId={data.settlement.id} />
 
-		<!-- Plot Resources -->
+		<!-- Settlement Resources -->
 		<div class="card preset-filled-surface-100-900 p-6">
 			<h2
 				class="text-xl font-bold mb-4 flex items-center gap-2 text-surface-900 dark:text-surface-100"
 			>
 				<MapPin size={24} />
-				Plot Resources
+				Settlement Resources
 			</h2>
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-				Available resources from this plot's natural properties
+				Available resources from this settlement's natural properties
 			</p>
 			<div class="space-y-3">
 				<div
@@ -306,7 +318,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.food}/10</span
+						>{data.settlement.food}/{data.settlement.foodCapacity}</span
 					>
 				</div>
 				<div
@@ -319,7 +331,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.water}/10</span
+						>{data.settlement.water}/{data.settlement.waterCapacity}</span
 					>
 				</div>
 				<div
@@ -332,7 +344,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.wood}/10</span
+						>{data.settlement.wood}/{data.settlement.woodCapacity}</span
 					>
 				</div>
 				<div
@@ -345,7 +357,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.stone}/10</span
+						>{data.settlement.stone}/{data.settlement.stoneCapacity}</span
 					>
 				</div>
 				<div
@@ -358,7 +370,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.plot.ore}/10</span
+						>{data.settlement.ore}/{data.settlement.oreCapacity}</span
 					>
 				</div>
 			</div>
@@ -440,6 +452,9 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Structure Repair Management (Shows during/after disasters) -->
+	<RepairPriorityInterface />
 
 	<!-- Back Button -->
 	<div>

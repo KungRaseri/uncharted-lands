@@ -63,7 +63,7 @@ export interface Settlement {
 	id: string;
 	name: string;
 	playerProfileId: string;
-	plotId: string;
+	tileId: string;
 	founded: Date | string;
 }
 
@@ -215,7 +215,7 @@ export interface SettlementWithStorage {
 	id: string;
 	name: string;
 	playerProfileId: string;
-	plotId: string;
+	tileId: string;
 	founded: Date | string;
 	storage?: {
 		food: number;
