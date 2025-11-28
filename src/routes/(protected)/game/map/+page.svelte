@@ -222,7 +222,7 @@
 				<div class="text-sm">
 					<p class="font-semibold mb-1">Interactive Map</p>
 					<p class="opacity-90">
-						Hover over tiles to see details. Your settlement and other settled plots are marked with
+						Hover over tiles to see details. Your settlement and other settled tiles are marked with
 						yellow dots.
 					</p>
 				</div>

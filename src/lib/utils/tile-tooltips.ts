@@ -4,14 +4,12 @@
  */
 
 /**
- * Plot data for settlement information
+ * Settlement data for tile information
  */
-export type PlotData = {
-	settlement?: {
-		playerProfileId: string;
-		name: string;
-	} | null;
-};
+export type SettlementData = {
+	playerProfileId: string;
+	name: string;
+} | null;
 
 /**
  * Tile data for tooltip generation
@@ -24,60 +22,50 @@ export type TileData = {
 	elevation: number;
 	precipitation: number;
 	temperature: number;
-	plots?: PlotData[];
+	plotSlots: number;
+	settlement?: SettlementData;
 };
 
 /**
  * Generate admin mode tooltip for a tile
  * Shows technical details like raw elevation, precipitation, and temperature values
  *
- * @param tile - Tile data with biome, type, elevation, precipitation, temperature, and plots
+ * @param tile - Tile data with biome, type, elevation, precipitation, temperature, and settlement
  * @returns Formatted tooltip string with newlines
  */
 export function getAdminTileTooltip(tile: TileData): string {
 	const biomeName = tile.biome?.name || 'Unknown';
-	const plotCount = tile.plots?.length || 0;
+	const hasSettlement = !!tile.settlement;
 	return `Biome: ${biomeName}
 Type: ${tile.type}
 Elevation: ${tile.elevation.toFixed(3)}
 Precipitation: ${tile.precipitation.toFixed(3)}
 Temperature: ${tile.temperature.toFixed(3)}
-Plots: ${plotCount}`;
+Slots: ${tile.plotSlots}
+Settlement: ${hasSettlement ? tile.settlement?.name || 'Unnamed' : 'None'}`;
 }
 
 /**
  * Generate player mode tooltip for a tile
- * Shows user-friendly information with percentage elevation and filtered settlement names
+ * Shows user-friendly information with percentage elevation and settlement name
  *
- * @param tile - Tile data with biome, elevation, temperature, precipitation, and plots
+ * @param tile - Tile data with biome, elevation, temperature, precipitation, and settlement
  * @param currentPlayerProfileId - Optional player ID to filter settlements
  * @returns Formatted tooltip string with newlines
  */
 export function getPlayerTileTooltip(tile: TileData, currentPlayerProfileId?: string): string {
 	const biomeName = tile.biome?.name || 'Unknown';
-	const plots = tile.plots || [];
 
 	// Base tooltip with tile information
 	let tooltip = `${biomeName}
 Elevation: ${(tile.elevation * 100).toFixed(1)}%
 Temperature: ${tile.temperature.toFixed(1)}°C
-Precipitation: ${tile.precipitation.toFixed(1)}mm`;
+Precipitation: ${tile.precipitation.toFixed(1)}mm
+Available Slots: ${tile.plotSlots}`;
 
-	// Add plot count if any plots exist
-	if (plots.length > 0) {
-		tooltip += `\n${plots.length} ${plots.length === 1 ? 'Plot' : 'Plots'}`;
-	}
-
-	// Add settlement names if player owns any on this tile
-	if (currentPlayerProfileId) {
-		const playerSettlements = plots
-			.filter((plot) => plot.settlement?.playerProfileId === currentPlayerProfileId)
-			.map((plot) => plot.settlement?.name)
-			.filter((name): name is string => name !== undefined && name !== null && name !== '');
-
-		if (playerSettlements.length > 0) {
-			tooltip += `\n\n🏘️ ${playerSettlements.join(', ')}`;
-		}
+	// Add settlement name if player owns it
+	if (currentPlayerProfileId && tile.settlement?.playerProfileId === currentPlayerProfileId) {
+		tooltip += `\n\n🏘️ ${tile.settlement.name}`;
 	}
 
 	return tooltip;

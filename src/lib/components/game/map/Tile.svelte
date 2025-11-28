@@ -19,19 +19,15 @@
 		currentPlayerProfileId,
 		mapViewMode = 'satellite'
 	}: Props = $props();
-	// Check if tile has any settled plots
+	// Check if tile has a settlement
 	const hasSettlement = $derived(() => {
-		const settledPlots = (tile.plots || []).filter((plot: any) => plot.settlement);
-
-		if (settledPlots.length === 0) {
+		if (!tile.settlement) {
 			return false;
 		}
 
 		// In player mode, only show marker if player owns the settlement
 		if (mode === 'player' && currentPlayerProfileId) {
-			return settledPlots.some(
-				(plot: any) => plot.settlement?.playerProfileId === currentPlayerProfileId
-			);
+			return tile.settlement.playerProfileId === currentPlayerProfileId;
 		}
 
 		// In admin mode, show marker if ANY settlement exists

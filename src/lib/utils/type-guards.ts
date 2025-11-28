@@ -135,10 +135,10 @@ export function hasTileProperties(
 }
 
 /**
- * Checks if a number is a valid plot area (positive, reasonable bounds)
- * @param area - Area value in square meters
- * @returns True if area is positive and within reasonable bounds (1-10000)
+ * Checks if a number is a valid tile slot count (positive, reasonable bounds)
+ * @param slots - Number of structure slots available on a tile
+ * @returns True if slots is positive and within reasonable bounds (1-10)
  */
-export function isValidPlotArea(area: number): boolean {
-	return area > 0 && area <= 10000;
+export function isValidTileSlots(slots: number): boolean {
+	return slots > 0 && slots <= 10;
 }
