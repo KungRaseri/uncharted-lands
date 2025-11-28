@@ -270,7 +270,7 @@
 								<td class="text-sm">
 									<div class="flex items-center gap-2">
 										<MapPin size={14} class="text-surface-400" />
-										<span>{settlement.plotId.slice(0, 8)}...</span>
+										<span>{settlement.tileId.slice(0, 8)}...</span>
 									</div>
 								</td>
 								<td>{settlement.structures?.length || 0}</td>
