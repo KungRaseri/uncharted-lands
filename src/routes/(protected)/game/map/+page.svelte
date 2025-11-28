@@ -2,8 +2,7 @@
 	import World from '$lib/components/game/map/World.svelte';
 	import MapControls from '$lib/components/game/map/MapControls.svelte';
 	import type { PageData } from './$types';
-	import type { RegionWithTiles,					Hover over tiles to see details. Your settlement and other settled tiles are marked with
-					yellow dots.ileWithRelations } from '$lib/types/game';
+	import type { RegionWithTiles, TileWithRelations } from '$lib/types/game';
 	import { Map, Globe, Layers, MapPin, Info } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -139,8 +138,7 @@
 		regions.reduce(
 			(sum: number, region: RegionWithTiles) =>
 				sum +
-				(region.tiles?.filter((tile: TileWithRelations) => tile.settlementId !== null).length ||
-					0),
+				(region.tiles?.filter((tile: TileWithRelations) => tile.settlementId !== null).length || 0),
 			0
 		) || 0
 	);
