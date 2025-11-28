@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { PlotWithRelations } from '$lib/types/api';
+	import type { TileWithRelations } from '$lib/types/api';
 	import { getResourceIcon, getResourceName } from '$lib/utils/resource-production';
 
 	let {
-		plots,
+		tiles,
 		settlementName,
 		onHarvestAll
 	}: {
-		plots: PlotWithRelations[];
+		tiles: TileWithRelations[];
 		settlementName: string;
 		onHarvestAll?: () => void;
 	} = $props();
@@ -24,35 +24,35 @@
 		}
 
 		// This is a simplified calculation - in a real app, you'd need to:
-		// 1. Get the plot's extractor type
+		// 1. Get the tile's extractor type
 		// 2. Get the tile's biome
 		// 3. Get the settlement's structure levels
 		// For now, we'll sum up the resource quality values as a proxy
-		for (const plot of plots) {
+		for (const tile of tiles) {
 			// Food production
-			if (plot.food > 0) {
-				const rate = plot.food * 10; // Simplified: quality * 10 = base rate
+			if (tile.foodQuality > 0) {
+				const rate = tile.foodQuality; // Quality is already 0-100 percentage
 				totals['FOOD'].rate += rate;
-				// Would need lastHarvested date from plot to calculate accumulated
+				// Would need lastHarvested date from tile to calculate accumulated
 			}
 			// Water production
-			if (plot.water > 0) {
-				const rate = plot.water * 10;
+			if (tile.waterQuality > 0) {
+				const rate = tile.waterQuality;
 				totals['WATER'].rate += rate;
 			}
 			// Wood production
-			if (plot.wood > 0) {
-				const rate = plot.wood * 10;
+			if (tile.woodQuality > 0) {
+				const rate = tile.woodQuality;
 				totals['WOOD'].rate += rate;
 			}
 			// Stone production
-			if (plot.stone > 0) {
-				const rate = plot.stone * 10;
+			if (tile.stoneQuality > 0) {
+				const rate = tile.stoneQuality;
 				totals['STONE'].rate += rate;
 			}
 			// Ore production
-			if (plot.ore > 0) {
-				const rate = plot.ore * 10;
+			if (tile.oreQuality > 0) {
+				const rate = tile.oreQuality;
 				totals['ORE'].rate += rate;
 			}
 		}
@@ -60,14 +60,21 @@
 		return totals;
 	}
 
-	// Filter plots that are actually producing something
-	let producingPlots = $derived(
-		plots.filter((p) => p.food > 0 || p.water > 0 || p.wood > 0 || p.stone > 0 || p.ore > 0)
+	// Filter tiles that are actually producing something
+	let producingTiles = $derived(
+		tiles.filter(
+			(t) =>
+				t.foodQuality > 0 ||
+				t.waterQuality > 0 ||
+				t.woodQuality > 0 ||
+				t.stoneQuality > 0 ||
+				t.oreQuality > 0
+		)
 	);
 
-	// Count of active plots
-	let activePlotsCount = $derived(producingPlots.length);
-	let totalPlotsCount = $derived(plots.length);
+	// Count of active tiles
+	let activeTilesCount = $derived(producingTiles.length);
+	let totalTilesCount = $derived(tiles.length);
 </script>
 
 <div class="resource-production-panel variant-glass-surface p-6 rounded-lg space-y-6">
@@ -76,10 +83,10 @@
 		<div>
 			<h2 class="text-2xl font-bold">{settlementName} Production</h2>
 			<p class="text-sm text-surface-600-300-token">
-				{activePlotsCount} of {totalPlotsCount} plots producing resources
+				{activeTilesCount} of {totalTilesCount} tiles producing resources
 			</p>
 		</div>
-		{#if onHarvestAll && activePlotsCount > 0}
+		{#if onHarvestAll && activeTilesCount > 0}
 			<button class="btn variant-filled-primary" onclick={onHarvestAll} type="button">
 				🌾 Harvest All
 			</button>
@@ -130,25 +137,25 @@
 		{/await}
 	</div>
 
-	<!-- Individual Plot Cards -->
-	{#if producingPlots.length > 0}
-		<div class="plots-section">
-			<h3 class="text-lg font-semibold mb-3">Active Plots ({producingPlots.length})</h3>
+	<!-- Individual Tile Cards -->
+	{#if producingTiles.length > 0}
+		<div class="tiles-section">
+			<h3 class="text-lg font-semibold mb-3">Active Tiles ({producingTiles.length})</h3>
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-				{#each producingPlots as plot (plot.id)}
-					<div class="plot-card variant-ghost-surface p-4 rounded-lg">
+				{#each producingTiles as tile (tile.id)}
+					<div class="tile-card variant-ghost-surface p-4 rounded-lg">
 						<div class="flex justify-between items-start mb-3">
 							<div>
-								<h4 class="font-semibold">Plot ({plot.x}, {plot.y})</h4>
+								<h4 class="font-semibold">Tile ({tile.x}, {tile.y})</h4>
 								<p class="text-xs text-surface-600-300-token">
-									Area: {plot.area} units
+									Biome: {tile.biome}
 								</p>
 							</div>
 						</div>
 
 						<!-- Resource Production -->
 						<div class="space-y-2">
-							{#if plot.food > 0}
+							{#if tile.foodQuality > 0}
 								<div class="flex items-center justify-between text-sm">
 									{#await getResourceIcon('FOOD')}
 										<span>⏳</span>
@@ -162,10 +169,10 @@
 											{/await}
 										</span>
 									{/await}
-									<span class="font-medium">{(plot.food * 10).toFixed(1)}/h</span>
+									<span class="font-medium">{tile.foodQuality.toFixed(1)}%</span>
 								</div>
 							{/if}
-							{#if plot.water > 0}
+							{#if tile.waterQuality > 0}
 								<div class="flex items-center justify-between text-sm">
 									{#await getResourceIcon('WATER')}
 										<span>⏳</span>
@@ -179,10 +186,10 @@
 											{/await}
 										</span>
 									{/await}
-									<span class="font-medium">{(plot.water * 10).toFixed(1)}/h</span>
+									<span class="font-medium">{tile.waterQuality.toFixed(1)}%</span>
 								</div>
 							{/if}
-							{#if plot.wood > 0}
+							{#if tile.woodQuality > 0}
 								<div class="flex items-center justify-between text-sm">
 									{#await getResourceIcon('WOOD')}
 										<span>⏳</span>
@@ -196,10 +203,10 @@
 											{/await}
 										</span>
 									{/await}
-									<span class="font-medium">{(plot.wood * 10).toFixed(1)}/h</span>
+									<span class="font-medium">{tile.woodQuality.toFixed(1)}%</span>
 								</div>
 							{/if}
-							{#if plot.stone > 0}
+							{#if tile.stoneQuality > 0}
 								<div class="flex items-center justify-between text-sm">
 									{#await getResourceIcon('STONE')}
 										<span>⏳</span>
@@ -213,10 +220,10 @@
 											{/await}
 										</span>
 									{/await}
-									<span class="font-medium">{(plot.stone * 10).toFixed(1)}/h</span>
+									<span class="font-medium">{tile.stoneQuality.toFixed(1)}%</span>
 								</div>
 							{/if}
-							{#if plot.ore > 0}
+							{#if tile.oreQuality > 0}
 								<div class="flex items-center justify-between text-sm">
 									{#await getResourceIcon('ORE')}
 										<span>⏳</span>
@@ -230,13 +237,13 @@
 											{/await}
 										</span>
 									{/await}
-									<span class="font-medium">{(plot.ore * 10).toFixed(1)}/h</span>
+									<span class="font-medium">{tile.oreQuality.toFixed(1)}%</span>
 								</div>
 							{/if}
 						</div>
 
 						<div class="text-xs text-surface-500-400-token mt-3">
-							Created: {new Date(plot.createdAt).toLocaleDateString()}
+							Created: {new Date(tile.createdAt).toLocaleDateString()}
 						</div>
 					</div>
 				{/each}
@@ -244,25 +251,32 @@
 		</div>
 	{:else}
 		<div class="text-center py-8 text-surface-600-300-token">
-			<p class="text-lg mb-2">No active plots</p>
-			<p class="text-sm">Create plots on tiles to start producing resources</p>
+			<p class="text-lg mb-2">No active tiles</p>
+			<p class="text-sm">Tiles with resource quality will produce resources</p>
 		</div>
 	{/if}
 
-	<!-- Idle Plots Section -->
-	{#if plots.length > producingPlots.length}
-		{@const idlePlots = plots.filter(
-			(p) => !(p.food > 0 || p.water > 0 || p.wood > 0 || p.stone > 0 || p.ore > 0)
+	<!-- Idle Tiles Section -->
+	{#if tiles.length > producingTiles.length}
+		{@const idleTiles = tiles.filter(
+			(t) =>
+				!(
+					t.foodQuality > 0 ||
+					t.waterQuality > 0 ||
+					t.woodQuality > 0 ||
+					t.stoneQuality > 0 ||
+					t.oreQuality > 0
+				)
 		)}
-		<div class="idle-plots-section">
-			<h3 class="text-lg font-semibold mb-3">Idle Plots ({idlePlots.length})</h3>
+		<div class="idle-tiles-section">
+			<h3 class="text-lg font-semibold mb-3">Idle Tiles ({idleTiles.length})</h3>
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-				{#each idlePlots as plot (plot.id)}
+				{#each idleTiles as tile (tile.id)}
 					<div class="variant-ghost-surface p-4 rounded-lg text-center">
 						<p class="text-sm text-surface-600-300-token">
-							Plot at ({plot.x}, {plot.y})
+							Tile at ({tile.x}, {tile.y})
 						</p>
-						<p class="text-xs text-surface-500-400-token mt-1">No resources being produced</p>
+						<p class="text-xs text-surface-500-400-token mt-1">No resources available</p>
 						<button class="btn variant-soft-primary btn-sm mt-2" type="button">
 							Add Extractor
 						</button>
@@ -293,11 +307,11 @@
 		padding-bottom: 1.5rem;
 	}
 
-	.plot-card {
+	.tile-card {
 		transition: all 0.2s ease;
 	}
 
-	.plot-card:hover {
+	.tile-card:hover {
 		transform: translateY(-2px);
 		box-shadow: var(--shadow-md);
 	}
