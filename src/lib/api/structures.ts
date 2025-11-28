@@ -131,25 +131,25 @@ export function clearStructureMetadataCache(): void {
  *
  * @param structure - Structure metadata
  * @param storage - Current resource storage
- * @param settlement - Settlement capabilities (area, solar, wind)
+ * @param plot - Plot capabilities
  * @returns Object with canBuild flag and reasons if not
  */
 export function canBuildStructure(
 	structure: StructureMetadata,
 	storage: { food: number; water: number; wood: number; stone: number; ore: number },
-	settlement: { area: number; solar: number; wind: number }
+	plot: { area: number; solar: number; wind: number }
 ): { canBuild: boolean; reasons: string[] } {
 	const reasons: string[] = [];
 
-	// Check settlement requirements
-	if (settlement.area < structure.requirements.area) {
-		reasons.push(`Need ${structure.requirements.area} settlement area (have ${settlement.area})`);
+	// Check plot requirements
+	if (plot.area < structure.requirements.area) {
+		reasons.push(`Need ${structure.requirements.area} plot area (have ${plot.area})`);
 	}
-	if (settlement.solar < structure.requirements.solar) {
-		reasons.push(`Need ${structure.requirements.solar} solar (have ${settlement.solar})`);
+	if (plot.solar < structure.requirements.solar) {
+		reasons.push(`Need ${structure.requirements.solar} solar (have ${plot.solar})`);
 	}
-	if (settlement.wind < structure.requirements.wind) {
-		reasons.push(`Need ${structure.requirements.wind} wind (have ${settlement.wind})`);
+	if (plot.wind < structure.requirements.wind) {
+		reasons.push(`Need ${structure.requirements.wind} wind (have ${plot.wind})`);
 	}
 
 	// Check resource costs

@@ -296,16 +296,16 @@
 		<!-- Population Panel -->
 		<PopulationPanel settlementId={data.settlement.id} />
 
-		<!-- Settlement Resources -->
+		<!-- Plot Resources -->
 		<div class="card preset-filled-surface-100-900 p-6">
 			<h2
 				class="text-xl font-bold mb-4 flex items-center gap-2 text-surface-900 dark:text-surface-100"
 			>
 				<MapPin size={24} />
-				Settlement Resources
+				Plot Resources
 			</h2>
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-				Available resources from this settlement's natural properties
+				Available resources from this plot's natural properties
 			</p>
 			<div class="space-y-3">
 				<div
@@ -318,7 +318,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.food}/{data.settlement.foodCapacity}</span
+						>{data.settlement.plot.food}/10</span
 					>
 				</div>
 				<div
@@ -331,7 +331,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.water}/{data.settlement.waterCapacity}</span
+						>{data.settlement.plot.water}/10</span
 					>
 				</div>
 				<div
@@ -344,7 +344,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.wood}/{data.settlement.woodCapacity}</span
+						>{data.settlement.plot.wood}/10</span
 					>
 				</div>
 				<div
@@ -357,7 +357,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.stone}/{data.settlement.stoneCapacity}</span
+						>{data.settlement.plot.stone}/10</span
 					>
 				</div>
 				<div
@@ -370,7 +370,7 @@
 						>
 					</div>
 					<span class="font-bold text-surface-900 dark:text-surface-100"
-						>{data.settlement.ore}/{data.settlement.oreCapacity}</span
+						>{data.settlement.plot.ore}/10</span
 					>
 				</div>
 			</div>

@@ -219,14 +219,12 @@
 							</div>
 
 							<div class="space-y-2 text-sm">
-								{#if settlement.tileId}
-									<div
-										class="flex items-center gap-2 text-surface-600 dark:text-surface-400 group-hover:text-white/80"
-									>
-										<MapPin size={14} />
-										<span>Tile: {settlement.tileId.slice(0, 8)}...</span>
-									</div>
-								{/if}
+								<div
+									class="flex items-center gap-2 text-surface-600 dark:text-surface-400 group-hover:text-white/80"
+								>
+									<MapPin size={14} />
+									<span>Plot: {settlement.plotId.slice(0, 8)}...</span>
+								</div>
 								<div
 									class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-surface-300 dark:border-surface-600 group-hover:border-white/20"
 								>
