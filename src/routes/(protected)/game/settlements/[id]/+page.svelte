@@ -26,6 +26,8 @@
 	import DisasterImpactBanner from '$lib/components/game/DisasterImpactBanner.svelte';
 	import AftermathSummaryModal from '$lib/components/game/AftermathSummaryModal.svelte';
 	import RepairPriorityInterface from '$lib/components/game/RepairPriorityInterface.svelte';
+	import DisasterHistoryPanel from '$lib/components/game/DisasterHistoryPanel.svelte';
+	import ResilienceDisplay from '$lib/components/game/ResilienceDisplay.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import type { StructureMetadata } from '$lib/api/structures';
@@ -455,6 +457,12 @@
 
 	<!-- Structure Repair Management (Shows during/after disasters) -->
 	<RepairPriorityInterface />
+
+	<!-- Resilience Score Display -->
+	<ResilienceDisplay settlementId={data.settlement.id} />
+
+	<!-- Disaster History Panel -->
+	<DisasterHistoryPanel settlementId={data.settlement.id} />
 
 	<!-- Back Button -->
 	<div>
