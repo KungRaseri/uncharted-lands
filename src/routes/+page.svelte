@@ -30,11 +30,8 @@
 
 <style lang="scss">
 	.hero-gradient {
-		background-image: radial-gradient(
-				at 0% 0%,
-				rgba(var(--color-secondary-900) / 0.33) 0px,
-				transparent 40%
-			),
+		background-image:
+			radial-gradient(at 0% 0%, rgba(var(--color-secondary-900) / 0.33) 0px, transparent 40%),
 			radial-gradient(at 100% 0%, rgba(var(--color-primary-900) / 0.33) 0px, transparent 40%);
 	}
 </style>

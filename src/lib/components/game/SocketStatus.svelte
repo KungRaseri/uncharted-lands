@@ -4,9 +4,9 @@
 	import { onMount, onDestroy } from 'svelte';
 
 	let { sessionToken }: { sessionToken?: string | null } = $props();
-	
+
 	let showDetails = $state(false);
-	
+
 	// Extract just the host:port for display
 	const serverDisplay = WS_URL.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
 
@@ -20,19 +20,23 @@
 		socketStore.disconnect();
 	});
 
-	const statusColor = $derived({
-		connected: 'bg-green-500',
-		connecting: 'bg-yellow-500',
-		disconnected: 'bg-gray-500',
-		error: 'bg-red-500'
-	}[$connectionState]);
+	const statusColor = $derived(
+		{
+			connected: 'bg-green-500',
+			connecting: 'bg-yellow-500',
+			disconnected: 'bg-gray-500',
+			error: 'bg-red-500'
+		}[$connectionState]
+	);
 
-	const statusText = $derived({
-		connected: 'Connected',
-		connecting: 'Connecting...',
-		disconnected: 'Disconnected',
-		error: 'Connection Error'
-	}[$connectionState]);
+	const statusText = $derived(
+		{
+			connected: 'Connected',
+			connecting: 'Connecting...',
+			disconnected: 'Disconnected',
+			error: 'Connection Error'
+		}[$connectionState]
+	);
 </script>
 
 <div class="fixed bottom-4 right-4 z-50">
@@ -51,10 +55,7 @@
 	</button>
 
 	{#if showDetails}
-		<div
-			class="mt-2 rounded-lg bg-surface-800 p-4 shadow-xl"
-			style="min-width: 250px;"
-		>
+		<div class="mt-2 rounded-lg bg-surface-800 p-4 shadow-xl" style="min-width: 250px;">
 			<h3 class="mb-2 text-sm font-bold">Connection Details</h3>
 			<div class="space-y-1 text-xs">
 				<div class="flex justify-between">

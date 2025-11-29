@@ -49,6 +49,10 @@ export default [
 				parser: tsParser,
 				sourceType: 'module',
 				ecmaVersion: 2022
+			},
+			globals: {
+				...globals.browser,
+				...globals.es2021
 			}
 		}
 	},

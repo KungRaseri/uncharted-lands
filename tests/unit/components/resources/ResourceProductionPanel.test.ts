@@ -428,9 +428,7 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should display idle plot coordinates', async () => {
-			const plots = [
-				{ ...basePlot, id: 'plot-1', x: 5, y: 10 }
-			];
+			const plots = [{ ...basePlot, id: 'plot-1', x: 5, y: 10 }];
 			render(ResourceProductionPanel, {
 				props: {
 					plots,
@@ -492,7 +490,9 @@ describe('ResourceProductionPanel.svelte', () => {
 
 			await waitFor(() => {
 				expect(screen.getByText('No active plots')).toBeDefined();
-				expect(screen.getByText('Create plots on tiles to start producing resources')).toBeDefined();
+				expect(
+					screen.getByText('Create plots on tiles to start producing resources')
+				).toBeDefined();
 			});
 		});
 
@@ -596,7 +596,7 @@ describe('ResourceProductionPanel.svelte', () => {
 				id: `plot-${i}`,
 				food: i % 2 === 0 ? 5 : 0
 			}));
-			
+
 			render(ResourceProductionPanel, {
 				props: {
 					plots,

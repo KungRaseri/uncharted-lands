@@ -15,9 +15,7 @@
 	<div class="card preset-filled-surface-100-900 p-8 space-y-6">
 		<div class="flex items-center gap-4">
 			<img class="w-20" src="/logo.png" alt="Uncharted Lands" />
-			<h1 class="text-2xl font-bold">
-				Sign into your account
-			</h1>
+			<h1 class="text-2xl font-bold">Sign into your account</h1>
 		</div>
 
 		<form
@@ -70,28 +68,31 @@
 				<a href="forgot-password" class="font-medium hover:underline">Forgot your password?</a>
 			</div>
 
-		{#if form?.email}
-			<div transition:slide class="hidden lg:block">
-				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
-					<div class="alert-message  justify-center items-center">
-						<Info size={24} />
-						<div class="grid grid-cols-1">
-							{#if form?.message}
-								<span>{form.message}</span>
-							{:else if form?.incorrect}
-								<span>The email or password you entered is incorrect.</span>
-							{:else if form?.missingFields}
-								<span>Please provide both email and password.</span>
-							{:else if form?.invalid}
-								<span>Login failed. Please check your credentials and try again.</span>
-							{:else}
-								<span>An error occurred. Please try again.</span>
-							{/if}
+			{#if form?.email}
+				<div transition:slide class="hidden lg:block">
+					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
+						<div class="alert-message justify-center items-center">
+							<Info size={24} />
+							<div class="grid grid-cols-1">
+								{#if form?.message}
+									<span>{form.message}</span>
+								{:else if form?.incorrect}
+									<span>The email or password you entered is incorrect.</span>
+								{:else if form?.missingFields}
+									<span>Please provide both email and password.</span>
+								{:else if form?.invalid}
+									<span>Login failed. Please check your credentials and try again.</span>
+								{:else}
+									<span>An error occurred. Please try again.</span>
+								{/if}
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-		{/if}			<button type="submit" class="w-full p-2 btn preset-filled-primary-500 rounded-md"> Login </button>
+			{/if}
+			<button type="submit" class="w-full p-2 btn preset-filled-primary-500 rounded-md">
+				Login
+			</button>
 		</form>
 	</div>
 </div>

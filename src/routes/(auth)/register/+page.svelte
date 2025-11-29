@@ -14,9 +14,7 @@
 	<div class="card preset-filled-surface-100-900 p-8 space-y-6">
 		<div class="flex items-center gap-4">
 			<img class="w-20" src="/logo.png" alt="Uncharted Lands" />
-			<h1 class="text-2xl font-bold">
-				Register your account
-			</h1>
+			<h1 class="text-2xl font-bold">Register your account</h1>
 		</div>
 
 		<form
@@ -54,29 +52,32 @@
 				/>
 			</label>
 
-		{#if form?.invalid}
-			<div transition:slide>
-				<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
-					<div class="alert-message ">
-						<Info size={24} />
-						<div class="grid grid-cols-1">
-							{#if form?.message}
-								{form.message}
-							{:else if form?.exists}
-								This email is already registered. If this is your account, please 
-								<a href="/sign-in" class="text-primary-500 hover:underline">sign in here</a>.
-							{:else if form?.length}
-								Password must be 16 or more characters in length.
-							{:else if form?.missingFields}
-								Please provide both email and password.
-							{:else}
-								Form information is invalid. Please check your information and try again.
-							{/if}
+			{#if form?.invalid}
+				<div transition:slide>
+					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
+						<div class="alert-message">
+							<Info size={24} />
+							<div class="grid grid-cols-1">
+								{#if form?.message}
+									{form.message}
+								{:else if form?.exists}
+									This email is already registered. If this is your account, please
+									<a href="/sign-in" class="text-primary-500 hover:underline">sign in here</a>.
+								{:else if form?.length}
+									Password must be 16 or more characters in length.
+								{:else if form?.missingFields}
+									Please provide both email and password.
+								{:else}
+									Form information is invalid. Please check your information and try again.
+								{/if}
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-		{/if}			<button type="submit" class="w-full p-2 btn preset-filled-primary-500 rounded-md">Register</button>
+			{/if}
+			<button type="submit" class="w-full p-2 btn preset-filled-primary-500 rounded-md"
+				>Register</button
+			>
 		</form>
 	</div>
 </div>

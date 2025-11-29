@@ -31,7 +31,9 @@ describe('ExtractorBuildModal.svelte', () => {
 	};
 
 	let onCloseMock: ReturnType<typeof vi.fn<() => void>>;
-	let onBuildExtractorMock: ReturnType<typeof vi.fn<(plotId: string, extractorType: string) => Promise<void>>>;
+	let onBuildExtractorMock: ReturnType<
+		typeof vi.fn<(plotId: string, extractorType: string) => Promise<void>>
+	>;
 
 	// Helper to get the Build Extractor button (not the header)
 	const getBuildButton = () => {
@@ -43,7 +45,9 @@ describe('ExtractorBuildModal.svelte', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		onCloseMock = vi.fn<() => void>();
-		onBuildExtractorMock = vi.fn<(plotId: string, extractorType: string) => Promise<void>>().mockResolvedValue(undefined);
+		onBuildExtractorMock = vi
+			.fn<(plotId: string, extractorType: string) => Promise<void>>()
+			.mockResolvedValue(undefined);
 
 		// Setup default mocks
 		(resourceUtils.getResourceIcon as any).mockImplementation(async (type: string) => {

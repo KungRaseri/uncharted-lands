@@ -38,7 +38,6 @@
 </div>
 
 <div class="flex flex-col h-full">
-
 	<!-- Header -->
 	{#if data.account?.profile}
 		<header class="flex-none z-10">

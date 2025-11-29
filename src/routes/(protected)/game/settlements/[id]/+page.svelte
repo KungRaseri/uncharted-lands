@@ -1,9 +1,36 @@
 <script lang="ts">
 	import type { PageData, ActionData as GeneratedActionData } from './$types';
-	import { Building2, Home, MapPin, Package, Sun, Wind, ArrowLeft, Droplet, Trees, Mountain, Pickaxe, Plus, X, ShieldAlert, Warehouse, Hammer, RefreshCw } from 'lucide-svelte';
+	import {
+		Building2,
+		Home,
+		MapPin,
+		Package,
+		Sun,
+		Wind,
+		ArrowLeft,
+		Droplet,
+		Trees,
+		Mountain,
+		Pickaxe,
+		Plus,
+		X,
+		ShieldAlert,
+		Warehouse,
+		Hammer,
+		RefreshCw
+	} from 'lucide-svelte';
+	import PopulationPanel from '$lib/components/game/PopulationPanel.svelte';
+	// Disaster UI Components
+	import DisasterWarningBanner from '$lib/components/game/DisasterWarningBanner.svelte';
+	import CountdownTimer from '$lib/components/game/CountdownTimer.svelte';
+	import DisasterImpactBanner from '$lib/components/game/DisasterImpactBanner.svelte';
+	import AftermathSummaryModal from '$lib/components/game/AftermathSummaryModal.svelte';
+	import RepairPriorityInterface from '$lib/components/game/RepairPriorityInterface.svelte';
+	import DisasterHistoryPanel from '$lib/components/game/DisasterHistoryPanel.svelte';
+	import ResilienceDisplay from '$lib/components/game/ResilienceDisplay.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidate } from '$app/navigation';
-	import { STRUCTURE_DEFINITIONS, getStructureCategories, getStructuresByCategory, canBuildStructure, type StructureDefinition } from '$lib/game/structures';
+	import type { StructureMetadata } from '$lib/api/structures';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';
 
@@ -15,10 +42,10 @@
 	};
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
-	
+
 	// State for UI feedback
 	let isRefreshing = $state(false);
-	
+
 	async function handleManualRefresh() {
 		isRefreshing = true;
 		refreshGameData('game:settlement');
@@ -26,7 +53,7 @@
 			isRefreshing = false;
 		}, 500);
 	}
-	
+
 	onMount(() => {
 		// Auto-refresh every minute to catch tick updates
 		const cleanup = createGameRefreshInterval('game:settlement');
@@ -35,11 +62,20 @@
 
 	// Build modal state
 	let buildModalOpen = $state(false);
-	let selectedCategory = $state<StructureDefinition['category']>('housing');
-	let selectedStructure = $state<StructureDefinition | null>(null);
+	let selectedCategory = $state<string>('housing');
+	let selectedStructure = $state<StructureMetadata | null>(null);
 	let isBuilding = $state(false);
 
-	const categories = getStructureCategories();
+	// Get unique categories from structures
+	const categories = $derived.by(() => {
+		const cats = new Set(data.structures.map((s) => s.category));
+		return Array.from(cats);
+	});
+
+	// Get structures by category
+	const structuresByCategory = $derived.by(() => {
+		return data.structures.filter((s) => s.category === selectedCategory);
+	});
 
 	function openBuildModal() {
 		buildModalOpen = true;
@@ -52,35 +88,77 @@
 		}
 	}
 
-	function selectStructure(structure: StructureDefinition) {
+	function selectStructure(structure: StructureMetadata) {
 		selectedStructure = structure;
 	}
 
 	// Get category icon
-	function getCategoryIcon(category: StructureDefinition['category']) {
+	function getCategoryIcon(category: string) {
 		switch (category) {
-			case 'housing': return Home;
-			case 'production': return Hammer;
-			case 'storage': return Warehouse;
-			case 'defense': return ShieldAlert;
-			case 'utility': return Package;
+			case 'housing':
+				return Home;
+			case 'production':
+				return Hammer;
+			case 'storage':
+				return Warehouse;
+			case 'defense':
+				return ShieldAlert;
+			case 'utility':
+				return Package;
+			default:
+				return Building2;
 		}
 	}
 
-	// Check affordability
-	let affordability = $derived(
-		selectedStructure
-			? canBuildStructure(selectedStructure, data.settlement.storage, data.settlement.plot)
-			: { canBuild: false, reasons: [] }
-	);
+	// Check affordability using API metadata
+	let affordability = $derived.by(() => {
+		if (!selectedStructure) {
+			return { canBuild: false, reasons: [] };
+		}
+
+		const reasons: string[] = [];
+		const storage = data.settlement.storage;
+		const costs = selectedStructure.costs;
+
+		// Check resources
+		if (storage.food < costs.food) {
+			reasons.push(`Need ${costs.food} food (have ${storage.food})`);
+		}
+		if (storage.water < costs.water) {
+			reasons.push(`Need ${costs.water} water (have ${storage.water})`);
+		}
+		if (storage.wood < costs.wood) {
+			reasons.push(`Need ${costs.wood} wood (have ${storage.wood})`);
+		}
+		if (storage.stone < costs.stone) {
+			reasons.push(`Need ${costs.stone} stone (have ${storage.stone})`);
+		}
+		if (storage.ore < costs.ore) {
+			reasons.push(`Need ${costs.ore} ore (have ${storage.ore})`);
+		}
+
+		return {
+			canBuild: reasons.length === 0,
+			reasons
+		};
+	});
 </script>
+
+<!-- Disaster UI Components (Global overlays) -->
+<DisasterWarningBanner />
+<CountdownTimer />
+<DisasterImpactBanner />
+<AftermathSummaryModal />
 
 <div class="max-w-7xl mx-auto p-6 space-y-6">
 	<!-- Breadcrumb -->
 	<div class="flex items-center gap-2 text-sm">
 		<a href="/game" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Game</a>
 		<span class="text-surface-400">/</span>
-		<a href="/game/settlements" class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Settlements</a>
+		<a
+			href="/game/settlements"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Settlements</a
+		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">{data.settlement.name}</span>
 	</div>
@@ -93,8 +171,12 @@
 					<Building2 size={32} class="text-primary-500" />
 				</div>
 				<div>
-					<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100">{data.settlement.name}</h1>
-					<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">{data.settlement.id}</p>
+					<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100">
+						{data.settlement.name}
+					</h1>
+					<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">
+						{data.settlement.id}
+					</p>
 				</div>
 			</div>
 			<div class="flex items-center gap-2">
@@ -119,21 +201,21 @@
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
-				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Plot Area</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Area</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.plot.area}
+					{data.settlement.area}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Solar</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.plot.solar}
+					{data.settlement.solar}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 				<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Wind</p>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{data.settlement.plot.wind}
+					{data.settlement.wind}
 				</p>
 			</div>
 			<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
@@ -148,12 +230,16 @@
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 		<!-- Resources Storage -->
 		<div class="card preset-filled-surface-100-900 p-6">
-			<h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-surface-900 dark:text-surface-100">
+			<h2
+				class="text-xl font-bold mb-4 flex items-center gap-2 text-surface-900 dark:text-surface-100"
+			>
 				<Package size={24} />
 				Storage
 			</h2>
 			<div class="space-y-3">
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Droplet size={20} class="text-success-500" />
 						<span class="font-medium text-surface-900 dark:text-surface-100">Food</span>
@@ -162,7 +248,9 @@
 						{data.settlement.storage.food}
 					</span>
 				</div>
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Droplet size={20} class="text-primary-500" />
 						<span class="font-medium text-surface-900 dark:text-surface-100">Water</span>
@@ -171,7 +259,9 @@
 						{data.settlement.storage.water}
 					</span>
 				</div>
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Trees size={20} class="text-secondary-500" />
 						<span class="font-medium text-surface-900 dark:text-surface-100">Wood</span>
@@ -180,7 +270,9 @@
 						{data.settlement.storage.wood}
 					</span>
 				</div>
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Mountain size={20} class="text-tertiary-500" />
 						<span class="font-medium text-surface-900 dark:text-surface-100">Stone</span>
@@ -189,7 +281,9 @@
 						{data.settlement.storage.stone}
 					</span>
 				</div>
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Pickaxe size={20} class="text-warning-500" />
 						<span class="font-medium text-surface-900 dark:text-surface-100">Ore</span>
@@ -201,50 +295,85 @@
 			</div>
 		</div>
 
-		<!-- Plot Resources -->
+		<!-- Population Panel -->
+		<PopulationPanel settlementId={data.settlement.id} />
+
+		<!-- Tile Resources -->
 		<div class="card preset-filled-surface-100-900 p-6">
-			<h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-surface-900 dark:text-surface-100">
+			<h2
+				class="text-xl font-bold mb-4 flex items-center gap-2 text-surface-900 dark:text-surface-100"
+			>
 				<MapPin size={24} />
-				Plot Resources
+				Tile Resources
 			</h2>
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-				Available resources from this plot's natural properties
+				Available resources from this tile's natural properties
 			</p>
 			<div class="space-y-3">
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Droplet size={18} class="text-success-500" />
-						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Food Capacity</span>
+						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
+							>Food Quality</span
+						>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.food}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100"
+						>{data.settlement.tile.foodQuality}%</span
+					>
 				</div>
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Droplet size={18} class="text-primary-500" />
-						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Water Capacity</span>
+						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
+							>Water Quality</span
+						>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.water}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100"
+						>{data.settlement.tile.waterQuality}%</span
+					>
 				</div>
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Trees size={18} class="text-secondary-500" />
-						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Wood Capacity</span>
+						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
+							>Wood Quality</span
+						>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.wood}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100"
+						>{data.settlement.tile.woodQuality}%</span
+					>
 				</div>
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Mountain size={18} class="text-tertiary-500" />
-						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Stone Capacity</span>
+						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
+							>Stone Quality</span
+						>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.stone}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100"
+						>{data.settlement.tile.stoneQuality}%</span
+					>
 				</div>
-				<div class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center justify-between p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="flex items-center gap-2">
 						<Pickaxe size={18} class="text-warning-500" />
-						<span class="text-sm font-medium text-surface-900 dark:text-surface-100">Ore Capacity</span>
+						<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
+							>Ore Quality</span
+						>
 					</div>
-					<span class="font-bold text-surface-900 dark:text-surface-100">{data.settlement.plot.ore}/10</span>
+					<span class="font-bold text-surface-900 dark:text-surface-100"
+						>{data.settlement.tile.oreQuality}%</span
+					>
 				</div>
 			</div>
 		</div>
@@ -279,10 +408,7 @@
 				<Home size={24} />
 				Structures ({data.settlement.structures?.length ?? 0})
 			</h2>
-			<button 
-				onclick={openBuildModal}
-				class="btn btn-sm preset-filled-primary-500 rounded-md"
-			>
+			<button onclick={openBuildModal} class="btn btn-sm preset-filled-primary-500 rounded-md">
 				<Plus size={16} />
 				<span>Build Structure</span>
 			</button>
@@ -292,10 +418,7 @@
 			<div class="text-center py-8">
 				<Home size={48} class="mx-auto mb-4 text-surface-400" />
 				<p class="text-surface-600 dark:text-surface-400 mb-4">No structures built yet</p>
-				<button 
-					onclick={openBuildModal}
-					class="btn preset-filled-primary-500 rounded-md"
-				>
+				<button onclick={openBuildModal} class="btn preset-filled-primary-500 rounded-md">
 					<Plus size={20} />
 					<span>Build Your First Structure</span>
 				</button>
@@ -304,14 +427,22 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				{#each data.settlement.structures as structure}
 					<div class="card preset-filled-surface-200-700 p-4">
-						<h3 class="font-bold text-lg mb-2 text-surface-900 dark:text-surface-100">{structure.name}</h3>
-						<p class="text-sm text-surface-600 dark:text-surface-400 mb-3">{structure.description}</p>
+						<h3 class="font-bold text-lg mb-2 text-surface-900 dark:text-surface-100">
+							{structure.name}
+						</h3>
+						<p class="text-sm text-surface-600 dark:text-surface-400 mb-3">
+							{structure.description}
+						</p>
 
 						{#if structure.modifiers && structure.modifiers.length > 0}
 							<div class="space-y-2">
-								<p class="text-xs font-semibold text-surface-700 dark:text-surface-300">Modifiers:</p>
+								<p class="text-xs font-semibold text-surface-700 dark:text-surface-300">
+									Modifiers:
+								</p>
 								{#each structure.modifiers as modifier}
-									<div class="flex items-center justify-between text-sm bg-surface-300 dark:bg-surface-600 rounded px-3 py-1">
+									<div
+										class="flex items-center justify-between text-sm bg-surface-300 dark:bg-surface-600 rounded px-3 py-1"
+									>
 										<span class="text-surface-900 dark:text-surface-100">{modifier.name}</span>
 										<span class="font-bold text-primary-500">+{modifier.value}</span>
 									</div>
@@ -323,6 +454,15 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Structure Repair Management (Shows during/after disasters) -->
+	<RepairPriorityInterface />
+
+	<!-- Resilience Score Display -->
+	<ResilienceDisplay settlementId={data.settlement.id} />
+
+	<!-- Disaster History Panel -->
+	<DisasterHistoryPanel settlementId={data.settlement.id} />
 
 	<!-- Back Button -->
 	<div>
@@ -340,19 +480,32 @@
 	<div class="modal-backdrop" onclick={closeBuildModal} role="presentation">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="modal preset-filled-surface-50-950 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="build-modal-title" tabindex="-1">
+		<div
+			class="modal preset-filled-surface-50-950 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col"
+			onclick={(e) => e.stopPropagation()}
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="build-modal-title"
+			tabindex="-1"
+		>
 			<header class="modal-header border-b border-surface-300 dark:border-surface-700 flex-none">
 				<div class="flex items-center justify-between">
 					<h3 class="h3" id="build-modal-title">Build Structure</h3>
-					<button onclick={closeBuildModal} class="btn btn-sm preset-tonal-surface-500 rounded-md" disabled={isBuilding}>
+					<button
+						onclick={closeBuildModal}
+						class="btn btn-sm preset-tonal-surface-500 rounded-md"
+						disabled={isBuilding}
+					>
 						<X size={16} />
 					</button>
 				</div>
 			</header>
-			
+
 			<div class="flex flex-1 overflow-hidden">
 				<!-- Category Sidebar -->
-				<aside class="w-48 border-r border-surface-300 dark:border-surface-700 p-4 overflow-y-auto flex-none">
+				<aside
+					class="w-48 border-r border-surface-300 dark:border-surface-700 p-4 overflow-y-auto flex-none"
+				>
 					<nav class="space-y-2">
 						{#each categories as category}
 							{@const Icon = getCategoryIcon(category)}
@@ -361,7 +514,8 @@
 									selectedCategory = category;
 									selectedStructure = null;
 								}}
-								class="w-full text-left px-3 py-2 rounded-md transition-colors capitalize {selectedCategory === category
+								class="w-full text-left px-3 py-2 rounded-md transition-colors capitalize {selectedCategory ===
+								category
 									? 'bg-primary-500 text-white'
 									: 'hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-100'}"
 							>
@@ -380,51 +534,50 @@
 						{selectedCategory} Structures
 					</h4>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{#each getStructuresByCategory(selectedCategory) as structure}
-							{@const availability = canBuildStructure(structure, data.settlement.storage, data.settlement.plot)}
+						{#each structuresByCategory as structure}
 							<button
 								onclick={() => selectStructure(structure)}
-								class="text-left card preset-filled-surface-200-700 p-4 hover:preset-tonal-primary-500 transition-colors {selectedStructure?.id === structure.id ? 'ring-2 ring-primary-500' : ''}"
+								class="text-left card preset-filled-surface-200-700 p-4 hover:preset-tonal-primary-500 transition-colors {selectedStructure?.id ===
+								structure.id
+									? 'ring-2 ring-primary-500'
+									: ''}"
 							>
-								<h5 class="font-bold mb-2 text-surface-900 dark:text-surface-100">{structure.name}</h5>
-								<p class="text-sm text-surface-600 dark:text-surface-400 mb-3">{structure.description}</p>
-								
+								<h5 class="font-bold mb-2 text-surface-900 dark:text-surface-100">
+									{structure.name}
+								</h5>
+								<p class="text-sm text-surface-600 dark:text-surface-400 mb-3">
+									{structure.description}
+								</p>
+
 								<!-- Requirements -->
 								<div class="space-y-1 text-xs">
 									<p class="font-semibold text-surface-700 dark:text-surface-300">Costs:</p>
 									<div class="flex flex-wrap gap-2">
-										{#if structure.requirements.area > 0}
-											<span class="badge preset-tonal-surface-500">Area: {structure.requirements.area}</span>
+										{#if structure.costs.food > 0}
+											<span class="badge preset-tonal-surface-500"
+												>Food: {structure.costs.food}</span
+											>
 										{/if}
-										{#if structure.requirements.solar > 0}
-											<span class="badge preset-tonal-surface-500">Solar: {structure.requirements.solar}</span>
+										{#if structure.costs.water > 0}
+											<span class="badge preset-tonal-surface-500"
+												>Water: {structure.costs.water}</span
+											>
 										{/if}
-										{#if structure.requirements.wind > 0}
-											<span class="badge preset-tonal-surface-500">Wind: {structure.requirements.wind}</span>
+										{#if structure.costs.wood > 0}
+											<span class="badge preset-tonal-surface-500"
+												>Wood: {structure.costs.wood}</span
+											>
 										{/if}
-										{#if structure.requirements.food > 0}
-											<span class="badge preset-tonal-surface-500">Food: {structure.requirements.food}</span>
+										{#if structure.costs.stone > 0}
+											<span class="badge preset-tonal-surface-500"
+												>Stone: {structure.costs.stone}</span
+											>
 										{/if}
-										{#if structure.requirements.water > 0}
-											<span class="badge preset-tonal-surface-500">Water: {structure.requirements.water}</span>
-										{/if}
-										{#if structure.requirements.wood > 0}
-											<span class="badge preset-tonal-surface-500">Wood: {structure.requirements.wood}</span>
-										{/if}
-										{#if structure.requirements.stone > 0}
-											<span class="badge preset-tonal-surface-500">Stone: {structure.requirements.stone}</span>
-										{/if}
-										{#if structure.requirements.ore > 0}
-											<span class="badge preset-tonal-surface-500">Ore: {structure.requirements.ore}</span>
+										{#if structure.costs.ore > 0}
+											<span class="badge preset-tonal-surface-500">Ore: {structure.costs.ore}</span>
 										{/if}
 									</div>
 								</div>
-
-								{#if !availability.canBuild}
-									<div class="mt-2">
-										<span class="badge preset-filled-error-500 text-xs">Cannot build</span>
-									</div>
-								{/if}
 							</button>
 						{/each}
 					</div>
@@ -432,22 +585,34 @@
 
 				<!-- Structure Details & Build -->
 				{#if selectedStructure}
-					<aside class="w-80 border-l border-surface-300 dark:border-surface-700 p-6 overflow-y-auto flex-none">
-						<h4 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100">{selectedStructure.name}</h4>
-						<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">{selectedStructure.description}</p>
+					<aside
+						class="w-80 border-l border-surface-300 dark:border-surface-700 p-6 overflow-y-auto flex-none"
+					>
+						<h4 class="text-lg font-bold mb-2 text-surface-900 dark:text-surface-100">
+							{selectedStructure.name}
+						</h4>
+						<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
+							{selectedStructure.description}
+						</p>
 
 						<!-- Modifiers -->
 						{#if selectedStructure.modifiers.length > 0}
 							<div class="mb-4">
-								<p class="text-sm font-semibold mb-2 text-surface-700 dark:text-surface-300">Benefits:</p>
+								<p class="text-sm font-semibold mb-2 text-surface-700 dark:text-surface-300">
+									Benefits:
+								</p>
 								<div class="space-y-2">
 									{#each selectedStructure.modifiers as modifier}
 										<div class="bg-surface-300 dark:bg-surface-600 rounded px-3 py-2">
 											<div class="flex items-center justify-between mb-1">
-												<span class="text-sm font-medium text-surface-900 dark:text-surface-100">{modifier.name}</span>
+												<span class="text-sm font-medium text-surface-900 dark:text-surface-100"
+													>{modifier.name}</span
+												>
 												<span class="font-bold text-primary-500">+{modifier.value}</span>
 											</div>
-											<p class="text-xs text-surface-600 dark:text-surface-400">{modifier.description}</p>
+											<p class="text-xs text-surface-600 dark:text-surface-400">
+												{modifier.description}
+											</p>
 										</div>
 									{/each}
 								</div>
@@ -456,7 +621,9 @@
 
 						<!-- Requirements Check -->
 						<div class="mb-4">
-							<p class="text-sm font-semibold mb-2 text-surface-700 dark:text-surface-300">Requirements:</p>
+							<p class="text-sm font-semibold mb-2 text-surface-700 dark:text-surface-300">
+								Requirements:
+							</p>
 							{#if affordability.canBuild}
 								<div class="p-3 bg-success-500/10 border border-success-500 rounded-lg">
 									<p class="text-sm text-success-500 font-semibold">✓ All requirements met</p>
@@ -474,8 +641,8 @@
 						</div>
 
 						<!-- Build Button -->
-						<form 
-							method="POST" 
+						<form
+							method="POST"
 							action="?/buildStructure"
 							use:enhance={() => {
 								isBuilding = true;
@@ -510,4 +677,3 @@
 		</div>
 	</div>
 {/if}
-

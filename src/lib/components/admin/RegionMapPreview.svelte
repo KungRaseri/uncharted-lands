@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getElevationColor } from '$lib/utils/tile-colors';
 	import { getRegionTileTooltip, calculateRegionStats } from '$lib/utils/region-tile-utils';
-	
+
 	type Props = {
 		tiles: any[];
 		regionName?: string;
@@ -15,10 +15,10 @@
 	// Organize tiles into 10x10 grid
 	const tileGrid = $derived(() => {
 		const grid: any[][] = Array.from({ length: 10 }, () => Array(10).fill(null));
-		
+
 		// Sort tiles to ensure correct positioning
 		const sortedTiles = [...tiles].sort((a, b) => a.id.localeCompare(b.id));
-		
+
 		sortedTiles.forEach((tile, index) => {
 			const row = Math.floor(index / 10);
 			const col = index % 10;
@@ -26,23 +26,27 @@
 				grid[row][col] = tile;
 			}
 		});
-		
+
 		return grid;
 	});
 </script>
 
 <div class="card p-4 rounded-md">
 	<h2 class="text-xl font-semibold mb-4">{regionName} Preview (Elevation)</h2>
-	
+
 	<!-- Stats Bar -->
-	<div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4 p-3 bg-surface-200 dark:bg-surface-700 rounded-md">
+	<div
+		class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4 p-3 bg-surface-200 dark:bg-surface-700 rounded-md"
+	>
 		<div class="text-center">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Avg Elevation</p>
 			<p class="font-semibold">{stats().avgElevation.toFixed(3)}</p>
 		</div>
 		<div class="text-center">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Range</p>
-			<p class="font-semibold text-xs">{stats().minElevation.toFixed(2)} to {stats().maxElevation.toFixed(2)}</p>
+			<p class="font-semibold text-xs">
+				{stats().minElevation.toFixed(2)} to {stats().maxElevation.toFixed(2)}
+			</p>
 		</div>
 		<div class="text-center">
 			<p class="text-xs text-surface-600 dark:text-surface-400">Land Tiles</p>
@@ -59,7 +63,9 @@
 	</div>
 
 	<div class="bg-surface-200 dark:bg-surface-700 p-4 rounded-md">
-		<div class="grid grid-cols-10 gap-0 w-full max-w-2xl mx-auto border-2 border-surface-400 dark:border-surface-500">
+		<div
+			class="grid grid-cols-10 gap-0 w-full max-w-2xl mx-auto border-2 border-surface-400 dark:border-surface-500"
+		>
 			{#each tileGrid() as row, rowIndex}
 				{#each row as tile, colIndex}
 					{#if tile}

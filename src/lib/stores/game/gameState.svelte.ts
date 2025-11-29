@@ -1,9 +1,9 @@
 /**
  * Game State Store (Svelte 5)
- * 
+ *
  * Centralized reactive state for game data.
  * Uses SvelteKit's dependency tracking system to automatically refresh when data changes.
- * 
+ *
  * Usage:
  * 1. Server loads return data with dependencies: `depends('game:settlements')`
  * 2. Components use this store to track reactive state
@@ -37,7 +37,7 @@ export function createGameRefreshInterval(dependencyKey: string = 'game:data') {
  */
 export function refreshGameData(dependencyKey: string = 'game:data') {
 	if (!browser) return;
-	
+
 	console.log('[GAME STORE] Manual refresh triggered');
 	invalidate(dependencyKey);
 }
@@ -51,7 +51,7 @@ export const gameState = {
 	get lastTickTime() {
 		return lastTickTime;
 	},
-	
+
 	updateLastTickTime(time: Date) {
 		lastTickTime = time;
 	}

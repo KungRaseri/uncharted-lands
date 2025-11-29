@@ -13,7 +13,7 @@ import {
 	isValidPrecipitation,
 	isValidTemperature,
 	hasTileProperties,
-	isValidPlotArea
+	isValidTileSlots
 } from '$lib/utils/type-guards';
 
 describe('type-guards', () => {
@@ -249,24 +249,23 @@ describe('type-guards', () => {
 		});
 	});
 
-	describe('isValidPlotArea', () => {
-		it('should return true for valid plot areas', () => {
-			expect(isValidPlotArea(1)).toBe(true);
-			expect(isValidPlotArea(100)).toBe(true);
-			expect(isValidPlotArea(5000)).toBe(true);
-			expect(isValidPlotArea(10000)).toBe(true);
+	describe('isValidTileSlots', () => {
+		it('should return true for valid tile slots (1-10)', () => {
+			expect(isValidTileSlots(1)).toBe(true);
+			expect(isValidTileSlots(5)).toBe(true);
+			expect(isValidTileSlots(10)).toBe(true);
 		});
 
-		it('should return false for invalid plot areas', () => {
-			expect(isValidPlotArea(0)).toBe(false);
-			expect(isValidPlotArea(-1)).toBe(false);
-			expect(isValidPlotArea(10001)).toBe(false);
-			expect(isValidPlotArea(100000)).toBe(false);
+		it('should return false for invalid tile slots', () => {
+			expect(isValidTileSlots(0)).toBe(false);
+			expect(isValidTileSlots(-1)).toBe(false);
+			expect(isValidTileSlots(11)).toBe(false);
+			expect(isValidTileSlots(100)).toBe(false);
 		});
 
-		it('should accept decimal values', () => {
-			expect(isValidPlotArea(0.5)).toBe(true);
-			expect(isValidPlotArea(99.9)).toBe(true);
+		it('should accept decimal values within range', () => {
+			expect(isValidTileSlots(1.5)).toBe(true);
+			expect(isValidTileSlots(9.9)).toBe(true);
 		});
 	});
 });
