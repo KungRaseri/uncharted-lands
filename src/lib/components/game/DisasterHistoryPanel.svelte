@@ -385,7 +385,7 @@
 						<div class="card-header p-3 flex items-start justify-between gap-3">
 							<!-- Left: Icon + Type + Time -->
 							<div class="flex items-start gap-2 flex-1 min-w-0">
-								<span class="text-2xl flex-shrink-0">{getDisasterEmoji(disaster.type)}</span>
+								<span class="text-2xl shrink-0">{getDisasterEmoji(disaster.type)}</span>
 								<div class="flex-1 min-w-0">
 									<h4 class="h4 text-sm font-semibold truncate">
 										{formatDisasterType(disaster.type)}
@@ -400,7 +400,7 @@
 							</div>
 
 							<!-- Right: Severity Badge -->
-							<div class="flex-shrink-0">
+							<div class="shrink-0">
 								<span class="badge {getSeverityColor(disaster.severityLevel)} text-xs">
 									{disaster.severityLevel}
 								</span>
