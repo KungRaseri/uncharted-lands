@@ -98,16 +98,6 @@ export const load: PageServerLoad = async () => {
 				enabled: true
 			},
 			{
-				id: 'BARRACKS',
-				name: 'Barracks',
-				description: 'Trains and houses military units',
-				category: 'BUILDING',
-				capacity: 10,
-				baseCost: { WOOD: 100, STONE: 80, ORE: 20 },
-				requirements: { area: 5, solar: 2 },
-				enabled: true
-			},
-			{
 				id: 'WORKSHOP',
 				name: 'Workshop',
 				description: 'Produces advanced goods and tools',
@@ -132,16 +122,6 @@ export const load: PageServerLoad = async () => {
 				category: 'BUILDING',
 				baseCost: { WOOD: 200, STONE: 150, ORE: 50 },
 				requirements: { area: 8, solar: 4 },
-				enabled: true
-			},
-			{
-				id: 'WALL',
-				name: 'Wall',
-				description: 'Defensive structure for settlement protection',
-				category: 'BUILDING',
-				defenseBonus: 50,
-				baseCost: { STONE: 100, ORE: 30 },
-				requirements: { area: 10 },
 				enabled: true
 			}
 		]
