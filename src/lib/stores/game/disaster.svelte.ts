@@ -14,7 +14,9 @@ import type {
 	DisasterImpactEndData,
 	DisasterAftermathData,
 	DisasterResolvedData,
-	StructureDamagedData
+	StructureDamagedData,
+	StructureDestroyedData,
+	CasualtiesReportData
 } from '$lib/types/socket-events';
 
 interface DisasterEvent {
@@ -130,10 +132,7 @@ class DisasterStore {
 			console.log('[DISASTER] Structure damaged:', data);
 
 			// Calculate damage dealt
-			const oldHealth =
-				this.damageUpdates.length > 0
-					? this.damageUpdates[this.damageUpdates.length - 1].newHealth
-					: 100;
+			const oldHealth = this.damageUpdates.length > 0 ? this.damageUpdates.at(-1)!.newHealth : 100;
 			const damageDealt = Math.max(0, oldHealth - data.health);
 
 			const update: DamageUpdate = {
@@ -152,6 +151,38 @@ class DisasterStore {
 			// Keep only last 20 updates (scrolling feed)
 			if (this.damageUpdates.length > 20) {
 				this.damageUpdates.shift();
+			}
+		});
+
+		// STRUCTURE DESTROYED (structure reaches 0% health)
+		socket.on('structure-destroyed', (data: StructureDestroyedData) => {
+			console.log('[DISASTER] Structure destroyed:', data);
+
+			// Add to damage feed
+			const update: DamageUpdate = {
+				structureId: data.structureId,
+				structureType: data.disasterType,
+				oldHealth: 0,
+				newHealth: 0,
+				damageDealt: 0,
+				timestamp: Date.now()
+			};
+
+			this.damageUpdates.push(update);
+
+			// Keep only last 20 updates (scrolling feed)
+			if (this.damageUpdates.length > 20) {
+				this.damageUpdates.shift();
+			}
+		});
+
+		// CASUALTIES REPORT (population casualties from disaster)
+		socket.on('casualties-report', (data: CasualtiesReportData) => {
+			console.log('[DISASTER] Casualties reported:', data);
+
+			// Update aftermath summary if available
+			if (this.aftermathSummary) {
+				this.aftermathSummary.casualties += data.casualties;
 			}
 		});
 

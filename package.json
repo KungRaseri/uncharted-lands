@@ -56,6 +56,7 @@
 		"autoprefixer": "^10.4.20",
 		"bcrypt": "^5.1.1",
 		"bson": "^6.9.0",
+		"date-fns": "^4.1.0",
 		"dayjs": "^1.11.13",
 		"dotenv": "^16.4.5",
 		"eslint": "^9.13.0",
