@@ -31,7 +31,7 @@
 	});
 </script>
 
-<header class="dashboard-header" role="banner">
+<header class="dashboard-header">
 	<div class="header-content">
 		<div class="settlement-info">
 			<h1 class="settlement-name">{settlementName}</h1>
