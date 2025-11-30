@@ -9,8 +9,8 @@
 	 * - Keyboard shortcuts
 	 */
 
-	import { layoutStore } from '$lib/stores/ui/dashboard-layout.svelte';
-	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout.svelte';
+	import { layoutStore } from '$lib/stores/ui/dashboard-layout';
+	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout';
 	import QuickActionsBar from './QuickActionsBar.svelte';
 	import DesktopLayout from './layouts/DesktopLayout.svelte';
 	import TabletLayout from './layouts/TabletLayout.svelte';

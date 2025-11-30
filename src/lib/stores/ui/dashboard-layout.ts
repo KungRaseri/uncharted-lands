@@ -91,128 +91,138 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 	}
 };
 
-// State
-let currentLayout = $state<DashboardLayout>(DEFAULT_LAYOUTS.default);
-let viewport = $state<Viewport>('desktop');
+/**
+ * Creates the dashboard layout store with reactive state management
+ */
+function createDashboardLayoutStore() {
+	// State - using plain variables (will be reactive when accessed via getters)
+	let currentLayout: DashboardLayout = DEFAULT_LAYOUTS.default;
+	let viewport: Viewport = 'desktop';
 
-// Viewport detection
-function detectViewport(): Viewport {
-	if (!browser) return 'desktop';
+	// Viewport detection
+	function detectViewport(): Viewport {
+		if (!browser) return 'desktop';
 
-	const width = window.innerWidth;
-	if (width < 768) return 'mobile';
-	if (width < 1024) return 'tablet';
-	return 'desktop';
-}
+		const width = window.innerWidth;
+		if (width < 768) return 'mobile';
+		if (width < 1024) return 'tablet';
+		return 'desktop';
+	}
 
-// Update viewport on resize
-if (browser) {
-	viewport = detectViewport();
-
-	window.addEventListener('resize', () => {
+	// Update viewport on resize
+	if (browser) {
 		viewport = detectViewport();
-	});
-}
 
-// Load layout from localStorage
-function loadLayout(layoutName: string) {
-	if (!browser) return;
+		window.addEventListener('resize', () => {
+			viewport = detectViewport();
+		});
+	}
 
-	const stored = localStorage.getItem(`dashboard-layout-${layoutName}`);
-	if (stored) {
-		try {
-			currentLayout = JSON.parse(stored);
-		} catch (e) {
-			console.error('Failed to load layout:', e);
+	// Load layout from localStorage
+	function loadLayout(layoutName: string) {
+		if (!browser) return;
+
+		const stored = localStorage.getItem(`dashboard-layout-${layoutName}`);
+		if (stored) {
+			try {
+				currentLayout = JSON.parse(stored);
+			} catch (e) {
+				console.error('Failed to load layout:', e);
+				currentLayout = DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default;
+			}
+		} else {
 			currentLayout = DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default;
 		}
-	} else {
-		currentLayout = DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default;
 	}
-}
 
-// Save layout to localStorage
-function saveLayout() {
-	if (!browser) return;
+	// Save layout to localStorage
+	function saveLayout() {
+		if (!browser) return;
 
-	localStorage.setItem(
-		`dashboard-layout-${currentLayout.layoutName}`,
-		JSON.stringify(currentLayout)
-	);
-}
+		localStorage.setItem(
+			`dashboard-layout-${currentLayout.layoutName}`,
+			JSON.stringify(currentLayout)
+		);
+	}
 
-// Update panel configuration
-function updatePanel(panelId: string, updates: Partial<PanelConfig>) {
-	currentLayout.panels = currentLayout.panels.map((panel) =>
-		panel.id === panelId ? { ...panel, ...updates } : panel
-	);
-	saveLayout();
-}
+	// Update panel configuration
+	function updatePanel(panelId: string, updates: Partial<PanelConfig>) {
+		currentLayout.panels = currentLayout.panels.map((panel: PanelConfig) =>
+			panel.id === panelId ? { ...panel, ...updates } : panel
+		);
+		saveLayout();
+	}
 
-// Reorder panels
-function reorderPanels(panelId: string, newPosition: number) {
-	const panels = [...currentLayout.panels];
-	const panel = panels.find((p) => p.id === panelId);
-	if (!panel) return;
+	// Reorder panels
+	function reorderPanels(panelId: string, newPosition: number) {
+		const panels = [...currentLayout.panels];
+		const panel = panels.find((p: PanelConfig) => p.id === panelId);
+		if (!panel) return;
 
-	const oldPosition = panel.position;
+		const oldPosition = panel.position;
 
-	// Update positions
-	for (const p of panels) {
-		if (p.id === panelId) {
-			p.position = newPosition;
-		} else if (oldPosition < newPosition) {
-			// Moving down: shift panels up
-			if (p.position > oldPosition && p.position <= newPosition) {
-				p.position--;
+		// Update positions
+		for (const p of panels) {
+			if (p.id === panelId) {
+				p.position = newPosition;
+			} else if (oldPosition < newPosition) {
+				// Moving down: shift panels up
+				if (p.position > oldPosition && p.position <= newPosition) {
+					p.position--;
+				}
+			} else if (p.position >= newPosition && p.position < oldPosition) {
+				// Moving up: shift panels down
+				p.position++;
 			}
-		} else if (p.position >= newPosition && p.position < oldPosition) {
-			// Moving up: shift panels down
-			p.position++;
 		}
+
+		const sortedPanels = panels.toSorted(
+			(a: PanelConfig, b: PanelConfig) => a.position - b.position
+		);
+		currentLayout.panels = sortedPanels;
+		saveLayout();
 	}
 
-	const sortedPanels = panels.toSorted((a, b) => a.position - b.position);
-	currentLayout.panels = sortedPanels;
-	saveLayout();
-}
-
-// Reset to default layout
-function resetLayout(layoutName: string = 'default') {
-	currentLayout = { ...DEFAULT_LAYOUTS[layoutName] };
-	saveLayout();
-}
-
-// Export store
-export const layoutStore = {
-	// Getters
-	getCurrentLayout: () => currentLayout,
-	getViewport: () => viewport,
-	getAvailableLayouts: () => Object.keys(DEFAULT_LAYOUTS),
-
-	// Actions
-	loadLayout,
-	saveLayout,
-	updatePanel,
-	reorderPanels,
-	resetLayout,
-
-	// Panel-specific actions
-	togglePanel(panelId: string) {
-		updatePanel(panelId, {
-			collapsed: !currentLayout.panels.find((p) => p.id === panelId)?.collapsed
-		});
-	},
-
-	showPanel(panelId: string) {
-		updatePanel(panelId, { visible: true });
-	},
-
-	hidePanel(panelId: string) {
-		updatePanel(panelId, { visible: false });
-	},
-
-	setPanelSize(panelId: string, size: 'small' | 'medium' | 'large') {
-		updatePanel(panelId, { size });
+	// Reset to default layout
+	function resetLayout(layoutName: string = 'default') {
+		currentLayout = { ...DEFAULT_LAYOUTS[layoutName] };
+		saveLayout();
 	}
-};
+
+	// Return store API
+	return {
+		// Getters
+		getCurrentLayout: () => currentLayout,
+		getViewport: () => viewport,
+		getAvailableLayouts: () => Object.keys(DEFAULT_LAYOUTS),
+
+		// Actions
+		loadLayout,
+		saveLayout,
+		updatePanel,
+		reorderPanels,
+		resetLayout,
+
+		// Panel-specific actions
+		togglePanel(panelId: string) {
+			updatePanel(panelId, {
+				collapsed: !currentLayout.panels.find((p: PanelConfig) => p.id === panelId)?.collapsed
+			});
+		},
+
+		showPanel(panelId: string) {
+			updatePanel(panelId, { visible: true });
+		},
+
+		hidePanel(panelId: string) {
+			updatePanel(panelId, { visible: false });
+		},
+
+		setPanelSize(panelId: string, size: 'small' | 'medium' | 'large') {
+			updatePanel(panelId, { size });
+		}
+	};
+}
+
+// Export store instance
+export const layoutStore = createDashboardLayoutStore();
