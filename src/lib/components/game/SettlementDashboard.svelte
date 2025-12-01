@@ -27,9 +27,10 @@
 
 	interface Props {
 		settlementId: string;
+		settlementName: string;
 	}
 
-	let { settlementId }: Props = $props();
+	let { settlementId, settlementName }: Props = $props();
 
 	// Mock data for panels (TODO: Replace with real data from stores/API)
 
@@ -308,7 +309,7 @@
 
 {#snippet panelContent(panel: PanelConfig)}
 	{#if panel.id === 'header'}
-		<DashboardHeader {settlementId} currentTime={Date.now()} nextAction={mockSuggestions[0]} />
+		<DashboardHeader {settlementId} {settlementName} currentTime={new Date()} />
 	{:else if panel.id === 'alerts'}
 		<AlertsPanel {settlementId} alerts={mockAlerts} />
 	{:else if panel.id === 'resources'}
