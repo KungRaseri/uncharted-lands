@@ -24,13 +24,30 @@
 	import ConstructionQueuePanel from './panels/ConstructionQueuePanel.svelte';
 	import NextActionSuggestion from './panels/NextActionSuggestion.svelte';
 	import StructureGridPanel from './panels/StructureGridPanel.svelte';
+	import { populationStore } from '$lib/stores/game/population.svelte';
 
 	interface Props {
 		settlementId: string;
 		settlementName: string;
+		settlement?: {
+			storage?: {
+				food: number;
+				water: number;
+				wood: number;
+				stone: number;
+				ore: number;
+			};
+			structures?: Array<{
+				id: string;
+				buildingType: string;
+				name?: string;
+				// ... other structure properties
+			}>;
+			// ... other settlement properties
+		};
 	}
 
-	let { settlementId, settlementName }: Props = $props();
+	let { settlementId, settlementName, settlement }: Props = $props();
 
 	// Mock data for panels (TODO: Replace with real data from stores/API)
 
@@ -98,6 +115,50 @@
 		}
 	];
 
+	// Convert real settlement storage to resource format
+	// TODO: Add production/consumption rates from structures/population calculations
+	const realResources = $derived(
+		settlement?.storage
+			? [
+					{
+						type: 'FOOD' as const,
+						current: settlement.storage.food,
+						capacity: 1000, // TODO: Calculate from storage structures
+						production: 0, // TODO: Calculate from production structures
+						consumption: 0 // TODO: Calculate from population
+					},
+					{
+						type: 'WATER' as const,
+						current: settlement.storage.water,
+						capacity: 1000,
+						production: 0,
+						consumption: 0
+					},
+					{
+						type: 'WOOD' as const,
+						current: settlement.storage.wood,
+						capacity: 800,
+						production: 0,
+						consumption: 0
+					},
+					{
+						type: 'STONE' as const,
+						current: settlement.storage.stone,
+						capacity: 500,
+						production: 0,
+						consumption: 0
+					},
+					{
+						type: 'ORE' as const,
+						current: settlement.storage.ore,
+						capacity: 300,
+						production: 0,
+						consumption: 0
+					}
+				]
+			: mockResources
+	);
+
 	// Population mock data
 	const mockPopulation = {
 		current: 245,
@@ -110,6 +171,31 @@
 			elderly: 35
 		}
 	};
+
+	// Convert real population store data to PopulationPanel format
+	const realPopulation = $derived.by(() => {
+		const popState = populationStore.getSettlement(settlementId);
+		if (!popState) return undefined;
+
+		// Count immigration/emigration events in last 24h
+		const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+		const recentEvents = populationStore.getSettlementEvents(settlementId);
+		const immigrants = recentEvents.filter(
+			(e) => e.type === 'immigration' && e.timestamp > oneDayAgo
+		).length;
+		const emigrants = recentEvents.filter(
+			(e) => e.type === 'emigration' && e.timestamp > oneDayAgo
+		).length;
+
+		return {
+			current: popState.current,
+			capacity: popState.capacity,
+			growthRate: popState.growthRate,
+			happiness: popState.happiness,
+			immigrants,
+			emigrants
+		};
+	});
 
 	// Construction queue mock data
 	const mockActiveProjects = [
@@ -313,9 +399,9 @@
 	{:else if panel.id === 'alerts'}
 		<AlertsPanel {settlementId} alerts={mockAlerts} />
 	{:else if panel.id === 'resources'}
-		<ResourcePanel {settlementId} resources={mockResources} />
+		<ResourcePanel {settlementId} resources={realResources} />
 	{:else if panel.id === 'population'}
-		<PopulationPanel {settlementId} population={mockPopulation} />
+		<PopulationPanel {settlementId} population={realPopulation} />
 	{:else if panel.id === 'construction'}
 		<ConstructionQueuePanel
 			{settlementId}

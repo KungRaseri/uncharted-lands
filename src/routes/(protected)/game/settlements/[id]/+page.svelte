@@ -27,7 +27,11 @@
 
 <!-- Main Settlement Dashboard -->
 {#if data.settlement}
-	<SettlementDashboard settlementId={data.settlement.id} settlementName={data.settlement.name} />
+	<SettlementDashboard
+		settlementId={data.settlement.id}
+		settlementName={data.settlement.name}
+		settlement={data.settlement}
+	/>
 {:else}
 	<div class="max-w-7xl mx-auto p-6">
 		<div class="card preset-filled-surface-100-900 p-12 text-center">
