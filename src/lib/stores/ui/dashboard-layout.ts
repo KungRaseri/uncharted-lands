@@ -122,16 +122,22 @@ function createDashboardLayoutStore() {
 	function loadLayout(layoutName: string) {
 		if (!browser) return;
 
-		const stored = localStorage.getItem(`dashboard-layout-${layoutName}`);
+		// Get the preset first to know its layoutName
+		const preset = DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default;
+
+		// Try to load saved version using the preset's layoutName
+		const stored = localStorage.getItem(`dashboard-layout-${preset.layoutName}`);
 		if (stored) {
 			try {
 				currentLayout = JSON.parse(stored);
 			} catch (e) {
 				console.error('Failed to load layout:', e);
-				currentLayout = DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default;
+				// Deep copy to avoid mutating presets
+				currentLayout = structuredClone(preset);
 			}
 		} else {
-			currentLayout = DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default;
+			// Deep copy to avoid mutating presets
+			currentLayout = structuredClone(preset);
 		}
 	}
 
@@ -185,7 +191,8 @@ function createDashboardLayoutStore() {
 
 	// Reset to default layout
 	function resetLayout(layoutName: string = 'default') {
-		currentLayout = { ...DEFAULT_LAYOUTS[layoutName] };
+		// Deep copy to avoid mutating presets
+		currentLayout = structuredClone(DEFAULT_LAYOUTS[layoutName]);
 		saveLayout();
 	}
 
