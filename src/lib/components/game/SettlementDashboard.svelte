@@ -25,6 +25,8 @@
 	import NextActionSuggestion from './panels/NextActionSuggestion.svelte';
 	import StructureGridPanel from './panels/StructureGridPanel.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
+	import { alertsStore } from '$lib/stores/game/alerts.svelte';
+	import { constructionStore } from '$lib/stores/game/construction.svelte';
 
 	interface Props {
 		settlementId: string;
@@ -195,6 +197,23 @@
 			immigrants,
 			emigrants
 		};
+	});
+
+	// Real alerts data from alertsStore
+	const realAlerts = $derived.by(() => {
+		const alerts = alertsStore.getActiveAlerts(settlementId);
+
+		// Convert to AlertsPanel format (timestamp as Date instead of number)
+		return alerts.map((alert) => ({
+			id: alert.id,
+			severity: alert.severity,
+			title: alert.title,
+			message: alert.message,
+			timestamp: new Date(alert.timestamp),
+			actionLabel: alert.actionLabel,
+			actionHref: alert.actionHref,
+			dismissed: alert.dismissed
+		}));
 	});
 
 	// Construction queue mock data
@@ -397,7 +416,7 @@
 	{#if panel.id === 'header'}
 		<DashboardHeader {settlementId} {settlementName} currentTime={new Date()} />
 	{:else if panel.id === 'alerts'}
-		<AlertsPanel {settlementId} alerts={mockAlerts} />
+		<AlertsPanel {settlementId} alerts={realAlerts} />
 	{:else if panel.id === 'resources'}
 		<ResourcePanel {settlementId} resources={realResources} />
 	{:else if panel.id === 'population'}
