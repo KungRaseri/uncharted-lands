@@ -146,7 +146,7 @@
 		<div class="modal-backdrop" onclick={onClose} role="presentation">
 			<div
 				class="modal-container"
-				onclick={(e) => e.stopPropagation()}
+				tabindex="-1"
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby="settings-modal-title"

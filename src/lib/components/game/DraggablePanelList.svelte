@@ -148,7 +148,7 @@
 			class:dragging={draggedPanelId === panel.id}
 			class:drag-over={draggedOverPanelId === panel.id && draggedPanelId !== panel.id}
 			data-panel-id={panel.id}
-			role="listitem"
+			role="button"
 			draggable="true"
 			ondragstart={(e) => handleDragStart(e, panel.id)}
 			ondragover={(e) => handleDragOver(e, panel.id)}

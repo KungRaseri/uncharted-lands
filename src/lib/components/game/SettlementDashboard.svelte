@@ -287,10 +287,8 @@
 			title: 'Increase food production',
 			reasoning:
 				'Food consumption (25/hr) exceeds production (15/hr). You will run out of food in approximately 2 hours.',
-			action: {
-				label: 'Build Farm',
-				href: '/game/build/farm'
-			},
+			actionLabel: 'Build Farm',
+			actionHref: '/game/build/farm',
 			estimatedTime: '10 minutes',
 			impact: 'High'
 		},
@@ -301,10 +299,8 @@
 			title: 'Build more housing',
 			reasoning:
 				'Population is at 82% capacity (245/300). Immigration will stop soon without more housing.',
-			action: {
-				label: 'Build House',
-				href: '/game/build/house'
-			},
+			actionLabel: 'Build House',
+			actionHref: '/game/build/house',
 			estimatedTime: '5 minutes',
 			impact: 'Medium'
 		},
@@ -314,10 +310,8 @@
 			category: 'construction' as const,
 			title: 'Upgrade lumber mill',
 			reasoning: 'Upgrading lumber mill will increase wood production by 40%.',
-			action: {
-				label: 'Upgrade',
-				href: '/game/upgrade/lumber-mill-1'
-			},
+			actionLabel: 'Upgrade',
+			actionHref: '/game/upgrade/lumber-mill-1',
 			estimatedTime: '15 minutes',
 			impact: 'Medium'
 		},
@@ -327,10 +321,8 @@
 			category: 'expansion' as const,
 			title: 'Scout nearby region',
 			reasoning: 'Unexplored tiles detected to the north. Scouting may reveal valuable resources.',
-			action: {
-				label: 'Send Scout',
-				href: '/game/scout/north'
-			},
+			actionLabel: 'Send Scout',
+			actionHref: '/game/scout/north',
 			estimatedTime: '30 minutes',
 			impact: 'Low'
 		}
