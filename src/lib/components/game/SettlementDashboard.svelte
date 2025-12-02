@@ -9,8 +9,8 @@
 	 * - Keyboard shortcuts
 	 */
 
-	import { layoutStore } from '$lib/stores/ui/dashboard-layout';
-	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout';
+	import { layoutStore } from '$lib/stores/ui/dashboard-layout.svelte';
+	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout.svelte';
 	import QuickActionsBar from './QuickActionsBar.svelte';
 	import DesktopLayout from './layouts/DesktopLayout.svelte';
 	import TabletLayout from './layouts/TabletLayout.svelte';
@@ -27,6 +27,7 @@
 	import { populationStore } from '$lib/stores/game/population.svelte';
 	import { alertsStore } from '$lib/stores/game/alerts.svelte';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
+	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 
 	interface Props {
 		settlementId: string;
@@ -78,87 +79,48 @@
 		}
 	];
 
-	// Resources mock data
+	// Resources mock data (fallback when store data unavailable)
 	const mockResources = [
 		{
-			type: 'FOOD' as const,
+			type: 'food' as const,
 			current: 450,
 			capacity: 1000,
-			production: 15,
-			consumption: 25
+			productionRate: 15,
+			consumptionRate: 25
 		},
 		{
-			type: 'WATER' as const,
+			type: 'water' as const,
 			current: 780,
 			capacity: 1000,
-			production: 20,
-			consumption: 18
+			productionRate: 20,
+			consumptionRate: 18
 		},
 		{
-			type: 'WOOD' as const,
+			type: 'wood' as const,
 			current: 320,
 			capacity: 800,
-			production: 12,
-			consumption: 8
+			productionRate: 12,
+			consumptionRate: 8
 		},
 		{
-			type: 'STONE' as const,
+			type: 'stone' as const,
 			current: 150,
 			capacity: 500,
-			production: 5,
-			consumption: 3
+			productionRate: 5,
+			consumptionRate: 3
 		},
 		{
-			type: 'ORE' as const,
+			type: 'ore' as const,
 			current: 80,
 			capacity: 300,
-			production: 3,
-			consumption: 2
+			productionRate: 3,
+			consumptionRate: 2
 		}
 	];
 
-	// Convert real settlement storage to resource format
-	// TODO: Add production/consumption rates from structures/population calculations
-	const realResources = $derived(
-		settlement?.storage
-			? [
-					{
-						type: 'FOOD' as const,
-						current: settlement.storage.food,
-						capacity: 1000, // TODO: Calculate from storage structures
-						production: 0, // TODO: Calculate from production structures
-						consumption: 0 // TODO: Calculate from population
-					},
-					{
-						type: 'WATER' as const,
-						current: settlement.storage.water,
-						capacity: 1000,
-						production: 0,
-						consumption: 0
-					},
-					{
-						type: 'WOOD' as const,
-						current: settlement.storage.wood,
-						capacity: 800,
-						production: 0,
-						consumption: 0
-					},
-					{
-						type: 'STONE' as const,
-						current: settlement.storage.stone,
-						capacity: 500,
-						production: 0,
-						consumption: 0
-					},
-					{
-						type: 'ORE' as const,
-						current: settlement.storage.ore,
-						capacity: 300,
-						production: 0,
-						consumption: 0
-					}
-				]
-			: mockResources
+	// Get resources from store with real-time Socket.IO updates
+	const realResources = $derived.by(
+		() => resourcesStore.getResources(settlementId) || mockResources
 	);
 
 	// Population mock data
@@ -214,6 +176,57 @@
 			actionHref: alert.actionHref,
 			dismissed: alert.dismissed
 		}));
+	});
+
+	// Real construction queue data from constructionStore
+	const realConstruction = $derived.by(() => {
+		const active = constructionStore.getActiveProjects(settlementId);
+		const queued = constructionStore.getQueuedProjects(settlementId);
+
+		// Map store BuildingType to panel BuildingType
+		// Store: 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER'
+		// Panel: 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER'
+		const mapBuildingType = (
+			storeType: string
+		): 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER' => {
+			switch (storeType) {
+				case 'HOUSING':
+					return 'HOUSE';
+				case 'PRODUCTION':
+					return 'FARM';
+				case 'INFRASTRUCTURE':
+					return 'WAREHOUSE';
+				case 'DEFENSE':
+					return 'OTHER';
+				default:
+					return 'OTHER';
+			}
+		};
+
+		// Convert to ConstructionQueuePanel format
+		// Merge active and queued into single array with position and isActive flags
+		return [
+			...active.map((project, index) => ({
+				id: project.id,
+				buildingName: project.name,
+				buildingType: mapBuildingType(project.type),
+				progress: project.progress,
+				timeRemaining: Math.max(0, Math.floor((project.completionTime - Date.now()) / 1000)),
+				resourceCosts: project.resources,
+				queuePosition: index + 1,
+				isActive: true
+			})),
+			...queued.map((project, index) => ({
+				id: project.id,
+				buildingName: project.name,
+				buildingType: mapBuildingType(project.type),
+				progress: 0,
+				timeRemaining: 0,
+				resourceCosts: project.resources,
+				queuePosition: active.length + index + 1,
+				isActive: false
+			}))
+		];
 	});
 
 	// Construction queue mock data
@@ -422,11 +435,7 @@
 	{:else if panel.id === 'population'}
 		<PopulationPanel {settlementId} population={realPopulation} />
 	{:else if panel.id === 'construction'}
-		<ConstructionQueuePanel
-			{settlementId}
-			activeProjects={mockActiveProjects}
-			queuedProjects={mockQueuedProjects}
-		/>
+		<ConstructionQueuePanel {settlementId} constructionQueue={realConstruction} />
 	{:else if panel.id === 'suggestions'}
 		<NextActionSuggestion
 			{settlementId}
