@@ -18,6 +18,9 @@
 
 	// Panel Components
 	import DashboardHeader from './panels/DashboardHeader.svelte';
+
+	// Modals
+	import SettingsModal from './modals/SettingsModal.svelte';
 	import AlertsPanel from './panels/AlertsPanel.svelte';
 	import ResourcePanel from './panels/ResourcePanel.svelte';
 	import PopulationPanel from './panels/PopulationPanel.svelte';
@@ -51,6 +54,9 @@
 	}
 
 	let { settlementId, settlementName, settlement }: Props = $props();
+
+	// Settings modal state
+	let settingsOpen = $state(false);
 
 	// Mock data for panels (TODO: Replace with real data from stores/API)
 
@@ -427,7 +433,12 @@
 
 {#snippet panelContent(panel: PanelConfig)}
 	{#if panel.id === 'header'}
-		<DashboardHeader {settlementId} {settlementName} currentTime={new Date()} />
+		<DashboardHeader
+			{settlementId}
+			{settlementName}
+			currentTime={new Date()}
+			onSettings={() => (settingsOpen = true)}
+		/>
 	{:else if panel.id === 'alerts'}
 		<AlertsPanel {settlementId} alerts={realAlerts} />
 	{:else if panel.id === 'resources'}
@@ -498,6 +509,9 @@
 		{/if}
 	</div>
 </div>
+
+<!-- Settings Modal -->
+<SettingsModal bind:open={settingsOpen} onClose={() => (settingsOpen = false)} />
 
 <style>
 	.settlement-dashboard {

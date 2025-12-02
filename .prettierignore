@@ -15,3 +15,6 @@ yarn.lock
 # Ignore plain HTML error pages and SvelteKit templates
 src/error.html
 src/app.html
+
+# Ignore template files with placeholder syntax
+docs/templates/Feature-Spec-Template.md

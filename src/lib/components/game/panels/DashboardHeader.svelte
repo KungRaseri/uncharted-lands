@@ -9,9 +9,10 @@
 		settlementName: string;
 		settlementId: string;
 		currentTime?: Date;
+		onSettings?: () => void;
 	}
 
-	let { settlementName, settlementId, currentTime = new Date() }: Props = $props();
+	let { settlementName, settlementId, currentTime = new Date(), onSettings }: Props = $props();
 
 	// Format time for display
 	const formattedTime = $derived(
@@ -50,6 +51,34 @@
 				<span class="action-text">{nextAction}</span>
 			</div>
 		</div>
+
+		{#if onSettings}
+			<button
+				type="button"
+				class="settings-button"
+				onclick={onSettings}
+				aria-label="Open dashboard settings"
+				title="Customize dashboard (Ctrl+,)"
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<circle cx="12" cy="12" r="3" />
+					<path
+						d="M12 1v6m0 6v6m-9-9h6m6 0h6m-16.97 6.97l4.24-4.24m5.46 0l4.24 4.24m-16.97-10.18l4.24 4.24m5.46 0l4.24-4.24"
+					/>
+				</svg>
+			</button>
+		{/if}
 	</div>
 </header>
 
@@ -144,6 +173,49 @@
 		font-weight: 500;
 	}
 
+	.settings-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 44px;
+		min-height: 44px;
+		padding: 0.625rem;
+		background: transparent;
+		border: 1px solid var(--surface-300);
+		border-radius: 6px;
+		color: var(--surface-600);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		flex-shrink: 0;
+	}
+
+	.settings-button:hover {
+		background: var(--surface-200);
+		color: var(--surface-800);
+		border-color: var(--surface-400);
+	}
+
+	.settings-button:focus-visible {
+		outline: 2px solid var(--primary-500);
+		outline-offset: 2px;
+		border-color: var(--primary-500);
+	}
+
+	.settings-button:active {
+		transform: scale(0.95);
+		background: var(--surface-300);
+	}
+
+	.settings-button svg {
+		width: 20px;
+		height: 20px;
+		transition: transform 0.3s ease;
+	}
+
+	.settings-button:hover svg {
+		transform: rotate(45deg);
+	}
+
 	/* Responsive Design */
 	@media (max-width: 767px) {
 		.dashboard-header {
@@ -155,10 +227,12 @@
 			flex-direction: column;
 			align-items: flex-start;
 			gap: 0.75rem;
+			position: relative;
 		}
 
 		.settlement-name {
 			font-size: 1.5rem;
+			padding-right: 3rem; /* Make room for settings button */
 		}
 
 		.time-and-action {
@@ -175,6 +249,12 @@
 		.next-action {
 			flex: 1;
 			max-width: none;
+		}
+
+		.settings-button {
+			position: absolute;
+			top: 0;
+			right: 0;
 		}
 	}
 

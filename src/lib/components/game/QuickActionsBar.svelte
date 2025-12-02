@@ -2,15 +2,21 @@
 	/**
 	 * Quick Actions Bar Component
 	 *
-	 * Provides 1-click access to common settlement actions:
+	 * Provides 1-click access to common settlement actions with real-time badge updates:
 	 * - Build (B): Open build menu
 	 * - Collect (C): Manual resource collection
 	 * - Upgrade (U): Upgrade next eligible structure
 	 * - Repair (R): Repair damaged structures
-	 * - Aid (A): Send aid to allies
+	 * - Alerts (⚠️): View active alerts/warnings
+	 *
+	 * Real-time updates:
+	 * - Alert badges update via alertsStore (Socket.IO)
+	 * - Construction badges update via constructionStore (Socket.IO)
 	 */
 
 	import { goto } from '$app/navigation';
+	import { alertsStore } from '$lib/stores/game/alerts.svelte';
+	import { constructionStore } from '$lib/stores/game/construction.svelte';
 
 	interface Props {
 		settlementId: string;
@@ -21,13 +27,18 @@
 	// State for modals
 	let buildMenuOpen = $state(false);
 	let aidModalOpen = $state(false);
+	let alertsModalOpen = $state(false);
 
-	// TODO: Replace with actual store calls when stores are available
-	// These are placeholders for now
+	// Real-time badge counts from stores
+	const alertCount = $derived(alertsStore.getAlertCount(settlementId));
+	const criticalAlertCount = $derived(alertsStore.getAlertCount(settlementId, 'critical'));
+	const constructionQueueLength = $derived(constructionStore.getTotalCount(settlementId));
+	const activeConstructionCount = $derived(constructionStore.getActiveCount(settlementId));
+
+	// Action availability (keeping placeholders until other stores implemented)
 	const canBuild = $derived(true); // settlementStore.hasAvailableResources(settlementId)
 	const canUpgrade = $derived(true); // structureStore.hasUpgradeableStructures(settlementId)
 	const canRepair = $derived(false); // structureStore.hasDamagedStructures(settlementId)
-	const canSendAid = $derived(false); // disasterStore.hasAlliesInDistress()
 	const recentBuild = $derived(null as string | null); // structureStore.getMostRecentBuild(settlementId)
 
 	// Action handlers
@@ -60,13 +71,31 @@
 		console.log('Repair structures:', settlementId);
 	}
 
-	async function handleAid() {
-		// Send aid to allies
-		aidModalOpen = true;
+	async function handleAlerts() {
+		// Open alerts panel
+		alertsModalOpen = true;
 	}
 </script>
 
 <nav class="quick-actions-bar" aria-label="Quick actions">
+	<!-- Alerts Button (replaced Aid) -->
+	<button
+		onclick={handleAlerts}
+		aria-label="View alerts and warnings (keyboard shortcut: A)"
+		title="View alerts (A)"
+		class="quick-action"
+		class:has-critical={criticalAlertCount > 0}
+	>
+		<span class="icon" aria-hidden="true">⚠️</span>
+		<span class="label">Alerts</span>
+		{#if alertCount > 0}
+			<span class="badge" class:critical={criticalAlertCount > 0}>
+				{alertCount}
+			</span>
+		{/if}
+	</button>
+
+	<!-- Build Button -->
 	<button
 		onclick={handleBuild}
 		disabled={!canBuild}
@@ -79,8 +108,14 @@
 		{#if recentBuild}
 			<span class="recent">({recentBuild})</span>
 		{/if}
+		{#if constructionQueueLength > 0}
+			<span class="badge">
+				{activeConstructionCount}/{constructionQueueLength}
+			</span>
+		{/if}
 	</button>
 
+	<!-- Collect Button -->
 	<button
 		onclick={handleCollect}
 		aria-label="Collect resources (keyboard shortcut: C)"
@@ -91,6 +126,7 @@
 		<span class="label">Collect</span>
 	</button>
 
+	<!-- Upgrade Button -->
 	<button
 		onclick={handleUpgrade}
 		disabled={!canUpgrade}
@@ -105,6 +141,7 @@
 		{/if}
 	</button>
 
+	<!-- Repair Button -->
 	<button
 		onclick={handleRepair}
 		disabled={!canRepair}
@@ -117,17 +154,6 @@
 		{#if canRepair}
 			<span class="badge critical">2</span>
 		{/if}
-	</button>
-
-	<button
-		onclick={handleAid}
-		disabled={!canSendAid}
-		aria-label="Send aid to allies (keyboard shortcut: A)"
-		title="Send aid to allies (A)"
-		class="quick-action"
-	>
-		<span class="icon" aria-hidden="true">🤝</span>
-		<span class="label">Aid</span>
 	</button>
 </nav>
 
@@ -176,6 +202,25 @@
 	.quick-action:focus-visible {
 		outline: 3px solid var(--primary-300, #93c5fd);
 		outline-offset: 2px;
+	}
+
+	.quick-action.has-critical {
+		background: var(--error-500, #ef4444);
+		animation: pulse-critical 2s ease-in-out infinite;
+	}
+
+	.quick-action.has-critical:hover:not(:disabled) {
+		background: var(--error-600, #dc2626);
+	}
+
+	@keyframes pulse-critical {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.85;
+		}
 	}
 
 	.icon {
