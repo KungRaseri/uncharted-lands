@@ -67,7 +67,12 @@ const update: Action = async ({ request, params, cookies }) => {
 	});
 
 	try {
-		const updateData: any = {
+		const updateData: {
+			name: string | undefined;
+			hostname?: string;
+			status?: string;
+			port?: number;
+		} = {
 			name,
 			hostname: hostname && typeof hostname === 'string' ? hostname : undefined,
 			status: status && typeof status === 'string' ? status : undefined

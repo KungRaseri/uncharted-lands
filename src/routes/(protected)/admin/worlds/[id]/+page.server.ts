@@ -16,7 +16,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		// Retry logic for newly created worlds (race condition mitigation)
 		let response;
 		let retries = 3;
-		let lastError;
 
 		for (let i = 0; i < retries; i++) {
 			response = await fetch(`${API_URL}/worlds/${params.id}`, {
@@ -29,8 +28,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 				break;
 			}
 
-			lastError = response;
-
 			// If not found and we have retries left, wait a bit and try again
 			if (response.status === 404 && i < retries - 1) {
 				logger.debug('[ADMIN WORLD] World not found, retrying...', {
@@ -38,11 +35,10 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 					attempt: i + 1
 				});
 				await new Promise((resolve) => setTimeout(resolve, 150));
-				continue;
 			}
 		}
 
-		if (!response || !response.ok) {
+		if (!response?.ok) {
 			logger.warn('[ADMIN WORLD] World not found after retries', {
 				worldId: params.id,
 				status: response?.status
@@ -62,11 +58,14 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		const servers: GameServer[] = serversResponse.ok ? await serversResponse.json() : [];
 
 		// Use stats from API response (_count property added by server)
+		const worldWithCounts = world as WorldWithRelations & {
+			_count?: { landTiles?: number; oceanTiles?: number; settlements?: number; regions?: number };
+		};
 		const worldInfo = {
-			landTiles: (world as any)._count?.landTiles || 0,
-			oceanTiles: (world as any)._count?.oceanTiles || 0,
-			settlements: (world as any)._count?.settlements || 0,
-			regions: (world as any)._count?.regions || 0
+			landTiles: worldWithCounts._count?.landTiles || 0,
+			oceanTiles: worldWithCounts._count?.oceanTiles || 0,
+			settlements: worldWithCounts._count?.settlements || 0,
+			regions: worldWithCounts._count?.regions || 0
 		};
 
 		logger.info('[ADMIN WORLD] Successfully loaded world', {

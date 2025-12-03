@@ -51,8 +51,8 @@ export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
 
 		logger.info('[WORLD CREATE] Servers loaded successfully', {
 			count: servers.length,
-			serverIds: servers.map((s: any) => s.id),
-			serverNames: servers.map((s: any) => s.name)
+			serverIds: servers.map((s: { id: string }) => s.id),
+			serverNames: servers.map((s: { name: string }) => s.name)
 		});
 
 		return { servers };

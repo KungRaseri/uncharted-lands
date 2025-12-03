@@ -60,6 +60,7 @@ describe('PlotCreationModal.svelte', () => {
 			.mockResolvedValue(undefined);
 
 		// Setup default mocks for TileResourceInfo
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(resourceUtils.getResourceIcon as any).mockImplementation(async (type: string) => {
 			const icons: Record<string, string> = {
 				FOOD: '🌾',
@@ -70,6 +71,7 @@ describe('PlotCreationModal.svelte', () => {
 			return icons[type] || '?';
 		});
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(resourceUtils.getQualityInfo as any).mockImplementation(async (quality: number) => {
 			if (quality >= 80) return { rating: 'Excellent', color: 'text-success-500', multiplier: 1.5 };
 			if (quality >= 60) return { rating: 'Good', color: 'text-primary-500', multiplier: 1.25 };
@@ -732,6 +734,7 @@ describe('PlotCreationModal.svelte', () => {
 		});
 
 		it('should handle tile with null resource qualities', async () => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const nullTile = {
 				...baseTile,
 				foodQuality: null,

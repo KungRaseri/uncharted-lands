@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		const tile = await response.json();
 
 		// Calculate tile position within region (10x10 grid)
-		const tileIndex = tile.Region.tiles.findIndex((t: any) => t.id === tile.id);
+		const tileIndex = tile.Region.tiles.findIndex((t: { id: string }) => t.id === tile.id);
 		const tileX = tileIndex % 10;
 		const tileY = Math.floor(tileIndex / 10);
 

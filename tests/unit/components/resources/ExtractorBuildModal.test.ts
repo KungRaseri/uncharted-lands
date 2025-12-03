@@ -50,6 +50,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			.mockResolvedValue(undefined);
 
 		// Setup default mocks
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(resourceUtils.getResourceIcon as any).mockImplementation(async (type: string) => {
 			const icons: Record<string, string> = {
 				FOOD: '🌾',
@@ -61,6 +62,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			return icons[type] || '?';
 		});
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(resourceUtils.getResourceName as any).mockImplementation(async (type: string) => {
 			const names: Record<string, string> = {
 				FOOD: 'Food',
@@ -72,6 +74,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			return names[type] || type;
 		});
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(resourceUtils.getExtractorName as any).mockImplementation(async (type: string) => {
 			const names: Record<string, string> = {
 				BASIC_FARM: 'Basic Farm',
