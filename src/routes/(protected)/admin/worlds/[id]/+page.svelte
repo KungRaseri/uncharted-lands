@@ -21,8 +21,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
-	import type { TileWithRelations, Plot } from '$lib/types/api';
-	import { env } from '$env/dynamic/public';
+	import type { TileWithRelations } from '$lib/types/api';
 
 	let { data, form }: { data: PageData; form: any } = $props();
 

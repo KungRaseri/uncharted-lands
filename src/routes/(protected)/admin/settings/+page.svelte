@@ -6,7 +6,6 @@
 		Layers,
 		Database,
 		Globe,
-		Users,
 		ChevronRight
 	} from 'lucide-svelte';
 
@@ -55,10 +54,6 @@
 			color: 'warning'
 		}
 	];
-
-	function getColorClass(color: string): string {
-		return `preset-tonal-${color}-500`;
-	}
 
 	function getIconColorClass(color: string): string {
 		return `text-${color}-500`;

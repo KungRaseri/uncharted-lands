@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Building2, Hammer, Wrench, Info, ChevronRight } from 'lucide-svelte';
+	import { Building2, Hammer, Info, ChevronRight } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -26,10 +26,6 @@
 		if (event.key === 'Escape') {
 			closeModal();
 		}
-	}
-
-	function getCategoryIcon(category: string) {
-		return category === 'extractors' ? Hammer : Building2;
 	}
 
 	function formatResources(resources: Record<string, number | undefined>): string {

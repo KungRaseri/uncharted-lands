@@ -12,7 +12,6 @@
 -->
 <script lang="ts">
 	import { fade, fly, scale } from 'svelte/transition';
-	import { formatDistanceToNow as _formatDistanceToNow } from 'date-fns';
 	import { disasterStore } from '$lib/stores/game/disaster.svelte';
 
 	interface Props {

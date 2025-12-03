@@ -6,11 +6,9 @@
 		Search,
 		ExternalLink,
 		Mail,
-		Shield,
 		Calendar,
 		User,
 		MoreVertical,
-		Edit,
 		Ban,
 		Trash2,
 		UserCog

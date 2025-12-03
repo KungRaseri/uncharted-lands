@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Building2, Search, ExternalLink, User, Calendar, MapPin } from 'lucide-svelte';
+	import { Building2, Search, ExternalLink, User, Calendar } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 

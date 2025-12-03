@@ -53,37 +53,10 @@
 		};
 	}
 
-	let { settlementId, settlementName, settlement: _settlement }: Props = $props();
+	let { settlementId, settlementName }: Props = $props();
 
 	// Settings modal state
 	let settingsOpen = $state(false);
-
-	// Mock data for panels (TODO: Replace with real data from stores/API)
-
-	// Alerts mock data
-	const _mockAlerts = [
-		{
-			id: '1',
-			severity: 'critical' as const,
-			title: 'Food shortage imminent',
-			message: 'Food reserves will be depleted in 2 hours. Build more farms or reduce population.',
-			timestamp: Date.now() - 300000 // 5 minutes ago
-		},
-		{
-			id: '2',
-			severity: 'warning' as const,
-			title: 'Low wood supply',
-			message: 'Wood reserves at 35%. Consider building a lumber mill.',
-			timestamp: Date.now() - 600000 // 10 minutes ago
-		},
-		{
-			id: '3',
-			severity: 'info' as const,
-			title: 'Construction complete',
-			message: 'Farmhouse construction completed successfully.',
-			timestamp: Date.now() - 900000 // 15 minutes ago
-		}
-	];
 
 	// Resources mock data (fallback when store data unavailable)
 	const mockResources = [
@@ -128,19 +101,6 @@
 	const realResources = $derived.by(
 		() => resourcesStore.getResources(settlementId) || mockResources
 	);
-
-	// Population mock data
-	const _mockPopulation = {
-		current: 245,
-		capacity: 300,
-		happiness: 78,
-		growthRate: 5.2,
-		demographics: {
-			workers: 150,
-			children: 60,
-			elderly: 35
-		}
-	};
 
 	// Convert real population store data to PopulationPanel format
 	const realPopulation = $derived.by(() => {
@@ -234,49 +194,6 @@
 			}))
 		];
 	});
-
-	// Construction queue mock data
-	const _mockActiveProjects = [
-		{
-			id: '1',
-			name: 'Farmhouse',
-			type: 'HOUSING' as const,
-			progress: 75,
-			startTime: Date.now() - 900000, // Started 15 minutes ago
-			completionTime: Date.now() + 300000, // Completes in 5 minutes
-			resources: { wood: 50, stone: 30 }
-		},
-		{
-			id: '2',
-			name: 'Watchtower',
-			type: 'DEFENSE' as const,
-			progress: 30,
-			startTime: Date.now() - 300000, // Started 5 minutes ago
-			completionTime: Date.now() + 900000, // Completes in 15 minutes
-			resources: { wood: 80, stone: 60, ore: 20 }
-		}
-	];
-
-	const _mockQueuedProjects = [
-		{
-			id: '3',
-			name: 'Workshop',
-			type: 'INFRASTRUCTURE' as const,
-			progress: 0,
-			startTime: 0,
-			completionTime: 0,
-			resources: { wood: 100, stone: 80, ore: 40 }
-		},
-		{
-			id: '4',
-			name: 'Storage Facility',
-			type: 'INFRASTRUCTURE' as const,
-			progress: 0,
-			startTime: 0,
-			completionTime: 0,
-			resources: { wood: 60, stone: 40 }
-		}
-	];
 
 	// Suggestions mock data
 	const mockSuggestions = [

@@ -19,7 +19,7 @@
 		renderPanel: Snippet<[PanelConfig]>;
 	}
 
-	let { panels, settlementId: _settlementId, renderPanel }: Props = $props();
+	let { panels, renderPanel }: Props = $props();
 
 	// Sort all visible panels by position
 	const sortedPanels = $derived(

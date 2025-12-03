@@ -17,7 +17,7 @@
 		renderPanel: Snippet<[PanelConfig]>;
 	}
 
-	let { panels, settlementId: _settlementId, renderPanel }: Props = $props();
+	let { panels, renderPanel }: Props = $props();
 
 	// Group panels by position (0-2: left, 3-4: center, 5+: right)
 	const leftPanels = $derived(

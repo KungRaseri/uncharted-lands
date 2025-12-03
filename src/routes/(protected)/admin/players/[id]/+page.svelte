@@ -1,16 +1,7 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import type { PageData } from './$types';
-	import {
-		User,
-		Mail,
-		Shield,
-		Calendar,
-		ArrowLeft,
-		ExternalLink,
-		Building2,
-		MapPin
-	} from 'lucide-svelte';
+	import { User, Mail, Shield, Calendar, ArrowLeft, ExternalLink, Building2 } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
