@@ -10,7 +10,7 @@
 
 	let { open = false, onClose, title, height = 'auto' }: Props = $props();
 
-	let sheetElement: HTMLDivElement;
+	let sheetElement = $state<HTMLDivElement | undefined>(undefined);
 	let startY = 0;
 	let currentY = 0;
 	let isDragging = false;

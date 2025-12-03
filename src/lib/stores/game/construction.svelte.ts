@@ -5,7 +5,6 @@
  * Tracks active building projects and queued projects per settlement.
  */
 
-/* eslint-disable no-undef */
 import { socketStore } from './socket';
 
 type BuildingType = 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER';

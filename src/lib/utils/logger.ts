@@ -82,7 +82,6 @@ class ClientLogger {
 	debug(message: string, context?: LogContext): void {
 		if (this.minLevel <= LogLevel.DEBUG) {
 			const [msg, ...args] = this.format('DEBUG', message, context);
-			// eslint-disable-next-line no-console
 			console.debug(msg, ...args.filter(Boolean));
 		}
 	}
@@ -93,7 +92,6 @@ class ClientLogger {
 	info(message: string, context?: LogContext): void {
 		if (this.minLevel <= LogLevel.INFO) {
 			const [msg, ...args] = this.format('INFO', message, context);
-			// eslint-disable-next-line no-console
 			console.log(msg, ...args.filter(Boolean));
 		}
 	}
@@ -104,7 +102,6 @@ class ClientLogger {
 	warn(message: string, context?: LogContext): void {
 		if (this.minLevel <= LogLevel.WARN) {
 			const [msg, ...args] = this.format('WARN', message, context);
-			// eslint-disable-next-line no-console
 			console.warn(msg, ...args.filter(Boolean));
 		}
 	}
@@ -126,7 +123,6 @@ class ClientLogger {
 			}
 
 			const [msg, ...args] = this.format('ERROR', message, errorContext);
-			// eslint-disable-next-line no-console
 			console.error(msg, ...args.filter(Boolean));
 		}
 	}

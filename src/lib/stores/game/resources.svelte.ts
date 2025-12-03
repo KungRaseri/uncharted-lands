@@ -3,7 +3,6 @@
  * Manages settlement resource state with real-time Socket.IO updates
  */
 
-/* eslint-disable no-undef */
 import { socketStore } from './socket';
 
 // Types

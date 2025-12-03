@@ -4,7 +4,6 @@
  * Manages settlement alerts and real-time updates via Socket.IO
  */
 
-/* eslint-disable no-undef */
 import { socketStore } from './socket';
 
 type AlertSeverity = 'critical' | 'warning' | 'info';

@@ -79,8 +79,8 @@ function createWorldStore() {
 				if (response.success && response.world) {
 					update((state) => ({
 						...state,
-						currentWorld: response.world!,
-						regions: response.regions || [],
+						currentWorld: response.world as unknown as WorldInfo,
+						regions: (response.regions as unknown as RegionInfo[]) || [],
 						loading: false,
 						error: null
 					}));
@@ -108,16 +108,17 @@ function createWorldStore() {
 				const response = await requestRegionData({ regionId, includeTiles });
 
 				if (response.success && response.region) {
+					const region = response.region as unknown as RegionWithTiles;
 					const regionData: RegionWithTiles = {
-						id: response.region.id,
-						worldId: response.region.worldId,
-						name: response.region.name,
-						xCoord: response.region.xCoord,
-						yCoord: response.region.yCoord,
-						elevationMap: response.region.elevationMap,
-						precipitationMap: response.region.precipitationMap,
-						temperatureMap: response.region.temperatureMap,
-						tiles: response.region.tiles
+						id: region.id,
+						worldId: region.worldId,
+						name: region.name,
+						xCoord: region.xCoord,
+						yCoord: region.yCoord,
+						elevationMap: region.elevationMap,
+						precipitationMap: region.precipitationMap,
+						temperatureMap: region.temperatureMap,
+						tiles: region.tiles
 					};
 
 					// Cache the loaded region

@@ -28,10 +28,11 @@
 	// Debug: Log tile coordinates to verify ordering
 	$effect(() => {
 		if (typeof window !== 'undefined' && region.tiles.length > 0) {
-			const _coords = region.tiles
+			const coords = region.tiles
 				.slice(0, 20)
 				.map((t: any) => `(${t.xCoord ?? '?'},${t.yCoord ?? '?'})`)
 				.join(' ');
+			console.log('Region tile coords:', coords);
 		}
 	});
 </script>

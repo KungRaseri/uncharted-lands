@@ -4,7 +4,6 @@
  * Manages settlement population data and real-time updates via Socket.IO
  */
 
-/* eslint-disable no-undef */
 import { socketStore } from './socket';
 
 interface PopulationState {

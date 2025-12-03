@@ -14,7 +14,7 @@
 	interface Props {
 		panels: PanelConfig[];
 		panelNames: Record<string, string>;
-		onReorder: (_panelId: string, _newPosition: number) => void;
+		onReorder: (panelId: string, newPosition: number) => void;
 	}
 
 	let { panels, panelNames, onReorder }: Props = $props();
@@ -22,7 +22,7 @@
 	// Drag state
 	let draggedPanelId = $state<string | null>(null);
 	let draggedOverPanelId = $state<string | null>(null);
-	let _touchStartY = $state(0);
+	let touchStartY = $state(0);
 	let isDragging = $state(false);
 
 	// Sort panels by position for display
@@ -67,7 +67,7 @@
 	// Touch handlers
 	function handleTouchStart(e: TouchEvent, panelId: string) {
 		draggedPanelId = panelId;
-		_touchStartY = e.touches[0].clientY;
+		touchStartY = e.touches[0].clientY;
 		isDragging = true;
 	}
 

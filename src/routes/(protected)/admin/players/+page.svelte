@@ -308,9 +308,13 @@
 
 <!-- Edit Role Modal -->
 {#if showEditModal && selectedAccount}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleBackdropKeydown}></div>
+	<div
+		class="modal-backdrop"
+		onclick={handleBackdropClick}
+		onkeydown={handleBackdropKeydown}
+		role="presentation"
+		tabindex="-1"
+	></div>
 	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-md shadow-xl">
 		<header class="mb-4">
 			<h3 class="text-2xl font-bold flex items-center gap-2">
@@ -384,9 +388,13 @@
 
 <!-- Ban Player Modal -->
 {#if showBanModal && selectedAccount}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleBackdropKeydown}></div>
+	<div
+		class="modal-backdrop"
+		onclick={handleBackdropClick}
+		onkeydown={handleBackdropKeydown}
+		role="presentation"
+		tabindex="-1"
+	></div>
 	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-md shadow-xl">
 		<header class="mb-4">
 			<h3 class="text-2xl font-bold flex items-center gap-2 text-warning-500">
@@ -422,9 +430,13 @@
 
 <!-- Delete Account Modal -->
 {#if showDeleteModal && selectedAccount}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleBackdropKeydown}></div>
+	<div
+		class="modal-backdrop"
+		onclick={handleBackdropClick}
+		onkeydown={handleBackdropKeydown}
+		role="presentation"
+		tabindex="-1"
+	></div>
 	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-md shadow-xl">
 		<header class="mb-4">
 			<h3 class="text-2xl font-bold flex items-center gap-2 text-error-500">

@@ -37,8 +37,8 @@
 
 	// Action handlers
 	async function handleBuild() {
-		// Open build menu
-		_buildMenuOpen = true;
+		// TODO: Open build menu when UI is implemented
+		console.log('Open build menu:', settlementId);
 	}
 
 	async function handleCollect() {
@@ -66,8 +66,8 @@
 	}
 
 	async function handleAlerts() {
-		// Open alerts panel
-		_alertsModalOpen = true;
+		// TODO: Open alerts panel when UI is implemented
+		console.log('Open alerts panel:', settlementId);
 	}
 </script>
 

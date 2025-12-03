@@ -30,24 +30,26 @@
 	let touchStartX = $state(0);
 	let touchStartY = $state(0);
 
-	function handleTouchStart(event: TouchEvent, _panelId: string) {
+	function handleTouchStart(event: TouchEvent, panelId: string) {
 		const touch = event.touches[0];
 		if (touch) {
 			touchStartX = touch.clientX;
 			touchStartY = touch.clientY;
 		}
+		// TODO: Use panelId when implementing swipe-to-dismiss
+		console.log('Touch start on panel:', panelId);
 	}
 
-	function handleTouchEnd(event: TouchEvent, _panelId: string) {
+	function handleTouchEnd(event: TouchEvent, panelId: string) {
 		const touch = event.changedTouches[0];
 		if (touch) {
 			const deltaX = touch.clientX - touchStartX;
 			const deltaY = touch.clientY - touchStartY;
 
 			// Swipe right to dismiss (for alerts panel only)
-			if (_panelId === 'alerts' && deltaX > 100 && Math.abs(deltaY) < 50) {
+			if (panelId === 'alerts' && deltaX > 100 && Math.abs(deltaY) < 50) {
 				// TODO: Dispatch dismiss event
-				console.log('Swipe to dismiss alert:', _panelId);
+				console.log('Swipe to dismiss alert:', panelId);
 			}
 		}
 	}

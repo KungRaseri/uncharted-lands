@@ -41,8 +41,8 @@
 	interface Props {
 		gridSize?: number; // default 10
 		structures?: Structure[];
-		onCellClick?: (_cell: GridCell) => void;
-		onStructureSelect?: (_structure: Structure) => void;
+		onCellClick?: (cell: GridCell) => void;
+		onStructureSelect?: (structure: Structure) => void;
 	}
 
 	// ============================================================================
@@ -328,6 +328,7 @@
 			bind:this={gridElement}
 			class="grid-container"
 			role="grid"
+			tabindex="0"
 			aria-describedby="grid-instructions"
 			onkeydown={handleKeyDown}
 		>

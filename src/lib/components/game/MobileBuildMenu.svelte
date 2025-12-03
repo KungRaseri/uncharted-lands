@@ -36,7 +36,7 @@
 
 <BottomSheet {open} {onClose} title="Build Structure" height="full">
 	<!-- Category Tabs -->
-	<nav class="category-tabs" role="tablist" aria-label="Structure categories">
+	<div class="category-tabs" role="tablist" aria-label="Structure categories">
 		{#each Object.keys(structuresByCategory) as category}
 			<button
 				class="category-tab"
@@ -50,7 +50,7 @@
 				{category}
 			</button>
 		{/each}
-	</nav>
+	</div>
 
 	<!-- Structure Grid -->
 	<div

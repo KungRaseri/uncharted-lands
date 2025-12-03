@@ -16,8 +16,8 @@
 		isOpen?: boolean;
 		onClose: () => void;
 		onBuildExtractor: (
-			_tileId: string,
-			_slotPosition: number,
+			tileId: string,
+			slotPosition: number,
 			extractorType: string
 		) => Promise<void>;
 	} = $props();
@@ -146,16 +146,22 @@
 </script>
 
 {#if isOpen}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={handleClose} role="presentation">
+	<div
+		class="modal-backdrop"
+		onclick={handleClose}
+		onkeydown={(e) => e.key === 'Escape' && handleClose()}
+		role="presentation"
+		tabindex="-1"
+	>
 		<div
 			class="modal-content"
 			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
 			role="dialog"
 			aria-modal="true"
-			tabindex="-1"
+			aria-labelledby="modal-title"
 		>
+			tabindex="-1" >
 			<div class="modal-header">
 				<div>
 					<h2 class="text-2xl font-bold">Build Extractor</h2>

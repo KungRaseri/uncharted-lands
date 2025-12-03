@@ -24,7 +24,7 @@
 
 	interface Props {
 		suggestions?: ActionSuggestion[];
-		onDismiss?: (_suggestionId: string) => void;
+		onDismiss?: (suggestionId: string) => void;
 		onRefresh?: () => void;
 	}
 
