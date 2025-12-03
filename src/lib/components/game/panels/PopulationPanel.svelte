@@ -17,12 +17,10 @@
 	}
 
 	interface Props {
-		settlementId: string;
 		population?: PopulationData;
 	}
 
 	let {
-		settlementId: _settlementId,
 		population = {
 			current: 0,
 			capacity: 0,

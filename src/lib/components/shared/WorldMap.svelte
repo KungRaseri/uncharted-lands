@@ -1,9 +1,5 @@
 <script lang="ts">
-	import RegionComponent from '$lib/components/g	// Preview mode is ONLY for world creation (before tiles exist)
-	const isPreviewMode = $derived(!!previewRegions && !regions);
-	const displayRegions = $derived(regions || previewRegions);
-
-	// Grid dimensions calculated from display regionsvelte';
+	import RegionComponent from '$lib/components/game/Region.svelte';
 	import MapLegend from '$lib/components/shared/MapLegend.svelte';
 	import type { RegionWithTiles } from '$lib/types/game';
 	import {

@@ -39,7 +39,6 @@
 	}
 
 	interface Props {
-		settlementId: string;
 		gridSize?: number; // default 10
 		structures?: Structure[];
 		onCellClick?: (_cell: GridCell) => void;
@@ -50,13 +49,7 @@
 	// PROPS & STATE
 	// ============================================================================
 
-	let {
-		settlementId: _settlementId,
-		gridSize = 10,
-		structures = [],
-		onCellClick,
-		onStructureSelect
-	}: Props = $props();
+	let { gridSize = 10, structures = [], onCellClick, onStructureSelect }: Props = $props();
 
 	// Keyboard navigation state
 	let focusedCell = $state<{ x: number; y: number } | null>(null);

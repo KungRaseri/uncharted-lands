@@ -14,11 +14,10 @@
 	}
 
 	interface Props {
-		settlementId: string;
 		resources?: Resource[];
 	}
 
-	let { settlementId: _settlementId, resources = [] }: Props = $props();
+	let { resources = [] }: Props = $props();
 
 	// Resource display configuration
 	const resourceConfig = {
