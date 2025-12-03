@@ -16,8 +16,8 @@
 		isOpen?: boolean;
 		onClose: () => void;
 		onBuildExtractor: (
-			tileId: string,
-			slotPosition: number,
+			_tileId: string,
+			_slotPosition: number,
 			extractorType: string
 		) => Promise<void>;
 	} = $props();

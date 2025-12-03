@@ -22,7 +22,7 @@
 	}
 
 	let {
-		settlementId,
+		settlementId: _settlementId,
 		population = {
 			current: 0,
 			capacity: 0,

@@ -29,7 +29,7 @@
 		constructionQueue?: ConstructionProject[];
 	}
 
-	let { settlementId, constructionQueue = [] }: Props = $props();
+	let { settlementId: _settlementId, constructionQueue = [] }: Props = $props();
 
 	// Sort queue by position
 	const sortedQueue = $derived(

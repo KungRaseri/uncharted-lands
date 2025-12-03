@@ -11,7 +11,7 @@
 
 	interface Props {
 		currentPreset: string;
-		onPresetChange: (presetName: string) => void;
+		onPresetChange: (_presetName: string) => void;
 	}
 
 	let { currentPreset, onPresetChange }: Props = $props();

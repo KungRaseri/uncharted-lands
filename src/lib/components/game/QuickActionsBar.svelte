@@ -14,7 +14,7 @@
 	 * - Construction badges update via constructionStore (Socket.IO)
 	 */
 
-	import { goto } from '$app/navigation';
+	import { goto as _goto } from '$app/navigation';
 	import { alertsStore } from '$lib/stores/game/alerts.svelte';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 
@@ -25,9 +25,9 @@
 	let { settlementId }: Props = $props();
 
 	// State for modals
-	let buildMenuOpen = $state(false);
-	let aidModalOpen = $state(false);
-	let alertsModalOpen = $state(false);
+	let _buildMenuOpen = $state(false);
+	let _aidModalOpen = $state(false);
+	let _alertsModalOpen = $state(false);
 
 	// Real-time badge counts from stores
 	const alertCount = $derived(alertsStore.getAlertCount(settlementId));
@@ -44,7 +44,7 @@
 	// Action handlers
 	async function handleBuild() {
 		// Open build menu
-		buildMenuOpen = true;
+		_buildMenuOpen = true;
 	}
 
 	async function handleCollect() {
@@ -73,7 +73,7 @@
 
 	async function handleAlerts() {
 		// Open alerts panel
-		alertsModalOpen = true;
+		_alertsModalOpen = true;
 	}
 </script>
 

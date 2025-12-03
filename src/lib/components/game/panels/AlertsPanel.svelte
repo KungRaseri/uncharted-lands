@@ -23,7 +23,7 @@
 		alerts?: Alert[];
 	}
 
-	let { settlementId, alerts = [] }: Props = $props();
+	let { settlementId: _settlementId, alerts = [] }: Props = $props();
 
 	// Filter non-dismissed alerts and sort by severity
 	const activeAlerts = $derived(

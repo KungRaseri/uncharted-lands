@@ -53,7 +53,7 @@
 		};
 	}
 
-	let { settlementId, settlementName, settlement }: Props = $props();
+	let { settlementId, settlementName, settlement: _settlement }: Props = $props();
 
 	// Settings modal state
 	let settingsOpen = $state(false);
@@ -61,7 +61,7 @@
 	// Mock data for panels (TODO: Replace with real data from stores/API)
 
 	// Alerts mock data
-	const mockAlerts = [
+	const _mockAlerts = [
 		{
 			id: '1',
 			severity: 'critical' as const,
@@ -130,7 +130,7 @@
 	);
 
 	// Population mock data
-	const mockPopulation = {
+	const _mockPopulation = {
 		current: 245,
 		capacity: 300,
 		happiness: 78,
@@ -236,7 +236,7 @@
 	});
 
 	// Construction queue mock data
-	const mockActiveProjects = [
+	const _mockActiveProjects = [
 		{
 			id: '1',
 			name: 'Farmhouse',
@@ -257,7 +257,7 @@
 		}
 	];
 
-	const mockQueuedProjects = [
+	const _mockQueuedProjects = [
 		{
 			id: '3',
 			name: 'Workshop',

@@ -12,7 +12,7 @@
 	import { browser } from '$app/environment';
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import { layoutStore } from '$lib/stores/ui/dashboard-layout.svelte';
-	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout.svelte';
+	import type { PanelConfig as _PanelConfig } from '$lib/stores/ui/dashboard-layout.svelte';
 	import LayoutPresetSelector from '../LayoutPresetSelector.svelte';
 	import DraggablePanelList from '../DraggablePanelList.svelte';
 

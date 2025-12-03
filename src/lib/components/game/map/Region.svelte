@@ -28,7 +28,7 @@
 	// Debug: Log tile coordinates to verify ordering
 	$effect(() => {
 		if (typeof window !== 'undefined' && region.tiles.length > 0) {
-			const coords = region.tiles
+			const _coords = region.tiles
 				.slice(0, 20)
 				.map((t: any) => `(${t.xCoord ?? '?'},${t.yCoord ?? '?'})`)
 				.join(' ');

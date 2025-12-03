@@ -52,8 +52,40 @@ export default [
 			},
 			globals: {
 				...globals.browser,
-				...globals.es2021
+				...globals.es2021,
+				// Svelte 5 runes
+				$state: 'readonly',
+				$derived: 'readonly',
+				$effect: 'readonly',
+				$props: 'readonly',
+				$inspect: 'readonly'
 			}
+		}
+	},
+	{
+		files: ['**/*.svelte.ts', '**/*.svelte.js'],
+		languageOptions: {
+			parser: tsParser,
+			parserOptions: {
+				sourceType: 'module',
+				ecmaVersion: 2022
+			},
+			globals: {
+				...globals.browser,
+				...globals.es2021,
+				// Svelte 5 runes for .svelte.ts files (stores)
+				$state: 'readonly',
+				$derived: 'readonly',
+				$effect: 'readonly',
+				$props: 'readonly',
+				$inspect: 'readonly'
+			}
+		},
+		plugins: {
+			'@typescript-eslint': tsPlugin
+		},
+		rules: {
+			...tsPlugin.configs.recommended.rules
 		}
 	},
 	prettierConfig

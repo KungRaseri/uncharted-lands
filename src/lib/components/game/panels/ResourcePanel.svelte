@@ -18,7 +18,7 @@
 		resources?: Resource[];
 	}
 
-	let { settlementId, resources = [] }: Props = $props();
+	let { settlementId: _settlementId, resources = [] }: Props = $props();
 
 	// Resource display configuration
 	const resourceConfig = {

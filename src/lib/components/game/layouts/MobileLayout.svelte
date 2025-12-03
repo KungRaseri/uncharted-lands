@@ -19,7 +19,7 @@
 		renderPanel: Snippet<[PanelConfig]>;
 	}
 
-	let { panels, settlementId, renderPanel }: Props = $props();
+	let { panels, settlementId: _settlementId, renderPanel }: Props = $props();
 
 	// Sort all visible panels by position
 	const sortedPanels = $derived(
@@ -30,7 +30,7 @@
 	let touchStartX = $state(0);
 	let touchStartY = $state(0);
 
-	function handleTouchStart(event: TouchEvent, panelId: string) {
+	function handleTouchStart(event: TouchEvent, _panelId: string) {
 		const touch = event.touches[0];
 		if (touch) {
 			touchStartX = touch.clientX;
@@ -38,16 +38,16 @@
 		}
 	}
 
-	function handleTouchEnd(event: TouchEvent, panelId: string) {
+	function handleTouchEnd(event: TouchEvent, _panelId: string) {
 		const touch = event.changedTouches[0];
 		if (touch) {
 			const deltaX = touch.clientX - touchStartX;
 			const deltaY = touch.clientY - touchStartY;
 
 			// Swipe right to dismiss (for alerts panel only)
-			if (panelId === 'alerts' && deltaX > 100 && Math.abs(deltaY) < 50) {
+			if (_panelId === 'alerts' && deltaX > 100 && Math.abs(deltaY) < 50) {
 				// TODO: Dispatch dismiss event
-				console.log('Swipe to dismiss alert:', panelId);
+				console.log('Swipe to dismiss alert:', _panelId);
 			}
 		}
 	}

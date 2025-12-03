@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { disasterStore } from '$lib/stores/game/disaster.svelte';
-	import StructureHealthBar from './StructureHealthBar.svelte';
+	import { default as _StructureHealthBar } from './StructureHealthBar.svelte';
 
 	const aftermathSummary = $derived(disasterStore.aftermathSummary);
 	const modalOpen = $derived(disasterStore.aftermathModalOpen);

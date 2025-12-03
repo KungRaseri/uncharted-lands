@@ -42,8 +42,8 @@
 		settlementId: string;
 		gridSize?: number; // default 10
 		structures?: Structure[];
-		onCellClick?: (cell: GridCell) => void;
-		onStructureSelect?: (structure: Structure) => void;
+		onCellClick?: (_cell: GridCell) => void;
+		onStructureSelect?: (_structure: Structure) => void;
 	}
 
 	// ============================================================================
@@ -51,7 +51,7 @@
 	// ============================================================================
 
 	let {
-		settlementId,
+		settlementId: _settlementId,
 		gridSize = 10,
 		structures = [],
 		onCellClick,

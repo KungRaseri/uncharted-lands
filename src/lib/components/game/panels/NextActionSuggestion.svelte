@@ -25,11 +25,11 @@
 	interface Props {
 		settlementId: string;
 		suggestions?: ActionSuggestion[];
-		onDismiss?: (suggestionId: string) => void;
+		onDismiss?: (_suggestionId: string) => void;
 		onRefresh?: () => void;
 	}
 
-	let { settlementId, suggestions = [], onDismiss, onRefresh }: Props = $props();
+	let { settlementId: _settlementId, suggestions = [], onDismiss, onRefresh }: Props = $props();
 
 	// Filter out dismissed suggestions
 	const activeSuggestions = $derived(suggestions.filter((s) => !s.dismissed));

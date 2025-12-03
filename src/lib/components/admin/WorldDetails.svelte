@@ -1,5 +1,5 @@
 <script lang="ts">
-	import World from '$lib/components/game/map/World.svelte';
+	import { default as _World } from '$lib/components/game/map/World.svelte';
 	import type { WorldWithRegions, WorldInfo } from '$lib/types/game';
 
 	type Props = {
