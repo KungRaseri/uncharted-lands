@@ -4,6 +4,13 @@ import TileResourceInfo from '$lib/components/resources/TileResourceInfo.svelte'
 import * as resourceUtils from '$lib/utils/resource-production';
 import type { Tile, Biome, TileBase, TileType } from '$lib/types/game';
 
+// Helper function to fix TypeScript issues with Svelte 5 runes and testing-library
+// See: https://github.com/testing-library/svelte-testing-library/issues/360
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderComponent(component: any, options: any) {
+	return render(component, options);
+}
+
 // Mock the resource-production utilities
 vi.mock('$lib/utils/resource-production', () => ({
 	getResourceIcon: vi.fn(),
@@ -18,10 +25,6 @@ describe('TileResourceInfo.svelte', () => {
 		precipitationMax: 100,
 		temperatureMin: 0,
 		temperatureMax: 100,
-		plotsMin: 1,
-		plotsMax: 5,
-		plotAreaMin: 1,
-		plotAreaMax: 10,
 		solarModifier: 1,
 		windModifier: 1,
 		foodModifier: 1,
@@ -71,7 +74,7 @@ describe('TileResourceInfo.svelte', () => {
 
 	describe('Basic Rendering', () => {
 		it('should render component header', async () => {
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Resource Quality')).toBeDefined();
@@ -79,7 +82,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should render all four resource types', async () => {
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Food')).toBeDefined();
@@ -90,7 +93,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should display resource icons', async () => {
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('🌾')).toBeDefined(); // Food
@@ -103,7 +106,7 @@ describe('TileResourceInfo.svelte', () => {
 
 	describe('Resource Quality Display', () => {
 		it('should display food quality rating', async () => {
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Fair')).toBeDefined(); // 50 quality = Fair
@@ -113,7 +116,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should display wood quality rating', async () => {
 			const tile = { ...baseTile, Biome: baseBiome, woodQuality: 75 } as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const goodRatings = screen.getAllByText('Good'); // May appear for multiple resources
@@ -123,7 +126,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should display stone quality rating', async () => {
-			render(TileResourceInfo, { props: { tile: { ...baseTile, stoneQuality: 30 } } });
+			renderComponent(TileResourceInfo, { props: { tile: { ...baseTile, stoneQuality: 30 } } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Poor')).toBeDefined(); // 30 quality = Poor
@@ -132,7 +135,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should display ore quality rating', async () => {
-			render(TileResourceInfo, { props: { tile: { ...baseTile, oreQuality: 85 } } });
+			renderComponent(TileResourceInfo, { props: { tile: { ...baseTile, oreQuality: 85 } } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Excellent')).toBeDefined(); // 85 quality = Excellent
@@ -151,7 +154,7 @@ describe('TileResourceInfo.svelte', () => {
 				stoneQuality: 25,
 				oreQuality: 25
 			} as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const poorRatings = screen.getAllByText('Poor');
@@ -163,7 +166,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should display "Fair" rating for quality 40-59', async () => {
 			const tile = { ...baseTile, Biome: baseBiome, foodQuality: 45 } as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const fairRatings = screen.getAllByText('Fair');
@@ -181,7 +184,7 @@ describe('TileResourceInfo.svelte', () => {
 				stoneQuality: 70,
 				oreQuality: 70
 			} as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const goodRatings = screen.getAllByText('Good');
@@ -193,7 +196,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should display "Excellent" rating for quality >= 80', async () => {
 			const tile = { ...baseTile, foodQuality: 90 };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Excellent')).toBeDefined();
@@ -205,7 +208,7 @@ describe('TileResourceInfo.svelte', () => {
 	describe('Null/Undefined Quality Handling', () => {
 		it('should handle null food quality', async () => {
 			const tile = { ...baseTile, foodQuality: null } as any as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const noneElements = screen.getAllByText('None');
@@ -215,7 +218,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should handle undefined wood quality', async () => {
 			const tile = { ...baseTile, woodQuality: undefined } as any as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const noneElements = screen.getAllByText('None');
@@ -225,7 +228,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should not display quality value for null resources', async () => {
 			const tile = { ...baseTile, stoneQuality: null } as any as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Stone')).toBeDefined();
@@ -241,7 +244,7 @@ describe('TileResourceInfo.svelte', () => {
 
 	describe('Plot Slots', () => {
 		it('should display plot slots when available', async () => {
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Available Plot Slots:')).toBeDefined();
@@ -251,7 +254,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should display single plot slot', async () => {
 			const tile = { ...baseTile, plotSlots: 1 };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('1 slots')).toBeDefined();
@@ -260,7 +263,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should display many plot slots', async () => {
 			const tile = { ...baseTile, plotSlots: 10 };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('10 slots')).toBeDefined();
@@ -269,7 +272,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should not display plot slots section when plotSlots is null', async () => {
 			const tile = { ...baseTile, plotSlots: null } as any as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Food')).toBeDefined(); // Component is rendered
@@ -280,7 +283,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should not display plot slots section when plotSlots is 0', async () => {
 			const tile = { ...baseTile, plotSlots: 0 };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Food')).toBeDefined();
@@ -294,7 +297,7 @@ describe('TileResourceInfo.svelte', () => {
 	describe('Biome Information', () => {
 		it('should display biome name when using "biome" property', async () => {
 			const tile = { ...baseTile, biome: baseBiome } as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Biome:/)).toBeDefined();
@@ -304,7 +307,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should display biome name when using "Biome" property (compatibility)', async () => {
 			const tile = { ...baseTile, Biome: { ...baseBiome, name: 'Desert' } } as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Biome:/)).toBeDefined();
@@ -314,7 +317,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should not display biome section when biome is null', async () => {
 			const tile = { ...baseTile, biome: null } as any as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Food')).toBeDefined();
@@ -325,7 +328,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should not display biome section when biome is undefined', async () => {
 			const tile = { ...baseTile, biome: undefined };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Food')).toBeDefined();
@@ -338,7 +341,7 @@ describe('TileResourceInfo.svelte', () => {
 	describe('Special Resources', () => {
 		it('should display special resource badge', async () => {
 			const tile = { ...baseTile, specialResource: 'Ancient Ruins' };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('✨ Ancient Ruins')).toBeDefined();
@@ -347,7 +350,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should display different special resources', async () => {
 			const tile = { ...baseTile, specialResource: 'Crystal Deposits' };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('✨ Crystal Deposits')).toBeDefined();
@@ -355,7 +358,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should not display special resource badge when null', async () => {
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Food')).toBeDefined();
@@ -366,7 +369,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should not display special resource badge when empty string', async () => {
 			const tile = { ...baseTile, specialResource: '' };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Food')).toBeDefined();
@@ -385,7 +388,7 @@ describe('TileResourceInfo.svelte', () => {
 					)
 			);
 
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			const loadingElements = screen.getAllByText('Loading...');
 			expect(loadingElements.length).toBeGreaterThanOrEqual(1);
@@ -402,7 +405,7 @@ describe('TileResourceInfo.svelte', () => {
 				oreQuality: null
 			} as any as Tile;
 
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const noneElements = screen.getAllByText('None');
@@ -419,7 +422,7 @@ describe('TileResourceInfo.svelte', () => {
 				oreQuality: 100
 			};
 
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const excellentElements = screen.getAllByText('Excellent');
@@ -438,7 +441,7 @@ describe('TileResourceInfo.svelte', () => {
 				oreQuality: 0
 			};
 
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				const poorElements = screen.getAllByText('Poor');
@@ -457,7 +460,7 @@ describe('TileResourceInfo.svelte', () => {
 				oreQuality: null
 			} as any as Tile;
 
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Excellent')).toBeDefined(); // Food
@@ -476,7 +479,7 @@ describe('TileResourceInfo.svelte', () => {
 				plotSlots: null
 			} as any as Tile;
 
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Resource Quality')).toBeDefined();
@@ -494,7 +497,7 @@ describe('TileResourceInfo.svelte', () => {
 				...baseTile,
 				biome: { ...baseBiome, name: 'Extremely Dense Ancient Mystical Forest of Wonder' }
 			} as Tile;
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(
@@ -505,7 +508,7 @@ describe('TileResourceInfo.svelte', () => {
 
 		it('should handle very long special resource names', async () => {
 			const tile = { ...baseTile, specialResource: 'Legendary Ancient Crystal Deposits of Power' };
-			render(TileResourceInfo, { props: { tile } });
+			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
 				expect(screen.getByText('✨ Legendary Ancient Crystal Deposits of Power')).toBeDefined();
@@ -515,7 +518,7 @@ describe('TileResourceInfo.svelte', () => {
 
 	describe('Utility Function Calls', () => {
 		it('should call getResourceIcon for all resource types', async () => {
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			// Since these are async functions called in {#await} blocks,
 			// we just verify the component renders without errors
@@ -528,7 +531,7 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should call getQualityInfo with correct quality values', async () => {
-			render(TileResourceInfo, { props: { tile: baseTile } });
+			renderComponent(TileResourceInfo, { props: { tile: baseTile } });
 
 			// Since getQualityInfo is async and called within the component,
 			// we verify the component renders the quality sections correctly

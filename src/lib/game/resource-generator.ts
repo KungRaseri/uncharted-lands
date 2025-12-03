@@ -1,26 +1,21 @@
 /**
  * Resource Generator (Client-Side)
  *
- * ⚠️ DEPRECATED for gameplay use
+ * ⚠️ DEPRECATED - Plot system removed November 28, 2025
  *
- * This file is ONLY used by admin tools:
- * - /admin/worlds/create - Custom world generation
+ * This file is ONLY used by OLD admin tools:
+ * - /admin/worlds/create - Custom world generation (legacy)
  *
- * 🎮 For Gameplay:
- * Server generates all plot resources during world creation automatically.
- * See: server/src/game/resource-generator.ts (fully tested with 15 unit tests)
+ * 🎮 Current System:
+ * - Tiles have `plotSlots` field (default 5) - no individual plots
+ * - Structures built on tiles in slots (0 to plotSlots-1)
+ * - Resource quality comes from tile properties (foodQuality, woodQuality, etc.)
  *
- * 🚀 Future: Remove when admin tools are migrated to use server generation.
+ * 🚀 TODO: Remove when admin tools are updated to new tile-based system.
  *
  * ---
  *
- * Advanced resource generation system for plot creation
- *
- * This system generates realistic resource values based on:
- * - Tile elevation (affects solar exposure, wind patterns, resource availability)
- * - Precipitation (affects water, vegetation, soil quality)
- * - Temperature (affects growing conditions, solar efficiency)
- * - Biome modifiers (specific characteristics of each biome type)
+ * Old plot-based resource generation (no longer used in gameplay)
  */
 
 // Types simplified after Prisma removal - used only by deprecated admin tools

@@ -14,7 +14,9 @@ describe('region-tile-utils', () => {
 				temperature: 0.543,
 				type: 'LAND',
 				Biome: { name: 'Temperate Forest' },
-				Plots: [{ Settlement: { id: '1' } }]
+				plotSlots: 5,
+				settlementId: '1',
+				Settlement: { id: '1', name: 'Test Settlement' }
 			};
 
 			const result = getRegionTileTooltip(tile, 3, 7);
@@ -26,8 +28,8 @@ describe('region-tile-utils', () => {
 			expect(result).toContain('Terrain: Forest');
 			expect(result).toContain('Precipitation: 0.678');
 			expect(result).toContain('Temperature: 0.543');
-			expect(result).toContain('Plots: 1');
-			expect(result).toContain('🏠 Has Settlement');
+			expect(result).toContain('Extractor Slots: 5');
+			expect(result).toContain('🏠 Settlement: Test Settlement');
 		});
 
 		it('should format tooltip without biome', () => {
@@ -37,7 +39,8 @@ describe('region-tile-utils', () => {
 				temperature: 0.6,
 				type: 'LAND',
 				Biome: null,
-				Plots: []
+				plotSlots: 5,
+				settlementId: null
 			};
 
 			const result = getRegionTileTooltip(tile, 0, 0);
@@ -45,19 +48,21 @@ describe('region-tile-utils', () => {
 			expect(result).toContain('Biome: Unknown');
 		});
 
-		it('should format tooltip without plots', () => {
+		it('should format tooltip without settlement', () => {
 			const tile: TileData = {
 				elevation: 0.1,
 				precipitation: 0.3,
 				temperature: 0.4,
 				type: 'OCEAN',
-				Biome: { name: 'Deep Ocean' }
+				Biome: { name: 'Deep Ocean' },
+				plotSlots: 5,
+				settlementId: null
 			};
 
 			const result = getRegionTileTooltip(tile, 5, 5);
 
-			expect(result).toContain('Plots: 0');
-			expect(result).not.toContain('🏠 Has Settlement');
+			expect(result).toContain('Extractor Slots: 5');
+			expect(result).not.toContain('🏠 Settlement');
 		});
 
 		it('should show settlement indicator when settlement exists', () => {
@@ -67,13 +72,15 @@ describe('region-tile-utils', () => {
 				temperature: 0.7,
 				type: 'LAND',
 				Biome: { name: 'Grassland' },
-				Plots: [{ Settlement: undefined }, { Settlement: { id: '123' } }]
+				plotSlots: 5,
+				settlementId: '123',
+				Settlement: { id: '123', name: 'Test Settlement' }
 			};
 
 			const result = getRegionTileTooltip(tile, 2, 3);
 
-			expect(result).toContain('Plots: 2');
-			expect(result).toContain('🏠 Has Settlement');
+			expect(result).toContain('Extractor Slots: 5');
+			expect(result).toContain('🏠 Settlement: Test Settlement');
 		});
 
 		it('should not show settlement indicator when no settlements', () => {
@@ -83,13 +90,14 @@ describe('region-tile-utils', () => {
 				temperature: 0.6,
 				type: 'LAND',
 				Biome: { name: 'Plains' },
-				Plots: [{ Settlement: undefined }, { Settlement: undefined }]
+				plotSlots: 5,
+				settlementId: null
 			};
 
 			const result = getRegionTileTooltip(tile, 1, 1);
 
-			expect(result).toContain('Plots: 2');
-			expect(result).not.toContain('🏠 Has Settlement');
+			expect(result).toContain('Extractor Slots: 5');
+			expect(result).not.toContain('🏠 Settlement');
 		});
 
 		it('should format ocean tile correctly', () => {
@@ -99,7 +107,8 @@ describe('region-tile-utils', () => {
 				temperature: 0.3,
 				type: 'OCEAN',
 				Biome: { name: 'Deep Ocean' },
-				Plots: []
+				plotSlots: 5,
+				settlementId: null
 			};
 
 			const result = getRegionTileTooltip(tile, 9, 9);
@@ -115,7 +124,8 @@ describe('region-tile-utils', () => {
 				temperature: 0.555555,
 				type: 'LAND',
 				Biome: { name: 'Test' },
-				Plots: []
+				plotSlots: 5,
+				settlementId: null
 			};
 
 			const result = getRegionTileTooltip(tile, 0, 0);

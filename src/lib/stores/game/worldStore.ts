@@ -37,20 +37,7 @@ export interface TileInfo {
 	temperature: number;
 	precipitation: number;
 	type: 'OCEAN' | 'LAND';
-	plots?: PlotInfo[];
-}
-
-export interface PlotInfo {
-	id: string;
-	tileId: string;
-	area: number;
-	solar: number;
-	wind: number;
-	food: number;
-	water: number;
-	wood: number;
-	stone: number;
-	ore: number;
+	plotSlots?: number; // Number of extractor slots (default 5)
 }
 
 export interface RegionWithTiles extends RegionInfo {
@@ -112,7 +99,7 @@ function createWorldStore() {
 		},
 
 		/**
-		 * Load detailed region data with tiles and plots
+		 * Load detailed region data with tiles
 		 */
 		async loadRegion(regionId: string, includeTiles: boolean = true): Promise<RegionWithTiles> {
 			update((state) => ({ ...state, loading: true, error: null }));

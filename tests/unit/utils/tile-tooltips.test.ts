@@ -13,19 +13,14 @@ function createMockTile(overrides = {}) {
 		elevation: 0.25,
 		precipitation: 0.6,
 		temperature: 0.7,
-		plots: [],
+		plotSlots: 5,
+		settlement: null,
 		...overrides
 	};
 }
 
-function createMockPlot(
-	hasSettlement = false,
-	playerProfileId = 'player1',
-	settlementName = 'TestTown'
-) {
-	return {
-		settlement: hasSettlement ? { playerProfileId, name: settlementName } : undefined
-	};
+function createMockSettlement(playerProfileId = 'player1', settlementName = 'TestTown') {
+	return { playerProfileId, name: settlementName };
 }
 
 describe('tile-tooltips', () => {
@@ -36,7 +31,8 @@ describe('tile-tooltips', () => {
 				type: 'land',
 				elevation: 0.123,
 				precipitation: 0.456,
-				temperature: 0.789
+				temperature: 0.789,
+				plotSlots: 3
 			});
 
 			const tooltip = getAdminTileTooltip(tile);
@@ -106,14 +102,14 @@ describe('tile-tooltips', () => {
 			const tile = createMockTile({
 				biome: { name: 'Desert' },
 				elevation: 0.25,
-				plots: [createMockPlot(), createMockPlot()]
+				plotSlots: 2
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
 
 			expect(tooltip).toContain('Desert');
 			expect(tooltip).toContain('Elevation: 25.0%');
-			expect(tooltip).toContain('2 Plots');
+			expect(tooltip).toContain('Available Slots: 2');
 		});
 
 		it('should convert elevation to percentage', () => {
@@ -126,118 +122,93 @@ describe('tile-tooltips', () => {
 			expect(tooltip).toContain('Elevation: 42.0%');
 		});
 
-		it('should handle singular plot count', () => {
+		it('should handle singular slot count', () => {
 			const tile = createMockTile({
-				plots: [createMockPlot()]
+				plotSlots: 1
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
 
-			expect(tooltip).toContain('1 Plot');
-			expect(tooltip).not.toContain('Plots');
+			expect(tooltip).toContain('Available Slots: 1');
 		});
 
-		it('should handle zero plots', () => {
+		it('should handle zero slots', () => {
 			const tile = createMockTile({
-				plots: []
+				plotSlots: 0
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
 
-			expect(tooltip).not.toContain('Plot');
+			expect(tooltip).toContain('Available Slots: 0');
 		});
 
-		it('should handle multiple plots', () => {
+		it('should handle multiple slots', () => {
 			const tile = createMockTile({
-				plots: [createMockPlot(), createMockPlot(), createMockPlot()]
+				plotSlots: 3
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
 
-			expect(tooltip).toContain('3 Plots');
+			expect(tooltip).toContain('Available Slots: 3');
 		});
 
-		it('should not show settlements when playerProfileId is not provided', () => {
+		it('should not show settlement when playerProfileId is not provided', () => {
 			const tile = createMockTile({
-				plots: [
-					createMockPlot(true, 'player1', 'Settlement1'),
-					createMockPlot(true, 'player1', 'Settlement2')
-				]
+				settlement: createMockSettlement('player1', 'MySettlement')
 			});
 
 			const tooltip = getPlayerTileTooltip(tile);
 
 			expect(tooltip).not.toContain('🏘️');
-			expect(tooltip).not.toContain('Settlement1');
-			expect(tooltip).not.toContain('Settlement2');
+			expect(tooltip).not.toContain('MySettlement');
 		});
 
-		it('should show player settlements when playerProfileId is provided', () => {
+		it('should show player settlement when playerProfileId matches', () => {
 			const tile = createMockTile({
-				plots: [
-					createMockPlot(true, 'player1', 'MyTown'),
-					createMockPlot(true, 'player2', 'OtherTown')
-				]
+				settlement: createMockSettlement('player1', 'MyTown')
 			});
 
 			const tooltip = getPlayerTileTooltip(tile, 'player1');
 
 			expect(tooltip).toContain('🏘️');
 			expect(tooltip).toContain('MyTown');
+		});
+
+		it('should not show settlement when playerProfileId does not match', () => {
+			const tile = createMockTile({
+				settlement: createMockSettlement('player2', 'OtherTown')
+			});
+
+			const tooltip = getPlayerTileTooltip(tile, 'player1');
+
+			expect(tooltip).not.toContain('🏘️');
 			expect(tooltip).not.toContain('OtherTown');
 		});
 
-		it('should show multiple player settlements', () => {
+		it('should not show settlement section when settlement is null', () => {
 			const tile = createMockTile({
-				plots: [
-					createMockPlot(true, 'player1', 'TownA'),
-					createMockPlot(true, 'player1', 'TownB'),
-					createMockPlot(true, 'player1', 'TownC')
-				]
+				settlement: null
+			});
+
+			const tooltip = getPlayerTileTooltip(tile, 'player1');
+
+			expect(tooltip).not.toContain('🏘️');
+		});
+
+		it('should handle settlement with valid name', () => {
+			const tile = createMockTile({
+				settlement: createMockSettlement('player1', 'ValidTown')
 			});
 
 			const tooltip = getPlayerTileTooltip(tile, 'player1');
 
 			expect(tooltip).toContain('🏘️');
-			expect(tooltip).toContain('TownA, TownB, TownC');
-		});
-
-		it('should filter out plots without settlements', () => {
-			const tile = createMockTile({
-				plots: [
-					createMockPlot(true, 'player1', 'MySettlement'),
-					createMockPlot(false),
-					createMockPlot(false)
-				]
-			});
-
-			const tooltip = getPlayerTileTooltip(tile, 'player1');
-
-			expect(tooltip).toContain('MySettlement');
-			expect(tooltip).not.toContain(', ,');
-		});
-
-		it('should handle settlements with null/undefined names', () => {
-			const tile = createMockTile({
-				plots: [
-					{ settlement: { playerProfileId: 'player1', name: 'ValidTown' } },
-					{ settlement: { playerProfileId: 'player1', name: undefined } },
-					{ settlement: { playerProfileId: 'player1', name: null } },
-					{ settlement: { playerProfileId: 'player1', name: '' } }
-				]
-			});
-
-			const tooltip = getPlayerTileTooltip(tile, 'player1');
-
 			expect(tooltip).toContain('ValidTown');
-			expect(tooltip).not.toContain('undefined');
-			expect(tooltip).not.toContain('null');
-			expect(tooltip).toMatch(/🏘️ ValidTown$/m);
 		});
 
-		it('should not show settlement section when player has no settlements', () => {
+		it('should not show settlement when it belongs to another player', () => {
 			const tile = createMockTile({
-				plots: [createMockPlot(true, 'player2', 'OtherTown'), createMockPlot(false)]
+				settlement: createMockSettlement('player2', 'OtherTown')
 			});
 
 			const tooltip = getPlayerTileTooltip(tile, 'player1');
@@ -295,7 +266,7 @@ describe('tile-tooltips', () => {
 
 		it('should pass playerProfileId to player tooltip', () => {
 			const tile = createMockTile({
-				plots: [createMockPlot(true, 'player1', 'MySettlement')]
+				settlement: createMockSettlement('player1', 'MySettlement')
 			});
 
 			const tooltip = getTileTooltip(tile, 'player', 'player1');
@@ -305,7 +276,7 @@ describe('tile-tooltips', () => {
 
 		it('should not include playerProfileId in admin tooltip', () => {
 			const tile = createMockTile({
-				plots: [createMockPlot(true, 'player1', 'MySettlement')]
+				settlement: createMockSettlement('player1', 'MySettlement')
 			});
 
 			const tooltip = getTileTooltip(tile, 'admin', 'player1');
@@ -316,7 +287,7 @@ describe('tile-tooltips', () => {
 
 		it('should handle undefined playerProfileId', () => {
 			const tile = createMockTile({
-				plots: [createMockPlot(true, 'player1', 'MySettlement')]
+				settlement: createMockSettlement('player1', 'MySettlement')
 			});
 
 			const tooltip = getTileTooltip(tile, 'player');

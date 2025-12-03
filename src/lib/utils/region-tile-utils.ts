@@ -10,8 +10,10 @@ export interface TileData {
 	precipitation: number;
 	temperature: number;
 	type: string;
+	plotSlots?: number; // Number of extractor slots (default 5)
+	settlementId?: string | null; // If tile is claimed by a settlement
 	Biome?: { name: string } | null;
-	Plots?: Array<{ Settlement?: { id: string; name: string } | null }>;
+	Settlement?: { id: string; name: string } | null;
 }
 
 export interface RegionStats {
@@ -28,8 +30,10 @@ export interface RegionStats {
  */
 export function getRegionTileTooltip(tile: TileData, row: number, col: number): string {
 	const terrainType = getTerrainType(tile.elevation);
-	const hasSettlement = tile.Plots?.some((p) => p.Settlement);
-	const plotCount = tile.Plots?.length || 0;
+	const hasSettlement = tile.settlementId || tile.Settlement;
+	const slots = tile.plotSlots ?? 5; // Default 5 slots if not specified
+	const settlementName = tile.Settlement?.name || 'Claimed';
+	const settlementLine = hasSettlement ? '\n🏠 Settlement: ' + settlementName : '';
 
 	return `Tile Position: (${row}, ${col})
 Biome: ${tile.Biome?.name || 'Unknown'}
@@ -41,7 +45,7 @@ Terrain: ${terrainType}
 Precipitation: ${tile.precipitation.toFixed(3)}
 Temperature: ${tile.temperature.toFixed(3)}
 
-Plots: ${plotCount}${hasSettlement ? '\n🏠 Has Settlement' : ''}`;
+Extractor Slots: ${slots}${settlementLine}`;
 }
 
 /**

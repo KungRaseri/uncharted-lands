@@ -3,6 +3,13 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import StructureCard from '$lib/components/resources/StructureCard.svelte';
 import type { StructureWithRelations, Settlement, StructureType } from '$lib/types/api';
 
+// Helper function to fix TypeScript issues with Svelte 5 runes and testing-library
+// See: https://github.com/testing-library/svelte-testing-library/issues/360
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderComponent(component: any, options: any) {
+	return render(component, options);
+}
+
 // Mock the utility functions
 vi.mock('$lib/utils/resource-production', () => ({
 	getBuildingName: vi.fn((type: string) => {
@@ -31,7 +38,7 @@ describe('StructureCard.svelte', () => {
 		id: 'settlement-1',
 		name: 'Test Settlement',
 		playerId: 'player-1',
-		plotId: 'plot-1',
+		tileId: 'tile-1',
 		population: 10,
 		populationCapacity: 20,
 		area: 5,
@@ -71,7 +78,7 @@ describe('StructureCard.svelte', () => {
 
 	describe('Basic Rendering', () => {
 		it('should render structure name and description', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('House')).toBeDefined();
@@ -81,7 +88,7 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should display current structure level', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Level 1')).toBeDefined();
@@ -89,13 +96,13 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should show loading state while fetching structure details', () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			expect(screen.getByText('Loading...')).toBeDefined();
 		});
 
 		it('should display settlement name when settlement relation exists', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Test Settlement')).toBeDefined();
@@ -104,7 +111,7 @@ describe('StructureCard.svelte', () => {
 
 		it('should handle structure without settlement relation', async () => {
 			const structureWithoutSettlement = { ...baseStructure, settlement: undefined };
-			render(StructureCard, { props: { structure: structureWithoutSettlement } });
+			renderComponent(StructureCard, { props: { structure: structureWithoutSettlement } });
 
 			await waitFor(() => {
 				expect(screen.getByText('House')).toBeDefined();
@@ -116,7 +123,7 @@ describe('StructureCard.svelte', () => {
 
 	describe('Production Multiplier', () => {
 		it('should calculate and display production multiplier for level 1', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('110%')).toBeDefined();
@@ -125,7 +132,7 @@ describe('StructureCard.svelte', () => {
 
 		it('should calculate correct multiplier for level 5', async () => {
 			const level5Structure = { ...baseStructure, level: 5 };
-			render(StructureCard, { props: { structure: level5Structure } });
+			renderComponent(StructureCard, { props: { structure: level5Structure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('150%')).toBeDefined();
@@ -134,7 +141,7 @@ describe('StructureCard.svelte', () => {
 
 		it('should calculate correct multiplier for level 10', async () => {
 			const level10Structure = { ...baseStructure, level: 10 };
-			render(StructureCard, { props: { structure: level10Structure } });
+			renderComponent(StructureCard, { props: { structure: level10Structure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('200%')).toBeDefined();
@@ -144,7 +151,7 @@ describe('StructureCard.svelte', () => {
 
 	describe('Upgrade Section', () => {
 		it('should show upgrade section for structure below max level', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Upgrade to Level 2/i)).toBeDefined();
@@ -153,7 +160,7 @@ describe('StructureCard.svelte', () => {
 
 		it('should show max level message for level 10 structure', async () => {
 			const maxLevelStructure = { ...baseStructure, level: 10 };
-			render(StructureCard, { props: { structure: maxLevelStructure } });
+			renderComponent(StructureCard, { props: { structure: maxLevelStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Maximum level reached/i)).toBeDefined();
@@ -161,7 +168,7 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should display upgrade costs with resource icons', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('🪵')).toBeDefined();
@@ -171,7 +178,7 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should calculate correct upgrade cost for level 1', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				// Base costs with 1.5^1 multiplier
@@ -183,7 +190,7 @@ describe('StructureCard.svelte', () => {
 
 		it('should calculate correct upgrade cost for level 3', async () => {
 			const level3Structure = { ...baseStructure, level: 3 };
-			render(StructureCard, { props: { structure: level3Structure } });
+			renderComponent(StructureCard, { props: { structure: level3Structure } });
 
 			await waitFor(() => {
 				// Base costs with 1.5^3 multiplier = 3.375
@@ -195,7 +202,7 @@ describe('StructureCard.svelte', () => {
 
 		it('should show upgrade button when onUpgrade callback provided', async () => {
 			const onUpgrade = vi.fn();
-			render(StructureCard, { props: { structure: baseStructure, onUpgrade } });
+			renderComponent(StructureCard, { props: { structure: baseStructure, onUpgrade } });
 
 			await waitFor(() => {
 				expect(screen.getByRole('button', { name: /Upgrade Structure/i })).toBeDefined();
@@ -203,7 +210,7 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should not show upgrade button when no onUpgrade callback', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Upgrade to Level 2/i)).toBeDefined();
@@ -214,7 +221,7 @@ describe('StructureCard.svelte', () => {
 
 		it('should call onUpgrade with structure id when button clicked', async () => {
 			const onUpgrade = vi.fn();
-			render(StructureCard, { props: { structure: baseStructure, onUpgrade } });
+			renderComponent(StructureCard, { props: { structure: baseStructure, onUpgrade } });
 
 			await waitFor(() => {
 				expect(screen.getByRole('button', { name: /Upgrade Structure/i })).toBeDefined();
@@ -230,7 +237,7 @@ describe('StructureCard.svelte', () => {
 		it('should not call onUpgrade for max level structure', async () => {
 			const onUpgrade = vi.fn();
 			const maxLevelStructure = { ...baseStructure, level: 10 };
-			render(StructureCard, { props: { structure: maxLevelStructure, onUpgrade } });
+			renderComponent(StructureCard, { props: { structure: maxLevelStructure, onUpgrade } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Maximum level reached/i)).toBeDefined();
@@ -243,7 +250,7 @@ describe('StructureCard.svelte', () => {
 
 	describe('Timestamps', () => {
 		it('should display creation date', async () => {
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Built:/)).toBeDefined();
@@ -258,7 +265,7 @@ describe('StructureCard.svelte', () => {
 				...baseStructure,
 				updatedAt: new Date('2024-02-01')
 			};
-			render(StructureCard, { props: { structure: upgradedStructure } });
+			renderComponent(StructureCard, { props: { structure: upgradedStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Last Upgraded:/)).toBeDefined();
@@ -272,7 +279,7 @@ describe('StructureCard.svelte', () => {
 			// When dates are identical (same timestamp), the component should hide "Last Upgraded"
 			// However, the component compares Date objects directly which may not work as expected
 			// This test documents the actual behavior
-			render(StructureCard, { props: { structure: baseStructure } });
+			renderComponent(StructureCard, { props: { structure: baseStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/Built:/)).toBeDefined();
@@ -290,7 +297,7 @@ describe('StructureCard.svelte', () => {
 				...baseStructure,
 				type: 'farm'
 			};
-			render(StructureCard, { props: { structure: farmStructure } });
+			renderComponent(StructureCard, { props: { structure: farmStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Farm')).toBeDefined();
@@ -303,7 +310,7 @@ describe('StructureCard.svelte', () => {
 				...baseStructure,
 				type: 'well'
 			};
-			render(StructureCard, { props: { structure: wellStructure } });
+			renderComponent(StructureCard, { props: { structure: wellStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Well')).toBeDefined();
@@ -316,7 +323,7 @@ describe('StructureCard.svelte', () => {
 				...baseStructure,
 				type: 'lumber_mill'
 			};
-			render(StructureCard, { props: { structure: lumberMillStructure } });
+			renderComponent(StructureCard, { props: { structure: lumberMillStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Lumber Mill')).toBeDefined();
@@ -325,11 +332,12 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should handle unknown structure type with fallback description', async () => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const unknownStructure: any = {
 				...baseStructure,
 				type: 'unknown_type'
 			};
-			render(StructureCard, { props: { structure: unknownStructure } });
+			renderComponent(StructureCard, { props: { structure: unknownStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText(/A structure in your settlement/i)).toBeDefined();
@@ -340,7 +348,7 @@ describe('StructureCard.svelte', () => {
 	describe('Edge Cases', () => {
 		it('should handle structure with level 0', async () => {
 			const level0Structure = { ...baseStructure, level: 0 };
-			render(StructureCard, { props: { structure: level0Structure } });
+			renderComponent(StructureCard, { props: { structure: level0Structure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Level 0')).toBeDefined();
@@ -350,7 +358,7 @@ describe('StructureCard.svelte', () => {
 
 		it('should handle very high level structures', async () => {
 			const highLevelStructure = { ...baseStructure, level: 50 };
-			render(StructureCard, { props: { structure: highLevelStructure } });
+			renderComponent(StructureCard, { props: { structure: highLevelStructure } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Level 50')).toBeDefined();
@@ -361,12 +369,13 @@ describe('StructureCard.svelte', () => {
 		it('should handle structure with null createdAt date', async () => {
 			const structureWithNullDate = {
 				...baseStructure,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				createdAt: null as any
 			};
 
 			// This test verifies the component doesn't crash with null date
 			expect(() => {
-				render(StructureCard, { props: { structure: structureWithNullDate } });
+				renderComponent(StructureCard, { props: { structure: structureWithNullDate } });
 			}).not.toThrow();
 		});
 	});

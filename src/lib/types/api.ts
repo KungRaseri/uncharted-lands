@@ -105,6 +105,8 @@ export interface Tile {
 	regionId: string;
 	x: number;
 	y: number;
+	xCoord: number;
+	yCoord: number;
 	elevation: number;
 	precipitation: number;
 	temperature: number;
@@ -113,6 +115,15 @@ export interface Tile {
 	updatedAt: Date | string;
 	// Additional properties from Prisma schema
 	type?: 'LAND' | 'OCEAN';
+	// Resource quality properties
+	foodQuality: number;
+	woodQuality: number;
+	stoneQuality: number;
+	oreQuality: number;
+	specialResource?: string | null;
+	settlementId?: string | null;
+	plotSlots: number;
+	baseProductionModifier: number;
 }
 
 export interface TileWithRelations extends Tile {
@@ -120,6 +131,7 @@ export interface TileWithRelations extends Tile {
 	biome?: Biome;
 	Region?: Region; // Capitalized Prisma relation
 	Biome?: Biome; // Capitalized Prisma relation
+	structures?: Array<{ id: string }>; // Relation not yet defined in schema
 }
 
 export interface CreateTileRequest {
