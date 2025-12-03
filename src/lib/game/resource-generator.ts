@@ -23,8 +23,10 @@
  * - Biome modifiers (specific characteristics of each biome type)
  */
 
-// Types simplified after Prisma removal
+// Types simplified after Prisma removal - used only by deprecated admin tools
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Biome = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Tile = any;
 
 export interface PlotResources {

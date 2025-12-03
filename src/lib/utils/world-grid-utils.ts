@@ -14,7 +14,7 @@ export interface GridDimensions {
 export interface Region {
 	xCoord: number;
 	yCoord: number;
-	[key: string]: any;
+	[key: string]: unknown;
 }
 
 export interface WorldStats {

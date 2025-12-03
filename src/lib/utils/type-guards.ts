@@ -122,15 +122,15 @@ export function isValidTemperature(temperature: number): boolean {
 export function hasTileProperties(
 	obj: unknown
 ): obj is { id: string; elevation: number; type: string } {
+	if (typeof obj !== 'object' || obj === null) return false;
+	const candidate = obj as Record<string, unknown>;
 	return (
-		typeof obj === 'object' &&
-		obj !== null &&
-		'id' in obj &&
-		'elevation' in obj &&
-		'type' in obj &&
-		typeof (obj as any).id === 'string' &&
-		typeof (obj as any).elevation === 'number' &&
-		typeof (obj as any).type === 'string'
+		'id' in candidate &&
+		'elevation' in candidate &&
+		'type' in candidate &&
+		typeof candidate.id === 'string' &&
+		typeof candidate.elevation === 'number' &&
+		typeof candidate.type === 'string'
 	);
 }
 

@@ -109,9 +109,9 @@ export interface RegionWithTiles extends RegionBase {
 export interface WorldBase {
 	id: string;
 	name: string;
-	elevationSettings: any;
-	precipitationSettings: any;
-	temperatureSettings: any;
+	elevationSettings: unknown;
+	precipitationSettings: unknown;
+	temperatureSettings: unknown;
 	serverId: string;
 	createdAt: Date | string;
 	updatedAt: Date | string;

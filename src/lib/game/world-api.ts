@@ -33,8 +33,8 @@ export interface WorldDataRequest {
 
 export interface WorldDataResponse {
 	success: boolean;
-	world?: any; // Will match server's World type
-	regions?: any[]; // Will match server's Region type
+	world?: Record<string, unknown>; // Matches server's World type
+	regions?: Array<Record<string, unknown>>; // Matches server's Region type
 	error?: string;
 	timestamp: number;
 }
@@ -46,7 +46,7 @@ export interface RegionDataRequest {
 
 export interface RegionDataResponse {
 	success: boolean;
-	region?: any; // Will match server's Region type with optional tiles
+	region?: Record<string, unknown>; // Matches server's Region type with optional tiles
 	error?: string;
 }
 

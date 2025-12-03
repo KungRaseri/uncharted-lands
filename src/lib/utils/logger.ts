@@ -260,8 +260,8 @@ export const logger = new ClientLogger();
 
 // Make debug controls available globally in browser
 if (typeof window !== 'undefined') {
-	(window as any).enableDebugLogs = ClientLogger.enableDebug;
-	(window as any).disableDebugLogs = ClientLogger.disableDebug;
+	(window as unknown as Record<string, unknown>).enableDebugLogs = ClientLogger.enableDebug;
+	(window as unknown as Record<string, unknown>).disableDebugLogs = ClientLogger.disableDebug;
 
 	// Log current log level on load (development only)
 	if (logger.isDev()) {

@@ -11,7 +11,7 @@ export interface TileData {
 	temperature: number;
 	type: string;
 	Biome?: { name: string } | null;
-	Plots?: Array<{ Settlement?: any }>;
+	Plots?: Array<{ Settlement?: { id: string; name: string } | null }>;
 }
 
 export interface RegionStats {

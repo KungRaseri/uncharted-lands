@@ -43,20 +43,38 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		const totalServers = Array.isArray(servers) ? servers.length : 0;
 
 		// Role distribution
-		const memberCount = countWhere(players, (p: any) => p.role === 'MEMBER');
-		const supportCount = countWhere(players, (p: any) => p.role === 'SUPPORT');
-		const adminCount = countWhere(players, (p: any) => p.role === 'ADMINISTRATOR');
+		const memberCount = countWhere(
+			players,
+			(p) => (p as Record<string, unknown>).role === 'MEMBER'
+		);
+		const supportCount = countWhere(
+			players,
+			(p) => (p as Record<string, unknown>).role === 'SUPPORT'
+		);
+		const adminCount = countWhere(
+			players,
+			(p) => (p as Record<string, unknown>).role === 'ADMINISTRATOR'
+		);
 
 		// Recent activity
-		const recentPlayers = countWhere(players, (p: any) => new Date(p.createdAt) >= sevenDaysAgo);
+		const recentPlayers = countWhere(
+			players,
+			(p) => new Date((p as Record<string, unknown>).createdAt as string) >= sevenDaysAgo
+		);
 		const recentSettlements = countWhere(
 			settlements,
-			(s: any) => new Date(s.createdAt) >= sevenDaysAgo
+			(s) => new Date((s as Record<string, unknown>).createdAt as string) >= sevenDaysAgo
 		);
-		const activePlayers = countWhere(players, (p: any) => new Date(p.updatedAt) >= oneDayAgo);
+		const activePlayers = countWhere(
+			players,
+			(p) => new Date((p as Record<string, unknown>).updatedAt as string) >= oneDayAgo
+		);
 
 		// Derived metrics
-		const playersWithProfiles = countWhere(players, (p: any) => p.profile);
+		const playersWithProfiles = countWhere(
+			players,
+			(p) => !!(p as Record<string, unknown>).profile
+		);
 		const avgSettlementsPerPlayer =
 			totalPlayers > 0 ? (totalSettlements / totalPlayers).toFixed(1) : '0.0';
 
