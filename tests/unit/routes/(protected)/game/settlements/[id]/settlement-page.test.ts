@@ -27,7 +27,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 				ore: 0
 			},
 			requirements: {
-				area: 10,
 				solar: 0,
 				wind: 0
 			},
@@ -48,7 +47,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 				ore: 0
 			},
 			requirements: {
-				area: 20,
 				solar: 0,
 				wind: 0
 			},
@@ -75,7 +73,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 				ore: 0
 			},
 			requirements: {
-				area: 15,
 				solar: 0,
 				wind: 0
 			},
@@ -278,7 +275,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 					ore: 50
 				},
 				requirements: {
-					area: 50,
 					solar: 0,
 					wind: 0
 				},
@@ -286,7 +282,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 				populationRequired: 0,
 				modifiers: []
 			};
-
 			const reasons: string[] = [];
 
 			if (mockStorage.food < expensiveStructure.costs.food) {

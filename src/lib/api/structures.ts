@@ -26,11 +26,11 @@ export interface StructureMetadata {
 		ore: number;
 	};
 
-	// Plot requirements
-	requirements: {
-		area: number;
-		solar: number;
-		wind: number;
+	// Plot requirements (optional - legacy fields being phased out)
+	requirements?: {
+		area?: number;
+		solar?: number;
+		wind?: number;
 	};
 
 	// Construction info
@@ -131,26 +131,13 @@ export function clearStructureMetadataCache(): void {
  *
  * @param structure - Structure metadata
  * @param storage - Current resource storage
- * @param plot - Plot capabilities
  * @returns Object with canBuild flag and reasons if not
  */
 export function canBuildStructure(
 	structure: StructureMetadata,
-	storage: { food: number; water: number; wood: number; stone: number; ore: number },
-	plot: { area: number; solar: number; wind: number }
+	storage: { food: number; water: number; wood: number; stone: number; ore: number }
 ): { canBuild: boolean; reasons: string[] } {
 	const reasons: string[] = [];
-
-	// Check plot requirements
-	if (plot.area < structure.requirements.area) {
-		reasons.push(`Need ${structure.requirements.area} plot area (have ${plot.area})`);
-	}
-	if (plot.solar < structure.requirements.solar) {
-		reasons.push(`Need ${structure.requirements.solar} solar (have ${plot.solar})`);
-	}
-	if (plot.wind < structure.requirements.wind) {
-		reasons.push(`Need ${structure.requirements.wind} wind (have ${plot.wind})`);
-	}
 
 	// Check resource costs
 	if (storage.food < structure.costs.food) {

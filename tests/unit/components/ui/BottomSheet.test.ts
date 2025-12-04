@@ -29,7 +29,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: false,
 					onClose: vi.fn(),
-					title: 'Test Sheet'
+					title: 'Test Sheet',
+					children: () => 'Test content'
 				}
 			});
 
@@ -42,7 +43,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: true,
 					onClose: vi.fn(),
-					title: 'Test Sheet'
+					title: 'Test Sheet',
+					children: () => 'Test content'
 				}
 			});
 
@@ -55,7 +57,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: true,
 					onClose: vi.fn(),
-					title: 'Test Title'
+					title: 'Test Title',
+					children: () => 'Test content'
 				}
 			});
 
@@ -69,7 +72,8 @@ describe('BottomSheet', () => {
 					open: true,
 					onClose: vi.fn(),
 					title: 'Test Sheet',
-					height: 'half'
+					height: 'half',
+					children: () => 'Test content'
 				}
 			});
 
@@ -86,7 +90,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: true,
 					onClose,
-					title: 'Test Sheet'
+					title: 'Test Sheet',
+					children: () => 'Test content'
 				}
 			});
 
@@ -103,7 +108,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: true,
 					onClose,
-					title: 'Test Sheet'
+					title: 'Test Sheet',
+					children: () => 'Test content'
 				}
 			});
 
@@ -131,7 +137,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: true,
 					onClose,
-					title: 'Test Sheet'
+					title: 'Test Sheet',
+					children: () => 'Test content'
 				}
 			});
 
@@ -160,7 +167,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: true,
 					onClose: vi.fn(),
-					title: 'Test Sheet'
+					title: 'Test Sheet',
+					children: () => 'Test content'
 				}
 			});
 
@@ -173,7 +181,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: true,
 					onClose: vi.fn(),
-					title: 'Test Sheet'
+					title: 'Test Sheet',
+					children: () => 'Test content'
 				}
 			});
 
@@ -187,7 +196,8 @@ describe('BottomSheet', () => {
 				props: {
 					open: true,
 					onClose,
-					title: 'Test Sheet'
+					title: 'Test Sheet',
+					children: () => 'Test content'
 				}
 			});
 

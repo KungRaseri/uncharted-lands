@@ -357,21 +357,6 @@ describe('ResourceProductionPanel.svelte', () => {
 			});
 		});
 
-		it('should display plot area', async () => {
-			const plot = { ...baseTile, area: 10, food: 5 };
-			renderComponent(ResourceProductionPanel, {
-				props: {
-					tiles: [plot],
-					settlementName: 'Test Settlement',
-					onHarvestAll: undefined
-				}
-			});
-
-			await waitFor(() => {
-				expect(screen.getByText(/Area: 10 units/)).toBeDefined();
-			});
-		});
-
 		it('should display plot creation date', async () => {
 			const plot = { ...baseTile, food: 5, createdAt: new Date('2024-01-15') };
 			renderComponent(ResourceProductionPanel, {
