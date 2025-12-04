@@ -33,6 +33,10 @@ export interface World {
 	seed: number;
 	width: number;
 	height: number;
+	status?: string; // 'generating', 'ready', 'failed'
+	elevationSettings: unknown;
+	precipitationSettings: unknown;
+	temperatureSettings: unknown;
 	elevationMap: number[][] | null;
 	precipitationMap: number[][] | null;
 	temperatureMap: number[][] | null;

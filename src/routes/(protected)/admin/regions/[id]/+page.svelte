@@ -5,17 +5,7 @@
 		Globe,
 		Layers,
 		ArrowLeft,
-					<tbody>
-					{#each data.region.tiles as tile}
-						{@const hasSettlement = tile.s			<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
-				Showing {data.region.tiles.length} tiles
-				{#if data.region.tiles.some((t: TileWithRelations) => t.settlement)}
-					• {data.region.tiles.filter((t: TileWithRelations) => t.settlement).length} with
-						settlements
-				{/if}
-			</p>t}
-						{@const tileColor = tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
-						<trtain,
+		Mountain,
 		Droplets,
 		Thermometer,
 		Home
@@ -125,7 +115,7 @@
 					</thead>
 					<tbody>
 						{#each data.region.tiles as tile}
-							{@const hasSettlement = tile.plots?.some((p: Plot) => p.settlement)}
+							{@const hasSettlement = tile.settlement}
 							{@const tileColor = tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
 							<tr
 								class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
@@ -208,10 +198,8 @@
 			<div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
 				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
 					Showing {data.region.tiles.length} tiles
-					{#if data.region.tiles.some( (t: TileWithRelations) => t.plots?.some((p: Plot) => p.settlement) )}
-						• {data.region.tiles.filter((t: TileWithRelations) =>
-							t.plots?.some((p: Plot) => p.settlement)
-						).length} with settlements
+					{#if data.region.tiles.some((t: TileWithRelations) => t.settlement)}
+						• {data.region.tiles.filter((t: TileWithRelations) => t.settlement).length} with settlements
 					{/if}
 				</p>
 			</div>

@@ -538,9 +538,9 @@
 									? tiles.reduce((sum: number, t: TileWithRelations) => sum + t.elevation, 0) /
 										tiles.length
 									: 0}
-							{@const settlements = tiles
-								.flatMap((t: TileWithRelations) => (t.Plots || []) as any)
-								.filter((p: any) => p.Settlement).length}
+							{@const settlements = tiles.filter(
+								(t: TileWithRelations) => t.settlementId != null
+							).length}
 							{@const elevationClass =
 								avgElevation < 0
 									? 'bg-primary-500/10 text-primary-500'
