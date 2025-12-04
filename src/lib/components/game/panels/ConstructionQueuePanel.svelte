@@ -25,10 +25,11 @@
 	}
 
 	interface Props {
+		settlementId: string;
 		constructionQueue?: ConstructionProject[];
 	}
 
-	let { constructionQueue = [] }: Props = $props();
+	let { settlementId, constructionQueue = [] }: Props = $props();
 
 	// Sort queue by position
 	const sortedQueue = $derived(

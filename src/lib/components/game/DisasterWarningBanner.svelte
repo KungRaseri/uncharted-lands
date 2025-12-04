@@ -128,24 +128,26 @@
 				</button>
 			</div>
 
-			<div class="space-y-4">
-				<p><strong>Type:</strong> {disaster.type.replace(/_/g, ' ')}</p>
-				<p><strong>Severity:</strong> {disaster.severityLevel} ({disaster.severity})</p>
-				<p><strong>Time Until Impact:</strong> {timeRemaining}</p>
-				{#if disaster.affectedRegion}
-					<p><strong>Affected Region:</strong> {disaster.affectedRegion}</p>
-				{/if}
-				<p><strong>Affected Biomes:</strong> {disaster.affectedBiomes.join(', ')}</p>
-
-				<div class="mt-6">
-					<button
-						type="button"
-						onclick={() => (detailsModalOpen = false)}
-						class="btn variant-filled-primary w-full"
-					>
-						Close
-					</button>
+			{#if disaster}
+				<div class="space-y-4">
+					<p><strong>Type:</strong> {disaster.type.replace(/_/g, ' ')}</p>
+					<p><strong>Severity:</strong> {disaster.severityLevel} ({disaster.severity})</p>
+					<p><strong>Time Until Impact:</strong> {timeRemaining}</p>
+					{#if disaster.affectedRegion}
+						<p><strong>Affected Region:</strong> {disaster.affectedRegion}</p>
+					{/if}
+					<p><strong>Affected Biomes:</strong> {disaster.affectedBiomes.join(', ')}</p>
 				</div>
+			{/if}
+
+			<div class="mt-6">
+				<button
+					type="button"
+					onclick={() => (detailsModalOpen = false)}
+					class="btn variant-filled-primary w-full"
+				>
+					Close
+				</button>
 			</div>
 		</div>
 	</div>

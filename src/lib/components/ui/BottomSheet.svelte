@@ -1,14 +1,16 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
+	import type { Snippet } from 'svelte';
 
 	interface Props {
 		open?: boolean;
 		onClose: () => void;
 		title: string;
 		height?: 'auto' | 'half' | 'full';
+		children: Snippet;
 	}
 
-	let { open = false, onClose, title, height = 'auto' }: Props = $props();
+	let { open = false, onClose, title, height = 'auto', children }: Props = $props();
 
 	let sheetElement = $state<HTMLDivElement | undefined>(undefined);
 	let startY = 0;
@@ -120,7 +122,7 @@
 
 			<!-- Content -->
 			<div class="sheet-content">
-				<slot />
+				{@render children()}
 			</div>
 		</div>
 	</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import RegionComponent from '$lib/components/game/Region.svelte';
+	import RegionComponent from '$lib/components/game/map/Region.svelte';
 	import MapLegend from '$lib/components/shared/MapLegend.svelte';
 	import type { RegionWithTiles } from '$lib/types/game';
 	import {

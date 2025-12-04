@@ -14,6 +14,7 @@
 	}
 
 	interface Props {
+		settlementId: string;
 		resources?: Resource[];
 	}
 

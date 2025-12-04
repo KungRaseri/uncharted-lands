@@ -59,6 +59,7 @@ export interface TileBase {
 	type: TileType;
 	// Resource quality fields (0-100)
 	foodQuality: number;
+	waterQuality: number;
 	woodQuality: number;
 	stoneQuality: number;
 	oreQuality: number;
@@ -109,6 +110,7 @@ export interface RegionWithTiles extends RegionBase {
 export interface WorldBase {
 	id: string;
 	name: string;
+	status?: string;
 	elevationSettings: unknown;
 	precipitationSettings: unknown;
 	temperatureSettings: unknown;

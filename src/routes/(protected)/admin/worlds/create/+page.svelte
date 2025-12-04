@@ -238,17 +238,31 @@
 
 			console.log('[WORLD CREATE] Action result:', result);
 			console.log('[WORLD CREATE] Result type:', result.type);
-			console.log('[WORLD CREATE] Result data:', result.data);
 
-			if (result.type === 'failure') {
-				saveError = result.data?.error || 'Failed to create world';
+			// Type guard: Check result.type before accessing result.data
+			if (result.type === 'success') {
+				console.log('[WORLD CREATE] Result data:', result.data);
+			}
+
+			if (result.type === 'failure' || result.type === 'error') {
+				const errorMsg =
+					result.type === 'failure' && result.data
+						? (result.data.error as string) || 'Failed to create world'
+						: 'Failed to create world';
+				saveError = errorMsg;
 				generationProgress = '';
 				return;
 			}
 
-			const world = result.data?.world;
-			const generationSettings = result.data?.generationSettings;
+			// Type guard: Only access data if result.type === 'success'
+			if (result.type !== 'success' || !result.data) {
+				saveError = 'World creation failed - no data returned';
+				generationProgress = '';
+				return;
+			}
 
+			const world = result.data.world as { id: string };
+			const generationSettings = result.data.generationSettings;
 			console.log('[WORLD CREATE] Extracted world:', world);
 			console.log('[WORLD CREATE] Extracted settings:', generationSettings);
 

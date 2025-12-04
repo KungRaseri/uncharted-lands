@@ -43,6 +43,7 @@ describe('TileResourceInfo.svelte', () => {
 		precipitation: 50,
 		type: 'LAND' as TileType,
 		foodQuality: 50,
+		waterQuality: 40,
 		woodQuality: 75,
 		stoneQuality: 30,
 		oreQuality: 60,

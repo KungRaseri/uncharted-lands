@@ -160,8 +160,8 @@
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="modal-title"
+			tabindex="-1"
 		>
-			tabindex="-1" >
 			<div class="modal-header">
 				<div>
 					<h2 class="text-2xl font-bold">Build Extractor</h2>

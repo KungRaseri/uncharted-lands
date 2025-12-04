@@ -16,7 +16,7 @@
 	 * - WCAG 2.1 AA compliant with roving tabindex pattern
 	 */
 
-	import type { BuildingType } from '$lib/types/structures';
+	import type { StructureType } from '$lib/types/structures';
 
 	// ============================================================================
 	// TYPE DEFINITIONS
@@ -24,7 +24,7 @@
 
 	interface Structure {
 		id: string;
-		type: BuildingType;
+		type: StructureType;
 		position: { x: number; y: number }; // 0-based grid coordinates
 		name: string;
 		icon?: string; // emoji or icon identifier
@@ -39,6 +39,7 @@
 	}
 
 	interface Props {
+		settlementId: string;
 		gridSize?: number; // default 10
 		structures?: Structure[];
 		onCellClick?: (cell: GridCell) => void;
@@ -168,10 +169,11 @@
 	/**
 	 * Get human-readable building type label
 	 */
-	function getBuildingLabel(type: BuildingType): string {
+	function getBuildingLabel(type: StructureType): string {
+		if (!type) return 'Unknown';
 		return type
 			.split('_')
-			.map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+			.map((word: string) => word.charAt(0) + word.slice(1).toLowerCase())
 			.join(' ');
 	}
 

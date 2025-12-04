@@ -17,6 +17,7 @@
 	}
 
 	interface Props {
+		settlementId: string;
 		population?: PopulationData;
 	}
 
