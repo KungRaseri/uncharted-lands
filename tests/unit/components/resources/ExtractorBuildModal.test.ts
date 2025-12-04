@@ -243,8 +243,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			});
 		});
 
-		it.skip('should display water resource', async () => {
-			// FIXME: Water display is disabled - waterQuality not in schema
+		it('should display water resource', async () => {
 			render(ExtractorBuildModal, {
 				props: {
 					tile: baseTile,
@@ -257,7 +256,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			await waitFor(() => {
 				const waterIcons = screen.getAllByText('💧');
 				expect(waterIcons.length).toBeGreaterThanOrEqual(1);
-				expect(screen.getByText(/Water: 50/)).toBeDefined();
+				expect(screen.getByText(/Water: 70/)).toBeDefined();
 			});
 		});
 
@@ -395,8 +394,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			expect(() => screen.getByText('Advanced Farm')).toThrow();
 		});
 
-		it.skip('should display basic well option when water > 0', async () => {
-			// FIXME: Water extractors disabled - waterQuality not in schema
+		it('should display basic well option when water > 0', async () => {
 			render(ExtractorBuildModal, {
 				props: {
 					tile: baseTile,

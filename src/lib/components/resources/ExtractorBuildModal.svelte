@@ -64,14 +64,14 @@
 			});
 		}
 
-		// FIXME: Water extractors disabled - waterQuality not in schema
-		// if (tile.waterQuality > 0) {
-		// 	options.push({
-		// 		type: 'BASIC_WELL',
-		// 		resourceType: 'WATER',
-		// 		available: true
-		// 	});
-		// }
+		// Water extractors
+		if (tile.waterQuality > 0) {
+			options.push({
+				type: 'BASIC_WELL',
+				resourceType: 'WATER',
+				available: true
+			});
+		}
 
 		// Wood extractors
 		if (tile.woodQuality > 0) {
@@ -197,15 +197,14 @@
 							Food: {tile.foodQuality}%
 						</div>
 					{/if}
-					<!-- FIXME: Water display disabled - waterQuality not in schema -->
-					<!-- {#if tile.waterQuality > 0}
+					{#if tile.waterQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('WATER') then icon}
 								<span>{icon}</span>
 							{/await}
 							Water: {tile.waterQuality}%
 						</div>
-					{/if} -->
+					{/if}
 					{#if tile.woodQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('WOOD') then icon}
