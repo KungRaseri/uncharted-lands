@@ -109,13 +109,13 @@ describe('Tile Color Utilities', () => {
 		describe('Beach/Coastal tiles', () => {
 			it('should return beach color for low elevation land', () => {
 				expect(getTileColor(0, 'GRASSLAND_TEMPERATE', 'LAND')).toBe('rgb(244, 228, 193)');
-				expect(getTileColor(0.05, 'FOREST_BOREAL', 'LAND')).toBe('rgb(244, 228, 193)');
-				expect(getTileColor(0.1, 'DESERT_COLD', 'LAND')).toBe('rgb(244, 228, 193)');
-				expect(getTileColor(0.14, 'SAVANNA', 'LAND')).toBe('rgb(244, 228, 193)');
+				expect(getTileColor(0.02, 'FOREST_BOREAL', 'LAND')).toBe('rgb(244, 228, 193)');
+				expect(getTileColor(0.03, 'DESERT_COLD', 'LAND')).toBe('rgb(244, 228, 193)');
+				expect(getTileColor(0.049, 'SAVANNA', 'LAND')).toBe('rgb(244, 228, 193)');
 			});
 
-			it('should not return beach color at boundary 0.15', () => {
-				expect(getTileColor(0.15, 'GRASSLAND_TEMPERATE', 'LAND')).not.toBe('rgb(244, 228, 193)');
+			it('should not return beach color at boundary 0.05', () => {
+				expect(getTileColor(0.05, 'GRASSLAND_TEMPERATE', 'LAND')).not.toBe('rgb(244, 228, 193)');
 			});
 		});
 
@@ -180,11 +180,11 @@ describe('Tile Color Utilities', () => {
 				expect(getTileColor(0, 'GRASSLAND_TEMPERATE', 'LAND')).toBe('rgb(244, 228, 193)');
 				expect(getTileColor(-0.001, 'GRASSLAND_TEMPERATE', 'LAND')).toBe('rgb(0, 61, 102)');
 
-				// Beach/Biome boundary
-				expect(getTileColor(0.15, 'GRASSLAND_TEMPERATE', 'LAND')).toBe(
+				// Beach/Biome boundary (now at 0.05)
+				expect(getTileColor(0.05, 'GRASSLAND_TEMPERATE', 'LAND')).toBe(
 					BIOME_COLORS.GRASSLAND_TEMPERATE
 				);
-				expect(getTileColor(0.149, 'GRASSLAND_TEMPERATE', 'LAND')).toBe('rgb(244, 228, 193)');
+				expect(getTileColor(0.049, 'GRASSLAND_TEMPERATE', 'LAND')).toBe('rgb(244, 228, 193)');
 			});
 
 			it('should handle extreme elevation values', () => {
@@ -221,12 +221,12 @@ describe('Tile Color Utilities', () => {
 
 		it('should return beach color for low positive elevations', () => {
 			expect(getElevationColor(0)).toBe(TERRAIN_COLORS.BEACH);
-			expect(getElevationColor(0.05)).toBe(TERRAIN_COLORS.BEACH);
-			expect(getElevationColor(0.09)).toBe(TERRAIN_COLORS.BEACH);
+			expect(getElevationColor(0.04)).toBe(TERRAIN_COLORS.BEACH);
+			expect(getElevationColor(0.049)).toBe(TERRAIN_COLORS.BEACH);
 		});
 
 		it('should return plains color for low-medium elevations', () => {
-			expect(getElevationColor(0.1)).toBe(TERRAIN_COLORS.PLAINS);
+			expect(getElevationColor(0.05)).toBe(TERRAIN_COLORS.PLAINS);
 			expect(getElevationColor(0.2)).toBe(TERRAIN_COLORS.PLAINS);
 			expect(getElevationColor(0.29)).toBe(TERRAIN_COLORS.PLAINS);
 		});
@@ -293,7 +293,7 @@ describe('Tile Color Utilities', () => {
 			expect(getTerrainType(-0.6)).toBe('Abyss');
 			expect(getTerrainType(-0.4)).toBe('Deep Ocean');
 			expect(getTerrainType(-0.1)).toBe('Ocean');
-			expect(getTerrainType(0.05)).toBe('Beach');
+			expect(getTerrainType(0.04)).toBe('Beach');
 			expect(getTerrainType(0.2)).toBe('Plains');
 			expect(getTerrainType(0.4)).toBe('Forest');
 			expect(getTerrainType(0.6)).toBe('Hills');
@@ -340,7 +340,7 @@ describe('Tile Color Utilities', () => {
 			expect(ELEVATION_THRESHOLDS.ABYSS).toBe(-0.5);
 			expect(ELEVATION_THRESHOLDS.DEEP_OCEAN).toBe(-0.3);
 			expect(ELEVATION_THRESHOLDS.OCEAN).toBe(0);
-			expect(ELEVATION_THRESHOLDS.BEACH).toBe(0.1);
+			expect(ELEVATION_THRESHOLDS.BEACH).toBe(0.05);
 			expect(ELEVATION_THRESHOLDS.PLAINS).toBe(0.3);
 			expect(ELEVATION_THRESHOLDS.FOREST).toBe(0.5);
 			expect(ELEVATION_THRESHOLDS.HILLS).toBe(0.65);

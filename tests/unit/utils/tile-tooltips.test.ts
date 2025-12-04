@@ -274,15 +274,14 @@ describe('tile-tooltips', () => {
 			expect(tooltip).toContain('MySettlement');
 		});
 
-		it('should not include playerProfileId in admin tooltip', () => {
+		it('should include settlement name in admin tooltip', () => {
 			const tile = createMockTile({
 				settlement: createMockSettlement('player1', 'MySettlement')
 			});
 
 			const tooltip = getTileTooltip(tile, 'admin', 'player1');
 
-			expect(tooltip).not.toContain('🏘️');
-			expect(tooltip).not.toContain('MySettlement');
+			expect(tooltip).toContain('Settlement: MySettlement');
 		});
 
 		it('should handle undefined playerProfileId', () => {
