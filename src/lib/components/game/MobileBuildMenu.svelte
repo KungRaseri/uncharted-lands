@@ -15,15 +15,12 @@
 		const categories: Record<string, typeof structures> = {};
 
 		for (const [key, structure] of Object.entries(structures)) {
-			// TypeScript needs explicit type guard for null exclusion
-			if (!key || key === null) continue;
-
+			if (key === null || key === 'null') continue; // Skip null keys
 			const category = structure.category || 'Other';
 			if (!categories[category]) {
 				categories[category] = {};
 			}
-			// Now TypeScript knows key is not null
-			categories[category][key as Exclude<StructureType, null>] = structure;
+			categories[category][key as StructureType] = structure;
 		}
 		return categories;
 	});

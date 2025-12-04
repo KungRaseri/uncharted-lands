@@ -261,8 +261,9 @@
 				return;
 			}
 
-			const world = result.data.world as { id: string };
+			const world = result.data.world;
 			const generationSettings = result.data.generationSettings;
+
 			console.log('[WORLD CREATE] Extracted world:', world);
 			console.log('[WORLD CREATE] Extracted settings:', generationSettings);
 

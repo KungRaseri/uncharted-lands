@@ -5,13 +5,23 @@
 		Globe,
 		Layers,
 		ArrowLeft,
-		Mountain,
+					<tbody>
+					{#each data.region.tiles as tile}
+						{@const hasSettlement = tile.s			<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
+				Showing {data.region.tiles.length} tiles
+				{#if data.region.tiles.some((t: TileWithRelations) => t.settlement)}
+					• {data.region.tiles.filter((t: TileWithRelations) => t.settlement).length} with
+						settlements
+				{/if}
+			</p>t}
+						{@const tileColor = tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
+						<trtain,
 		Droplets,
 		Thermometer,
 		Home
 	} from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
-	import type { Plot, TileWithRelations } from '$lib/types/game';
+	import type { TileWithRelations } from '$lib/types/game';
 
 	let { data }: { data: PageData } = $props();
 
