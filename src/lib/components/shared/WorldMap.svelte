@@ -68,17 +68,6 @@
 	const isPreviewMode = $derived(!!previewRegions && !regions);
 	const displayRegions = $derived(regions || previewRegions);
 
-	// Sort regions by coordinates to ensure correct row-major order
-	// xCoord represents row (i from generation), yCoord represents column (j from generation)
-	const sortedRegions = $derived(
-		displayRegions
-			? [...displayRegions].sort((a, b) => {
-					if (a.xCoord !== b.xCoord) return a.xCoord - b.xCoord;
-					return a.yCoord - b.yCoord;
-				})
-			: []
-	);
-
 	// Calculate grid dimensions dynamically
 	const gridDimensions = $derived(() => {
 		if (!displayRegions || displayRegions.length === 0) {

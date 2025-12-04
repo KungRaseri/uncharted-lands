@@ -48,6 +48,7 @@ describe('ResourceProductionPanel.svelte', () => {
 		biomeId: 'biome-1',
 		type: 'LAND',
 		foodQuality: 50,
+		waterQuality: 55,
 		woodQuality: 60,
 		stoneQuality: 40,
 		oreQuality: 30,
@@ -55,8 +56,8 @@ describe('ResourceProductionPanel.svelte', () => {
 		settlementId: 'settlement-1',
 		plotSlots: 3,
 		baseProductionModifier: 1,
-		createdAt: new Date('2024-01-01'),
-		updatedAt: new Date('2024-01-01')
+		createdAt: new Date(),
+		updatedAt: new Date()
 	};
 
 	beforeEach(() => {

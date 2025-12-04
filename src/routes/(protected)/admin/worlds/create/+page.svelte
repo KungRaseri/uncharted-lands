@@ -280,7 +280,13 @@
 				return;
 			}
 
-			// Navigate to world details page with generation settings
+			// Type guard to ensure world has id property
+			if (typeof world !== 'object' || world === null || !('id' in world)) {
+				console.error('[WORLD CREATE] World object missing id property');
+				saveError = 'World was created but missing required data';
+				generationProgress = '';
+				return;
+			} // Navigate to world details page with generation settings
 			// The details page will handle starting generation and polling for status
 			generationProgress = 'World record created! Navigating to world details...';
 

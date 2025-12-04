@@ -38,17 +38,24 @@ describe('TileResourceInfo.svelte', () => {
 		id: 'tile1',
 		biomeId: 'biome1',
 		regionId: 'region1',
+		x: 0,
+		y: 0,
+		xCoord: 0,
+		yCoord: 0,
 		elevation: 50,
 		temperature: 20,
 		precipitation: 50,
 		type: 'LAND' as TileType,
+		baseProductionModifier: 1,
 		foodQuality: 50,
 		waterQuality: 0,
 		woodQuality: 75,
 		stoneQuality: 30,
 		oreQuality: 60,
 		plotSlots: 3,
-		specialResource: null
+		specialResource: null,
+		createdAt: new Date(),
+		updatedAt: new Date()
 	};
 
 	beforeEach(() => {

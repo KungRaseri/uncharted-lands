@@ -29,7 +29,8 @@
 		onRefresh?: () => void;
 	}
 
-	let { settlementId, suggestions = [], onDismiss, onRefresh }: Props = $props();
+	// eslint-disable-next-line no-unused-vars
+	let { settlementId: _settlementId, suggestions = [], onDismiss, onRefresh }: Props = $props();
 
 	// Filter out dismissed suggestions
 	const activeSuggestions = $derived(suggestions.filter((s) => !s.dismissed));

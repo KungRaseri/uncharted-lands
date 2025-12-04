@@ -26,6 +26,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		precipitation: 30,
 		type: 'LAND',
 		foodQuality: 60,
+		waterQuality: 70,
 		woodQuality: 80,
 		stoneQuality: 40,
 		oreQuality: 50,

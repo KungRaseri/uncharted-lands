@@ -16,7 +16,7 @@
 
 		for (const [key, structure] of Object.entries(structures)) {
 			if (key === null || key === 'null') continue; // Skip null keys
-			const category = structure.category || 'Other';
+			const category: string = structure.category || 'Other';
 			if (!categories[category]) {
 				categories[category] = {};
 			}

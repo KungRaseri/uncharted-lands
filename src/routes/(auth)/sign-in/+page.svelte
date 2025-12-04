@@ -8,7 +8,7 @@
 
 	let isRememberMeChecked = $state(false);
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let { data: _data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
 <div class="container mx-auto max-w-md mt-8 p-6">

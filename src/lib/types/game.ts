@@ -53,10 +53,17 @@ export interface TileBase {
 	id: string;
 	biomeId: string;
 	regionId: string;
+	x: number;
+	y: number;
+	xCoord: number;
+	yCoord: number;
 	elevation: number;
 	temperature: number;
 	precipitation: number;
 	type: TileType;
+	createdAt: Date | string;
+	updatedAt: Date | string;
+	baseProductionModifier: number;
 	// Resource quality fields (0-100)
 	foodQuality: number;
 	waterQuality: number;

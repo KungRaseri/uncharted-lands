@@ -98,7 +98,7 @@
 		<h3 class="text-lg font-semibold mb-3">Total Production Rates</h3>
 		{#await calculateTotalProduction()}
 			<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-				{#each resourceTypes as resourceType}
+				{#each resourceTypes as _resourceType}
 					<div class="resource-total-card variant-ghost-surface p-3 rounded-lg">
 						<div class="text-center">
 							<div class="text-2xl mb-1">⏳</div>

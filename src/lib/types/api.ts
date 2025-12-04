@@ -121,6 +121,7 @@ export interface Tile {
 	type?: 'LAND' | 'OCEAN';
 	// Resource quality properties
 	foodQuality: number;
+	waterQuality: number;
 	woodQuality: number;
 	stoneQuality: number;
 	oreQuality: number;

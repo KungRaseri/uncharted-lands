@@ -22,8 +22,8 @@
 	// Drag state
 	let draggedPanelId = $state<string | null>(null);
 	let draggedOverPanelId = $state<string | null>(null);
-	let touchStartY = $state(0);
 	let isDragging = $state(false);
+	let touchStartY = $state(0);
 
 	// Sort panels by position for display
 	const sortedPanels = $derived([...panels].sort((a, b) => a.position - b.position));

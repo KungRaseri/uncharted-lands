@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { layoutStore } from '$lib/stores/ui/dashboard-layout';
-import type { DashboardLayout, Viewport } from '$lib/stores/ui/dashboard-layout';
+import { layoutStore } from '$lib/stores/ui/dashboard-layout.svelte';
+import type { DashboardLayout, Viewport } from '$lib/stores/ui/dashboard-layout.svelte';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -69,7 +69,7 @@ describe('dashboard-layout store', () => {
 			const layout: DashboardLayout = layoutStore.getCurrentLayout();
 
 			for (const id of panelIds) {
-				const panel = layout.panels.find((p) => p.id === id);
+				const panel = layout.panels.find((p: { id: string }) => p.id === id);
 				expect(panel, `Panel ${id} should be defined`).toBeDefined();
 			}
 		});
@@ -88,12 +88,11 @@ describe('dashboard-layout store', () => {
 
 		it('should have unique panel positions', () => {
 			const layout: DashboardLayout = layoutStore.getCurrentLayout();
-			const positions = layout.panels.map((p) => p.position);
+			const positions = layout.panels.map((p: { position: number }) => p.position);
 			const uniquePositions = new Set(positions);
 
 			expect(uniquePositions.size).toBe(positions.length);
 		});
-
 		it('should have valid panel sizes', () => {
 			const layout: DashboardLayout = layoutStore.getCurrentLayout();
 			const validSizes = ['small', 'medium', 'large'];
@@ -141,9 +140,9 @@ describe('dashboard-layout store', () => {
 			expect(layout.layoutName).toBe('Default');
 
 			// Default layout should have alerts, resources, and population visible
-			const alerts = layout.panels.find((p) => p.id === 'alerts');
-			const resources = layout.panels.find((p) => p.id === 'resources');
-			const population = layout.panels.find((p) => p.id === 'population');
+			const alerts = layout.panels.find((p: { id: string }) => p.id === 'alerts');
+			const resources = layout.panels.find((p: { id: string }) => p.id === 'resources');
+			const population = layout.panels.find((p: { id: string }) => p.id === 'population');
 
 			expect(alerts?.visible, 'alerts should be visible').toBe(true);
 			expect(resources?.visible, 'resources should be visible').toBe(true);
@@ -157,13 +156,12 @@ describe('dashboard-layout store', () => {
 			expect(layout.layoutName).toBe('Planning Mode');
 
 			// Planning layout should emphasize construction and structures
-			const construction = layout.panels.find((p) => p.id === 'construction');
-			const structures = layout.panels.find((p) => p.id === 'structures');
+			const construction = layout.panels.find((p: { id: string }) => p.id === 'construction');
+			const structures = layout.panels.find((p: { id: string }) => p.id === 'structures');
 
 			expect(construction?.visible, 'construction should be visible').toBe(true);
 			expect(structures?.visible, 'structures should be visible').toBe(true);
 		});
-
 		it('should load combat layout correctly', () => {
 			layoutStore.loadLayout('combat');
 			const layout: DashboardLayout = layoutStore.getCurrentLayout();
