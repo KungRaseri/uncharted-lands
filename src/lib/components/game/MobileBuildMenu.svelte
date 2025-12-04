@@ -15,12 +15,16 @@
 		const categories: Record<string, typeof structures> = {};
 
 		for (const [key, structure] of Object.entries(structures)) {
-			if (key === null || key === 'null') continue; // Skip null keys
-			const category: string = structure.category || 'Other';
+			if (!key || key === 'null') continue; // Skip null/undefined keys
+			const category = structure.category || 'Other';
+			const structureKey = key as Exclude<StructureType, null>; // Exclude null from type
+			if (!category) continue; // Skip if category is somehow null
 			if (!categories[category]) {
 				categories[category] = {};
 			}
-			categories[category][key as StructureType] = structure;
+			// Type assertion needed because TS doesn't recognize the null check above
+			const categoryMap = categories[category]!;
+			categoryMap[structureKey] = structure;
 		}
 		return categories;
 	});
