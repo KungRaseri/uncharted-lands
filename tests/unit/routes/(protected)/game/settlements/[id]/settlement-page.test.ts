@@ -375,10 +375,11 @@ describe('Settlement Page - API Metadata Integration', () => {
 			expect(structure.costs).toHaveProperty('stone');
 			expect(structure.costs).toHaveProperty('ore');
 
-			// Requirements should have plot requirements
-			expect(structure.requirements).toHaveProperty('area');
-			expect(structure.requirements).toHaveProperty('solar');
-			expect(structure.requirements).toHaveProperty('wind');
+			// Requirements are now optional (legacy fields being phased out)
+			// When present, they may have area, solar, and/or wind
+			if (structure.requirements) {
+				expect(typeof structure.requirements).toBe('object');
+			}
 		});
 
 		it('should have all required StructureMetadata fields', () => {

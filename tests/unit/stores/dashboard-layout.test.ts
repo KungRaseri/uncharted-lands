@@ -365,14 +365,13 @@ describe('dashboard-layout store', () => {
 			layoutStore.loadLayout('planning');
 			layoutStore.saveLayout();
 
-			const savedDefault = localStorageMock.getItem('dashboard-layout-Default');
-			const savedPlanning = localStorageMock.getItem('dashboard-layout-Planning Mode');
+			const savedDefault = localStorageMock.getItem('dashboard-layout-default');
+			const savedPlanning = localStorageMock.getItem('dashboard-layout-planning');
 
 			expect(savedDefault).toBeDefined();
 			expect(savedPlanning).toBeDefined();
 			expect(savedDefault).not.toBe(savedPlanning);
 		});
-
 		it('should restore layout from localStorage', () => {
 			// Make changes and save
 			layoutStore.loadLayout('default');
@@ -416,6 +415,12 @@ describe('dashboard-layout store', () => {
 	});
 
 	describe('Reset Functionality', () => {
+		beforeEach(() => {
+			// Ensure clean state for reset tests (clear any corrupted data from previous tests)
+			localStorageMock.clear();
+			layoutStore.loadLayout('default');
+		});
+
 		it('should reset to default layout', () => {
 			// Make some changes
 			layoutStore.loadLayout('planning');

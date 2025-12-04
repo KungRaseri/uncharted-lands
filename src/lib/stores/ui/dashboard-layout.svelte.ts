@@ -96,7 +96,8 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
  */
 function createDashboardLayoutStore() {
 	// State - using plain variables (will be reactive when accessed via getters)
-	let currentLayout: DashboardLayout = DEFAULT_LAYOUTS.default;
+	// Deep clone to avoid mutating DEFAULT_LAYOUTS
+	let currentLayout: DashboardLayout = JSON.parse(JSON.stringify(DEFAULT_LAYOUTS.default));
 	let viewport: Viewport = 'desktop';
 
 	// Viewport detection
@@ -122,16 +123,24 @@ function createDashboardLayoutStore() {
 	function loadLayout(layoutName: string) {
 		if (!browser) return;
 
-		const stored = localStorage.getItem(`dashboard-layout-${layoutName}`);
+		// Normalize key to lowercase for consistency
+		const normalizedKey = layoutName.toLowerCase();
+		const stored = localStorage.getItem(`dashboard-layout-${normalizedKey}`);
 		if (stored) {
 			try {
 				currentLayout = JSON.parse(stored);
 			} catch (e) {
 				console.error('Failed to load layout:', e);
-				currentLayout = DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default;
+				// Deep clone to avoid mutating DEFAULT_LAYOUTS
+				currentLayout = JSON.parse(
+					JSON.stringify(DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default)
+				);
 			}
 		} else {
-			currentLayout = DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default;
+			// Deep clone to avoid mutating DEFAULT_LAYOUTS
+			currentLayout = JSON.parse(
+				JSON.stringify(DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default)
+			);
 		}
 	}
 
@@ -139,10 +148,16 @@ function createDashboardLayoutStore() {
 	function saveLayout() {
 		if (!browser) return;
 
-		localStorage.setItem(
-			`dashboard-layout-${currentLayout.layoutName}`,
-			JSON.stringify(currentLayout)
-		);
+		// Find the key that corresponds to this layout by matching layoutName
+		const layoutKey =
+			Object.keys(DEFAULT_LAYOUTS).find(
+				(key) => DEFAULT_LAYOUTS[key].layoutName === currentLayout.layoutName
+			) || 'default';
+
+		// Normalize to lowercase for consistency
+		const normalizedKey = layoutKey.toLowerCase();
+
+		localStorage.setItem(`dashboard-layout-${normalizedKey}`, JSON.stringify(currentLayout));
 	}
 
 	// Update panel configuration
@@ -185,7 +200,8 @@ function createDashboardLayoutStore() {
 
 	// Reset to default layout
 	function resetLayout(layoutName: string = 'default') {
-		currentLayout = { ...DEFAULT_LAYOUTS[layoutName] };
+		// Deep clone to avoid mutating DEFAULT_LAYOUTS
+		currentLayout = JSON.parse(JSON.stringify(DEFAULT_LAYOUTS[layoutName]));
 		saveLayout();
 	}
 
