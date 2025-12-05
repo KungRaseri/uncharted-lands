@@ -8,13 +8,37 @@ export default mergeConfig(
 		test: {
 			globals: true,
 			environment: 'jsdom',
-			include: ['tests/unit/**/*.test.{js,ts}', 'tests/unit/**/*.spec.{js,ts}'],
+			// Simplified glob pattern - only use .test.ts files (saves collection time)
+			include: ['tests/unit/**/*.test.ts'],
+			// Explicitly exclude unnecessary files (faster test collection)
+			exclude: [
+				'**/node_modules/**',
+				'**/dist/**',
+				'**/.svelte-kit/**',
+				'**/build/**',
+				'**/coverage/**'
+			],
 			setupFiles: ['./vitest.setup.js'],
 			// Disable isolation to run all tests in the same global context
 			isolate: false,
+			// Enable parallel test execution for faster runs
+			pool: 'threads',
+			poolOptions: {
+				threads: {
+					singleThread: false, // Enable multi-threading
+					isolate: false // Keep shared context for speed
+				}
+			},
+			// Optimize worker count (adjust based on CPU cores)
+			maxWorkers: 4,
+			minWorkers: 1,
 			alias: {
 				$lib: '/src/lib',
 				$app: '/.svelte-kit/runtime/app'
+			},
+			// Faster TypeScript transformation
+			esbuild: {
+				target: 'node22' // Match Node.js version for optimal compilation
 			},
 			coverage: {
 				provider: 'v8',
