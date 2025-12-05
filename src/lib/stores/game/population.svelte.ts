@@ -235,5 +235,76 @@ export const populationStore = {
 	// Dismiss a specific event
 	dismissEvent: (eventId: string) => {
 		state.recentEvents = state.recentEvents.filter((e) => e.id !== eventId);
+	},
+
+	/**
+	 * Initialize store from server-side loaded data
+	 * Call this in +page.svelte onMount with data from +page.server.ts
+	 */
+	initializeFromServerData: (
+		settlementId: string,
+		serverData: {
+			current: number;
+			capacity: number;
+			happiness: number;
+			growthRate: number;
+			immigrationChance: number;
+			emigrationChance: number;
+			lastGrowthTick: number;
+		}
+	): void => {
+		console.log(
+			'[PopulationStore] Initializing from server data for settlement:',
+			settlementId,
+			serverData
+		);
+
+		// Calculate happiness description and status
+		let happinessDescription = 'Content';
+		let status: 'Growing' | 'Stable' | 'Declining' = 'Stable';
+
+		if (serverData.happiness >= 80) {
+			happinessDescription = 'Very Happy';
+			status = 'Growing';
+		} else if (serverData.happiness >= 60) {
+			happinessDescription = 'Happy';
+			status = 'Growing';
+		} else if (serverData.happiness >= 40) {
+			happinessDescription = 'Content';
+			status = 'Stable';
+		} else if (serverData.happiness >= 20) {
+			happinessDescription = 'Unhappy';
+			status = 'Declining';
+		} else {
+			happinessDescription = 'Very Unhappy';
+			status = 'Declining';
+		}
+
+		const populationState: PopulationState = {
+			settlementId,
+			current: serverData.current,
+			capacity: serverData.capacity,
+			happiness: serverData.happiness,
+			happinessDescription,
+			growthRate: serverData.growthRate,
+			status,
+			lastUpdate: Date.now()
+		};
+
+		state.settlements.set(settlementId, populationState);
+
+		// Trigger Svelte reactivity
+		state.settlements = new Map(state.settlements);
+
+		console.log('[PopulationStore] Initialized population for settlement:', settlementId);
+		console.log('[PopulationStore] Current settlements map size:', state.settlements.size);
+	},
+
+	/**
+	 * Initialize Socket.IO listeners
+	 * Called automatically when socket connects
+	 */
+	initializeListeners: () => {
+		initializeListeners();
 	}
 };

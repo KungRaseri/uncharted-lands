@@ -329,6 +329,72 @@ export const resourcesStore = {
 	},
 
 	/**
+	 * Initialize store from server-side loaded data
+	 * Call this in +page.svelte onMount with data from +page.server.ts
+	 *
+	 * @param settlementId - The settlement ID
+	 * @param serverData - Settlement data from REST API (has storage property)
+	 */
+	initializeFromServerData(
+		settlementId: string,
+		serverData: {
+			storage: { food: number; water: number; wood: number; stone: number; ore: number };
+			capacity?: number;
+		}
+	): void {
+		const capacity = serverData.capacity || 1000;
+
+		console.log(
+			'[ResourcesStore] Initializing from server data for settlement:',
+			settlementId,
+			serverData
+		);
+
+		const resourcesState: ResourcesState = {
+			settlementId,
+			food: {
+				current: serverData.storage.food,
+				capacity,
+				productionRate: 0,
+				consumptionRate: 0
+			},
+			water: {
+				current: serverData.storage.water,
+				capacity,
+				productionRate: 0,
+				consumptionRate: 0
+			},
+			wood: {
+				current: serverData.storage.wood,
+				capacity,
+				productionRate: 0,
+				consumptionRate: 0
+			},
+			stone: {
+				current: serverData.storage.stone,
+				capacity,
+				productionRate: 0,
+				consumptionRate: 0
+			},
+			ore: {
+				current: serverData.storage.ore,
+				capacity,
+				productionRate: 0,
+				consumptionRate: 0
+			},
+			lastUpdate: Date.now()
+		};
+
+		state.resources.set(settlementId, resourcesState);
+
+		// Trigger Svelte reactivity by creating new Map reference
+		state.resources = new Map(state.resources);
+
+		console.log('[ResourcesStore] Initialized resources for settlement:', settlementId);
+		console.log('[ResourcesStore] Current resources map size:', state.resources.size);
+	},
+
+	/**
 	 * Access to all resources (for debugging)
 	 */
 	get allResources() {

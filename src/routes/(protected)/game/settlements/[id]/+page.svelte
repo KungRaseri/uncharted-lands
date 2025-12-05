@@ -7,13 +7,53 @@
 	import DisasterImpactBanner from '$lib/components/game/DisasterImpactBanner.svelte';
 	import AftermathSummaryModal from '$lib/components/game/AftermathSummaryModal.svelte';
 	import { createGameRefreshInterval } from '$lib/stores/game/gameState.svelte';
+	import { resourcesStore } from '$lib/stores/game/resources.svelte';
+	import { populationStore } from '$lib/stores/game/population.svelte';
 	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	// Set up auto-refresh for real-time data updates
 	onMount(() => {
-		// Auto-refresh every minute to catch tick updates
+		console.log('[SETTLEMENT PAGE] Initializing stores from server data...');
+		console.log('[SETTLEMENT PAGE] Settlement data:', data.settlement);
+
+		// Initialize stores from server-side loaded data
+		if (data.settlement) {
+			// Initialize resources store from storage data
+			if (data.settlement.storage) {
+				console.log(
+					'[SETTLEMENT PAGE] Initializing resources from storage:',
+					data.settlement.storage
+				);
+				resourcesStore.initializeFromServerData(data.settlement.id, {
+					storage: data.settlement.storage,
+					capacity: data.settlement.storage.capacity || 1000
+				});
+			} else {
+				console.warn('[SETTLEMENT PAGE] No storage data available in settlement');
+			}
+
+			// Initialize population store from population data
+			if (data.settlement.population) {
+				console.log('[SETTLEMENT PAGE] Initializing population:', data.settlement.population);
+				populationStore.initializeFromServerData(data.settlement.id, {
+					current: data.settlement.population.currentPopulation || 0,
+					capacity: 100, // TODO: Calculate from houses
+					happiness: data.settlement.population.happiness || 50,
+					growthRate: 0,
+					immigrationChance: 0,
+					emigrationChance: 0,
+					lastGrowthTick: Date.now()
+				});
+			} else {
+				console.warn('[SETTLEMENT PAGE] No population data available in settlement');
+			}
+		} else {
+			console.error('[SETTLEMENT PAGE] No settlement data available!');
+		}
+
+		// Auto-refresh every minute to catch tick updates (fallback if Socket.IO fails)
 		const cleanup = createGameRefreshInterval('game:settlement');
 		return cleanup;
 	});

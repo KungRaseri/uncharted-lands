@@ -4,6 +4,9 @@
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
 	import SocketStatus from '$lib/components/game/SocketStatus.svelte';
+	import { socketStore } from '$lib/stores/game/socket';
+	import { resourcesStore } from '$lib/stores/game/resources.svelte';
+	import { populationStore } from '$lib/stores/game/population.svelte';
 	import { onMount } from 'svelte';
 
 	let { data, children }: { data: PageData; children: Snippet } = $props();
@@ -11,8 +14,24 @@
 	let serverTime = $state('...');
 	let localTime = $state('...');
 
-	// Update times periodically
+	// Auto-connect Socket.IO and initialize stores when entering game section
 	onMount(() => {
+		console.log('[GAME LAYOUT] Initializing game connection...');
+
+		// Auto-connect Socket.IO if we have a session token
+		if (data.sessionToken) {
+			console.log('[GAME LAYOUT] Auto-connecting Socket.IO...');
+			socketStore.connect(undefined, data.sessionToken);
+
+			// Initialize store listeners after socket connects
+			// This ensures all Socket.IO events are properly subscribed
+			resourcesStore.initializeListeners();
+			populationStore.initializeListeners();
+		} else {
+			console.warn('[GAME LAYOUT] No session token - Socket.IO will not auto-connect');
+		}
+
+		// Update times periodically
 		const updateTimes = () => {
 			const now = new Date();
 			localTime = now.toLocaleTimeString();
@@ -23,7 +42,12 @@
 		updateTimes();
 		const interval = setInterval(updateTimes, 1000);
 
-		return () => clearInterval(interval);
+		return () => {
+			console.log('[GAME LAYOUT] Cleaning up game connection...');
+			clearInterval(interval);
+			// Disconnect Socket.IO when leaving game section
+			socketStore.disconnect();
+		};
 	});
 </script>
 
