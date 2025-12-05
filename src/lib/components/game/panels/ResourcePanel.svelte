@@ -1,7 +1,12 @@
 <script lang="ts">
 	/**
 	 * Resource Panel Component
-	 * Displays current resource levels with progress bars
+	 * Displays current resource 				{@const warningLevel = getWarningLevel(percentage)}
+				{@const netRate = getNetRate(resource)}
+
+				<li class="resource-item" data-resource="{resource.type}" role="listitem">
+					<div class="resource-header">
+						<div class="resource-name-group"> with progress bars
 	 * WCAG 2.1 AA Compliant
 	 */
 
@@ -66,7 +71,7 @@
 	}
 </script>
 
-<section class="resource-panel" aria-labelledby="resources-heading">
+<section class="resource-panel" data-testid="resource-panel" aria-labelledby="resources-heading">
 	<header class="panel-header">
 		<h2 id="resources-heading" class="panel-title">Resources</h2>
 	</header>
