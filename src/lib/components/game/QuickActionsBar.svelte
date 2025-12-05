@@ -93,6 +93,7 @@
 	<button
 		onclick={handleBuild}
 		disabled={!canBuild}
+		data-testid="build-structure-btn"
 		aria-label="Build structure (keyboard shortcut: B)"
 		title="Build structure (B)"
 		class="quick-action"

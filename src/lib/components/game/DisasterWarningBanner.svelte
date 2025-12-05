@@ -50,7 +50,10 @@
 </script>
 
 {#if visible && disaster}
-	<div class="fixed top-0 left-0 right-0 z-50 {severityColor} text-white shadow-lg">
+	<div
+		class="fixed top-0 left-0 right-0 z-50 {severityColor} text-white shadow-lg"
+		data-testid="disaster-warning-banner"
+	>
 		<div class="container mx-auto px-4 py-3">
 			<div class="flex items-center justify-between">
 				<!-- Left: Icon + Warning Text -->

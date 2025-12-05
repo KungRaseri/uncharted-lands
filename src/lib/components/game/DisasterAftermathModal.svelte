@@ -81,6 +81,7 @@
 			role="dialog"
 			aria-labelledby="aftermath-title"
 			aria-describedby="aftermath-description"
+			data-testid="disaster-aftermath-modal"
 		>
 			<!-- Header -->
 			<header class="flex items-center justify-between mb-6">
@@ -109,7 +110,9 @@
 						<span>Casualties</span>
 					</h3>
 					<div class="flex items-baseline gap-2">
-						<span class="text-4xl font-bold">{aftermathSummary.casualties}</span>
+						<span class="text-4xl font-bold" data-testid="total-casualties"
+							>{aftermathSummary.casualties}</span
+						>
 						<span class="text-surface-400">people lost</span>
 					</div>
 					{#if aftermathSummary.populationSheltered > 0}
@@ -132,7 +135,9 @@
 						<span>Structures Damaged</span>
 					</h3>
 					<div class="flex items-baseline gap-2">
-						<span class="text-4xl font-bold">{totalStructuresAffected}</span>
+						<span class="text-4xl font-bold" data-testid="structures-damaged"
+							>{totalStructuresAffected}</span
+						>
 						<span class="text-surface-400">total</span>
 					</div>
 					<p class="text-sm text-surface-400 mt-2">
@@ -151,7 +156,7 @@
 						<span aria-hidden="true">📦</span>
 						<span>Resources Lost</span>
 					</h3>
-					<div class="text-sm space-y-1">
+					<div class="text-sm space-y-1" data-testid="resources-lost">
 						<div class="flex justify-between">
 							<span>Food:</span>
 							<span class="text-error-300">-{Math.floor(aftermathSummary.totalDamage * 1.5)}</span>

@@ -7,7 +7,19 @@
 	 *
 	 * Features:
 	 * - Configurable grid size (default 10x10)
-	 * - Structure placement with icons and names
+	 * - Structure placement with 					<button
+						class="grid-cell {structure ? 'occupied' : 'empty'} {isFocused ? 'focused' : ''}"
+						role="gridcell"
+						aria-colindex={x + 1}
+						aria-label={getCellAriaLabel(x, y)}
+						tabindex={getCellTabIndex(x, y)}
+						data-x={x}
+						data-y={y}
+						data-testid={structure ? 'structure' : undefined}
+						data-structure-id={structure?.id}
+						onclick={() => handleCellClick(x, y)}
+						onfocus={() => handleCellFocus(x, y)}
+					>ames
 	 * - Keyboard navigation (Up/Down/Left/Right arrow keys)
 	 * - Touch support for mobile (tap for focus)
 	 * - Hover/focus tooltips with structure details
@@ -361,11 +373,10 @@
 
 									<!-- Health Indicator -->
 									{#if structure.health !== undefined}
-										<span class="health-indicator" aria-hidden="true">
+										<span class="health-indicator" data-testid="health" aria-hidden="true">
 											{getHealthStatus(structure.health)}
 										</span>
 									{/if}
-
 									<!-- Structure Name (Desktop Only) -->
 									<span class="structure-name">
 										{structure.name}

@@ -52,7 +52,7 @@
 				<div class="space-y-2">
 					<div>
 						<p class="text-xs opacity-80">Impact in:</p>
-						<p class="text-2xl font-bold">{timeRemaining}</p>
+						<p class="text-2xl font-bold" data-testid="disaster-countdown">{timeRemaining}</p>
 					</div>
 
 					<div class="border-t border-white border-opacity-30 pt-2">

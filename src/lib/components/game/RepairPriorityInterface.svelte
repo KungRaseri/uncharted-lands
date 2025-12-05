@@ -40,6 +40,9 @@
 
 	let selectedStructures = $state(new Set<string>());
 	let sortBy = $state<'health' | 'priority'>('priority');
+	let shelterActivated = $state(false);
+	let repairSuccess = $state(false);
+	let casualtyCount = $state(0);
 
 	const sortedStructures = $derived(() => {
 		return [...damagedStructures].sort((a, b) => {
@@ -84,6 +87,16 @@
 	function repairSelected() {
 		console.log('[REPAIR] Repairing', selectedStructures.size, 'structures');
 		// TODO: Implement repair action
+		repairSuccess = true;
+		setTimeout(() => {
+			repairSuccess = false;
+		}, 3000);
+	}
+
+	function activateShelter() {
+		console.log('[SHELTER] Activating emergency shelter');
+		shelterActivated = true;
+		// TODO: Implement shelter activation
 	}
 </script>
 
@@ -108,6 +121,11 @@
 				</select>
 			</label>
 		</div>
+		{#if emergencyActive}
+			<div class="badge variant-filled-warning" data-testid="emergency-repair-discount">
+				Emergency Discount: {emergencyTime}
+			</div>
+		{/if}
 		<div class="flex gap-2 ml-auto">
 			<button type="button" onclick={selectAll} class="btn btn-sm variant-ghost-surface">
 				Select All
@@ -116,6 +134,32 @@
 				Deselect All
 			</button>
 		</div>
+	</div>
+
+	<!-- Emergency Shelter Section -->
+	<div class="card p-4 mb-4 bg-warning-500/10 border border-warning-500">
+		<h4 class="h4 mb-2">Emergency Shelter</h4>
+		{#if !shelterActivated}
+			<button
+				type="button"
+				onclick={activateShelter}
+				class="btn variant-filled-warning"
+				data-testid="activate-shelter-btn"
+			>
+				Activate Emergency Shelter
+			</button>
+		{:else}
+			<div class="flex items-center gap-2">
+				<div class="badge variant-filled-success" data-testid="shelter-activated">
+					✓ Shelter Active
+				</div>
+				{#if casualtyCount > 0}
+					<div class="text-error-400">
+						Casualties: <span data-testid="casualty-count">{casualtyCount}</span>
+					</div>
+				{/if}
+			</div>
+		{/if}
 	</div>
 
 	<!-- Structure List -->
@@ -183,9 +227,15 @@
 				onclick={repairSelected}
 				disabled={selectedStructures.size === 0}
 				class="btn variant-filled-primary"
+				data-testid={emergencyActive ? 'emergency-repair-btn' : 'repair-btn'}
 			>
 				{emergencyActive ? 'Repair Selected (Emergency)' : 'Repair Selected'}
 			</button>
+			{#if repairSuccess}
+				<div class="badge variant-filled-success mt-2" data-testid="repair-success">
+					✓ Repairs completed successfully!
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

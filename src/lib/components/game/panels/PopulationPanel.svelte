@@ -111,6 +111,7 @@
 			</div>
 			<div
 				class="stat-value"
+				data-testid="current-population"
 				aria-label="{formatNumber(population.current)} of {formatNumber(
 					population.capacity
 				)} capacity"
@@ -119,7 +120,6 @@
 				<span class="separator">/</span>
 				<span class="capacity">{formatNumber(population.capacity)}</span>
 			</div>
-
 			<!-- Capacity Progress Bar -->
 			<div
 				class="progress-bar-container"
@@ -152,11 +152,14 @@
 				<span class="stat-icon" aria-hidden="true">{happinessEmoji}</span>
 				<h3 class="stat-label">Happiness</h3>
 			</div>
-			<div class="happiness-value" aria-label="{happinessLabel}, {population.happiness}%">
+			<div
+				class="happiness-value"
+				data-testid="happiness"
+				aria-label="{happinessLabel}, {population.happiness}%"
+			>
 				<span class="happiness-percentage">{population.happiness}%</span>
 				<span class="happiness-text">{happinessLabel}</span>
 			</div>
-
 			<!-- Happiness Bar -->
 			<div
 				class="progress-bar-container"
