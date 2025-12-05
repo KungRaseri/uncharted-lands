@@ -13,13 +13,13 @@
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3">
+			<h1
+				class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3"
+			>
 				<Shield size={32} class="text-primary-500" />
 				Wardens
 			</h1>
-			<p class="text-surface-600 dark:text-surface-400">
-				Manage your settlement defenses and military forces
-			</p>
+			<p class="text-surface-600 dark:text-surface-400">Manage your settlement defenses</p>
 		</div>
 	</div>
 
@@ -33,11 +33,7 @@
 					The Wardens system is currently under development. This feature will allow you to:
 				</p>
 				<ul class="list-disc list-inside space-y-1">
-					<li>Recruit and manage defensive units</li>
-					<li>Set up patrols and guard posts</li>
-					<li>Monitor threat levels and security status</li>
-					<li>Train military units and upgrade defenses</li>
-					<li>Coordinate defensive strategies across settlements</li>
+					<li>To be determined.</li>
 				</ul>
 			</div>
 		</div>
@@ -99,8 +95,6 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
-			← Back to Game Overview
-		</a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
 	</div>
 </div>

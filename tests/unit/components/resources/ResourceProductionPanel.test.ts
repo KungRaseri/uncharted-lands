@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import ResourceProductionPanel from '$lib/components/resources/ResourceProductionPanel.svelte';
-import type { PlotWithRelations } from '$lib/types/api';
+import type { TileWithRelations } from '$lib/types/api';
+
+// Helper function to fix TypeScript issues with Svelte 5 runes and testing-library
+// See: https://github.com/testing-library/svelte-testing-library/issues/360
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderComponent(component: any, options: any) {
+	return render(component, options);
+}
 
 // Mock the utility functions
 vi.mock('$lib/utils/resource-production', () => ({
@@ -28,22 +35,41 @@ vi.mock('$lib/utils/resource-production', () => ({
 }));
 
 describe('ResourceProductionPanel.svelte', () => {
-	const basePlot: PlotWithRelations = {
-		id: 'plot-1',
+	const baseTile: TileWithRelations = {
+		id: 'tile-1',
+		regionId: 'region-1',
 		x: 10,
 		y: 20,
-		area: 5,
-		food: 0,
-		water: 0,
-		wood: 0,
-		stone: 0,
-		ore: 0,
-		solar: 0,
-		wind: 0,
-		createdAt: new Date('2024-01-01'),
-		updatedAt: new Date('2024-01-01'),
-		tileId: 'tile-1'
+		xCoord: 100,
+		yCoord: 200,
+		elevation: 50,
+		precipitation: 60,
+		temperature: 15,
+		biomeId: 'biome-1',
+		type: 'LAND',
+		foodQuality: 50,
+		waterQuality: 55,
+		woodQuality: 60,
+		stoneQuality: 40,
+		oreQuality: 30,
+		specialResource: null,
+		settlementId: 'settlement-1',
+		plotSlots: 3,
+		baseProductionModifier: 1,
+		createdAt: new Date('2025-01-01T00:00:00Z'),
+		updatedAt: new Date('2025-01-01T00:00:00Z')
 	};
+
+	// Helper to create idle tile (no resource production)
+	const createIdleTile = (overrides?: Partial<TileWithRelations>): TileWithRelations => ({
+		...baseTile,
+		foodQuality: 0,
+		waterQuality: 0,
+		woodQuality: 0,
+		stoneQuality: 0,
+		oreQuality: 0,
+		...overrides
+	});
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -51,9 +77,9 @@ describe('ResourceProductionPanel.svelte', () => {
 
 	describe('Basic Rendering', () => {
 		it('should render settlement name', async () => {
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [],
+					tiles: [],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -64,48 +90,48 @@ describe('ResourceProductionPanel.svelte', () => {
 			});
 		});
 
-		it('should display active plots count', async () => {
-			const producingPlot = { ...basePlot, food: 5 };
-			render(ResourceProductionPanel, {
+		it('should display active tiles count', async () => {
+			const producingTile = { ...baseTile, foodQuality: 50 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [producingPlot],
+					tiles: [producingTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText(/1 of 1 plots producing resources/)).toBeDefined();
+				expect(screen.getByText(/1 of 1 tiles producing resources/)).toBeDefined();
 			});
 		});
 
-		it('should display total plots count correctly', async () => {
-			const plots = [
-				{ ...basePlot, id: 'plot-1', food: 5 },
-				{ ...basePlot, id: 'plot-2', water: 3 },
-				{ ...basePlot, id: 'plot-3' }
+		it('should display total tiles count correctly', async () => {
+			const tiles = [
+				{ ...baseTile, id: 'plot-1', foodQuality: 50 },
+				{ ...baseTile, id: 'plot-2', waterQuality: 30 },
+				createIdleTile({ id: 'plot-3' })
 			];
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText(/2 of 3 plots producing resources/)).toBeDefined();
+				expect(screen.getByText(/2 of 3 tiles producing resources/)).toBeDefined();
 			});
 		});
 	});
 
 	describe('Harvest All Button', () => {
-		it('should show harvest all button when callback provided and plots are producing', async () => {
-			const producingPlot = { ...basePlot, food: 5 };
+		it('should show harvest all button when callback provided and tiles are producing', async () => {
+			const producingTile = { ...baseTile, foodQuality: 50 };
 			const onHarvestAll = vi.fn();
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [producingPlot],
+					tiles: [producingTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll
 				}
@@ -117,10 +143,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should not show harvest all button when no callback provided', async () => {
-			const producingPlot = { ...basePlot, food: 5 };
-			render(ResourceProductionPanel, {
+			const producingTile = { ...baseTile, foodQuality: 50 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [producingPlot],
+					tiles: [producingTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -133,29 +159,29 @@ describe('ResourceProductionPanel.svelte', () => {
 			expect(screen.queryByRole('button', { name: /Harvest All/i })).toBeNull();
 		});
 
-		it('should not show harvest all button when no plots are producing', async () => {
+		it('should not show harvest all button when no tiles are producing', async () => {
 			const onHarvestAll = vi.fn();
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [basePlot],
+					tiles: [createIdleTile()],
 					settlementName: 'Test Settlement',
 					onHarvestAll
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText(/0 of 1 plots producing resources/)).toBeDefined();
+				expect(screen.getByText(/0 of 1 tiles producing resources/)).toBeDefined();
 			});
 
 			expect(screen.queryByRole('button', { name: /Harvest All/i })).toBeNull();
 		});
 
 		it('should call onHarvestAll when button clicked', async () => {
-			const producingPlot = { ...basePlot, food: 5 };
+			const producingTile = { ...baseTile, foodQuality: 50 };
 			const onHarvestAll = vi.fn();
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [producingPlot],
+					tiles: [producingTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll
 				}
@@ -174,10 +200,10 @@ describe('ResourceProductionPanel.svelte', () => {
 
 	describe('Total Production Rates', () => {
 		it('should display food production rate', async () => {
-			const foodPlot = { ...basePlot, food: 5 };
-			render(ResourceProductionPanel, {
+			const foodTile = { ...baseTile, foodQuality: 50 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [foodPlot],
+					tiles: [foodTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -192,10 +218,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should display water production rate', async () => {
-			const waterPlot = { ...basePlot, water: 3 };
-			render(ResourceProductionPanel, {
+			const waterTile = { ...baseTile, waterQuality: 30 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [waterPlot],
+					tiles: [waterTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -210,10 +236,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should display wood production rate', async () => {
-			const woodPlot = { ...basePlot, wood: 8 };
-			render(ResourceProductionPanel, {
+			const woodTile = { ...baseTile, woodQuality: 80 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [woodPlot],
+					tiles: [woodTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -228,10 +254,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should display stone production rate', async () => {
-			const stonePlot = { ...basePlot, stone: 6 };
-			render(ResourceProductionPanel, {
+			const stoneTile = { ...baseTile, stoneQuality: 60 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [stonePlot],
+					tiles: [stoneTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -246,10 +272,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should display ore production rate', async () => {
-			const orePlot = { ...basePlot, ore: 4 };
-			render(ResourceProductionPanel, {
+			const oreTile = { ...baseTile, oreQuality: 40 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [orePlot],
+					tiles: [oreTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -263,15 +289,15 @@ describe('ResourceProductionPanel.svelte', () => {
 			});
 		});
 
-		it('should sum production rates from multiple plots', async () => {
-			const plots = [
-				{ ...basePlot, id: 'plot-1', food: 5 },
-				{ ...basePlot, id: 'plot-2', food: 3 },
-				{ ...basePlot, id: 'plot-3', food: 2 }
+		it('should sum production rates from multiple tiles', async () => {
+			const tiles = [
+				{ ...baseTile, id: 'plot-1', foodQuality: 50 },
+				{ ...baseTile, id: 'plot-2', foodQuality: 30 },
+				{ ...baseTile, id: 'plot-3', foodQuality: 20 }
 			];
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -283,10 +309,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should display multiple resource types', async () => {
-			const multiResourcePlot = { ...basePlot, food: 5, water: 3, wood: 2 };
-			render(ResourceProductionPanel, {
+			const multiResourceTile = { ...baseTile, foodQuality: 50, waterQuality: 30, woodQuality: 20 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [multiResourcePlot],
+					tiles: [multiResourceTile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -307,10 +333,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should only show resources with production > 0', async () => {
-			const plots = [{ ...basePlot, food: 5 }];
-			render(ResourceProductionPanel, {
+			const tiles = [createIdleTile({ foodQuality: 50 })];
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -326,42 +352,27 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 	});
 
-	describe('Active Plots Display', () => {
+	describe('Active tiles Display', () => {
 		it('should display active plot with coordinates', async () => {
-			const plot = { ...basePlot, x: 15, y: 25, food: 5 };
-			render(ResourceProductionPanel, {
+			const tile = { ...baseTile, x: 15, y: 25, foodQuality: 50 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [plot],
+					tiles: [tile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('Plot (15, 25)')).toBeDefined();
-			});
-		});
-
-		it('should display plot area', async () => {
-			const plot = { ...basePlot, area: 10, food: 5 };
-			render(ResourceProductionPanel, {
-				props: {
-					plots: [plot],
-					settlementName: 'Test Settlement',
-					onHarvestAll: undefined
-				}
-			});
-
-			await waitFor(() => {
-				expect(screen.getByText(/Area: 10 units/)).toBeDefined();
+				expect(screen.getByText('Tile (15, 25)')).toBeDefined();
 			});
 		});
 
 		it('should display plot creation date', async () => {
-			const plot = { ...basePlot, food: 5, createdAt: new Date('2024-01-15') };
-			render(ResourceProductionPanel, {
+			const tile = { ...baseTile, foodQuality: 50, createdAt: new Date('2024-01-15') };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [plot],
+					tiles: [tile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -373,10 +384,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should display individual resource production for plot', async () => {
-			const plot = { ...basePlot, food: 5, water: 3 };
-			render(ResourceProductionPanel, {
+			const tile = { ...baseTile, foodQuality: 50, waterQuality: 30 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [plot],
+					tiles: [tile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -389,66 +400,64 @@ describe('ResourceProductionPanel.svelte', () => {
 			});
 		});
 
-		it('should display active plots count header', async () => {
-			const plots = [
-				{ ...basePlot, id: 'plot-1', food: 5 },
-				{ ...basePlot, id: 'plot-2', water: 3 }
+		it('should display active tiles count header', async () => {
+			const tiles = [
+				{ ...baseTile, id: 'plot-1', foodQuality: 50 },
+				{ ...baseTile, id: 'plot-2', waterQuality: 30 }
 			];
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('Active Plots (2)')).toBeDefined();
+				expect(screen.getByText('Active Tiles (2)')).toBeDefined();
 			});
 		});
 	});
 
-	describe('Idle Plots Display', () => {
-		it('should display idle plots section when plots exist with no production', async () => {
-			const plots = [
-				{ ...basePlot, id: 'plot-1', food: 5 },
-				{ ...basePlot, id: 'plot-2' }
+	describe('Idle tiles Display', () => {
+		it('should display idle tiles section when tiles exist with no production', async () => {
+			const tiles = [
+				{ ...baseTile, id: 'plot-1', foodQuality: 50 },
+				createIdleTile({ id: 'plot-2' })
 			];
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('Idle Plots (1)')).toBeDefined();
+				expect(screen.getByText('Idle Tiles (1)')).toBeDefined();
 			});
 		});
 
 		it('should display idle plot coordinates', async () => {
-			const plots = [
-				{ ...basePlot, id: 'plot-1', x: 5, y: 10 }
-			];
-			render(ResourceProductionPanel, {
+			const tiles = [createIdleTile({ id: 'plot-1', x: 5, y: 10 })];
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('Plot at (5, 10)')).toBeDefined();
+				expect(screen.getByText('Tile at (5, 10)')).toBeDefined();
 			});
 		});
 
-		it('should show "Add Extractor" button for idle plots', async () => {
-			const plots = [{ ...basePlot, id: 'plot-1' }];
-			render(ResourceProductionPanel, {
+		it('should show "Add Extractor" button for idle tiles', async () => {
+			const tiles = [createIdleTile({ id: 'plot-1' })];
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -459,127 +468,124 @@ describe('ResourceProductionPanel.svelte', () => {
 			});
 		});
 
-		it('should not show idle plots section when all plots are producing', async () => {
-			const plots = [
-				{ ...basePlot, id: 'plot-1', food: 5 },
-				{ ...basePlot, id: 'plot-2', water: 3 }
+		it('should not show idle tiles section when all tiles are producing', async () => {
+			const tiles = [
+				{ ...baseTile, id: 'plot-1', foodQuality: 50 },
+				{ ...baseTile, id: 'plot-2', waterQuality: 30 }
 			];
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('Active Plots (2)')).toBeDefined();
+				expect(screen.getByText('Active Tiles (2)')).toBeDefined();
 			});
 
-			expect(screen.queryByText(/Idle Plots/)).toBeNull();
+			expect(screen.queryByText(/Idle tiles/)).toBeNull();
 		});
 	});
 
 	describe('Empty State', () => {
-		it('should display empty state when no plots exist', async () => {
-			render(ResourceProductionPanel, {
+		it('should display empty state when no tiles exist', async () => {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [],
+					tiles: [],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('No active plots')).toBeDefined();
-				expect(screen.getByText('Create plots on tiles to start producing resources')).toBeDefined();
+				expect(screen.getByText('No active tiles')).toBeDefined();
+				expect(
+					screen.getByText('Tiles with resource quality will produce resources')
+				).toBeDefined();
 			});
 		});
 
-		it('should display empty state when plots exist but none are producing', async () => {
-			const plots = [
-				{ ...basePlot, id: 'plot-1' },
-				{ ...basePlot, id: 'plot-2' }
-			];
-			render(ResourceProductionPanel, {
+		it('should display empty state when tiles exist but none are producing', async () => {
+			const tiles = [createIdleTile({ id: 'plot-1' }), createIdleTile({ id: 'plot-2' })];
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('No active plots')).toBeDefined();
+				expect(screen.getByText('No active tiles')).toBeDefined();
 			});
 		});
 
-		it('should show 0 of N plots producing when no production', async () => {
-			const plots = [basePlot];
-			render(ResourceProductionPanel, {
+		it('should show 0 of N tiles producing when no production', async () => {
+			const tiles = [createIdleTile()];
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText(/0 of 1 plots producing resources/)).toBeDefined();
+				expect(screen.getByText(/0 of 1 tiles producing resources/)).toBeDefined();
 			});
 		});
 	});
 
 	describe('Edge Cases', () => {
 		it('should handle very large production values', async () => {
-			const plot = { ...basePlot, food: 999 };
-			render(ResourceProductionPanel, {
+			const tile = { ...baseTile, foodQuality: 999 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [plot],
+					tiles: [tile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('9990.0/h')).toBeDefined(); // 999 * 10
+				expect(screen.getByText('999.0/h')).toBeDefined(); // Quality value is displayed directly
 			});
 		});
-
 		it('should handle zero production values', async () => {
-			const plot = { ...basePlot, food: 0 };
-			render(ResourceProductionPanel, {
+			const tile = createIdleTile();
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [plot],
+					tiles: [tile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('No active plots')).toBeDefined();
+				expect(screen.getByText('No active tiles')).toBeDefined();
 			});
 		});
 
 		it('should handle fractional production values', async () => {
-			const plot = { ...basePlot, food: 2.5 };
-			render(ResourceProductionPanel, {
+			const tile = { ...baseTile, foodQuality: 20.5 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [plot],
+					tiles: [tile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('25.0/h')).toBeDefined(); // 2.5 * 10
+				expect(screen.getByText('20.5/h')).toBeDefined(); // Quality value displayed directly
 			});
 		});
-
 		it('should handle empty settlement name', async () => {
-			render(ResourceProductionPanel, {
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [],
+					tiles: [],
 					settlementName: '',
 					onHarvestAll: undefined
 				}
@@ -590,33 +596,33 @@ describe('ResourceProductionPanel.svelte', () => {
 			});
 		});
 
-		it('should handle many plots efficiently', async () => {
-			const plots = Array.from({ length: 50 }, (_, i) => ({
-				...basePlot,
-				id: `plot-${i}`,
-				food: i % 2 === 0 ? 5 : 0
-			}));
-			
-			render(ResourceProductionPanel, {
+		it('should handle many tiles efficiently', async () => {
+			const tiles = Array.from({ length: 50 }, (_, i) =>
+				i % 2 === 0
+					? { ...baseTile, id: `plot-${i}`, foodQuality: 50 }
+					: createIdleTile({ id: `plot-${i}` })
+			);
+
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots,
+					tiles,
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText(/25 of 50 plots producing resources/)).toBeDefined();
+				expect(screen.getByText(/25 of 50 tiles producing resources/)).toBeDefined();
 			});
 		});
 	});
 
 	describe('Loading States', () => {
 		it('should show loading state for resource icons', () => {
-			const plot = { ...basePlot, food: 5 };
-			render(ResourceProductionPanel, {
+			const tile = { ...baseTile, foodQuality: 50 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [plot],
+					tiles: [tile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}
@@ -627,10 +633,10 @@ describe('ResourceProductionPanel.svelte', () => {
 		});
 
 		it('should show loading text during calculation', () => {
-			const plot = { ...basePlot, food: 5 };
-			render(ResourceProductionPanel, {
+			const tile = { ...baseTile, foodQuality: 50 };
+			renderComponent(ResourceProductionPanel, {
 				props: {
-					plots: [plot],
+					tiles: [tile],
 					settlementName: 'Test Settlement',
 					onHarvestAll: undefined
 				}

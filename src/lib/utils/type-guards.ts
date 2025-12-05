@@ -119,24 +119,26 @@ export function isValidTemperature(temperature: number): boolean {
  * @param obj - Object to check
  * @returns True if object has id, elevation, type properties
  */
-export function hasTileProperties(obj: unknown): obj is { id: string; elevation: number; type: string } {
+export function hasTileProperties(
+	obj: unknown
+): obj is { id: string; elevation: number; type: string } {
+	if (typeof obj !== 'object' || obj === null) return false;
+	const candidate = obj as Record<string, unknown>;
 	return (
-		typeof obj === 'object' &&
-		obj !== null &&
-		'id' in obj &&
-		'elevation' in obj &&
-		'type' in obj &&
-		typeof (obj as any).id === 'string' &&
-		typeof (obj as any).elevation === 'number' &&
-		typeof (obj as any).type === 'string'
+		'id' in candidate &&
+		'elevation' in candidate &&
+		'type' in candidate &&
+		typeof candidate.id === 'string' &&
+		typeof candidate.elevation === 'number' &&
+		typeof candidate.type === 'string'
 	);
 }
 
 /**
- * Checks if a number is a valid plot area (positive, reasonable bounds)
- * @param area - Area value in square meters
- * @returns True if area is positive and within reasonable bounds (1-10000)
+ * Checks if a number is a valid tile slot count (positive, reasonable bounds)
+ * @param slots - Number of structure slots available on a tile
+ * @returns True if slots is positive and within reasonable bounds (1-10)
  */
-export function isValidPlotArea(area: number): boolean {
-	return area > 0 && area <= 10000;
+export function isValidTileSlots(slots: number): boolean {
+	return slots > 0 && slots <= 10;
 }

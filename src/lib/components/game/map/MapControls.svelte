@@ -1,6 +1,13 @@
 <script lang="ts">
-	import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Maximize2, RefreshCw } from 'lucide-svelte';
-	
+	import {
+		ChevronUp,
+		ChevronDown,
+		ChevronLeft,
+		ChevronRight,
+		Maximize2,
+		RefreshCw
+	} from 'lucide-svelte';
+
 	interface Props {
 		onPanUp: () => void;
 		onPanDown: () => void;
@@ -14,7 +21,7 @@
 		canPanRight?: boolean;
 		isLoading?: boolean;
 	}
-	
+
 	let {
 		onPanUp,
 		onPanDown,
@@ -42,7 +49,7 @@
 			<ChevronUp size={20} />
 		</button>
 	</div>
-	
+
 	<!-- Middle row: Left, Center actions, Right -->
 	<div class="flex items-center gap-2">
 		<button
@@ -53,7 +60,7 @@
 		>
 			<ChevronLeft size={20} />
 		</button>
-		
+
 		<div class="flex gap-1">
 			{#if onRecenter}
 				<button
@@ -65,7 +72,7 @@
 					<Maximize2 size={16} />
 				</button>
 			{/if}
-			
+
 			{#if onRefresh}
 				<button
 					class="btn preset-filled-surface-500 btn-sm"
@@ -77,7 +84,7 @@
 				</button>
 			{/if}
 		</div>
-		
+
 		<button
 			class="btn preset-filled-primary-500 btn-sm"
 			onclick={onPanRight}
@@ -87,7 +94,7 @@
 			<ChevronRight size={20} />
 		</button>
 	</div>
-	
+
 	<!-- Bottom row: Down button -->
 	<div class="flex justify-center">
 		<button
@@ -99,10 +106,8 @@
 			<ChevronDown size={20} />
 		</button>
 	</div>
-	
+
 	{#if isLoading}
-		<p class="text-xs text-surface-600 dark:text-surface-400 animate-pulse">
-			Loading regions...
-		</p>
+		<p class="text-xs text-surface-600 dark:text-surface-400 animate-pulse">Loading regions...</p>
 	{/if}
 </div>

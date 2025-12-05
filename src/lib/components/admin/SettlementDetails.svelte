@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
 	import type { SettlementWithStorage } from '$lib/types/game';
 
 	type Props = {

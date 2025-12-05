@@ -48,7 +48,7 @@ describe('EmptyState.svelte', () => {
 					actionText: 'Create New'
 				}
 			});
-			
+
 			const button = screen.getByText('Create New');
 			expect(button).toBeDefined();
 		});
@@ -61,7 +61,7 @@ describe('EmptyState.svelte', () => {
 					actionText: 'Create New'
 				}
 			});
-			
+
 			const link = container.querySelector('a[href="/create"]');
 			expect(link).toBeTruthy();
 		});
@@ -75,7 +75,7 @@ describe('EmptyState.svelte', () => {
 					actionIcon: Plus
 				}
 			});
-			
+
 			// Should have 2 SVGs - one for main icon, one for action icon
 			const svgs = container.querySelectorAll('svg');
 			expect(svgs.length).toBe(2);
@@ -88,7 +88,7 @@ describe('EmptyState.svelte', () => {
 					actionHref: '/create'
 				}
 			});
-			
+
 			const links = screen.queryAllByRole('link');
 			expect(links.length).toBe(0);
 		});
@@ -100,7 +100,7 @@ describe('EmptyState.svelte', () => {
 					actionText: 'Create New'
 				}
 			});
-			
+
 			const button = screen.queryByText('Create New');
 			expect(button).toBeNull();
 		});
@@ -113,7 +113,7 @@ describe('EmptyState.svelte', () => {
 					actionText: 'Create New'
 				}
 			});
-			
+
 			const button = container.querySelector('.btn');
 			expect(button?.classList.contains('preset-filled-primary-500')).toBe(true);
 		});
@@ -126,7 +126,7 @@ describe('EmptyState.svelte', () => {
 					actionText: 'Create New'
 				}
 			});
-			
+
 			const button = container.querySelector('.btn');
 			expect(button?.classList.contains('rounded-md')).toBe(true);
 		});
@@ -161,8 +161,9 @@ describe('EmptyState.svelte', () => {
 		it('should have message with proper text color', () => {
 			const { container } = render(EmptyState, { props: baseProps });
 			const message = screen.getByText('There are no items to display at this time.');
-			const hasTextColors = message.className.includes('text-surface-600') && 
-			                      message.className.includes('dark:text-surface-400');
+			const hasTextColors =
+				message.className.includes('text-surface-600') &&
+				message.className.includes('dark:text-surface-400');
 			expect(hasTextColors).toBe(true);
 		});
 
@@ -199,21 +200,22 @@ describe('EmptyState.svelte', () => {
 					title: 'This is a Very Long Title That Might Wrap to Multiple Lines in Some Cases'
 				}
 			});
-			
+
 			const title = screen.getByText(/This is a Very Long Title/);
 			expect(title).toBeDefined();
 		});
 
 		it('should handle long messages', () => {
-			const longMessage = 'This is a very long message that provides detailed information about why there is no data available and what the user might want to do next to resolve this situation.';
-			
+			const longMessage =
+				'This is a very long message that provides detailed information about why there is no data available and what the user might want to do next to resolve this situation.';
+
 			render(EmptyState, {
 				props: {
 					...baseProps,
 					message: longMessage
 				}
 			});
-			
+
 			const message = screen.getByText(longMessage);
 			expect(message).toBeDefined();
 		});
@@ -225,7 +227,7 @@ describe('EmptyState.svelte', () => {
 					icon: Plus
 				}
 			});
-			
+
 			const svg = container.querySelector('svg');
 			expect(svg).toBeTruthy();
 		});
@@ -239,7 +241,7 @@ describe('EmptyState.svelte', () => {
 					// No actionIcon provided
 				}
 			});
-			
+
 			const button = screen.getByText('Create New');
 			expect(button).toBeDefined();
 		});
@@ -268,7 +270,7 @@ describe('EmptyState.svelte', () => {
 					actionText: 'Create New Item'
 				}
 			});
-			
+
 			const link = screen.getByRole('link');
 			expect(link.textContent).toContain('Create New Item');
 		});
@@ -281,13 +283,15 @@ describe('EmptyState.svelte', () => {
 					actionText: 'Create New'
 				}
 			});
-			
+
 			// The action button should be after the text content
 			const elements = Array.from(container.querySelectorAll('*'));
-			const titleIndex = elements.findIndex(el => el.textContent?.includes('No Data Available'));
-			const messageIndex = elements.findIndex(el => el.textContent?.includes('There are no items'));
-			const buttonIndex = elements.findIndex(el => el.tagName === 'A');
-			
+			const titleIndex = elements.findIndex((el) => el.textContent?.includes('No Data Available'));
+			const messageIndex = elements.findIndex((el) =>
+				el.textContent?.includes('There are no items')
+			);
+			const buttonIndex = elements.findIndex((el) => el.tagName === 'A');
+
 			if (buttonIndex > -1) {
 				expect(buttonIndex).toBeGreaterThan(titleIndex);
 				expect(buttonIndex).toBeGreaterThan(messageIndex);
@@ -304,7 +308,7 @@ describe('EmptyState.svelte', () => {
 					message: 'Test Message'
 				}
 			});
-			
+
 			expect(screen.getByText('Test Title')).toBeDefined();
 			expect(screen.getByText('Test Message')).toBeDefined();
 			expect(container.querySelector('svg')).toBeTruthy();
@@ -321,7 +325,7 @@ describe('EmptyState.svelte', () => {
 					actionIcon: Plus
 				}
 			});
-			
+
 			expect(screen.getByText('Test Title')).toBeDefined();
 			expect(screen.getByText('Test Message')).toBeDefined();
 			expect(screen.getByText('Test Action')).toBeDefined();

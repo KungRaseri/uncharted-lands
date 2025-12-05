@@ -10,14 +10,14 @@ import {
 	getResourceIcon,
 	getResourceName,
 	getExtractorName,
-	getBuildingName,
+	getBuildingName
 } from '../../../src/lib/utils/resource-production';
 import { getGameConfig } from '../../../src/lib/api/game-config';
 import type { GameConfig } from '../../../src/lib/types/game-config';
 
 // Mock the game-config module
 vi.mock('../../../src/lib/api/game-config', () => ({
-	getGameConfig: vi.fn(),
+	getGameConfig: vi.fn()
 }));
 
 const mockConfig: GameConfig = {
@@ -25,51 +25,51 @@ const mockConfig: GameConfig = {
 		{ resourceType: 'FOOD' as const, extractorType: 'FARM' as const, baseRate: 10 },
 		{ resourceType: 'WOOD' as const, extractorType: 'LUMBER_MILL' as const, baseRate: 8 },
 		{ resourceType: 'STONE' as const, extractorType: 'QUARRY' as const, baseRate: 6 },
-		{ resourceType: 'ORE' as const, extractorType: 'MINE' as const, baseRate: 4 },
+		{ resourceType: 'ORE' as const, extractorType: 'MINE' as const, baseRate: 4 }
 	],
 	biomeEfficiencies: [
 		{ biomeName: 'Grassland', resourceType: 'FOOD' as const, efficiency: 1.8 },
 		{ biomeName: 'Grassland', resourceType: 'WOOD' as const, efficiency: 0.5 },
 		{ biomeName: 'Forest', resourceType: 'WOOD' as const, efficiency: 2 },
-		{ biomeName: 'Mountains', resourceType: 'STONE' as const, efficiency: 2 },
+		{ biomeName: 'Mountains', resourceType: 'STONE' as const, efficiency: 2 }
 	],
 	structureLevels: [
 		{ level: 1, multiplier: 1 },
 		{ level: 2, multiplier: 1.5 },
 		{ level: 3, multiplier: 2.25 },
 		{ level: 4, multiplier: 3.375 },
-		{ level: 5, multiplier: 5.0625 },
+		{ level: 5, multiplier: 5.0625 }
 	],
 	qualityThresholds: {
 		veryPoor: 20,
 		poor: 40,
 		average: 60,
 		good: 80,
-		excellent: 100,
+		excellent: 100
 	},
 	resourceDisplay: [
 		{ type: 'FOOD', name: 'Food', icon: '🌾', description: 'Basic sustenance' },
 		{ type: 'WOOD', name: 'Wood', icon: '🪵', description: 'Building material' },
 		{ type: 'STONE', name: 'Stone', icon: '🪨', description: 'Construction resource' },
-		{ type: 'ORE', name: 'Ore', icon: '⛏️', description: 'Metal resource' },
+		{ type: 'ORE', name: 'Ore', icon: '⛏️', description: 'Metal resource' }
 	],
 	extractorDisplay: [
 		{ type: 'FARM', name: 'Farm', icon: '🌾', description: 'Grows food' },
 		{ type: 'LUMBER_MILL', name: 'Lumber Mill', icon: '🪵', description: 'Processes timber' },
 		{ type: 'QUARRY', name: 'Quarry', icon: '🪨', description: 'Extracts stone' },
-		{ type: 'MINE', name: 'Mine', icon: '⛏️', description: 'Digs for ore' },
+		{ type: 'MINE', name: 'Mine', icon: '⛏️', description: 'Digs for ore' }
 	],
 	buildingDisplay: [
 		{ type: 'HOUSE', name: 'House', icon: '🏠', description: 'Housing' },
 		{ type: 'STORAGE', name: 'Storage', icon: '📦', description: 'Stores resources' },
-		{ type: 'BARRACKS', name: 'Barracks', icon: '⚔️', description: 'Trains units' },
+		{ type: 'BARRACKS', name: 'Barracks', icon: '⚔️', description: 'Trains units' }
 	],
 	qualityDisplay: [
 		{ threshold: 20, rating: 'Very Poor', color: 'text-red-600', multiplier: 0.5 },
 		{ threshold: 40, rating: 'Poor', color: 'text-orange-600', multiplier: 0.75 },
 		{ threshold: 60, rating: 'Average', color: 'text-yellow-600', multiplier: 1 },
 		{ threshold: 80, rating: 'Good', color: 'text-green-600', multiplier: 1.5 },
-		{ threshold: 100, rating: 'Excellent', color: 'text-blue-600', multiplier: 2 },
+		{ threshold: 100, rating: 'Excellent', color: 'text-blue-600', multiplier: 2 }
 	],
 	accumulation: {
 		fullRateHours: 24,
@@ -77,8 +77,8 @@ const mockConfig: GameConfig = {
 		tier1Hours: 48,
 		tier2Multiplier: 0.25,
 		tier2Hours: 72,
-		maxHours: 96,
-	},
+		maxHours: 96
+	}
 };
 
 describe('Resource Production Utilities', () => {
@@ -177,7 +177,7 @@ describe('Resource Production Utilities', () => {
 				resourceType: 'FOOD',
 				extractorType: 'FARM',
 				biomeName: 'Grassland',
-				structureLevel: 1,
+				structureLevel: 1
 			});
 			// 10 (base) * 1.8 (biome) * 1 (level) = 18
 			expect(rate).toBe(18);
@@ -188,7 +188,7 @@ describe('Resource Production Utilities', () => {
 				resourceType: 'FOOD',
 				extractorType: 'FARM',
 				biomeName: 'Grassland',
-				structureLevel: 2,
+				structureLevel: 2
 			});
 			// 10 * 1.8 * 1.5 = 27
 			expect(rate).toBe(27);
@@ -199,7 +199,7 @@ describe('Resource Production Utilities', () => {
 				resourceType: 'WOOD',
 				extractorType: 'LUMBER_MILL',
 				biomeName: 'Forest',
-				structureLevel: 1,
+				structureLevel: 1
 			});
 			// 8 * 2.0 * 1 = 16
 			expect(rate).toBe(16);
@@ -210,7 +210,7 @@ describe('Resource Production Utilities', () => {
 				resourceType: 'INVALID',
 				extractorType: 'FARM',
 				biomeName: 'Grassland',
-				structureLevel: 1,
+				structureLevel: 1
 			});
 			expect(rate).toBe(0);
 		});
@@ -220,7 +220,7 @@ describe('Resource Production Utilities', () => {
 				resourceType: 'FOOD',
 				extractorType: 'FARM',
 				biomeName: 'UnknownBiome',
-				structureLevel: 1,
+				structureLevel: 1
 			});
 			// 10 * 1 * 1 = 10
 			expect(rate).toBe(10);
@@ -231,7 +231,7 @@ describe('Resource Production Utilities', () => {
 				resourceType: 'FOOD',
 				extractorType: 'FARM',
 				biomeName: 'Grassland',
-				structureLevel: 3,
+				structureLevel: 3
 			});
 			// 10 * 1.8 * 2.25 = 40.5
 			expect(rate).toBe(40.5);

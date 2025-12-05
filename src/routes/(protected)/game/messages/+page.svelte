@@ -3,7 +3,7 @@
 	import { MessageSquare, Send, Search, Users, Mail, Info, Plus } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
-	
+
 	let searchTerm = $state('');
 	let selectedConversation = $state<string | null>(null);
 	let newMessage = $state('');
@@ -17,13 +17,13 @@
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3">
+			<h1
+				class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3"
+			>
 				<MessageSquare size={32} class="text-primary-500" />
 				Messages
 			</h1>
-			<p class="text-surface-600 dark:text-surface-400">
-				Private conversations with other players
-			</p>
+			<p class="text-surface-600 dark:text-surface-400">Private conversations with other players</p>
 		</div>
 		<button class="btn preset-filled-primary-500 rounded-md" disabled>
 			<Plus size={20} />
@@ -61,12 +61,7 @@
 					<div class="input-group-shim">
 						<Search size={16} />
 					</div>
-					<input
-						type="text"
-						placeholder="Search conversations..."
-						class="input"
-						disabled
-					/>
+					<input type="text" placeholder="Search conversations..." class="input" disabled />
 				</div>
 			</div>
 
@@ -88,7 +83,10 @@
 		</div>
 
 		<!-- Message View -->
-		<div class="lg:col-span-2 card preset-filled-surface-100-900 flex flex-col" style="height: 600px;">
+		<div
+			class="lg:col-span-2 card preset-filled-surface-100-900 flex flex-col"
+			style="height: 600px;"
+		>
 			<!-- Header -->
 			<div class="p-4 border-b border-surface-300 dark:border-surface-700">
 				<div class="flex items-center gap-3">
@@ -113,12 +111,7 @@
 			<!-- Input -->
 			<div class="p-4 border-t border-surface-300 dark:border-surface-700">
 				<div class="input-group input-group-divider grid-cols-[1fr_auto]">
-					<input
-						type="text"
-						placeholder="Type a message..."
-						class="input"
-						disabled
-					/>
+					<input type="text" placeholder="Type a message..." class="input" disabled />
 					<button class="btn preset-filled-primary-500" disabled>
 						<Send size={16} />
 					</button>
@@ -129,8 +122,6 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
-			← Back to Game Overview
-		</a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
 	</div>
 </div>

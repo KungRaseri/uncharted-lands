@@ -13,7 +13,7 @@ describe('LightSwitch.svelte', () => {
 	beforeEach(() => {
 		// Create a mock localStorage
 		localStorageMock = {};
-		
+
 		Object.defineProperty(globalThis, 'localStorage', {
 			value: {
 				getItem: vi.fn((key: string) => localStorageMock[key] || null),
@@ -103,13 +103,13 @@ describe('LightSwitch.svelte', () => {
 				// Find the actual switch control (label or input)
 				const switchLabel = container.querySelector('label');
 				const checkbox = container.querySelector('input[type="checkbox"]');
-				
+
 				if (checkbox) {
 					await fireEvent.click(checkbox);
 				} else if (switchLabel) {
 					await fireEvent.click(switchLabel);
 				}
-				
+
 				// Just verify the component responds to interaction
 				expect(container).toBeTruthy();
 			});
