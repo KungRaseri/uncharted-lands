@@ -110,7 +110,10 @@ const login: Action = async ({ cookies, request, url, fetch }) => {
 			maxAge: cookieMaxAge
 		});
 
-		throw redirect(303, url.searchParams.get('redirectTo') ?? '/');
+		// If user is being redirected to a specific page, honor that
+		// Otherwise, send them to the game page which will handle onboarding if needed
+		const redirectTo = url.searchParams.get('redirectTo');
+		throw redirect(303, redirectTo || '/game');
 	} catch (error) {
 		// Re-throw redirects (SvelteKit redirect objects have a status property)
 		if (error && typeof error === 'object' && 'status' in error && 'location' in error) {

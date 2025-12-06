@@ -47,6 +47,10 @@
 					storage: data.settlement.storage,
 					capacity: data.settlement.storage.capacity || 1000
 				});
+
+				// Verify store was populated
+				const retrievedResources = resourcesStore.getResources(data.settlement.id);
+				console.log('[SETTLEMENT PAGE] Retrieved from store after init:', retrievedResources);
 			} else {
 				console.warn('[SETTLEMENT PAGE] No storage data available in settlement');
 			}

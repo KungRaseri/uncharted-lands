@@ -94,7 +94,8 @@ const register: Action = async ({ cookies, request, fetch }) => {
 			maxAge: 60 * 60 * 6
 		});
 
-		throw redirect(302, '/');
+		// Redirect new users directly to onboarding/getting started
+		throw redirect(302, '/game/getting-started');
 	} catch (error) {
 		// Re-throw redirects (SvelteKit redirect objects have a status property)
 		if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
