@@ -35,6 +35,7 @@
 	interface Props {
 		settlementId: string;
 		settlementName: string;
+		onOpenBuildMenu?: () => void; // Handler to open build menu
 		settlement?: {
 			storage?: {
 				food: number;
@@ -53,7 +54,7 @@
 		};
 	}
 
-	let { settlementId, settlementName }: Props = $props();
+	let { settlementId, settlementName, onOpenBuildMenu }: Props = $props();
 
 	// Settings modal state
 	let settingsOpen = $state(false);
@@ -404,7 +405,7 @@
 
 	<!-- Quick Actions Bar (always visible) -->
 	<div class="quick-actions-wrapper">
-		<QuickActionsBar {settlementId} />
+		<QuickActionsBar {settlementId} {onOpenBuildMenu} />
 	</div>
 
 	<!-- Main content with responsive layout -->

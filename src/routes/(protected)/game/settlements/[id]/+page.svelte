@@ -6,12 +6,29 @@
 	import CountdownTimer from '$lib/components/game/CountdownTimer.svelte';
 	import DisasterImpactBanner from '$lib/components/game/DisasterImpactBanner.svelte';
 	import AftermathSummaryModal from '$lib/components/game/AftermathSummaryModal.svelte';
+	// Build UI Component (Global modal)
+	import MobileBuildMenu from '$lib/components/game/MobileBuildMenu.svelte';
 	import { createGameRefreshInterval } from '$lib/stores/game/gameState.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
 	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
+
+	// Build menu state
+	let buildMenuOpen = $state(false);
+
+	function handleOpenBuildMenu() {
+		console.log('🔍 [SettlementPage] handleOpenBuildMenu CALLED');
+		console.log('🔍 [SettlementPage] buildMenuOpen BEFORE:', buildMenuOpen);
+		buildMenuOpen = true;
+		console.log('🔍 [SettlementPage] buildMenuOpen AFTER:', buildMenuOpen);
+	}
+
+	function handleCloseBuildMenu() {
+		console.log('🔍 [SettlementPage] handleCloseBuildMenu CALLED');
+		buildMenuOpen = false;
+	}
 
 	// Set up auto-refresh for real-time data updates
 	onMount(() => {
@@ -65,12 +82,22 @@
 <DisasterImpactBanner />
 <AftermathSummaryModal />
 
+<!-- Build Menu (Global modal) -->
+{#if data.settlement}
+	<MobileBuildMenu
+		open={buildMenuOpen}
+		onClose={handleCloseBuildMenu}
+		settlementId={data.settlement.id}
+	/>
+{/if}
+
 <!-- Main Settlement Dashboard -->
 {#if data.settlement}
 	<SettlementDashboard
 		settlementId={data.settlement.id}
 		settlementName={data.settlement.name}
 		settlement={data.settlement}
+		onOpenBuildMenu={handleOpenBuildMenu}
 	/>
 {:else}
 	<div class="max-w-7xl mx-auto p-6">

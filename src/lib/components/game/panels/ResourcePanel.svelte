@@ -89,13 +89,12 @@
 					{@const warningLevel = getWarningLevel(percentage)}
 					{@const netRate = getNetRate(resource)}
 
-					<li class="resource-item" role="listitem">
+					<li class="resource-item" data-resource={resource.type} role="listitem">
 						<div class="resource-header">
 							<div class="resource-name-group">
 								<span class="resource-icon" aria-hidden="true">{config.icon}</span>
 								<h3 class="resource-name">{config.label}</h3>
 							</div>
-
 							<div class="resource-amount" aria-label={getResourceLabel(resource)}>
 								<span class="current">{formatNumber(resource.current)}</span>
 								<span class="separator">/</span>

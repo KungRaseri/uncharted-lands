@@ -19,9 +19,10 @@
 
 	interface Props {
 		settlementId: string;
+		onOpenBuildMenu?: () => void; // Handler to open build menu modal
 	}
 
-	let { settlementId }: Props = $props();
+	let { settlementId, onOpenBuildMenu }: Props = $props();
 
 	// Real-time badge counts from stores
 	const alertCount = $derived(alertsStore.getAlertCount(settlementId));
@@ -37,8 +38,18 @@
 
 	// Action handlers
 	async function handleBuild() {
-		// TODO: Open build menu when UI is implemented
-		console.log('Open build menu:', settlementId);
+		console.log('🔍 [QuickActionsBar] Build button clicked');
+		console.log('🔍 [QuickActionsBar] onOpenBuildMenu exists?', !!onOpenBuildMenu);
+		console.log('🔍 [QuickActionsBar] onOpenBuildMenu type:', typeof onOpenBuildMenu);
+
+		// Open build menu modal via parent handler
+		if (onOpenBuildMenu) {
+			console.log('🔍 [QuickActionsBar] Calling onOpenBuildMenu...');
+			onOpenBuildMenu();
+			console.log('🔍 [QuickActionsBar] onOpenBuildMenu called successfully');
+		} else {
+			console.warn('❌ [QuickActionsBar] Build menu handler not provided');
+		}
 	}
 
 	async function handleCollect() {

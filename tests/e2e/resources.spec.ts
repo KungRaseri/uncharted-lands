@@ -39,6 +39,8 @@ import {
 // TEST SETUP & TEARDOWN
 // ============================================================================
 
+const apiUrl = 'http://localhost:3001/api';
+
 let testWorldId: string;
 let testSettlementId: string;
 let testUserEmail: string;
@@ -50,7 +52,26 @@ test.beforeEach(async ({ page, request }) => {
 	await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
 	await page.waitForURL('/', { timeout: 10000 });
 
-	// 2. Get session cookies from page context and add to request context
+	// 2. Elevate user to ADMINISTRATOR via test API endpoint
+	// NOTE: This uses the server's /api/test/elevate-admin/:email endpoint.
+	// Role elevation is impossible via public API (PUT /api/players/:id requires existing admin - chicken-and-egg problem)
+	// The test endpoint is only available in test/development environments (protected by requireTestEnvironment middleware)
+	// All other operations (server/world creation) use the real API to test full authentication stack.
+	console.log('[E2E] Elevating user to ADMINISTRATOR:', testUserEmail);
+
+	const elevateResponse = await request.put(
+		`${apiUrl}/test/elevate-admin/${encodeURIComponent(testUserEmail)}`
+	);
+
+	if (!elevateResponse.ok()) {
+		const errorText = await elevateResponse.text();
+		throw new Error(`Failed to elevate user to admin: ${elevateResponse.status()} ${errorText}`);
+	}
+
+	const elevateData = await elevateResponse.json();
+	console.log('[E2E] User elevated to ADMINISTRATOR:', elevateData);
+
+	// 3. Get session cookies from page context and add to request context
 	const cookies = await page.context().cookies();
 	const sessionCookie = cookies.find((c) => c.name === 'session');
 	if (!sessionCookie) {
@@ -59,9 +80,6 @@ test.beforeEach(async ({ page, request }) => {
 
 	// Store cookie value for cleanup in afterEach
 	sessionCookieValue = sessionCookie.value;
-
-	// API base URL
-	const apiUrl = 'http://localhost:3001/api';
 
 	// 3. Get account information
 	const accountResponse = await request.get(`${apiUrl}/account/me`, {
@@ -80,47 +98,99 @@ test.beforeEach(async ({ page, request }) => {
 	const accountId = account.id;
 	const username = account.profile?.username || testUserEmail;
 
-	// 4. Get or create test world (with session cookie)
-	const worldResponse = await request.get(`${apiUrl}/worlds`, {
+	// 4. Get or create test server (now possible because user is admin)
+	const serversResponse = await request.get(`${apiUrl}/servers`, {
 		headers: {
 			Cookie: `session=${sessionCookie.value}`
 		}
 	});
 
-	if (!worldResponse.ok()) {
-		throw new Error(
-			`Failed to get worlds: ${worldResponse.status()} ${await worldResponse.text()}`
-		);
+	if (!serversResponse.ok()) {
+		throw new Error(`Failed to get servers: ${serversResponse.status()}`);
 	}
 
-	const worlds = await worldResponse.json();
+	let servers = await serversResponse.json();
+	let testServer;
 
-	let world;
-	if (worlds.length === 0) {
-		// Create a test world
-		const createResponse = await request.post(`${apiUrl}/worlds`, {
+	// Look for existing E2E test server
+	testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+
+	if (!testServer) {
+		console.log('[E2E] Creating E2E test server...');
+		const createServerResponse = await request.post(`${apiUrl}/servers`, {
+			headers: {
+				Cookie: `session=${sessionCookie.value}`
+			},
+			data: {
+				name: 'E2E Test Server',
+				hostname: 'localhost',
+				port: 3001,
+				status: 'ONLINE'
+			}
+		});
+
+		if (!createServerResponse.ok()) {
+			throw new Error(
+				`Failed to create server: ${createServerResponse.status()} ${await createServerResponse.text()}`
+			);
+		}
+
+		testServer = await createServerResponse.json();
+		console.log('[E2E] Created test server:', testServer.id);
+	} else {
+		console.log('[E2E] Using existing test server:', testServer.id);
+	}
+
+	// 5. Get or create test world (with server-side generation - now possible because user is admin)
+	const worldsResponse = await request.get(`${apiUrl}/worlds`, {
+		headers: {
+			Cookie: `session=${sessionCookie.value}`
+		}
+	});
+
+	if (!worldsResponse.ok()) {
+		throw new Error(`Failed to get worlds: ${worldsResponse.status()}`);
+	}
+
+	const worlds = await worldsResponse.json();
+	let world = worlds.find((w: { name: string }) => w.name === 'E2E Test World');
+
+	if (!world) {
+		console.log('[E2E] Creating test world with server-side generation...');
+		const createWorldResponse = await request.post(`${apiUrl}/worlds`, {
 			headers: {
 				Cookie: `session=${sessionCookie.value}`
 			},
 			data: {
 				name: 'E2E Test World',
-				size: 'SMALL',
-				seed: 'test-seed-123'
+				serverId: testServer.id, // ✅ REQUIRED
+				generate: true, // ✅ REQUIRED for tile generation
+				width: 100, // ✅ SMALL world = 100x100
+				height: 100, // ✅ SMALL world = 100x100
+				elevationSeed: 123456789, // Consistent seed for reproducibility
+				worldTemplateType: 'STANDARD' // Optional
 			}
 		});
 
-		if (!createResponse.ok()) {
+		if (!createWorldResponse.ok()) {
 			throw new Error(
-				`Failed to create world: ${createResponse.status()} ${await createResponse.text()}`
+				`Failed to create world: ${createWorldResponse.status()} ${await createWorldResponse.text()}`
 			);
 		}
 
-		world = await createResponse.json();
-		testWorldId = world.id;
-	} else {
-		world = worlds[0];
-		testWorldId = world.id;
+		world = await createWorldResponse.json();
+
+		// Verify world is ready
+		if (world.status !== 'ready') {
+			throw new Error(`World generation failed, status: ${world.status}`);
+		}
+
+		console.log(
+			`[E2E] Test world created with ${world.regionCount || 'unknown'} regions and ${world.tileCount || 'unknown'} tiles`
+		);
 	}
+
+	testWorldId = world.id;
 
 	// 5. Create test settlement via API (with session cookie and required fields)
 	const settlementResponse = await request.post(`${apiUrl}/settlements`, {
@@ -150,8 +220,6 @@ test.beforeEach(async ({ page, request }) => {
 });
 
 test.afterEach(async ({ request }) => {
-	const apiUrl = 'http://localhost:3001/api';
-
 	// Clean up test settlements
 	if (testSettlementId && sessionCookieValue) {
 		await request.delete(`${apiUrl}/settlements/${testSettlementId}`, {

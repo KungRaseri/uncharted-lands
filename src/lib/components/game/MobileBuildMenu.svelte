@@ -10,6 +10,14 @@
 
 	let { open, onClose, settlementId }: Props = $props();
 
+	// Log prop changes
+	$effect(() => {
+		console.log('🔍 [MobileBuildMenu] Props changed:');
+		console.log('  - open:', open);
+		console.log('  - settlementId:', settlementId);
+		console.log('  - onClose exists:', !!onClose);
+	});
+
 	// Group structures by category
 	const structuresByCategory = $derived.by(() => {
 		const categories: Record<string, typeof structures> = {};
@@ -66,6 +74,7 @@
 		{#each Object.entries(structuresByCategory[selectedCategory] || {}) as [key, structure]}
 			<button
 				class="structure-card"
+				data-structure-type={key}
 				onclick={() => handleBuild(key as StructureType)}
 				type="button"
 			>
