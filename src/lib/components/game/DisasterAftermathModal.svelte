@@ -76,7 +76,7 @@
 		transition:fade={{ duration: 200 }}
 	>
 		<div
-			class="card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl pointer-events-auto"
+			class="card p-6 w-full max-w-2xl max-h-screen md:max-h-[90vh] overflow-y-auto [-webkit-overflow-scrolling:touch] shadow-2xl pointer-events-auto transform translate-z-0 will-change-[transform,opacity] md:rounded-container-token"
 			transition:fly={{ y: -50, duration: 300 }}
 			role="dialog"
 			aria-labelledby="aftermath-title"
@@ -88,7 +88,7 @@
 				<h2 id="aftermath-title" class="h2 text-warning-400">⚠️ Disaster Aftermath Report</h2>
 				<button
 					type="button"
-					class="btn-icon btn-icon-sm variant-ghost-surface"
+					class="btn-icon btn-icon-sm variant-ghost-surface focus-visible:outline-3 focus-visible:outline-primary-500 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
 					onclick={handleClose}
 					aria-label="Close modal"
 				>
@@ -276,7 +276,7 @@
 			<footer class="flex flex-col sm:flex-row gap-3 justify-end">
 				<button
 					type="button"
-					class="btn variant-ghost-surface"
+					class="btn variant-ghost-surface focus-visible:outline-3 focus-visible:outline-primary-500 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
 					onclick={handleClose}
 					aria-label="Close aftermath report"
 				>
@@ -284,7 +284,7 @@
 				</button>
 				<button
 					type="button"
-					class="btn variant-filled-warning"
+					class="btn variant-filled-warning focus-visible:outline-3 focus-visible:outline-primary-500 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
 					onclick={() => {
 						// TODO: Navigate to repair interface
 						handleClose();
@@ -302,30 +302,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	/* Smooth animations for GPU acceleration */
-	.card {
-		transform: translateZ(0);
-		will-change: transform, opacity;
-	}
-
-	/* Mobile-friendly scrolling */
-	@media (max-width: 768px) {
-		.overflow-y-auto {
-			-webkit-overflow-scrolling: touch;
-		}
-
-		/* Full-screen modal on mobile */
-		.card {
-			max-height: 100vh;
-			border-radius: 0;
-		}
-	}
-
-	/* High contrast focus indicators for accessibility */
-	button:focus-visible {
-		outline: 3px solid var(--color-primary-500);
-		outline-offset: 2px;
-	}
-</style>

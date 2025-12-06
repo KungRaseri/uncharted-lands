@@ -55,15 +55,20 @@
 	}
 </script>
 
-<div class="mobile-layout" role="main">
+<div class="flex flex-col h-full overflow-hidden" role="main">
 	<!-- Main scrollable content -->
-	<div class="panel-stack" role="region" aria-label="Settlement information">
+	<div
+		class="flex-1 overflow-y-auto overflow-x-hidden p-2 xs:p-1 flex flex-col gap-2 xs:gap-1 pb-[calc(0.5rem+68px)] xs:pb-[calc(0.25rem+68px)] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-surface-100 dark:[&::-webkit-scrollbar-track]:bg-surface-800 [&::-webkit-scrollbar-thumb]:bg-surface-300 dark:[&::-webkit-scrollbar-thumb]:bg-surface-600 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-surface-400 dark:[&::-webkit-scrollbar-thumb:hover]:bg-surface-500"
+		role="region"
+		aria-label="Settlement information"
+	>
 		{#each sortedPanels as panel (panel.id)}
 			<div
-				class="panel-container"
+				class="transition-all duration-300 rounded-lg bg-surface-50 dark:bg-surface-900 motion-reduce:transition-none"
+				class:max-h-12={panel.collapsed}
+				class:overflow-hidden={panel.collapsed}
+				class:touch-pan-y={panel.id === 'alerts'}
 				data-panel-id={panel.id}
-				class:collapsed={panel.collapsed}
-				class:dismissible={panel.id === 'alerts'}
 				style="order: {panel.position};"
 				ontouchstart={(e) => handleTouchStart(e, panel.id)}
 				ontouchend={(e) => handleTouchEnd(e, panel.id)}
@@ -73,65 +78,3 @@
 		{/each}
 	</div>
 </div>
-
-<style>
-	.mobile-layout {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		overflow: hidden;
-	}
-
-	.panel-stack {
-		flex: 1;
-		overflow-y: auto;
-		overflow-x: hidden;
-		padding: var(--spacing-sm, 0.5rem);
-		display: flex;
-		flex-direction: column;
-		gap: var(--spacing-sm, 0.5rem);
-		padding-bottom: calc(var(--spacing-sm, 0.5rem) + 68px); /* Space for fixed quick actions bar */
-	}
-
-	.panel-container {
-		transition: all 0.3s ease;
-		border-radius: var(--radius-md, 0.5rem);
-		background: var(--surface-50, #fafafa);
-	}
-
-	.panel-container.collapsed {
-		max-height: 48px; /* Show header only */
-		overflow: hidden;
-	}
-
-	.panel-container.dismissible {
-		/* Enable swipe gestures */
-		touch-action: pan-y;
-	}
-
-	/* Pull-to-refresh area (visual feedback) */
-	.panel-stack::before {
-		content: '';
-		display: block;
-		height: 60px;
-		margin-top: -60px;
-		background: linear-gradient(to bottom, transparent, var(--surface-100, #f3f4f6));
-		opacity: 0;
-		transition: opacity 0.2s;
-	}
-
-	/* Reduce motion for accessibility */
-	@media (prefers-reduced-motion: reduce) {
-		.panel-container {
-			transition: none;
-		}
-	}
-
-	/* Smaller screens (≤375px) */
-	@media (max-width: 375px) {
-		.panel-stack {
-			padding: var(--spacing-xs, 0.25rem);
-			gap: var(--spacing-xs, 0.25rem);
-		}
-	}
-</style>

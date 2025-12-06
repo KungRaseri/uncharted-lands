@@ -141,12 +141,16 @@
 	}
 </script>
 
-<div class="panel-list" role="list" aria-label="Dashboard panels">
+<div class="flex flex-col gap-2" role="list" aria-label="Dashboard panels">
 	{#each sortedPanels as panel (panel.id)}
 		<div
-			class="panel-item"
-			class:dragging={draggedPanelId === panel.id}
-			class:drag-over={draggedOverPanelId === panel.id && draggedPanelId !== panel.id}
+			class={`flex items-center gap-3 p-3 min-h-14 rounded-lg border-2 cursor-move select-none transition-all duration-200 ${
+				draggedPanelId === panel.id
+					? 'opacity-50 scale-[0.98]'
+					: draggedOverPanelId === panel.id && draggedPanelId !== panel.id
+						? 'border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-900'
+						: 'border-transparent bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700'
+			} focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2`}
 			data-panel-id={panel.id}
 			role="button"
 			draggable="true"
@@ -162,7 +166,10 @@
 			aria-label={`${panelNames[panel.id]}, position ${panel.position + 1} of ${panels.length}. Use arrow keys to reorder.`}
 		>
 			<!-- Drag Handle -->
-			<div class="drag-handle" aria-hidden="true">
+			<div
+				class="flex items-center text-surface-600 dark:text-surface-400 cursor-grab active:cursor-grabbing"
+				aria-hidden="true"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="20"
@@ -178,17 +185,27 @@
 			</div>
 
 			<!-- Panel Info -->
-			<div class="panel-info">
-				<span class="panel-name">{panelNames[panel.id]}</span>
-				<span class="panel-position">Position {panel.position + 1}</span>
+			<div class="flex flex-col gap-1 flex-1">
+				<span class="text-[0.9375rem] font-medium text-surface-900 dark:text-surface-50"
+					>{panelNames[panel.id]}</span
+				>
+				<span class="text-xs text-surface-600 dark:text-surface-400"
+					>Position {panel.position + 1}</span
+				>
 			</div>
 
 			<!-- Visual indicator (collapsed/visible) -->
-			<div class="panel-status">
+			<div class="flex gap-2">
 				{#if !panel.visible}
-					<span class="status-badge hidden" title="Hidden">Hidden</span>
+					<span
+						class="px-2 py-1 rounded text-xs font-medium uppercase bg-error-100 dark:bg-error-900 text-error-700 dark:text-error-200"
+						title="Hidden">Hidden</span
+					>
 				{:else if panel.collapsed}
-					<span class="status-badge collapsed" title="Collapsed">Collapsed</span>
+					<span
+						class="px-2 py-1 rounded text-xs font-medium uppercase bg-warning-100 dark:bg-warning-900 text-warning-700 dark:text-warning-200"
+						title="Collapsed">Collapsed</span
+					>
 				{/if}
 			</div>
 		</div>
@@ -201,150 +218,3 @@
 		{panelNames[draggedPanelId]} is being moved
 	{/if}
 </div>
-
-<style>
-	/* Panel List */
-	.panel-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	/* Panel Item */
-	.panel-item {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 0.75rem;
-		background: var(--color-surface-secondary, #f5f5f5);
-		border: 2px solid transparent;
-		border-radius: 0.5rem;
-		cursor: move;
-		transition: all 0.2s ease;
-		min-height: 56px; /* Touch target */
-		user-select: none;
-	}
-
-	.panel-item:hover {
-		background: var(--color-surface-tertiary, #e0e0e0);
-	}
-
-	.panel-item:focus {
-		outline: 2px solid var(--color-primary-500, #3b82f6);
-		outline-offset: 2px;
-	}
-
-	.panel-item.dragging {
-		opacity: 0.5;
-		transform: scale(0.98);
-	}
-
-	.panel-item.drag-over {
-		border-color: var(--color-primary-500, #3b82f6);
-		background: var(--color-primary-50, #eff6ff);
-	}
-
-	/* Drag Handle */
-	.drag-handle {
-		color: var(--color-text-secondary, #666);
-		display: flex;
-		align-items: center;
-		cursor: grab;
-	}
-
-	.panel-item:active .drag-handle {
-		cursor: grabbing;
-	}
-
-	/* Panel Info */
-	.panel-info {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		flex: 1;
-	}
-
-	.panel-name {
-		font-size: 0.9375rem;
-		font-weight: 500;
-		color: var(--color-text-primary, #1a1a1a);
-	}
-
-	.panel-position {
-		font-size: 0.75rem;
-		color: var(--color-text-secondary, #666);
-	}
-
-	/* Panel Status */
-	.panel-status {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.status-badge {
-		padding: 0.25rem 0.5rem;
-		border-radius: 0.25rem;
-		font-size: 0.75rem;
-		font-weight: 500;
-		text-transform: uppercase;
-	}
-
-	.status-badge.hidden {
-		background: var(--color-error-100, #fee);
-		color: var(--color-error-700, #b91c1c);
-	}
-
-	.status-badge.collapsed {
-		background: var(--color-warning-100, #fef3c7);
-		color: var(--color-warning-700, #a16207);
-	}
-
-	/* Screen Reader Only */
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border-width: 0;
-	}
-
-	/* Dark Mode */
-	:global(.dark) .panel-item {
-		background: var(--color-surface-secondary-dark, #2a2a2a);
-	}
-
-	:global(.dark) .panel-item:hover {
-		background: var(--color-surface-tertiary-dark, #3a3a3a);
-	}
-
-	:global(.dark) .panel-item.drag-over {
-		background: var(--color-primary-900, #1e3a8a);
-		border-color: var(--color-primary-400, #60a5fa);
-	}
-
-	:global(.dark) .drag-handle {
-		color: var(--color-text-secondary-dark, #a0a0a0);
-	}
-
-	:global(.dark) .panel-name {
-		color: var(--color-text-primary-dark, #f5f5f5);
-	}
-
-	:global(.dark) .panel-position {
-		color: var(--color-text-secondary-dark, #a0a0a0);
-	}
-
-	:global(.dark) .status-badge.hidden {
-		background: var(--color-error-900, #7f1d1d);
-		color: var(--color-error-200, #fecaca);
-	}
-
-	:global(.dark) .status-badge.collapsed {
-		background: var(--color-warning-900, #78350f);
-		color: var(--color-warning-200, #fef3c7);
-	}
-</style>

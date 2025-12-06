@@ -232,6 +232,21 @@
 	}
 </script>
 
+<svelte:head>
+	<style>
+		@keyframes slideDown {
+			from {
+				opacity: 0;
+				transform: translateY(-10px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+	</style>
+</svelte:head>
+
 <div class="disaster-history-panel card p-4 space-y-4">
 	<!-- Header -->
 	<div class="flex items-center justify-between">
@@ -372,10 +387,12 @@
 			</p>
 
 			<!-- Disaster Cards (Virtual Scrolling Container) -->
-			<div class="disaster-cards max-h-[600px] overflow-y-auto space-y-2 pr-2">
+			<div
+				class="max-h-[600px] md:max-h-[600px] overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-surface-300/30 dark:[&::-webkit-scrollbar-track]:bg-surface-600/30 [&::-webkit-scrollbar-track]:rounded [&::-webkit-scrollbar-thumb]:bg-primary-500/50 dark:[&::-webkit-scrollbar-thumb]:bg-primary-400/50 [&::-webkit-scrollbar-thumb]:rounded hover:[&::-webkit-scrollbar-thumb]:bg-primary-500/70 dark:hover:[&::-webkit-scrollbar-thumb]:bg-primary-400/70"
+			>
 				{#each filteredDisasters() as disaster (disaster.id)}
 					<div
-						class="disaster-card card variant-ghost-surface hover:variant-ghost-primary transition-all cursor-pointer"
+						class="card variant-ghost-surface hover:variant-ghost-primary transition-all cursor-pointer"
 						onclick={() => toggleExpanded(disaster.id)}
 						role="button"
 						tabindex="0"
@@ -431,7 +448,9 @@
 
 						<!-- Expanded Details (Toggled) -->
 						{#if expandedId === disaster.id}
-							<div class="card-footer p-3 pt-0 border-t border-surface-300-600-token mt-2">
+							<div
+								class="p-3 pt-0 border-t border-surface-300 dark:border-surface-600 mt-2 animate-[slideDown_0.2s_ease-out]"
+							>
 								<div class="space-y-3">
 									<!-- Severity Meter -->
 									<div>
@@ -530,47 +549,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	/* Custom scrollbar for disaster list */
-	.disaster-cards::-webkit-scrollbar {
-		width: 8px;
-	}
-
-	.disaster-cards::-webkit-scrollbar-track {
-		background: rgba(var(--color-surface-300) / 0.3);
-		border-radius: 4px;
-	}
-
-	.disaster-cards::-webkit-scrollbar-thumb {
-		background: rgba(var(--color-primary-500) / 0.5);
-		border-radius: 4px;
-	}
-
-	.disaster-cards::-webkit-scrollbar-thumb:hover {
-		background: rgba(var(--color-primary-500) / 0.7);
-	}
-
-	/* Smooth expand/collapse animation */
-	.card-footer {
-		animation: slideDown 0.2s ease-out;
-	}
-
-	@keyframes slideDown {
-		from {
-			opacity: 0;
-			transform: translateY(-10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	/* Responsive grid adjustments */
-	@media (max-width: 768px) {
-		.disaster-cards {
-			max-height: 400px;
-		}
-	}
-</style>

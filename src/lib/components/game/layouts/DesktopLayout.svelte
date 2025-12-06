@@ -35,14 +35,22 @@
 	);
 </script>
 
-<div class="desktop-layout" role="main">
+<div
+	class="grid grid-cols-[300px_1fr_350px] 2xl:grid-cols-[350px_1fr_400px] gap-6 p-6 max-w-[1920px] mx-auto h-full"
+	role="main"
+>
 	<!-- Left Column: Information Panels -->
-	<div class="column column-left" role="region" aria-label="Information panels">
+	<div
+		class="flex flex-col gap-4 overflow-y-auto overflow-x-hidden min-w-[280px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-surface-100 [&::-webkit-scrollbar-track]:dark:bg-surface-800 [&::-webkit-scrollbar-track]:rounded [&::-webkit-scrollbar-thumb]:bg-surface-400 [&::-webkit-scrollbar-thumb]:dark:bg-surface-600 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-thumb:hover]:bg-surface-500 [&::-webkit-scrollbar-thumb:hover]:dark:bg-surface-500"
+		role="region"
+		aria-label="Information panels"
+	>
 		{#each leftPanels as panel (panel.id)}
 			<div
-				class="panel-container"
+				class="transition-all duration-300"
+				class:max-h-12={panel.collapsed}
+				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				class:collapsed={panel.collapsed}
 				style="order: {panel.position};"
 			>
 				{@render renderPanel(panel)}
@@ -51,12 +59,17 @@
 	</div>
 
 	<!-- Center Column: Main Content -->
-	<div class="column column-center" role="region" aria-label="Main content">
+	<div
+		class="flex flex-col gap-4 overflow-y-auto overflow-x-hidden min-w-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-surface-100 [&::-webkit-scrollbar-track]:dark:bg-surface-800 [&::-webkit-scrollbar-track]:rounded [&::-webkit-scrollbar-thumb]:bg-surface-400 [&::-webkit-scrollbar-thumb]:dark:bg-surface-600 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-thumb:hover]:bg-surface-500 [&::-webkit-scrollbar-thumb:hover]:dark:bg-surface-500"
+		role="region"
+		aria-label="Main content"
+	>
 		{#each centerPanels as panel (panel.id)}
 			<div
-				class="panel-container"
+				class="transition-all duration-300"
+				class:max-h-12={panel.collapsed}
+				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				class:collapsed={panel.collapsed}
 				style="order: {panel.position};"
 			>
 				{@render renderPanel(panel)}
@@ -65,12 +78,17 @@
 	</div>
 
 	<!-- Right Column: Actions & Suggestions -->
-	<div class="column column-right" role="region" aria-label="Actions and suggestions">
+	<div
+		class="flex flex-col gap-4 overflow-y-auto overflow-x-hidden min-w-[300px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-surface-100 [&::-webkit-scrollbar-track]:dark:bg-surface-800 [&::-webkit-scrollbar-track]:rounded [&::-webkit-scrollbar-thumb]:bg-surface-400 [&::-webkit-scrollbar-thumb]:dark:bg-surface-600 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-thumb:hover]:bg-surface-500 [&::-webkit-scrollbar-thumb:hover]:dark:bg-surface-500"
+		role="region"
+		aria-label="Actions and suggestions"
+	>
 		{#each rightPanels as panel (panel.id)}
 			<div
-				class="panel-container"
+				class="transition-all duration-300"
+				class:max-h-12={panel.collapsed}
+				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				class:collapsed={panel.collapsed}
 				style="order: {panel.position};"
 			>
 				{@render renderPanel(panel)}
@@ -78,73 +96,3 @@
 		{/each}
 	</div>
 </div>
-
-<style>
-	.desktop-layout {
-		display: grid;
-		grid-template-columns: 300px 1fr 350px;
-		gap: var(--spacing-lg, 1.5rem);
-		padding: var(--spacing-lg, 1.5rem);
-		max-width: 1920px;
-		margin: 0 auto;
-		height: 100%;
-	}
-
-	.column {
-		display: flex;
-		flex-direction: column;
-		gap: var(--spacing-md, 1rem);
-		overflow-y: auto;
-		overflow-x: hidden;
-	}
-
-	.column-left {
-		/* Fixed width sidebar for info panels */
-		min-width: 280px;
-	}
-
-	.column-center {
-		/* Main content area takes remaining space */
-		min-width: 0; /* Prevent grid blowout */
-	}
-
-	.column-right {
-		/* Fixed width sidebar for actions */
-		min-width: 300px;
-	}
-
-	.panel-container {
-		transition: all 0.3s ease;
-	}
-
-	.panel-container.collapsed {
-		max-height: 48px; /* Show header only */
-		overflow: hidden;
-	}
-
-	/* Scrollbar styling */
-	.column::-webkit-scrollbar {
-		width: 8px;
-	}
-
-	.column::-webkit-scrollbar-track {
-		background: var(--surface-100, #f3f4f6);
-		border-radius: 4px;
-	}
-
-	.column::-webkit-scrollbar-thumb {
-		background: var(--surface-400, #9ca3af);
-		border-radius: 4px;
-	}
-
-	.column::-webkit-scrollbar-thumb:hover {
-		background: var(--surface-500, #6b7280);
-	}
-
-	/* Ultrawide screens (≥1920px) */
-	@media (min-width: 1920px) {
-		.desktop-layout {
-			grid-template-columns: 350px 1fr 400px;
-		}
-	}
-</style>

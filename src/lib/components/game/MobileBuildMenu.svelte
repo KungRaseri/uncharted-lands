@@ -48,11 +48,18 @@
 
 <BottomSheet {open} {onClose} title="Build Structure" height="full">
 	<!-- Category Tabs -->
-	<div class="category-tabs" role="tablist" aria-label="Structure categories">
+	<div
+		class="flex gap-2 mb-6 overflow-x-auto touch-pan-x scrollbar-hide"
+		role="tablist"
+		aria-label="Structure categories"
+	>
 		{#each Object.keys(structuresByCategory) as category}
 			<button
-				class="category-tab"
-				class:active={selectedCategory === category}
+				class="shrink-0 px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 min-h-11
+					{selectedCategory === category
+					? 'bg-primary-500 dark:bg-primary-600 text-white'
+					: 'bg-surface-200 dark:bg-surface-800 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-700'}
+					focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
 				onclick={() => (selectedCategory = category)}
 				role="tab"
 				aria-selected={selectedCategory === category}
@@ -67,29 +74,36 @@
 	<!-- Structure Grid -->
 	<div
 		id="category-{selectedCategory}"
-		class="structure-grid"
+		class="grid gap-4 grid-cols-1"
 		role="tabpanel"
 		aria-labelledby="category-{selectedCategory}"
 	>
 		{#each Object.entries(structuresByCategory[selectedCategory] || {}) as [key, structure]}
 			<button
-				class="structure-card"
+				class="flex items-center gap-4 p-4 bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl text-left cursor-pointer transition-all duration-200 min-h-20
+					hover:bg-surface-200 dark:hover:bg-surface-700 hover:border-primary-300 dark:hover:border-primary-600 hover:-translate-y-0.5 hover:shadow-md
+					active:translate-y-0
+					focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
 				data-structure-type={key}
 				onclick={() => handleBuild(key as StructureType)}
 				type="button"
 			>
 				<!-- Icon -->
-				<div class="structure-icon">
+				<div
+					class="shrink-0 w-12 h-12 flex items-center justify-center bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-lg text-2xl font-bold"
+				>
 					{structure.name.charAt(0)}
 				</div>
 
 				<!-- Info -->
-				<div class="structure-info">
-					<h3 class="structure-name">{structure.name}</h3>
-					<p class="structure-cost">
+				<div class="flex-1 min-w-0">
+					<h3 class="text-base font-semibold mb-1 text-surface-900 dark:text-surface-100">
+						{structure.name}
+					</h3>
+					<p class="m-0 text-sm text-surface-600 dark:text-surface-400 flex flex-wrap gap-2">
 						{#if structure.cost}
 							{#each Object.entries(structure.cost) as [resource, amount]}
-								<span class="cost-item">
+								<span class="bg-surface-200 dark:bg-surface-700 px-2 py-0.5 rounded text-xs">
 									{amount}
 									{resource}
 								</span>
@@ -99,173 +113,12 @@
 				</div>
 
 				<!-- Build Button -->
-				<div class="build-action">
+				<div
+					class="shrink-0 w-11 h-11 flex items-center justify-center bg-primary-500 dark:bg-primary-600 text-white rounded-full text-2xl font-bold"
+				>
 					<span class="build-icon">+</span>
 				</div>
 			</button>
 		{/each}
 	</div>
 </BottomSheet>
-
-<style>
-	.category-tabs {
-		display: flex;
-		gap: 0.5rem;
-		margin-bottom: 1.5rem;
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-		scrollbar-width: none;
-	}
-
-	.category-tabs::-webkit-scrollbar {
-		display: none;
-	}
-
-	.category-tab {
-		flex-shrink: 0;
-		padding: 0.75rem 1.5rem;
-		background: rgb(var(--color-surface-200));
-		border: none;
-		border-radius: 2rem;
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: rgb(var(--color-surface-700));
-		cursor: pointer;
-		transition: all 0.2s;
-		min-height: 44px;
-	}
-
-	.category-tab.active {
-		background: rgb(var(--color-primary-500));
-		color: white;
-	}
-
-	.category-tab:hover:not(.active) {
-		background: rgb(var(--color-surface-300));
-	}
-
-	.category-tab:focus-visible {
-		outline: 3px solid rgb(var(--color-primary-300));
-		outline-offset: 2px;
-	}
-
-	.structure-grid {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: 1fr;
-	}
-
-	.structure-card {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		padding: 1rem;
-		background: rgb(var(--color-surface-100));
-		border: 1px solid rgb(var(--color-surface-200));
-		border-radius: 0.75rem;
-		text-align: left;
-		cursor: pointer;
-		transition: all 0.2s;
-		min-height: 80px;
-	}
-
-	.structure-card:hover {
-		background: rgb(var(--color-surface-200));
-		border-color: rgb(var(--color-primary-300));
-		transform: translateY(-2px);
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.structure-card:active {
-		transform: translateY(0);
-	}
-
-	.structure-card:focus-visible {
-		outline: 3px solid rgb(var(--color-primary-300));
-		outline-offset: 2px;
-	}
-
-	.structure-icon {
-		flex-shrink: 0;
-		width: 48px;
-		height: 48px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: rgb(var(--color-primary-100));
-		color: rgb(var(--color-primary-700));
-		border-radius: 0.5rem;
-		font-size: 1.5rem;
-		font-weight: 700;
-	}
-
-	.structure-info {
-		flex: 1;
-		min-width: 0;
-	}
-
-	.structure-name {
-		font-size: 1rem;
-		font-weight: 600;
-		margin: 0 0 0.25rem 0;
-		color: rgb(var(--color-surface-900));
-	}
-
-	.structure-cost {
-		margin: 0;
-		font-size: 0.875rem;
-		color: rgb(var(--color-surface-600));
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-
-	.cost-item {
-		background: rgb(var(--color-surface-200));
-		padding: 0.125rem 0.5rem;
-		border-radius: 0.25rem;
-		font-size: 0.75rem;
-	}
-
-	.build-action {
-		flex-shrink: 0;
-		width: 44px;
-		height: 44px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: rgb(var(--color-primary-500));
-		color: white;
-		border-radius: 50%;
-		font-size: 1.5rem;
-		font-weight: 700;
-	}
-
-	/* Dark mode */
-	:global(.dark) .category-tab {
-		background: rgb(var(--color-surface-800));
-		color: rgb(var(--color-surface-300));
-	}
-
-	:global(.dark) .category-tab.active {
-		background: rgb(var(--color-primary-500));
-		color: white;
-	}
-
-	:global(.dark) .structure-card {
-		background: rgb(var(--color-surface-800));
-		border-color: rgb(var(--color-surface-700));
-	}
-
-	:global(.dark) .structure-card:hover {
-		background: rgb(var(--color-surface-700));
-	}
-
-	:global(.dark) .structure-name {
-		color: rgb(var(--color-surface-100));
-	}
-
-	:global(.dark) .cost-item {
-		background: rgb(var(--color-surface-700));
-	}
-</style>
