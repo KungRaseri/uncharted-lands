@@ -7,19 +7,7 @@
 	 *
 	 * Features:
 	 * - Configurable grid size (default 10x10)
-	 * - Structure placement with 					<button
-						class="grid-cell {structure ? 'occupied' : 'empty'} {isFocused ? 'focused' : ''}"
-						role="gridcell"
-						aria-colindex={x + 1}
-						aria-label={getCellAriaLabel(x, y)}
-						tabindex={getCellTabIndex(x, y)}
-						data-x={x}
-						data-y={y}
-						data-testid={structure ? 'structure' : undefined}
-						data-structure-id={structure?.id}
-						onclick={() => handleCellClick(x, y)}
-						onfocus={() => handleCellFocus(x, y)}
-					>ames
+	 * - Structure placement with visual indicators
 	 * - Keyboard navigation (Up/Down/Left/Right arrow keys)
 	 * - Touch support for mobile (tap for focus)
 	 * - Hover/focus tooltips with structure details
@@ -315,12 +303,19 @@
 <!-- TEMPLATE -->
 <!-- ============================================================================ -->
 
-<section class="structure-grid-panel card variant-soft-surface" aria-labelledby="grid-heading">
+<section
+	class="flex flex-col h-full overflow-hidden rounded-lg bg-surface-50 dark:bg-surface-950 border-2 border-surface-200 dark:border-surface-800 shadow-sm"
+	aria-labelledby="grid-heading"
+>
 	<!-- Panel Header -->
-	<header class="panel-header">
+	<header
+		class="p-4 bg-surface-100 dark:bg-surface-900 border-b-2 border-surface-200 dark:border-surface-800"
+	>
 		<div class="flex items-center justify-between">
-			<h2 id="grid-heading" class="h4 font-semibold">🗺️ Settlement Layout</h2>
-			<div class="stats text-xs text-surface-600-300-token">
+			<h2 id="grid-heading" class="text-2xl font-semibold text-surface-900 dark:text-surface-50">
+				🗺️ Settlement Layout
+			</h2>
+			<div class="text-xs text-surface-600 dark:text-surface-400">
 				<span class="sr-only">Cell statistics:</span>
 				<span>{cellStats.occupied} occupied</span>
 				<span class="mx-1">•</span>
@@ -330,7 +325,7 @@
 	</header>
 
 	<!-- Grid Container -->
-	<div class="panel-content">
+	<div class="flex-1 overflow-auto p-4">
 		<!-- Grid Instructions (Screen Reader Only) -->
 		<div class="sr-only" id="grid-instructions">
 			Navigate the settlement grid using arrow keys. Press Enter or Space to select a cell. Use Tab
@@ -340,20 +335,24 @@
 		<!-- 2D Grid -->
 		<div
 			bind:this={gridElement}
-			class="grid-container"
+			class="flex flex-col gap-1"
 			role="grid"
 			tabindex="0"
 			aria-describedby="grid-instructions"
 			onkeydown={handleKeyDown}
 		>
 			{#each grid as row, y (y)}
-				<div class="grid-row" role="row" aria-rowindex={y + 1}>
+				<div class="flex gap-1" role="row" aria-rowindex={y + 1}>
 					{#each row as cell, x (cell.x)}
 						{@const structure = getStructureAt(x, y)}
 						{@const isFocused = isCellFocused(x, y)}
 
 						<button
-							class="grid-cell {structure ? 'occupied' : 'empty'} {isFocused ? 'focused' : ''}"
+							class="group relative aspect-square flex-1 min-w-0 min-h-10 md:min-h-16 lg:min-h-[72px] xl:min-h-20 p-1 rounded-md border-2 cursor-pointer transition-all duration-200 ease-in-out flex items-center justify-center {structure
+								? 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-700'
+								: 'bg-surface-100 dark:bg-surface-900 border-surface-300 dark:border-surface-700 border-dashed'} {isFocused
+								? 'border-primary-500 dark:border-primary-400 shadow-[0_0_0_2px] shadow-primary-200 dark:shadow-primary-800'
+								: ''} hover:bg-surface-100 dark:hover:bg-surface-800 hover:border-primary-300 dark:hover:border-primary-600 hover:scale-105 hover:z-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-500 dark:focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:z-20"
 							role="gridcell"
 							aria-colindex={x + 1}
 							aria-label={getCellAriaLabel(x, y)}
@@ -365,53 +364,63 @@
 						>
 							{#if structure}
 								<!-- Occupied Cell: Display Structure -->
-								<div class="structure-content">
+								<div class="flex flex-col items-center justify-center gap-0.5">
 									<!-- Icon -->
-									<span class="structure-icon" aria-hidden="true">
+									<span class="text-xl md:text-2xl lg:text-[2.5rem] xl:text-5xl" aria-hidden="true">
 										{getBuildingIcon(structure)}
 									</span>
 
 									<!-- Health Indicator -->
 									{#if structure.health !== undefined}
-										<span class="health-indicator" data-testid="health" aria-hidden="true">
+										<span class="text-xs md:text-sm" data-testid="health" aria-hidden="true">
 											{getHealthStatus(structure.health)}
 										</span>
 									{/if}
 									<!-- Structure Name (Desktop Only) -->
-									<span class="structure-name">
+									<span
+										class="hidden md:block text-[0.625rem] lg:text-xs xl:text-sm font-semibold text-center leading-tight max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-surface-900 dark:text-surface-50"
+									>
 										{structure.name}
 									</span>
 
 									<!-- Level Badge (Desktop Only) -->
 									{#if structure.level}
-										<span class="level-badge" aria-hidden="true">
+										<span
+											class="hidden md:inline-block text-[0.625rem] xl:text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-950 px-1 py-0.5 rounded leading-none"
+											aria-hidden="true"
+										>
 											L{structure.level}
 										</span>
 									{/if}
 								</div>
 
 								<!-- Tooltip on Hover/Focus -->
-								<div class="structure-tooltip" role="tooltip">
-									<div class="tooltip-header">
-										<span class="tooltip-icon" aria-hidden="true">
+								<div
+									class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 bg-surface-900 dark:bg-surface-950 text-surface-50 dark:text-surface-100 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.3)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.6)] z-100 min-w-[200px] opacity-0 pointer-events-none transition-opacity duration-200 group-hover:opacity-100 group-focus:opacity-100 before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-[6px] before:border-transparent before:border-b-surface-900 dark:before:border-b-surface-950"
+									role="tooltip"
+								>
+									<div
+										class="flex items-center gap-2 mb-2 pb-2 border-b border-surface-700 dark:border-surface-800"
+									>
+										<span class="text-2xl" aria-hidden="true">
 											{getBuildingIcon(structure)}
 										</span>
-										<span class="tooltip-title">{structure.name}</span>
+										<span class="font-semibold text-sm">{structure.name}</span>
 									</div>
-									<div class="tooltip-body">
-										<div class="tooltip-row">
-											<span class="text-surface-600-300-token">Type:</span>
+									<div class="flex flex-col gap-1.5">
+										<div class="flex justify-between text-xs">
+											<span class="text-surface-400 dark:text-surface-500">Type:</span>
 											<span>{getBuildingLabel(structure.type)}</span>
 										</div>
 										{#if structure.level}
-											<div class="tooltip-row">
-												<span class="text-surface-600-300-token">Level:</span>
+											<div class="flex justify-between text-xs">
+												<span class="text-surface-400 dark:text-surface-500">Level:</span>
 												<span>{structure.level}</span>
 											</div>
 										{/if}
 										{#if structure.health !== undefined}
-											<div class="tooltip-row">
-												<span class="text-surface-600-300-token">Health:</span>
+											<div class="flex justify-between text-xs">
+												<span class="text-surface-400 dark:text-surface-500">Health:</span>
 												<span
 													class={structure.health < 40
 														? 'text-error-500'
@@ -423,8 +432,8 @@
 												</span>
 											</div>
 										{/if}
-										<div class="tooltip-row">
-											<span class="text-surface-600-300-token">Position:</span>
+										<div class="flex justify-between text-xs">
+											<span class="text-surface-400 dark:text-surface-500">Position:</span>
 											<span>({x}, {y})</span>
 										</div>
 									</div>
@@ -443,450 +452,28 @@
 		</div>
 
 		<!-- Grid Legend (Desktop Only) -->
-		<div class="grid-legend" aria-label="Grid legend">
-			<div class="legend-item">
-				<div class="legend-swatch occupied"></div>
+		<div
+			class="hidden min-[480px]:flex items-center justify-center gap-6 mt-4 pt-4 border-t border-surface-200 dark:border-surface-800"
+			aria-label="Grid legend"
+		>
+			<div class="flex items-center gap-2 text-sm">
+				<div
+					class="w-5 h-5 rounded border-2 bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-700"
+				></div>
 				<span class="text-xs">Occupied</span>
 			</div>
-			<div class="legend-item">
-				<div class="legend-swatch empty"></div>
+			<div class="flex items-center gap-2 text-sm">
+				<div
+					class="w-5 h-5 rounded border-2 bg-surface-100 dark:bg-surface-950 border-surface-300 dark:border-surface-700 border-dashed"
+				></div>
 				<span class="text-xs">Empty</span>
 			</div>
-			<div class="legend-item">
-				<div class="legend-swatch focused"></div>
+			<div class="flex items-center gap-2 text-sm">
+				<div
+					class="w-5 h-5 rounded border-2 bg-surface-50 dark:bg-surface-900 border-primary-500 dark:border-primary-400 shadow-[0_0_0_2px] shadow-primary-200 dark:shadow-primary-900"
+				></div>
 				<span class="text-xs">Focused</span>
 			</div>
 		</div>
 	</div>
 </section>
-
-<!-- ============================================================================ -->
-<!-- STYLES -->
-<!-- ============================================================================ -->
-
-<style lang="postcss">
-	/* ========================================================================
-	 * PANEL LAYOUT
-	 * ======================================================================== */
-
-	.structure-grid-panel {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		overflow: hidden;
-	}
-
-	.panel-header {
-		padding: 1rem;
-		background-color: var(--surface-100);
-		border-bottom: 1px solid var(--surface-200);
-	}
-
-	.panel-content {
-		flex: 1;
-		overflow: auto;
-		padding: 1rem;
-	}
-
-	/* ========================================================================
-	 * GRID CONTAINER
-	 * ======================================================================== */
-
-	.grid-container {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		max-width: 100%;
-		margin: 0 auto;
-	}
-
-	.grid-row {
-		display: flex;
-		gap: 0.25rem;
-	}
-
-	/* ========================================================================
-	 * GRID CELLS
-	 * ======================================================================== */
-
-	.grid-cell {
-		position: relative;
-		aspect-ratio: 1;
-		flex: 1;
-		min-width: 0;
-		min-height: 48px; /* Minimum touch target */
-		padding: 0.25rem;
-		background-color: var(--surface-50);
-		border: 2px solid var(--surface-200);
-		border-radius: 0.375rem;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-	}
-
-	.grid-cell:hover {
-		background-color: var(--surface-100);
-		border-color: var(--primary-300);
-		transform: scale(1.05);
-		z-index: 10;
-	}
-
-	.grid-cell:focus {
-		outline: 3px solid var(--primary-500);
-		outline-offset: 2px;
-		z-index: 20;
-	}
-
-	.grid-cell.focused {
-		border-color: var(--primary-500);
-		box-shadow: 0 0 0 2px var(--primary-200);
-	}
-
-	/* Occupied Cell Styling */
-	.grid-cell.occupied {
-		background-color: var(--primary-50);
-		border-color: var(--primary-300);
-	}
-
-	.grid-cell.occupied:hover {
-		background-color: var(--primary-100);
-		border-color: var(--primary-400);
-	}
-
-	/* Empty Cell Styling */
-	.grid-cell.empty {
-		background-color: var(--surface-100);
-		border-color: var(--surface-300);
-		border-style: dashed;
-	}
-
-	.grid-cell.empty:hover {
-		background-color: var(--surface-200);
-		border-color: var(--surface-400);
-	}
-
-	/* ========================================================================
-	 * STRUCTURE CONTENT
-	 * ======================================================================== */
-
-	.structure-content {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0.125rem;
-		width: 100%;
-		height: 100%;
-	}
-
-	.structure-icon {
-		font-size: 1.5rem;
-		line-height: 1;
-	}
-
-	.health-indicator {
-		font-size: 0.75rem;
-		line-height: 1;
-	}
-
-	.structure-name {
-		font-size: 0.625rem;
-		font-weight: 600;
-		text-align: center;
-		line-height: 1.2;
-		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		display: none; /* Hidden on mobile by default */
-	}
-
-	.level-badge {
-		font-size: 0.625rem;
-		font-weight: 700;
-		color: var(--primary-600);
-		background-color: var(--primary-100);
-		padding: 0.125rem 0.25rem;
-		border-radius: 0.25rem;
-		line-height: 1;
-		display: none; /* Hidden on mobile by default */
-	}
-
-	/* ========================================================================
-	 * EMPTY CELL CONTENT
-	 * ======================================================================== */
-
-	.empty-content {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		height: 100%;
-	}
-
-	.empty-icon {
-		font-size: 1.5rem;
-		color: var(--surface-400);
-		font-weight: 300;
-	}
-
-	/* ========================================================================
-	 * TOOLTIPS
-	 * ======================================================================== */
-
-	.structure-tooltip {
-		position: absolute;
-		top: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		margin-top: 0.5rem;
-		padding: 0.75rem;
-		background-color: var(--surface-900);
-		color: var(--surface-50);
-		border-radius: 0.5rem;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-		z-index: 100;
-		min-width: 200px;
-		opacity: 0;
-		pointer-events: none;
-		transition: opacity 0.2s ease;
-	}
-
-	.grid-cell:hover .structure-tooltip,
-	.grid-cell:focus .structure-tooltip {
-		opacity: 1;
-	}
-
-	.tooltip-header {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		margin-bottom: 0.5rem;
-		padding-bottom: 0.5rem;
-		border-bottom: 1px solid var(--surface-700);
-	}
-
-	.tooltip-icon {
-		font-size: 1.5rem;
-	}
-
-	.tooltip-title {
-		font-weight: 600;
-		font-size: 0.875rem;
-	}
-
-	.tooltip-body {
-		display: flex;
-		flex-direction: column;
-		gap: 0.375rem;
-	}
-
-	.tooltip-row {
-		display: flex;
-		justify-content: space-between;
-		font-size: 0.75rem;
-	}
-
-	/* Arrow for tooltip */
-	.structure-tooltip::before {
-		content: '';
-		position: absolute;
-		bottom: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		border: 6px solid transparent;
-		border-bottom-color: var(--surface-900);
-	}
-
-	/* ========================================================================
-	 * GRID LEGEND
-	 * ======================================================================== */
-
-	.grid-legend {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 1.5rem;
-		margin-top: 1rem;
-		padding-top: 1rem;
-		border-top: 1px solid var(--surface-200);
-	}
-
-	.legend-item {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.legend-swatch {
-		width: 20px;
-		height: 20px;
-		border-radius: 0.25rem;
-		border: 2px solid;
-	}
-
-	.legend-swatch.occupied {
-		background-color: var(--primary-50);
-		border-color: var(--primary-300);
-	}
-
-	.legend-swatch.empty {
-		background-color: var(--surface-100);
-		border-color: var(--surface-300);
-		border-style: dashed;
-	}
-
-	.legend-swatch.focused {
-		background-color: var(--surface-50);
-		border-color: var(--primary-500);
-		box-shadow: 0 0 0 2px var(--primary-200);
-	}
-
-	/* ========================================================================
-	 * RESPONSIVE DESIGN
-	 * ======================================================================== */
-
-	/* Small Mobile (<480px): Smaller icons, simplified layout */
-	@media (max-width: 479px) {
-		.grid-cell {
-			min-height: 40px; /* Smaller cells on very small screens */
-		}
-
-		.structure-icon {
-			font-size: 1.25rem;
-		}
-
-		.health-indicator {
-			font-size: 0.625rem;
-		}
-
-		.empty-icon {
-			font-size: 1.25rem;
-		}
-
-		.grid-legend {
-			display: none; /* Hide legend on very small screens */
-		}
-	}
-
-	/* Mobile/Tablet (480px - 767px): Standard mobile layout */
-	@media (min-width: 480px) and (max-width: 767px) {
-		.grid-cell {
-			min-height: 44px; /* Standard touch target */
-		}
-
-		.structure-name {
-			display: none; /* Still hidden */
-		}
-
-		.level-badge {
-			display: none; /* Still hidden */
-		}
-	}
-
-	/* Desktop (768px+): Show structure names and level badges */
-	@media (min-width: 768px) {
-		.grid-cell {
-			min-height: 64px; /* Larger cells for desktop */
-		}
-
-		.structure-icon {
-			font-size: 2rem;
-		}
-
-		.structure-name {
-			display: block; /* Show structure names */
-		}
-
-		.level-badge {
-			display: block; /* Show level badges */
-		}
-	}
-
-	/* Large Desktop (1024px+): Even larger grid cells */
-	@media (min-width: 1024px) {
-		.grid-cell {
-			min-height: 72px;
-		}
-
-		.structure-icon {
-			font-size: 2.5rem;
-		}
-
-		.structure-name {
-			font-size: 0.75rem;
-		}
-	}
-
-	/* Ultrawide (1920px+): Maximum comfort */
-	@media (min-width: 1920px) {
-		.grid-cell {
-			min-height: 80px;
-		}
-
-		.structure-icon {
-			font-size: 3rem;
-		}
-
-		.structure-name {
-			font-size: 0.875rem;
-		}
-
-		.level-badge {
-			font-size: 0.75rem;
-		}
-	}
-
-	/* ========================================================================
-	 * ACCESSIBILITY MEDIA QUERIES
-	 * ======================================================================== */
-
-	/* High Contrast Mode: Stronger borders */
-	@media (prefers-contrast: high) {
-		.grid-cell {
-			border-width: 3px;
-		}
-
-		.grid-cell.focused {
-			box-shadow: 0 0 0 4px var(--primary-300);
-		}
-
-		.grid-cell:focus {
-			outline-width: 4px;
-		}
-	}
-
-	/* Reduced Motion: Disable transitions and transforms */
-	@media (prefers-reduced-motion: reduce) {
-		.grid-cell {
-			transition: none;
-		}
-
-		.grid-cell:hover {
-			transform: none;
-		}
-
-		.structure-tooltip {
-			transition: none;
-		}
-	}
-
-	/* ========================================================================
-	 * SCREEN READER ONLY
-	 * ======================================================================== */
-
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border-width: 0;
-	}
-</style>

@@ -358,14 +358,6 @@
 {/snippet}
 
 <div class="flex flex-col h-screen overflow-hidden bg-surface-50 dark:bg-surface-950">
-	<!-- Skip to content link for accessibility -->
-	<a
-		href="#main-content"
-		class="absolute -top-10 left-0 bg-primary-500 dark:bg-primary-600 text-white px-4 py-2 no-underline rounded-br z-1000 focus:top-0"
-	>
-		Skip to main content
-	</a>
-
 	<!-- Screen reader announcements -->
 	<div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
 		{announcement}
@@ -379,7 +371,7 @@
 	</div>
 
 	<!-- Main content with responsive layout -->
-	<div id="main-content" class="flex-1 overflow-hidden">
+	<div class="flex-1 overflow-hidden">
 		{#if viewport === 'desktop'}
 			<DesktopLayout panels={currentLayout.panels} {settlementId} renderPanel={panelContent} />
 		{:else if viewport === 'tablet'}
