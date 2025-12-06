@@ -71,39 +71,63 @@
 	}
 </script>
 
-<section class="resource-panel" data-testid="resource-panel" aria-labelledby="resources-heading">
-	<header class="panel-header">
-		<h2 id="resources-heading" class="panel-title">Resources</h2>
+<section
+	class="bg-surface-50 dark:bg-surface-900 rounded-lg overflow-hidden h-full flex flex-col"
+	data-testid="resource-panel"
+	aria-labelledby="resources-heading"
+>
+	<header
+		class="bg-surface-100 dark:bg-surface-800 border-b border-surface-300 dark:border-surface-700 px-6 py-4"
+	>
+		<h2
+			id="resources-heading"
+			class="text-lg font-semibold text-surface-900 dark:text-surface-100 m-0"
+		>
+			Resources
+		</h2>
 	</header>
 
-	<div class="resources-content">
+	<div class="flex-1 overflow-y-auto p-4">
 		{#if resources.length === 0}
-			<div class="no-resources" role="status">
-				<p class="no-resources-text">No resource data available</p>
+			<div class="flex items-center justify-center h-full min-h-[150px]" role="status">
+				<p class="text-base text-surface-600 dark:text-surface-400 text-center">
+					No resource data available
+				</p>
 			</div>
 		{:else}
-			<ul class="resources-list" role="list">
+			<ul class="list-none p-0 m-0 flex flex-col gap-6" role="list">
 				{#each resources as resource (resource.type)}
 					{@const config = resourceConfig[resource.type]}
 					{@const percentage = getPercentage(resource.current, resource.capacity)}
 					{@const warningLevel = getWarningLevel(percentage)}
 					{@const netRate = getNetRate(resource)}
 
-					<li class="resource-item" data-resource={resource.type} role="listitem">
-						<div class="resource-header">
-							<div class="resource-name-group">
-								<span class="resource-icon" aria-hidden="true">{config.icon}</span>
-								<h3 class="resource-name">{config.label}</h3>
+					<li
+						class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 border border-surface-200 dark:border-surface-700"
+						data-resource={resource.type}
+						role="listitem"
+					>
+						<div class="flex justify-between items-center mb-3">
+							<div class="flex items-center gap-2">
+								<span class="text-2xl leading-none" aria-hidden="true">{config.icon}</span>
+								<h3 class="text-base font-semibold text-surface-900 dark:text-surface-100 m-0">
+									{config.label}
+								</h3>
 							</div>
-							<div class="resource-amount" aria-label={getResourceLabel(resource)}>
-								<span class="current">{formatNumber(resource.current)}</span>
-								<span class="separator">/</span>
-								<span class="capacity">{formatNumber(resource.capacity)}</span>
+							<div
+								class="text-base font-semibold text-surface-800 dark:text-surface-200 tabular-nums"
+								aria-label={getResourceLabel(resource)}
+							>
+								<span>{formatNumber(resource.current)}</span>
+								<span class="text-surface-400 dark:text-surface-600 mx-1">/</span>
+								<span class="text-surface-600 dark:text-surface-400"
+									>{formatNumber(resource.capacity)}</span
+								>
 							</div>
 						</div>
 
 						<div
-							class="progress-bar-container"
+							class="w-full h-3 bg-surface-200 dark:bg-surface-700 rounded-md overflow-hidden mb-3"
 							role="progressbar"
 							aria-valuenow={percentage}
 							aria-valuemin="0"
@@ -111,33 +135,39 @@
 							aria-label="{config.label} storage"
 						>
 							<div
-								class="progress-bar progress-{warningLevel}"
+								class="h-full rounded-md transition-all duration-300 {warningLevel === 'critical'
+									? 'animate-pulse'
+									: ''}"
 								style:width="{percentage}%"
 								style:background-color={config.color}
 							></div>
 						</div>
 
-						<div class="resource-rates">
-							<div class="rate-item">
-								<span class="rate-label">Production:</span>
-								<span class="rate-value rate-positive">
+						<div class="grid grid-cols-3 gap-2 text-xs">
+							<div class="flex flex-col gap-0.5">
+								<span class="text-surface-600 dark:text-surface-400 font-medium">Production:</span>
+								<span class="font-semibold text-success-600 dark:text-success-400 tabular-nums">
 									{formatRate(resource.productionRate)}
 								</span>
 							</div>
 
-							<div class="rate-item">
-								<span class="rate-label">Consumption:</span>
-								<span class="rate-value rate-negative">
+							<div class="flex flex-col gap-0.5">
+								<span class="text-surface-600 dark:text-surface-400 font-medium">Consumption:</span>
+								<span class="font-semibold text-error-600 dark:text-error-400 tabular-nums">
 									{formatRate(-resource.consumptionRate)}
 								</span>
 							</div>
 
-							<div class="rate-item net-rate">
-								<span class="rate-label">Net:</span>
+							<div
+								class="flex flex-col gap-0.5 border-l border-surface-300 dark:border-surface-600 pl-2"
+							>
+								<span class="text-surface-600 dark:text-surface-400 font-medium">Net:</span>
 								<span
-									class="rate-value"
-									class:rate-positive={netRate > 0}
-									class:rate-negative={netRate < 0}
+									class="font-semibold tabular-nums {netRate > 0
+										? 'text-success-600 dark:text-success-400'
+										: netRate < 0
+											? 'text-error-600 dark:text-error-400'
+											: 'text-surface-700 dark:text-surface-300'}"
 								>
 									{formatRate(netRate)}
 								</span>
@@ -145,11 +175,17 @@
 						</div>
 
 						{#if warningLevel === 'critical'}
-							<div class="warning-message critical" role="alert">
+							<div
+								class="mt-3 px-2 py-2 rounded bg-error-100 dark:bg-error-900 text-error-900 dark:text-error-100 border border-error-300 dark:border-error-700 text-sm font-medium flex items-center gap-2"
+								role="alert"
+							>
 								⚠️ Critical: Resource nearly depleted!
 							</div>
 						{:else if warningLevel === 'warning'}
-							<div class="warning-message warning" role="status">
+							<div
+								class="mt-3 px-2 py-2 rounded bg-warning-100 dark:bg-warning-900 text-warning-900 dark:text-warning-100 border border-warning-300 dark:border-warning-700 text-sm font-medium flex items-center gap-2"
+								role="status"
+							>
 								⚠️ Warning: Resource running low
 							</div>
 						{/if}
@@ -159,241 +195,3 @@
 		{/if}
 	</div>
 </section>
-
-<style>
-	.resource-panel {
-		background: var(--surface-50);
-		border-radius: 8px;
-		overflow: hidden;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.panel-header {
-		background: var(--surface-100);
-		border-bottom: 1px solid var(--surface-300);
-		padding: 1rem 1.5rem;
-	}
-
-	.panel-title {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-	}
-
-	.resources-content {
-		flex: 1;
-		overflow-y: auto;
-		padding: 1rem;
-	}
-
-	.no-resources {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 100%;
-		min-height: 150px;
-	}
-
-	.no-resources-text {
-		font-size: 1rem;
-		color: var(--surface-600);
-		text-align: center;
-	}
-
-	.resources-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	.resource-item {
-		background: var(--surface-100);
-		border-radius: 6px;
-		padding: 1rem;
-		border: 1px solid var(--surface-200);
-	}
-
-	.resource-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 0.75rem;
-	}
-
-	.resource-name-group {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.resource-icon {
-		font-size: 1.5rem;
-		line-height: 1;
-	}
-
-	.resource-name {
-		font-size: 1rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-	}
-
-	.resource-amount {
-		font-size: 1rem;
-		font-weight: 600;
-		color: var(--surface-800);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.separator {
-		color: var(--surface-400);
-		margin: 0 0.25rem;
-	}
-
-	.capacity {
-		color: var(--surface-600);
-	}
-
-	.progress-bar-container {
-		width: 100%;
-		height: 12px;
-		background: var(--surface-200);
-		border-radius: 6px;
-		overflow: hidden;
-		margin-bottom: 0.75rem;
-	}
-
-	.progress-bar {
-		height: 100%;
-		transition: width 0.3s ease;
-		border-radius: 6px;
-	}
-
-	.progress-critical {
-		animation: pulse-critical 1.5s ease-in-out infinite;
-	}
-
-	@keyframes pulse-critical {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.7;
-		}
-	}
-
-	.resource-rates {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 0.5rem;
-		font-size: 0.75rem;
-	}
-
-	.rate-item {
-		display: flex;
-		flex-direction: column;
-		gap: 0.125rem;
-	}
-
-	.rate-label {
-		color: var(--surface-600);
-		font-weight: 500;
-	}
-
-	.rate-value {
-		font-weight: 600;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.rate-positive {
-		color: var(--success-600);
-	}
-
-	.rate-negative {
-		color: var(--error-600);
-	}
-
-	.net-rate {
-		border-left: 1px solid var(--surface-300);
-		padding-left: 0.5rem;
-	}
-
-	.warning-message {
-		margin-top: 0.75rem;
-		padding: 0.5rem;
-		border-radius: 4px;
-		font-size: 0.875rem;
-		font-weight: 500;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.warning-message.critical {
-		background: var(--error-100);
-		color: var(--error-900);
-		border: 1px solid var(--error-300);
-	}
-
-	.warning-message.warning {
-		background: var(--warning-100);
-		color: var(--warning-900);
-		border: 1px solid var(--warning-300);
-	}
-
-	/* Responsive Design */
-	@media (max-width: 767px) {
-		.panel-header {
-			padding: 0.75rem 1rem;
-		}
-
-		.resources-content {
-			padding: 0.75rem;
-		}
-
-		.resource-item {
-			padding: 0.75rem;
-		}
-
-		.resource-rates {
-			grid-template-columns: 1fr;
-			gap: 0.25rem;
-		}
-
-		.net-rate {
-			border-left: none;
-			border-top: 1px solid var(--surface-300);
-			padding-left: 0;
-			padding-top: 0.25rem;
-		}
-	}
-
-	/* High Contrast Mode */
-	@media (prefers-contrast: high) {
-		.progress-bar-container {
-			border: 2px solid var(--surface-800);
-		}
-
-		.resource-item {
-			border-width: 2px;
-		}
-	}
-
-	/* Reduced Motion */
-	@media (prefers-reduced-motion: reduce) {
-		.progress-bar {
-			transition: none;
-		}
-
-		.progress-critical {
-			animation: none;
-		}
-	}
-</style>

@@ -65,9 +65,13 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
  * Fetch all structure metadata from the API
  *
  * @param forceRefresh - Force a fresh fetch, bypassing cache
+ * @param fetchFn - Fetch function to use (event.fetch for server-side, global fetch for client-side)
  * @returns Array of structure metadata
  */
-export async function fetchStructureMetadata(forceRefresh = false): Promise<StructureMetadata[]> {
+export async function fetchStructureMetadata(
+	forceRefresh = false,
+	fetchFn: typeof fetch = fetch
+): Promise<StructureMetadata[]> {
 	// Return cached data if valid
 	const now = Date.now();
 	if (!forceRefresh && cachedMetadata && now - cacheTimestamp < CACHE_DURATION) {
@@ -76,7 +80,7 @@ export async function fetchStructureMetadata(forceRefresh = false): Promise<Stru
 
 	try {
 		// Use SvelteKit proxy route (avoids CORS, handles auth)
-		const response = await fetch('/api/structures/metadata');
+		const response = await fetchFn('/api/structures/metadata');
 
 		if (!response.ok) {
 			throw new Error(`API request failed: ${response.status} ${response.statusText}`);
@@ -111,10 +115,14 @@ export async function fetchStructureMetadata(forceRefresh = false): Promise<Stru
  * Get structure metadata by ID
  *
  * @param id - Lowercase structure name (e.g., "farm")
+ * @param fetchFn - Fetch function to use (event.fetch for server-side, global fetch for client-side)
  * @returns Structure metadata or undefined if not found
  */
-export async function getStructureMetadata(id: string): Promise<StructureMetadata | undefined> {
-	const metadata = await fetchStructureMetadata();
+export async function getStructureMetadata(
+	id: string,
+	fetchFn: typeof fetch = fetch
+): Promise<StructureMetadata | undefined> {
+	const metadata = await fetchStructureMetadata(false, fetchFn);
 	return metadata.find((s) => s.id === id);
 }
 

@@ -32,30 +32,48 @@
 	});
 </script>
 
-<header class="dashboard-header">
-	<div class="header-content">
-		<div class="settlement-info">
-			<h1 class="settlement-name">{settlementName}</h1>
-			<p class="settlement-id" aria-label="Settlement ID">
-				<span class="label">ID:</span>
-				<span class="value">{settlementId.slice(0, 8)}</span>
+<header
+	class="bg-surface-100 dark:bg-surface-800 border-b-2 border-surface-300 dark:border-surface-700 px-6 py-4 min-h-20"
+>
+	<div class="flex justify-between items-center flex-wrap gap-4 max-w-screen-2xl mx-auto">
+		<div class="flex flex-col gap-1">
+			<h1 class="text-2xl font-bold text-surface-900 dark:text-surface-100">
+				{settlementName}
+			</h1>
+			<p class="text-sm text-surface-600 dark:text-surface-400" aria-label="Settlement ID">
+				<span class="font-medium">ID:</span>
+				<span class="font-mono ml-1">{settlementId.slice(0, 8)}</span>
 			</p>
 		</div>
 
-		<div class="time-and-action">
-			<time class="current-time" datetime={currentTime.toISOString()} aria-live="off">
+		<div class="flex flex-col gap-2">
+			<time
+				class="text-lg font-mono font-semibold text-surface-700 dark:text-surface-300 tabular-nums"
+				datetime={currentTime.toISOString()}
+				aria-live="off"
+			>
 				{formattedTime}
 			</time>
-			<div class="next-action" role="status" aria-live="polite">
-				<span class="action-label">Next:</span>
-				<span class="action-text">{nextAction}</span>
+			<div
+				class="flex items-center gap-2 text-sm px-4 py-2 bg-primary-100 dark:bg-primary-900 border-l-4 border-primary-500 rounded max-w-md"
+				role="status"
+				aria-live="polite"
+			>
+				<span
+					class="font-semibold text-primary-700 dark:text-primary-300 uppercase text-xs tracking-wide"
+				>
+					Next:
+				</span>
+				<span class="text-surface-800 dark:text-surface-200 font-medium">
+					{nextAction}
+				</span>
 			</div>
 		</div>
 
 		{#if onSettings}
 			<button
 				type="button"
-				class="settings-button"
+				class="flex items-center justify-center min-w-11 min-h-11 p-2.5 bg-transparent border border-surface-300 dark:border-surface-600 rounded-md text-surface-600 dark:text-surface-400 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-800 dark:hover:text-surface-200 hover:border-surface-400 dark:hover:border-surface-500 focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:outline-offset-2 active:scale-95 transition-all duration-200 shrink-0 group"
 				onclick={onSettings}
 				aria-label="Open dashboard settings"
 				title="Customize dashboard (Ctrl+,)"
@@ -71,6 +89,7 @@
 					stroke-linecap="round"
 					stroke-linejoin="round"
 					aria-hidden="true"
+					class="w-5 h-5 transition-transform duration-300 group-hover:rotate-45"
 				>
 					<circle cx="12" cy="12" r="3" />
 					<path
@@ -81,213 +100,3 @@
 		{/if}
 	</div>
 </header>
-
-<style>
-	.dashboard-header {
-		background: var(--surface-100);
-		border-bottom: 2px solid var(--surface-300);
-		padding: 1rem 1.5rem;
-		min-height: 80px;
-	}
-
-	.header-content {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 1rem;
-		max-width: 1920px;
-		margin: 0 auto;
-	}
-
-	.settlement-info {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.settlement-name {
-		font-size: 1.75rem;
-		font-weight: 700;
-		color: var(--surface-900);
-		margin: 0;
-		line-height: 1.2;
-	}
-
-	.settlement-id {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.875rem;
-		color: var(--surface-600);
-		margin: 0;
-	}
-
-	.settlement-id .label {
-		font-weight: 500;
-	}
-
-	.settlement-id .value {
-		font-family: 'Monaco', 'Courier New', monospace;
-		background: var(--surface-200);
-		padding: 0.125rem 0.5rem;
-		border-radius: 4px;
-	}
-
-	.time-and-action {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 0.5rem;
-	}
-
-	.current-time {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--surface-800);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.next-action {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.875rem;
-		padding: 0.5rem 1rem;
-		background: var(--primary-100);
-		border-left: 3px solid var(--primary-500);
-		border-radius: 4px;
-		max-width: 400px;
-	}
-
-	.action-label {
-		font-weight: 600;
-		color: var(--primary-700);
-		text-transform: uppercase;
-		font-size: 0.75rem;
-		letter-spacing: 0.05em;
-	}
-
-	.action-text {
-		color: var(--surface-800);
-		font-weight: 500;
-	}
-
-	.settings-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 44px;
-		min-height: 44px;
-		padding: 0.625rem;
-		background: transparent;
-		border: 1px solid var(--surface-300);
-		border-radius: 6px;
-		color: var(--surface-600);
-		cursor: pointer;
-		transition: all 0.2s ease;
-		flex-shrink: 0;
-	}
-
-	.settings-button:hover {
-		background: var(--surface-200);
-		color: var(--surface-800);
-		border-color: var(--surface-400);
-	}
-
-	.settings-button:focus-visible {
-		outline: 2px solid var(--primary-500);
-		outline-offset: 2px;
-		border-color: var(--primary-500);
-	}
-
-	.settings-button:active {
-		transform: scale(0.95);
-		background: var(--surface-300);
-	}
-
-	.settings-button svg {
-		width: 20px;
-		height: 20px;
-		transition: transform 0.3s ease;
-	}
-
-	.settings-button:hover svg {
-		transform: rotate(45deg);
-	}
-
-	/* Responsive Design */
-	@media (max-width: 767px) {
-		.dashboard-header {
-			padding: 0.75rem 1rem;
-			min-height: auto;
-		}
-
-		.header-content {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 0.75rem;
-			position: relative;
-		}
-
-		.settlement-name {
-			font-size: 1.5rem;
-			padding-right: 3rem; /* Make room for settings button */
-		}
-
-		.time-and-action {
-			width: 100%;
-			flex-direction: row;
-			justify-content: space-between;
-			align-items: center;
-		}
-
-		.current-time {
-			font-size: 1rem;
-		}
-
-		.next-action {
-			flex: 1;
-			max-width: none;
-		}
-
-		.settings-button {
-			position: absolute;
-			top: 0;
-			right: 0;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.settlement-name {
-			font-size: 1.25rem;
-		}
-
-		.time-and-action {
-			flex-direction: column;
-			align-items: flex-start;
-		}
-
-		.next-action {
-			width: 100%;
-		}
-	}
-
-	/* High Contrast Mode */
-	@media (prefers-contrast: high) {
-		.dashboard-header {
-			border-bottom-width: 3px;
-		}
-
-		.next-action {
-			border-left-width: 4px;
-		}
-	}
-
-	/* Reduced Motion */
-	@media (prefers-reduced-motion: reduce) {
-		* {
-			transition: none !important;
-		}
-	}
-</style>

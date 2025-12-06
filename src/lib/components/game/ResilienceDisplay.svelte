@@ -197,11 +197,11 @@
 	<!-- Header with Tier Label -->
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
-			<span class="text-sm font-semibold text-surface-300">Resilience</span>
+			<span class="text-sm font-semibold text-surface-300 dark:text-surface-400">Resilience</span>
 			{#if showTooltip}
 				<button
 					type="button"
-					class="btn-icon btn-icon-sm variant-ghost-surface"
+					class="shrink-0 flex items-center justify-center p-1 rounded-lg transition-colors hover:bg-surface-700 dark:hover:bg-surface-600 focus-visible:outline-3 focus-visible:outline-primary-500 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
 					title={tooltipText}
 					aria-label="Show resilience details"
 				>
@@ -211,14 +211,14 @@
 		</div>
 		<div class="flex items-baseline gap-2">
 			<span class="text-2xl font-bold {tierData.color}">{resilience}</span>
-			<span class="text-sm text-surface-400">/ 100</span>
+			<span class="text-sm text-surface-400 dark:text-surface-500">/ 100</span>
 		</div>
 	</div>
 
 	<!-- Progress Bar -->
-	<div class="relative h-3 bg-surface-700 rounded-full overflow-hidden">
+	<div class="relative h-3 bg-surface-700 dark:bg-surface-800 rounded-full overflow-hidden">
 		<div
-			class="h-full bg-linear-to-r {tierData.gradientFrom} {tierData.gradientTo} transition-all duration-500 ease-out"
+			class="h-full bg-gradient-to-r {tierData.gradientFrom} {tierData.gradientTo} transition-all duration-500 ease-out transform-gpu will-change-[width]"
 			style:width="{progressWidth}%"
 			role="progressbar"
 			aria-valuenow={resilience}
@@ -232,21 +232,7 @@
 	<div class="flex items-center justify-between text-sm">
 		<span class={tierData.color}>
 			<span class="font-bold">{tierData.label}</span>
-			<span class="text-surface-400 ml-2">{tierData.description}</span>
+			<span class="text-surface-400 dark:text-surface-500 ml-2">{tierData.description}</span>
 		</span>
 	</div>
 </div>
-
-<style>
-	/* Smooth progress bar animation with GPU acceleration */
-	div[role='progressbar'] {
-		transform: translateZ(0);
-		will-change: width;
-	}
-
-	/* High contrast focus for accessibility */
-	button:focus-visible {
-		outline: 3px solid var(--color-primary-500);
-		outline-offset: 2px;
-	}
-</style>

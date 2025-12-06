@@ -59,49 +59,8 @@
 	// Settings modal state
 	let settingsOpen = $state(false);
 
-	// Resources mock data (fallback when store data unavailable)
-	const mockResources = [
-		{
-			type: 'food' as const,
-			current: 450,
-			capacity: 1000,
-			productionRate: 15,
-			consumptionRate: 25
-		},
-		{
-			type: 'water' as const,
-			current: 780,
-			capacity: 1000,
-			productionRate: 20,
-			consumptionRate: 18
-		},
-		{
-			type: 'wood' as const,
-			current: 320,
-			capacity: 800,
-			productionRate: 12,
-			consumptionRate: 8
-		},
-		{
-			type: 'stone' as const,
-			current: 150,
-			capacity: 500,
-			productionRate: 5,
-			consumptionRate: 3
-		},
-		{
-			type: 'ore' as const,
-			current: 80,
-			capacity: 300,
-			productionRate: 3,
-			consumptionRate: 2
-		}
-	];
-
 	// Get resources from store with real-time Socket.IO updates
-	const realResources = $derived.by(
-		() => resourcesStore.getResources(settlementId) || mockResources
-	);
+	const realResources = $derived.by(() => resourcesStore.getResources(settlementId));
 
 	// Convert real population store data to PopulationPanel format
 	const realPopulation = $derived.by(() => {
@@ -386,17 +345,26 @@
 		/>
 	{:else}
 		<!-- Fallback for unmapped panels -->
-		<div class="panel-placeholder">
-			<h3>{panel.id}</h3>
-			<p>Panel content for {panel.id}</p>
-			<p class="text-muted">This panel is not yet implemented.</p>
+		<div
+			class="p-4 bg-white dark:bg-surface-800 rounded-lg border-2 border-dashed border-surface-300 dark:border-surface-600"
+		>
+			<h3 class="m-0 mb-2 capitalize text-surface-900 dark:text-surface-100">{panel.id}</h3>
+			<p class="m-0 text-surface-600 dark:text-surface-400 text-sm">Panel content for {panel.id}</p>
+			<p class="mt-1 text-surface-500 dark:text-surface-500 text-[0.8125rem] italic">
+				This panel is not yet implemented.
+			</p>
 		</div>
 	{/if}
 {/snippet}
 
-<div class="settlement-dashboard">
+<div class="flex flex-col h-screen overflow-hidden bg-surface-50 dark:bg-surface-950">
 	<!-- Skip to content link for accessibility -->
-	<a href="#main-content" class="skip-link">Skip to main content</a>
+	<a
+		href="#main-content"
+		class="absolute -top-10 left-0 bg-primary-500 dark:bg-primary-600 text-white px-4 py-2 no-underline rounded-br z-1000 focus:top-0"
+	>
+		Skip to main content
+	</a>
 
 	<!-- Screen reader announcements -->
 	<div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
@@ -404,12 +372,14 @@
 	</div>
 
 	<!-- Quick Actions Bar (always visible) -->
-	<div class="quick-actions-wrapper">
+	<div
+		class="shrink-0 md:relative md:bottom-auto md:left-auto md:right-auto md:shadow-none md:z-100 fixed bottom-0 left-0 right-0 bg-white dark:bg-surface-900 shadow-[0_-4px_8px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_8px_rgba(0,0,0,0.3)] z-200"
+	>
 		<QuickActionsBar {settlementId} {onOpenBuildMenu} />
 	</div>
 
 	<!-- Main content with responsive layout -->
-	<div id="main-content" class="dashboard-content">
+	<div id="main-content" class="flex-1 overflow-hidden">
 		{#if viewport === 'desktop'}
 			<DesktopLayout panels={currentLayout.panels} {settlementId} renderPanel={panelContent} />
 		{:else if viewport === 'tablet'}
@@ -424,32 +394,7 @@
 <SettingsModal bind:open={settingsOpen} onClose={() => (settingsOpen = false)} />
 
 <style>
-	.settlement-dashboard {
-		display: flex;
-		flex-direction: column;
-		height: 100vh;
-		overflow: hidden;
-		background: var(--surface-50, #fafafa);
-	}
-
-	/* Skip link for accessibility */
-	.skip-link {
-		position: absolute;
-		top: -40px;
-		left: 0;
-		background: var(--primary-500, #3b82f6);
-		color: white;
-		padding: 8px 16px;
-		text-decoration: none;
-		border-radius: 0 0 4px 0;
-		z-index: 1000;
-	}
-
-	.skip-link:focus {
-		top: 0;
-	}
-
-	/* Screen reader only */
+	/* Screen reader only utility (not available in Tailwind) */
 	.sr-only {
 		position: absolute;
 		width: 1px;
@@ -460,55 +405,5 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border-width: 0;
-	}
-
-	.quick-actions-wrapper {
-		flex-shrink: 0;
-		z-index: 100;
-	}
-
-	.dashboard-content {
-		flex: 1;
-		overflow: hidden;
-	}
-
-	/* Placeholder styling (for unmapped panels) */
-	.panel-placeholder {
-		padding: var(--spacing-md, 1rem);
-		background: white;
-		border-radius: var(--radius-md, 0.5rem);
-		border: 2px dashed var(--surface-300, #d1d5db);
-	}
-
-	.panel-placeholder h3 {
-		margin: 0 0 var(--spacing-sm, 0.5rem) 0;
-		text-transform: capitalize;
-		color: var(--text-primary, #111827);
-	}
-
-	.panel-placeholder p {
-		margin: 0;
-		color: var(--text-secondary, #6b7280);
-		font-size: 0.875rem;
-	}
-
-	.panel-placeholder .text-muted {
-		margin-top: var(--spacing-xs, 0.25rem);
-		color: var(--text-tertiary, #9ca3af);
-		font-size: 0.8125rem;
-		font-style: italic;
-	}
-
-	/* Mobile specific styles */
-	@media (max-width: 767px) {
-		.quick-actions-wrapper {
-			position: fixed;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			background: white;
-			box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
-			z-index: 200;
-		}
 	}
 </style>

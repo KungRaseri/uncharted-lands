@@ -97,32 +97,50 @@
 	});
 </script>
 
-<section class="population-panel" aria-labelledby="population-heading">
-	<header class="panel-header">
-		<h2 id="population-heading" class="panel-title">Population</h2>
+<section
+	class="bg-surface-50 dark:bg-surface-900 rounded-lg overflow-hidden h-full flex flex-col"
+	aria-labelledby="population-heading"
+>
+	<header
+		class="bg-surface-100 dark:bg-surface-800 border-b border-surface-300 dark:border-surface-700 px-6 py-4"
+	>
+		<h2
+			id="population-heading"
+			class="text-lg font-semibold text-surface-900 dark:text-surface-100 m-0"
+		>
+			Population
+		</h2>
 	</header>
 
-	<div class="population-content">
+	<div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
 		<!-- Population Overview -->
-		<div class="stat-card primary">
-			<div class="stat-header">
-				<span class="stat-icon" aria-hidden="true">👥</span>
-				<h3 class="stat-label">Total Population</h3>
+		<div
+			class="bg-primary-50 dark:bg-primary-950 rounded-md p-4 border border-primary-200 dark:border-primary-800"
+		>
+			<div class="flex items-center gap-2 mb-3">
+				<span class="text-2xl leading-none" aria-hidden="true">👥</span>
+				<h3
+					class="text-sm font-semibold text-surface-700 dark:text-surface-300 m-0 uppercase tracking-wider"
+				>
+					Total Population
+				</h3>
 			</div>
 			<div
-				class="stat-value"
+				class="text-3xl font-bold text-surface-900 dark:text-surface-100 tabular-nums leading-none mb-3"
 				data-testid="current-population"
 				aria-label="{formatNumber(population.current)} of {formatNumber(
 					population.capacity
 				)} capacity"
 			>
-				<span class="current">{formatNumber(population.current)}</span>
-				<span class="separator">/</span>
-				<span class="capacity">{formatNumber(population.capacity)}</span>
+				<span>{formatNumber(population.current)}</span>
+				<span class="text-surface-400 dark:text-surface-600 mx-1">/</span>
+				<span class="text-2xl text-surface-600 dark:text-surface-400"
+					>{formatNumber(population.capacity)}</span
+				>
 			</div>
 			<!-- Capacity Progress Bar -->
 			<div
-				class="progress-bar-container"
+				class="w-full h-3 bg-surface-200 dark:bg-surface-700 rounded-md overflow-hidden"
 				role="progressbar"
 				aria-valuenow={capacityPercentage}
 				aria-valuemin="0"
@@ -130,39 +148,69 @@
 				aria-label="Population capacity usage"
 			>
 				<div
-					class="progress-bar capacity-{capacityWarning}"
+					class="h-full transition-all duration-300 rounded-md {capacityWarning === 'normal'
+						? 'bg-success-500 dark:bg-success-400'
+						: capacityWarning === 'warning'
+							? 'bg-warning-500 dark:bg-warning-400'
+							: 'bg-error-500 dark:bg-error-400 animate-pulse'}"
 					style:width="{capacityPercentage}%"
 				></div>
 			</div>
 
 			{#if capacityWarning === 'critical'}
-				<div class="warning-message critical" role="alert">
+				<div
+					class="mt-3 px-2 py-2 rounded bg-error-100 dark:bg-error-900 text-error-900 dark:text-error-100 border border-error-300 dark:border-error-700 text-sm font-medium flex items-center gap-2"
+					role="alert"
+				>
 					⚠️ Critical: Build more housing immediately!
 				</div>
 			{:else if capacityWarning === 'warning'}
-				<div class="warning-message warning" role="status">
+				<div
+					class="mt-3 px-2 py-2 rounded bg-warning-100 dark:bg-warning-900 text-warning-900 dark:text-warning-100 border border-warning-300 dark:border-warning-700 text-sm font-medium flex items-center gap-2"
+					role="status"
+				>
 					⚠️ Warning: Population nearing capacity
 				</div>
 			{/if}
 		</div>
 
 		<!-- Happiness -->
-		<div class="stat-card happiness happiness-{happinessLevel}">
-			<div class="stat-header">
-				<span class="stat-icon" aria-hidden="true">{happinessEmoji}</span>
-				<h3 class="stat-label">Happiness</h3>
+		<div
+			class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 border border-surface-200 dark:border-surface-700"
+		>
+			<div class="flex items-center gap-2 mb-3">
+				<span class="text-2xl leading-none" aria-hidden="true">{happinessEmoji}</span>
+				<h3
+					class="text-sm font-semibold text-surface-700 dark:text-surface-300 m-0 uppercase tracking-wider"
+				>
+					Happiness
+				</h3>
 			</div>
 			<div
-				class="happiness-value"
+				class="flex flex-col gap-1 mb-3"
 				data-testid="happiness"
 				aria-label="{happinessLabel}, {population.happiness}%"
 			>
-				<span class="happiness-percentage">{population.happiness}%</span>
-				<span class="happiness-text">{happinessLabel}</span>
+				<span
+					class="text-3xl font-bold tabular-nums leading-none {happinessLevel === 'very-happy'
+						? 'text-success-600 dark:text-success-400'
+						: happinessLevel === 'happy'
+							? 'text-success-500 dark:text-success-400'
+							: happinessLevel === 'content'
+								? 'text-surface-700 dark:text-surface-300'
+								: happinessLevel === 'unhappy'
+									? 'text-warning-500 dark:text-warning-400'
+									: 'text-error-500 dark:text-error-400'}"
+				>
+					{population.happiness}%
+				</span>
+				<span class="text-sm font-medium text-surface-600 dark:text-surface-400">
+					{happinessLabel}
+				</span>
 			</div>
 			<!-- Happiness Bar -->
 			<div
-				class="progress-bar-container"
+				class="w-full h-3 bg-surface-200 dark:bg-surface-700 rounded-md overflow-hidden"
 				role="progressbar"
 				aria-valuenow={population.happiness}
 				aria-valuemin="0"
@@ -170,22 +218,38 @@
 				aria-label="Happiness level"
 			>
 				<div
-					class="progress-bar happiness-bar happiness-{happinessLevel}"
+					class="h-full transition-all duration-300 rounded-md {happinessLevel === 'very-happy'
+						? 'bg-success-600 dark:bg-success-400'
+						: happinessLevel === 'happy'
+							? 'bg-success-500 dark:bg-success-400'
+							: happinessLevel === 'content'
+								? 'bg-surface-500 dark:bg-surface-400'
+								: happinessLevel === 'unhappy'
+									? 'bg-warning-500 dark:bg-warning-400'
+									: 'bg-error-500 dark:bg-error-400'}"
 					style:width="{population.happiness}%"
 				></div>
 			</div>
 		</div>
 
 		<!-- Growth Rate -->
-		<div class="stat-card">
-			<div class="stat-header">
-				<span class="stat-icon" aria-hidden="true">📈</span>
-				<h3 class="stat-label">Growth Rate</h3>
+		<div
+			class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 border border-surface-200 dark:border-surface-700"
+		>
+			<div class="flex items-center gap-2 mb-3">
+				<span class="text-2xl leading-none" aria-hidden="true">📈</span>
+				<h3
+					class="text-sm font-semibold text-surface-700 dark:text-surface-300 m-0 uppercase tracking-wider"
+				>
+					Growth Rate
+				</h3>
 			</div>
 			<div
-				class="stat-value growth-rate"
-				class:positive={population.growthRate > 0}
-				class:negative={population.growthRate < 0}
+				class="text-3xl font-bold tabular-nums leading-none {population.growthRate > 0
+					? 'text-success-600 dark:text-success-400'
+					: population.growthRate < 0
+						? 'text-error-600 dark:text-error-400'
+						: 'text-surface-700 dark:text-surface-300'}"
 				aria-label="Growth rate {formatGrowthRate(population.growthRate)} per hour"
 			>
 				{formatGrowthRate(population.growthRate)}/hr
@@ -193,350 +257,42 @@
 		</div>
 
 		<!-- Migration Stats -->
-		<div class="migration-stats">
-			<h3 class="section-title">24-Hour Migration</h3>
-			<div class="migration-grid">
-				<div class="migration-item immigrants">
-					<span class="migration-icon" aria-hidden="true">➡️</span>
-					<div class="migration-info">
-						<span class="migration-label">Immigrants</span>
-						<span class="migration-value">{formatNumber(population.immigrants)}</span>
+		<div
+			class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 border border-surface-200 dark:border-surface-700"
+		>
+			<h3
+				class="text-sm font-semibold text-surface-700 dark:text-surface-300 m-0 mb-3 uppercase tracking-wider"
+			>
+				24-Hour Migration
+			</h3>
+			<div class="grid grid-cols-2 gap-4">
+				<div
+					class="flex items-center gap-3 px-3 py-3 rounded bg-surface-50 dark:bg-surface-900 border-l-[3px] border-success-500 dark:border-success-400"
+				>
+					<span class="text-xl leading-none" aria-hidden="true">➡️</span>
+					<div class="flex flex-col gap-0.5">
+						<span class="text-xs font-medium text-surface-600 dark:text-surface-400">
+							Immigrants
+						</span>
+						<span class="text-xl font-bold text-surface-900 dark:text-surface-100 tabular-nums">
+							{formatNumber(population.immigrants)}
+						</span>
 					</div>
 				</div>
 
-				<div class="migration-item emigrants">
-					<span class="migration-icon" aria-hidden="true">⬅️</span>
-					<div class="migration-info">
-						<span class="migration-label">Emigrants</span>
-						<span class="migration-value">{formatNumber(population.emigrants)}</span>
+				<div
+					class="flex items-center gap-3 px-3 py-3 rounded bg-surface-50 dark:bg-surface-900 border-l-[3px] border-error-500 dark:border-error-400"
+				>
+					<span class="text-xl leading-none" aria-hidden="true">⬅️</span>
+					<div class="flex flex-col gap-0.5">
+						<span class="text-xs font-medium text-surface-600 dark:text-surface-400">Emigrants</span
+						>
+						<span class="text-xl font-bold text-surface-900 dark:text-surface-100 tabular-nums">
+							{formatNumber(population.emigrants)}
+						</span>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </section>
-
-<style>
-	.population-panel {
-		background: var(--surface-50);
-		border-radius: 8px;
-		overflow: hidden;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.panel-header {
-		background: var(--surface-100);
-		border-bottom: 1px solid var(--surface-300);
-		padding: 1rem 1.5rem;
-	}
-
-	.panel-title {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-	}
-
-	.population-content {
-		flex: 1;
-		overflow-y: auto;
-		padding: 1rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.stat-card {
-		background: var(--surface-100);
-		border-radius: 6px;
-		padding: 1rem;
-		border: 1px solid var(--surface-200);
-	}
-
-	.stat-card.primary {
-		border-color: var(--primary-200);
-		background: var(--primary-50);
-	}
-
-	.stat-header {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		margin-bottom: 0.75rem;
-	}
-
-	.stat-icon {
-		font-size: 1.5rem;
-		line-height: 1;
-	}
-
-	.stat-label {
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: var(--surface-700);
-		margin: 0;
-		text-transform: uppercase;
-		letter-spacing: 0.025em;
-	}
-
-	.stat-value {
-		font-size: 2rem;
-		font-weight: 700;
-		color: var(--surface-900);
-		font-variant-numeric: tabular-nums;
-		line-height: 1;
-		margin-bottom: 0.75rem;
-	}
-
-	.separator {
-		color: var(--surface-400);
-		margin: 0 0.25rem;
-	}
-
-	.capacity {
-		font-size: 1.5rem;
-		color: var(--surface-600);
-	}
-
-	.progress-bar-container {
-		width: 100%;
-		height: 12px;
-		background: var(--surface-200);
-		border-radius: 6px;
-		overflow: hidden;
-	}
-
-	.progress-bar {
-		height: 100%;
-		transition: width 0.3s ease;
-		border-radius: 6px;
-		background: var(--primary-500);
-	}
-
-	.capacity-normal {
-		background: var(--success-500);
-	}
-
-	.capacity-warning {
-		background: var(--warning-500);
-	}
-
-	.capacity-critical {
-		background: var(--error-500);
-		animation: pulse-critical 1.5s ease-in-out infinite;
-	}
-
-	@keyframes pulse-critical {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.7;
-		}
-	}
-
-	.warning-message {
-		margin-top: 0.75rem;
-		padding: 0.5rem;
-		border-radius: 4px;
-		font-size: 0.875rem;
-		font-weight: 500;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.warning-message.critical {
-		background: var(--error-100);
-		color: var(--error-900);
-		border: 1px solid var(--error-300);
-	}
-
-	.warning-message.warning {
-		background: var(--warning-100);
-		color: var(--warning-900);
-		border: 1px solid var(--warning-300);
-	}
-
-	/* Happiness Styling */
-	.happiness-value {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		margin-bottom: 0.75rem;
-	}
-
-	.happiness-percentage {
-		font-size: 2rem;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-		line-height: 1;
-	}
-
-	.happiness-text {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--surface-600);
-	}
-
-	.happiness-very-happy .happiness-percentage {
-		color: var(--success-600);
-	}
-
-	.happiness-happy .happiness-percentage {
-		color: var(--success-500);
-	}
-
-	.happiness-content .happiness-percentage {
-		color: var(--surface-700);
-	}
-
-	.happiness-unhappy .happiness-percentage {
-		color: var(--warning-500);
-	}
-
-	.happiness-very-unhappy .happiness-percentage {
-		color: var(--error-500);
-	}
-
-	.happiness-bar.happiness-very-happy {
-		background: var(--success-600);
-	}
-
-	.happiness-bar.happiness-happy {
-		background: var(--success-500);
-	}
-
-	.happiness-bar.happiness-content {
-		background: var(--surface-500);
-	}
-
-	.happiness-bar.happiness-unhappy {
-		background: var(--warning-500);
-	}
-
-	.happiness-bar.happiness-very-unhappy {
-		background: var(--error-500);
-	}
-
-	/* Growth Rate */
-	.growth-rate.positive {
-		color: var(--success-600);
-	}
-
-	.growth-rate.negative {
-		color: var(--error-600);
-	}
-
-	/* Migration */
-	.section-title {
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: var(--surface-700);
-		margin: 0 0 0.75rem 0;
-		text-transform: uppercase;
-		letter-spacing: 0.025em;
-	}
-
-	.migration-stats {
-		background: var(--surface-100);
-		border-radius: 6px;
-		padding: 1rem;
-		border: 1px solid var(--surface-200);
-	}
-
-	.migration-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1rem;
-	}
-
-	.migration-item {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 0.75rem;
-		border-radius: 4px;
-		background: var(--surface-50);
-	}
-
-	.migration-item.immigrants {
-		border-left: 3px solid var(--success-500);
-	}
-
-	.migration-item.emigrants {
-		border-left: 3px solid var(--error-500);
-	}
-
-	.migration-icon {
-		font-size: 1.25rem;
-		line-height: 1;
-	}
-
-	.migration-info {
-		display: flex;
-		flex-direction: column;
-		gap: 0.125rem;
-	}
-
-	.migration-label {
-		font-size: 0.75rem;
-		font-weight: 500;
-		color: var(--surface-600);
-	}
-
-	.migration-value {
-		font-size: 1.25rem;
-		font-weight: 700;
-		color: var(--surface-900);
-		font-variant-numeric: tabular-nums;
-	}
-
-	/* Responsive Design */
-	@media (max-width: 767px) {
-		.panel-header {
-			padding: 0.75rem 1rem;
-		}
-
-		.population-content {
-			padding: 0.75rem;
-		}
-
-		.stat-card {
-			padding: 0.75rem;
-		}
-
-		.stat-value {
-			font-size: 1.75rem;
-		}
-
-		.migration-grid {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	/* High Contrast Mode */
-	@media (prefers-contrast: high) {
-		.progress-bar-container {
-			border: 2px solid var(--surface-800);
-		}
-
-		.stat-card {
-			border-width: 2px;
-		}
-	}
-
-	/* Reduced Motion */
-	@media (prefers-reduced-motion: reduce) {
-		.progress-bar {
-			transition: none;
-		}
-
-		.capacity-critical {
-			animation: none;
-		}
-	}
-</style>

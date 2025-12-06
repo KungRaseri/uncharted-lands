@@ -82,63 +82,108 @@
 	}
 </script>
 
-<section class="alerts-panel" aria-labelledby="alerts-heading">
-	<header class="panel-header">
-		<h2 id="alerts-heading" class="panel-title">
+<section
+	class="rounded-lg bg-surface-50 dark:bg-surface-900 shadow-md border border-surface-200 dark:border-surface-700 p-4"
+	aria-labelledby="alerts-heading"
+>
+	<header class="mb-4 border-b border-surface-200 dark:border-surface-700 pb-3">
+		<h2
+			id="alerts-heading"
+			class="text-lg font-semibold text-surface-900 dark:text-surface-50 flex items-center gap-2"
+		>
 			Alerts
 			{#if alertCount > 0}
-				<span class="alert-count" aria-label="{alertCount} active alerts">({alertCount})</span>
+				<span
+					class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-full bg-error-100 dark:bg-error-900 text-error-700 dark:text-error-300 min-w-7"
+					aria-label="{alertCount} active alerts"
+				>
+					({alertCount})
+				</span>
 			{/if}
 		</h2>
 	</header>
 
-	<div class="alerts-content">
+	<div class="flex flex-col gap-3">
 		{#if activeAlerts.length === 0}
-			<div class="no-alerts" role="status">
-				<p class="no-alerts-text">✅ All clear! No active alerts.</p>
+			<div class="text-center py-8" role="status">
+				<p class="text-base text-surface-600 dark:text-surface-400">
+					✅ All clear! No active alerts.
+				</p>
 			</div>
 		{:else}
-			<ul class="alerts-list" role="list">
+			<ul class="flex flex-col gap-3" role="list">
 				{#each activeAlerts as alert (alert.id)}
 					<li
-						class="alert-item alert-{alert.severity}"
+						class="rounded-lg shadow-sm hover:translate-x-0.5 transition-transform duration-150 {alert.severity ===
+						'critical'
+							? 'border-l-4 border-error-500 dark:border-error-400 bg-error-50 dark:bg-error-950'
+							: alert.severity === 'warning'
+								? 'border-l-4 border-warning-500 dark:border-warning-400 bg-warning-50 dark:bg-warning-950'
+								: 'border-l-4 border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-950'}"
 						role="listitem"
 						aria-labelledby="alert-title-{alert.id}"
 						aria-describedby="alert-message-{alert.id}"
 					>
-						<div class="alert-icon" aria-hidden="true">
-							{getSeverityIcon(alert.severity)}
-						</div>
-
-						<div class="alert-content">
-							<div class="alert-header">
-								<h3 id="alert-title-{alert.id}" class="alert-title">
-									<span class="sr-only">{getSeverityLabel(alert.severity)}:</span>
-									{alert.title}
-								</h3>
-								<time class="alert-time" datetime={alert.timestamp.toISOString()}>
-									{formatTime(alert.timestamp)}
-								</time>
+						<div class="flex gap-3 p-4">
+							<div class="shrink-0 text-2xl pt-1" aria-hidden="true">
+								{getSeverityIcon(alert.severity)}
 							</div>
 
-							<p id="alert-message-{alert.id}" class="alert-message">
-								{alert.message}
-							</p>
+							<div class="flex-1 min-w-0">
+								<div class="flex items-start justify-between gap-2 mb-2">
+									<h3
+										id="alert-title-{alert.id}"
+										class="text-base font-semibold {alert.severity === 'critical'
+											? 'text-error-900 dark:text-error-100'
+											: alert.severity === 'warning'
+												? 'text-warning-900 dark:text-warning-100'
+												: 'text-primary-900 dark:text-primary-100'}"
+									>
+										<span class="sr-only">{getSeverityLabel(alert.severity)}:</span>
+										{alert.title}
+									</h3>
+									<time
+										class="text-xs text-surface-600 dark:text-surface-400 whitespace-nowrap shrink-0"
+										datetime={alert.timestamp.toISOString()}
+									>
+										{formatTime(alert.timestamp)}
+									</time>
+								</div>
 
-							<div class="alert-actions">
-								{#if alert.actionLabel && alert.actionHref}
-									<a href={alert.actionHref} class="alert-action-button">
-										{alert.actionLabel}
-									</a>
-								{/if}
-								<button
-									type="button"
-									class="dismiss-button"
-									onclick={() => dismissAlert(alert.id)}
-									aria-label="Dismiss {alert.title}"
+								<p
+									id="alert-message-{alert.id}"
+									class="text-sm mb-3 {alert.severity === 'critical'
+										? 'text-error-800 dark:text-error-200'
+										: alert.severity === 'warning'
+											? 'text-warning-800 dark:text-warning-200'
+											: 'text-primary-800 dark:text-primary-200'}"
 								>
-									Dismiss
-								</button>
+									{alert.message}
+								</p>
+
+								<div class="flex items-center gap-2 flex-wrap">
+									{#if alert.actionLabel && alert.actionHref}
+										<a
+											href={alert.actionHref}
+											class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors min-h-11 focus-visible:outline-3 focus-visible:outline-offset-2 {alert.severity ===
+											'critical'
+												? 'bg-error-600 hover:bg-error-700 dark:bg-error-700 dark:hover:bg-error-600 text-white focus-visible:outline-error-300 dark:focus-visible:outline-error-600'
+												: alert.severity === 'warning'
+													? 'bg-warning-600 hover:bg-warning-700 dark:bg-warning-700 dark:hover:bg-warning-600 text-white focus-visible:outline-warning-300 dark:focus-visible:outline-warning-600'
+													: 'bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 text-white focus-visible:outline-primary-300 dark:focus-visible:outline-primary-600'}"
+										>
+											{alert.actionLabel}
+										</a>
+									{/if}
+									<button
+										type="button"
+										class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md bg-surface-200 hover:bg-surface-300 dark:bg-surface-700 dark:hover:bg-surface-600 text-surface-900 dark:text-surface-50 transition-colors min-h-11 min-w-11 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-600"
+										onclick={() => dismissAlert(alert.id)}
+										aria-label="Dismiss {alert.title}"
+									>
+										Dismiss
+									</button>
+								</div>
 							</div>
 						</div>
 					</li>
@@ -147,240 +192,3 @@
 		{/if}
 	</div>
 </section>
-
-<style>
-	.alerts-panel {
-		background: var(--surface-50);
-		border-radius: 8px;
-		overflow: hidden;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.panel-header {
-		background: var(--surface-100);
-		border-bottom: 1px solid var(--surface-300);
-		padding: 1rem 1.5rem;
-	}
-
-	.panel-title {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.alert-count {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--surface-600);
-	}
-
-	.alerts-content {
-		flex: 1;
-		overflow-y: auto;
-		padding: 1rem;
-	}
-
-	.no-alerts {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 100%;
-		min-height: 150px;
-	}
-
-	.no-alerts-text {
-		font-size: 1rem;
-		color: var(--surface-600);
-		text-align: center;
-	}
-
-	.alerts-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.alert-item {
-		display: flex;
-		gap: 1rem;
-		padding: 1rem;
-		border-radius: 6px;
-		border-left: 4px solid;
-		background: var(--surface-100);
-		transition: transform 0.15s ease;
-	}
-
-	.alert-item:hover {
-		transform: translateX(2px);
-	}
-
-	.alert-critical {
-		border-left-color: var(--error-500);
-		background: var(--error-50);
-	}
-
-	.alert-warning {
-		border-left-color: var(--warning-500);
-		background: var(--warning-50);
-	}
-
-	.alert-info {
-		border-left-color: var(--primary-500);
-		background: var(--primary-50);
-	}
-
-	.alert-icon {
-		font-size: 1.5rem;
-		flex-shrink: 0;
-		line-height: 1;
-	}
-
-	.alert-content {
-		flex: 1;
-		min-width: 0;
-	}
-
-	.alert-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 1rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.alert-title {
-		font-size: 1rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-		line-height: 1.4;
-	}
-
-	.alert-time {
-		font-size: 0.75rem;
-		color: var(--surface-600);
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-
-	.alert-message {
-		font-size: 0.875rem;
-		color: var(--surface-700);
-		margin: 0 0 1rem 0;
-		line-height: 1.5;
-	}
-
-	.alert-actions {
-		display: flex;
-		gap: 0.75rem;
-		flex-wrap: wrap;
-	}
-
-	.alert-action-button,
-	.dismiss-button {
-		padding: 0.5rem 1rem;
-		border-radius: 4px;
-		font-size: 0.875rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: background-color 0.15s ease;
-		min-height: 44px;
-		min-width: 44px;
-	}
-
-	.alert-action-button {
-		background: var(--primary-500);
-		color: white;
-		border: none;
-		text-decoration: none;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.alert-action-button:hover {
-		background: var(--primary-600);
-	}
-
-	.alert-action-button:focus-visible {
-		outline: 3px solid var(--primary-300);
-		outline-offset: 2px;
-	}
-
-	.dismiss-button {
-		background: var(--surface-200);
-		color: var(--surface-700);
-		border: 1px solid var(--surface-300);
-	}
-
-	.dismiss-button:hover {
-		background: var(--surface-300);
-	}
-
-	.dismiss-button:focus-visible {
-		outline: 3px solid var(--surface-400);
-		outline-offset: 2px;
-	}
-
-	/* Screen reader only text */
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border-width: 0;
-	}
-
-	/* Responsive Design */
-	@media (max-width: 767px) {
-		.panel-header {
-			padding: 0.75rem 1rem;
-		}
-
-		.alerts-content {
-			padding: 0.75rem;
-		}
-
-		.alert-item {
-			padding: 0.75rem;
-			gap: 0.75rem;
-		}
-
-		.alert-header {
-			flex-direction: column;
-			gap: 0.25rem;
-		}
-	}
-
-	/* High Contrast Mode */
-	@media (prefers-contrast: high) {
-		.alert-item {
-			border-left-width: 6px;
-		}
-	}
-
-	/* Reduced Motion */
-	@media (prefers-reduced-motion: reduce) {
-		.alert-item {
-			transition: none;
-		}
-
-		.alert-action-button,
-		.dismiss-button {
-			transition: none;
-		}
-	}
-</style>

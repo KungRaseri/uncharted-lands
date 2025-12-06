@@ -4,7 +4,7 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { fetchStructureMetadata, type StructureMetadata } from '$lib/api/structures';
 
-export const load = (async ({ params, depends, cookies }) => {
+export const load = (async ({ params, depends, cookies, fetch }) => {
 	// Mark this data as dependent on game state changes
 	depends('game:settlement');
 	depends('game:data');
@@ -36,7 +36,7 @@ export const load = (async ({ params, depends, cookies }) => {
 	// Fetch structure metadata from API
 	let structures: StructureMetadata[] = [];
 	try {
-		structures = await fetchStructureMetadata();
+		structures = await fetchStructureMetadata(false, fetch);
 		logger.debug('[SETTLEMENT DETAIL] Structure metadata loaded', {
 			count: structures.length
 		});

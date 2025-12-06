@@ -118,42 +118,72 @@
 	}
 </script>
 
-<section class="construction-queue-panel" aria-labelledby="construction-heading">
-	<header class="panel-header">
-		<h2 id="construction-heading" class="panel-title">Construction Queue</h2>
+<section
+	class="bg-surface-50 dark:bg-surface-900 rounded-lg overflow-hidden h-full flex flex-col"
+	aria-labelledby="construction-heading"
+>
+	<header
+		class="bg-surface-100 dark:bg-surface-800 border-b border-surface-300 dark:border-surface-700 px-6 py-4 md:px-4 md:py-3"
+	>
+		<h2
+			id="construction-heading"
+			class="text-lg font-semibold text-surface-900 dark:text-surface-100 m-0"
+		>
+			Construction Queue
+		</h2>
 	</header>
 
-	<div class="queue-content">
+	<div class="flex-1 overflow-y-auto p-4 md:p-3 flex flex-col gap-6">
 		{#if sortedQueue.length === 0}
 			<!-- Empty State -->
-			<div class="empty-state" role="status">
-				<span class="empty-icon" aria-hidden="true">🏗️</span>
-				<p class="empty-message">No construction projects</p>
-				<p class="empty-hint">Build structures to see progress here</p>
+			<div class="flex flex-col items-center justify-center py-12 px-4 text-center" role="status">
+				<span class="text-6xl leading-none mb-4 opacity-50" aria-hidden="true">🏗️</span>
+				<p class="text-lg font-semibold text-surface-700 dark:text-surface-300 m-0 mb-2">
+					No construction projects
+				</p>
+				<p class="text-sm text-surface-500 dark:text-surface-400 m-0">
+					Build structures to see progress here
+				</p>
 			</div>
 		{:else}
 			<!-- Active Projects -->
 			{#if activeProjects.length > 0}
-				<div class="queue-section">
-					<h3 class="section-title">Building Now ({activeProjects.length})</h3>
+				<div class="flex flex-col gap-3">
+					<h3
+						class="text-sm font-semibold text-surface-700 dark:text-surface-300 m-0 uppercase tracking-wide"
+					>
+						Building Now ({activeProjects.length})
+					</h3>
 					<div role="list" aria-label="Active construction projects">
 						{#each activeProjects as project (project.id)}
-							<div class="project-card active" role="listitem">
-								<div class="project-header">
-									<div class="project-info">
-										<span class="project-icon" aria-hidden="true"
+							<div
+								class="bg-primary-50 dark:bg-primary-950 rounded-md p-4 md:p-3 border border-primary-300 dark:border-primary-700 flex flex-col gap-3"
+								role="listitem"
+							>
+								<div class="flex items-start justify-between gap-4 flex-col md:flex-row">
+									<div class="flex items-start gap-3 flex-1">
+										<span class="text-2xl leading-none shrink-0" aria-hidden="true"
 											>{getBuildingEmoji(project.buildingType)}</span
 										>
-										<div class="project-details">
-											<h4 class="project-name">{project.buildingName}</h4>
-											<p class="project-position">
+										<div class="flex flex-col gap-1">
+											<h4
+												class="text-base font-semibold text-surface-900 dark:text-surface-100 m-0"
+											>
+												{project.buildingName}
+											</h4>
+											<p class="text-xs text-surface-600 dark:text-surface-400 m-0">
 												Position: #{project.queuePosition}
 											</p>
 										</div>
 									</div>
-									<div class="project-time">
-										<span class="time-remaining">{formatTimeRemaining(project.timeRemaining)}</span>
-										<span class="completion-time"
+									<div
+										class="flex flex-col items-end gap-1 shrink-0 md:items-start w-full md:w-auto"
+									>
+										<span
+											class="text-lg font-bold text-primary-600 dark:text-primary-400 tabular-nums"
+											>{formatTimeRemaining(project.timeRemaining)}</span
+										>
+										<span class="text-xs text-surface-600 dark:text-surface-400 tabular-nums"
 											>{getEstimatedCompletion(project.timeRemaining)}</span
 										>
 									</div>
@@ -161,7 +191,7 @@
 
 								<!-- Progress Bar -->
 								<div
-									class="progress-bar-container"
+									class="w-full h-6 bg-surface-200 dark:bg-surface-700 rounded-xl overflow-hidden relative"
 									role="progressbar"
 									aria-valuenow={project.progress}
 									aria-valuemin="0"
@@ -170,15 +200,22 @@
 										project.timeRemaining
 									)} remaining"
 								>
-									<div class="progress-bar active" style:width="{project.progress}%">
-										<span class="progress-text">{project.progress}%</span>
+									<div
+										class="h-full bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 rounded-xl transition-all duration-500 ease-out flex items-center justify-center"
+										style:width="{project.progress}%"
+									>
+										<span class="text-xs font-semibold text-white shadow-sm tabular-nums"
+											>{project.progress}%</span
+										>
 									</div>
 								</div>
 
 								<!-- Resource Costs -->
-								<div class="project-costs">
-									<span class="costs-label">Cost:</span>
-									<span class="costs-value">{formatResourceCost(project.resourceCosts)}</span>
+								<div class="flex items-center gap-2 text-sm">
+									<span class="text-surface-600 dark:text-surface-400 font-medium">Cost:</span>
+									<span class="text-surface-800 dark:text-surface-200 font-semibold"
+										>{formatResourceCost(project.resourceCosts)}</span
+									>
 								</div>
 							</div>
 						{/each}
@@ -188,34 +225,50 @@
 
 			<!-- Queued Projects -->
 			{#if queuedProjects.length > 0}
-				<div class="queue-section">
-					<h3 class="section-title">Queued ({queuedProjects.length})</h3>
+				<div class="flex flex-col gap-3">
+					<h3
+						class="text-sm font-semibold text-surface-700 dark:text-surface-300 m-0 uppercase tracking-wide"
+					>
+						Queued ({queuedProjects.length})
+					</h3>
 					<div role="list" aria-label="Queued construction projects">
 						{#each queuedProjects as project (project.id)}
-							<div class="project-card queued" role="listitem">
-								<div class="project-header">
-									<div class="project-info">
-										<span class="project-icon" aria-hidden="true"
+							<div
+								class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 md:p-3 border border-surface-200 dark:border-surface-700 flex flex-col gap-3"
+								role="listitem"
+							>
+								<div class="flex items-start justify-between gap-4 flex-col md:flex-row">
+									<div class="flex items-start gap-3 flex-1">
+										<span class="text-2xl leading-none shrink-0" aria-hidden="true"
 											>{getBuildingEmoji(project.buildingType)}</span
 										>
-										<div class="project-details">
-											<h4 class="project-name">{project.buildingName}</h4>
-											<p class="project-position">
+										<div class="flex flex-col gap-1">
+											<h4
+												class="text-base font-semibold text-surface-900 dark:text-surface-100 m-0"
+											>
+												{project.buildingName}
+											</h4>
+											<p class="text-xs text-surface-600 dark:text-surface-400 m-0">
 												Position: #{project.queuePosition}
 											</p>
 										</div>
 									</div>
-									<div class="project-time">
-										<span class="time-estimate"
+									<div
+										class="flex flex-col items-end gap-1 shrink-0 md:items-start w-full md:w-auto"
+									>
+										<span
+											class="text-sm font-medium text-surface-600 dark:text-surface-400 tabular-nums"
 											>Est: {formatTimeRemaining(project.timeRemaining)}</span
 										>
 									</div>
 								</div>
 
 								<!-- Resource Costs -->
-								<div class="project-costs">
-									<span class="costs-label">Cost:</span>
-									<span class="costs-value">{formatResourceCost(project.resourceCosts)}</span>
+								<div class="flex items-center gap-2 text-sm">
+									<span class="text-surface-600 dark:text-surface-400 font-medium">Cost:</span>
+									<span class="text-surface-800 dark:text-surface-200 font-semibold"
+										>{formatResourceCost(project.resourceCosts)}</span
+									>
 								</div>
 							</div>
 						{/each}
@@ -225,297 +278,3 @@
 		{/if}
 	</div>
 </section>
-
-<style>
-	.construction-queue-panel {
-		background: var(--surface-50);
-		border-radius: 8px;
-		overflow: hidden;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.panel-header {
-		background: var(--surface-100);
-		border-bottom: 1px solid var(--surface-300);
-		padding: 1rem 1.5rem;
-	}
-
-	.panel-title {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-	}
-
-	.queue-content {
-		flex: 1;
-		overflow-y: auto;
-		padding: 1rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	/* Empty State */
-	.empty-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 3rem 1rem;
-		text-align: center;
-	}
-
-	.empty-icon {
-		font-size: 4rem;
-		line-height: 1;
-		margin-bottom: 1rem;
-		opacity: 0.5;
-	}
-
-	.empty-message {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--surface-700);
-		margin: 0 0 0.5rem 0;
-	}
-
-	.empty-hint {
-		font-size: 0.875rem;
-		color: var(--surface-500);
-		margin: 0;
-	}
-
-	/* Section */
-	.queue-section {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.section-title {
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: var(--surface-700);
-		margin: 0;
-		text-transform: uppercase;
-		letter-spacing: 0.025em;
-	}
-
-	/* Project Card */
-	.project-card {
-		background: var(--surface-100);
-		border-radius: 6px;
-		padding: 1rem;
-		border: 1px solid var(--surface-200);
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.project-card.active {
-		border-color: var(--primary-300);
-		background: var(--primary-50);
-	}
-
-	.project-header {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 1rem;
-	}
-
-	.project-info {
-		display: flex;
-		align-items: flex-start;
-		gap: 0.75rem;
-		flex: 1;
-	}
-
-	.project-icon {
-		font-size: 1.5rem;
-		line-height: 1;
-		flex-shrink: 0;
-	}
-
-	.project-details {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.project-name {
-		font-size: 1rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-	}
-
-	.project-position {
-		font-size: 0.75rem;
-		color: var(--surface-600);
-		margin: 0;
-	}
-
-	.project-time {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 0.25rem;
-		flex-shrink: 0;
-	}
-
-	.time-remaining {
-		font-size: 1.125rem;
-		font-weight: 700;
-		color: var(--primary-600);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.completion-time {
-		font-size: 0.75rem;
-		color: var(--surface-600);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.time-estimate {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--surface-600);
-		font-variant-numeric: tabular-nums;
-	}
-
-	/* Progress Bar */
-	.progress-bar-container {
-		width: 100%;
-		height: 24px;
-		background: var(--surface-200);
-		border-radius: 12px;
-		overflow: hidden;
-		position: relative;
-	}
-
-	.progress-bar {
-		height: 100%;
-		background: var(--primary-500);
-		border-radius: 12px;
-		transition: width 0.5s ease;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.progress-bar.active {
-		background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
-		animation: shimmer 2s infinite;
-	}
-
-	@keyframes shimmer {
-		0% {
-			background-position: -100% 0;
-		}
-		100% {
-			background-position: 200% 0;
-		}
-	}
-
-	.progress-text {
-		font-size: 0.75rem;
-		font-weight: 600;
-		color: white;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-		font-variant-numeric: tabular-nums;
-	}
-
-	/* Resource Costs */
-	.project-costs {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.875rem;
-	}
-
-	.costs-label {
-		color: var(--surface-600);
-		font-weight: 500;
-	}
-
-	.costs-value {
-		color: var(--surface-800);
-		font-weight: 600;
-	}
-
-	/* Responsive Design */
-	@media (max-width: 767px) {
-		.panel-header {
-			padding: 0.75rem 1rem;
-		}
-
-		.queue-content {
-			padding: 0.75rem;
-		}
-
-		.project-card {
-			padding: 0.75rem;
-		}
-
-		.project-header {
-			flex-direction: column;
-		}
-
-		.project-time {
-			align-items: flex-start;
-			width: 100%;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.project-icon {
-			font-size: 1.25rem;
-		}
-
-		.project-name {
-			font-size: 0.875rem;
-		}
-
-		.time-remaining {
-			font-size: 1rem;
-		}
-
-		.progress-bar-container {
-			height: 20px;
-		}
-
-		.progress-text {
-			font-size: 0.625rem;
-		}
-	}
-
-	/* High Contrast Mode */
-	@media (prefers-contrast: high) {
-		.progress-bar-container {
-			border: 2px solid var(--surface-800);
-		}
-
-		.project-card {
-			border-width: 2px;
-		}
-
-		.project-card.active {
-			border-width: 3px;
-		}
-	}
-
-	/* Reduced Motion */
-	@media (prefers-reduced-motion: reduce) {
-		.progress-bar {
-			transition: none;
-		}
-
-		.progress-bar.active {
-			animation: none;
-		}
-	}
-</style>

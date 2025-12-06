@@ -146,28 +146,40 @@
 	}
 </script>
 
-<section class="suggestions-panel" aria-labelledby="suggestions-heading">
-	<header class="panel-header">
-		<h2 id="suggestions-heading" class="panel-title">Suggested Actions</h2>
+<section
+	class="bg-surface-50 dark:bg-surface-900 rounded-lg overflow-hidden h-full flex flex-col"
+	aria-labelledby="suggestions-heading"
+>
+	<header
+		class="bg-surface-100 dark:bg-surface-800 border-b border-surface-300 dark:border-surface-700 p-4 md:px-6 flex items-center justify-between gap-4"
+	>
+		<h2
+			id="suggestions-heading"
+			class="text-lg font-semibold text-surface-900 dark:text-surface-100 m-0"
+		>
+			Suggested Actions
+		</h2>
 		{#if onRefresh}
 			<button
 				type="button"
-				class="refresh-button"
+				class="bg-transparent border-none p-2 cursor-pointer rounded transition-colors min-w-11 min-h-11 flex items-center justify-center hover:bg-surface-200 dark:hover:bg-surface-700 focus-visible:outline-3 focus-visible:outline-primary-500 focus-visible:outline-offset-2"
 				onclick={onRefresh}
 				aria-label="Refresh suggestions"
 			>
-				<span class="refresh-icon" aria-hidden="true">🔄</span>
+				<span class="text-xl leading-none" aria-hidden="true">🔄</span>
 			</button>
 		{/if}
 	</header>
 
-	<div class="suggestions-content">
+	<div class="flex-1 overflow-y-auto p-3 md:p-4 flex flex-col gap-6">
 		{#if sortedSuggestions.length === 0}
 			<!-- Empty State -->
-			<div class="empty-state" role="status">
-				<span class="empty-icon" aria-hidden="true">✅</span>
-				<p class="empty-message">All caught up!</p>
-				<p class="empty-hint">
+			<div class="flex flex-col items-center justify-center p-12 md:p-16 text-center" role="status">
+				<span class="text-6xl leading-none mb-4" aria-hidden="true">✅</span>
+				<p class="text-lg font-semibold text-surface-700 dark:text-surface-300 m-0 mb-2">
+					All caught up!
+				</p>
+				<p class="text-sm text-surface-500 dark:text-surface-400 m-0 max-w-xs">
 					You're managing your settlement well. Check back later for new suggestions.
 				</p>
 			</div>
@@ -175,23 +187,27 @@
 			<!-- Top Suggestion (Featured) -->
 			{#if topSuggestion}
 				<div
-					class="suggestion-card featured"
+					class="rounded-lg p-6 border-2 flex flex-col gap-4 shadow-md"
 					style:background={getPriorityBgColor(topSuggestion.priority)}
 					style:border-color={getPriorityBorderColor(topSuggestion.priority)}
 					role="status"
 					aria-live="polite"
 				>
-					<div class="suggestion-header">
-						<div class="suggestion-priority">
-							<span class="priority-icon" aria-hidden="true"
+					<div class="flex items-center justify-between gap-4">
+						<div class="flex items-center gap-2">
+							<span class="text-xl leading-none" aria-hidden="true"
 								>{getPriorityIcon(topSuggestion.priority)}</span
 							>
-							<span class="priority-label">{getPriorityLabel(topSuggestion.priority)}</span>
+							<span
+								class="text-sm font-bold uppercase tracking-wider"
+								style:color={getPriorityColor(topSuggestion.priority)}
+								>{getPriorityLabel(topSuggestion.priority)}</span
+							>
 							<span class="sr-only">Priority level: {topSuggestion.priority}</span>
 						</div>
 						<button
 							type="button"
-							class="dismiss-button"
+							class="bg-transparent border-none p-2 cursor-pointer rounded transition-colors min-w-11 min-h-11 flex items-center justify-center text-xl text-surface-600 dark:text-surface-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-surface-900 dark:hover:text-surface-100 focus-visible:outline-3 focus-visible:outline-primary-500 focus-visible:outline-offset-2"
 							onclick={() => handleDismiss(topSuggestion.id)}
 							aria-label="Dismiss suggestion: {topSuggestion.title}"
 						>
@@ -199,40 +215,46 @@
 						</button>
 					</div>
 
-					<div class="suggestion-body">
-						<div class="suggestion-category">
-							<span class="category-icon" aria-hidden="true"
-								>{getCategoryIcon(topSuggestion.category)}</span
-							>
+					<div class="flex flex-col gap-3">
+						<div class="text-2xl leading-none">
+							<span aria-hidden="true">{getCategoryIcon(topSuggestion.category)}</span>
 							<span class="sr-only">Category: {topSuggestion.category}</span>
 						</div>
 
-						<h3 class="suggestion-title">{topSuggestion.title}</h3>
-						<p class="suggestion-reasoning">{topSuggestion.reasoning}</p>
+						<h3 class="text-xl font-bold text-surface-900 dark:text-surface-100 m-0">
+							{topSuggestion.title}
+						</h3>
+						<p class="text-base leading-relaxed text-surface-700 dark:text-surface-300 m-0">
+							{topSuggestion.reasoning}
+						</p>
 
 						{#if topSuggestion.estimatedTime || topSuggestion.impact}
-							<div class="suggestion-meta">
+							<div class="flex flex-wrap gap-4">
 								{#if topSuggestion.estimatedTime}
-									<span class="meta-item">
-										<span class="meta-icon" aria-hidden="true">⏱️</span>
-										<span class="meta-text">{topSuggestion.estimatedTime}</span>
+									<span
+										class="flex items-center gap-1.5 text-sm text-surface-600 dark:text-surface-400"
+									>
+										<span class="text-base leading-none" aria-hidden="true">⏱️</span>
+										<span>{topSuggestion.estimatedTime}</span>
 									</span>
 								{/if}
 								{#if topSuggestion.impact}
-									<span class="meta-item">
-										<span class="meta-icon" aria-hidden="true">📈</span>
-										<span class="meta-text">{topSuggestion.impact}</span>
+									<span
+										class="flex items-center gap-1.5 text-sm text-surface-600 dark:text-surface-400"
+									>
+										<span class="text-base leading-none" aria-hidden="true">📈</span>
+										<span>{topSuggestion.impact}</span>
 									</span>
 								{/if}
 							</div>
 						{/if}
 					</div>
 
-					<div class="suggestion-actions">
+					<div class="flex gap-3">
 						{#if topSuggestion.actionHref}
 							<a
 								href={topSuggestion.actionHref}
-								class="action-button primary"
+								class="px-6 py-3 rounded-md font-semibold text-base cursor-pointer transition-all min-w-11 min-h-11 inline-flex items-center justify-center no-underline bg-primary-500 text-white border-none hover:bg-primary-600 focus-visible:outline-3 focus-visible:outline-primary-500 focus-visible:outline-offset-2"
 								onclick={() => handleAction(topSuggestion)}
 							>
 								{topSuggestion.actionLabel}
@@ -240,7 +262,7 @@
 						{:else}
 							<button
 								type="button"
-								class="action-button primary"
+								class="px-6 py-3 rounded-md font-semibold text-base cursor-pointer transition-all min-w-11 min-h-11 inline-flex items-center justify-center bg-primary-500 text-white border-none hover:bg-primary-600 focus-visible:outline-3 focus-visible:outline-primary-500 focus-visible:outline-offset-2"
 								onclick={() => handleAction(topSuggestion)}
 							>
 								{topSuggestion.actionLabel}
@@ -252,31 +274,37 @@
 
 			<!-- Other Suggestions -->
 			{#if sortedSuggestions.length > 1}
-				<div class="other-suggestions">
-					<h3 class="section-title">Other Suggestions</h3>
-					<div class="suggestions-list" role="list">
+				<div class="flex flex-col gap-3">
+					<h3
+						class="text-sm font-semibold text-surface-700 dark:text-surface-300 m-0 uppercase tracking-wide"
+					>
+						Other Suggestions
+					</h3>
+					<div class="flex flex-col gap-3" role="list">
 						{#each sortedSuggestions.slice(1) as suggestion (suggestion.id)}
 							<div
-								class="suggestion-item"
+								class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 border-l-4 flex flex-col gap-3"
 								style:border-left-color={getPriorityColor(suggestion.priority)}
 								role="listitem"
 							>
-								<div class="item-header">
-									<div class="item-priority">
-										<span class="priority-icon small" aria-hidden="true"
+								<div class="flex items-center gap-3 flex-wrap md:flex-nowrap">
+									<div class="shrink-0">
+										<span class="text-base leading-none" aria-hidden="true"
 											>{getPriorityIcon(suggestion.priority)}</span
 										>
 										<span class="sr-only">{getPriorityLabel(suggestion.priority)}</span>
 									</div>
-									<div class="item-info">
-										<span class="category-icon small" aria-hidden="true"
+									<div class="flex items-center gap-2 flex-1 w-full md:w-auto">
+										<span class="text-sm leading-none" aria-hidden="true"
 											>{getCategoryIcon(suggestion.category)}</span
 										>
-										<h4 class="item-title">{suggestion.title}</h4>
+										<h4 class="text-base font-semibold text-surface-900 dark:text-surface-100 m-0">
+											{suggestion.title}
+										</h4>
 									</div>
 									<button
 										type="button"
-										class="dismiss-button small"
+										class="bg-transparent border-none p-2 cursor-pointer rounded transition-colors min-w-9 min-h-9 flex items-center justify-center text-base text-surface-600 dark:text-surface-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-surface-900 dark:hover:text-surface-100 focus-visible:outline-3 focus-visible:outline-primary-500 focus-visible:outline-offset-2"
 										onclick={() => handleDismiss(suggestion.id)}
 										aria-label="Dismiss suggestion: {suggestion.title}"
 									>
@@ -284,13 +312,15 @@
 									</button>
 								</div>
 
-								<p class="item-reasoning">{suggestion.reasoning}</p>
+								<p class="text-sm leading-relaxed text-surface-700 dark:text-surface-300 m-0">
+									{suggestion.reasoning}
+								</p>
 
-								<div class="item-actions">
+								<div class="flex gap-2">
 									{#if suggestion.actionHref}
 										<a
 											href={suggestion.actionHref}
-											class="action-button secondary small"
+											class="w-full md:w-auto px-4 py-2 rounded-md font-semibold text-sm cursor-pointer transition-all min-w-11 min-h-11 inline-flex items-center justify-center no-underline bg-transparent text-primary-600 dark:text-primary-400 border-2 border-primary-500 dark:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950 focus-visible:outline-3 focus-visible:outline-primary-500 focus-visible:outline-offset-2"
 											onclick={() => handleAction(suggestion)}
 										>
 											{suggestion.actionLabel}
@@ -298,7 +328,7 @@
 									{:else}
 										<button
 											type="button"
-											class="action-button secondary small"
+											class="w-full md:w-auto px-4 py-2 rounded-md font-semibold text-sm cursor-pointer transition-all min-w-11 min-h-11 inline-flex items-center justify-center bg-transparent text-primary-600 dark:text-primary-400 border-2 border-primary-500 dark:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950 focus-visible:outline-3 focus-visible:outline-primary-500 focus-visible:outline-offset-2"
 											onclick={() => handleAction(suggestion)}
 										>
 											{suggestion.actionLabel}
@@ -314,71 +344,8 @@
 	</div>
 </section>
 
+<!-- Screen Reader Only utility class -->
 <style>
-	.suggestions-panel {
-		background: var(--surface-50);
-		border-radius: 8px;
-		overflow: hidden;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.panel-header {
-		background: var(--surface-100);
-		border-bottom: 1px solid var(--surface-300);
-		padding: 1rem 1.5rem;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-	}
-
-	.panel-title {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-	}
-
-	.refresh-button {
-		background: transparent;
-		border: none;
-		padding: 0.5rem;
-		cursor: pointer;
-		border-radius: 4px;
-		transition: background-color 0.2s;
-		min-width: 44px;
-		min-height: 44px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.refresh-button:hover {
-		background: var(--surface-200);
-	}
-
-	.refresh-button:focus-visible {
-		outline: 3px solid var(--primary-500);
-		outline-offset: 2px;
-	}
-
-	.refresh-icon {
-		font-size: 1.25rem;
-		line-height: 1;
-	}
-
-	.suggestions-content {
-		flex: 1;
-		overflow-y: auto;
-		padding: 1rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	/* Screen Reader Only */
 	.sr-only {
 		position: absolute;
 		width: 1px;
@@ -389,337 +356,5 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border-width: 0;
-	}
-
-	/* Empty State */
-	.empty-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 3rem 1rem;
-		text-align: center;
-	}
-
-	.empty-icon {
-		font-size: 4rem;
-		line-height: 1;
-		margin-bottom: 1rem;
-	}
-
-	.empty-message {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--surface-700);
-		margin: 0 0 0.5rem 0;
-	}
-
-	.empty-hint {
-		font-size: 0.875rem;
-		color: var(--surface-500);
-		margin: 0;
-		max-width: 300px;
-	}
-
-	/* Featured Suggestion Card */
-	.suggestion-card {
-		border-radius: 8px;
-		padding: 1.5rem;
-		border: 2px solid;
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.suggestion-card.featured {
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-	}
-
-	.suggestion-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-	}
-
-	.suggestion-priority {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.priority-icon {
-		font-size: 1.25rem;
-		line-height: 1;
-	}
-
-	.priority-label {
-		font-size: 0.875rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.dismiss-button {
-		background: transparent;
-		border: none;
-		padding: 0.5rem;
-		cursor: pointer;
-		border-radius: 4px;
-		transition: background-color 0.2s;
-		min-width: 44px;
-		min-height: 44px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 1.25rem;
-		color: var(--surface-600);
-	}
-
-	.dismiss-button:hover {
-		background: rgba(0, 0, 0, 0.05);
-		color: var(--surface-900);
-	}
-
-	.dismiss-button:focus-visible {
-		outline: 3px solid var(--primary-500);
-		outline-offset: 2px;
-	}
-
-	.suggestion-body {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.suggestion-category {
-		font-size: 1.5rem;
-		line-height: 1;
-	}
-
-	.suggestion-title {
-		font-size: 1.25rem;
-		font-weight: 700;
-		color: var(--surface-900);
-		margin: 0;
-	}
-
-	.suggestion-reasoning {
-		font-size: 0.9375rem;
-		line-height: 1.5;
-		color: var(--surface-700);
-		margin: 0;
-	}
-
-	.suggestion-meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 1rem;
-	}
-
-	.meta-item {
-		display: flex;
-		align-items: center;
-		gap: 0.375rem;
-		font-size: 0.875rem;
-		color: var(--surface-600);
-	}
-
-	.meta-icon {
-		font-size: 1rem;
-		line-height: 1;
-	}
-
-	.suggestion-actions {
-		display: flex;
-		gap: 0.75rem;
-	}
-
-	.action-button {
-		padding: 0.75rem 1.5rem;
-		border-radius: 6px;
-		font-weight: 600;
-		font-size: 0.9375rem;
-		cursor: pointer;
-		transition: all 0.2s;
-		min-width: 44px;
-		min-height: 44px;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		text-decoration: none;
-	}
-
-	.action-button.primary {
-		background: var(--primary-500);
-		color: white;
-		border: none;
-	}
-
-	.action-button.primary:hover {
-		background: var(--primary-600);
-	}
-
-	.action-button.primary:focus-visible {
-		outline: 3px solid var(--primary-500);
-		outline-offset: 2px;
-	}
-
-	.action-button.secondary {
-		background: transparent;
-		color: var(--primary-600);
-		border: 2px solid var(--primary-500);
-	}
-
-	.action-button.secondary:hover {
-		background: var(--primary-50);
-	}
-
-	.action-button.secondary:focus-visible {
-		outline: 3px solid var(--primary-500);
-		outline-offset: 2px;
-	}
-
-	/* Other Suggestions */
-	.other-suggestions {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.section-title {
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: var(--surface-700);
-		margin: 0;
-		text-transform: uppercase;
-		letter-spacing: 0.025em;
-	}
-
-	.suggestions-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.suggestion-item {
-		background: var(--surface-100);
-		border-radius: 6px;
-		padding: 1rem;
-		border-left: 4px solid;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.item-header {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.item-priority {
-		flex-shrink: 0;
-	}
-
-	.priority-icon.small {
-		font-size: 1rem;
-	}
-
-	.item-info {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		flex: 1;
-	}
-
-	.category-icon {
-		font-size: 1rem;
-		line-height: 1;
-	}
-
-	.category-icon.small {
-		font-size: 0.875rem;
-	}
-
-	.item-title {
-		font-size: 0.9375rem;
-		font-weight: 600;
-		color: var(--surface-900);
-		margin: 0;
-	}
-
-	.dismiss-button.small {
-		min-width: 36px;
-		min-height: 36px;
-		font-size: 1rem;
-	}
-
-	.item-reasoning {
-		font-size: 0.875rem;
-		line-height: 1.4;
-		color: var(--surface-700);
-		margin: 0;
-	}
-
-	.item-actions {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.action-button.small {
-		padding: 0.5rem 1rem;
-		font-size: 0.875rem;
-	}
-
-	/* Responsive Design */
-	@media (max-width: 767px) {
-		.panel-header {
-			padding: 0.75rem 1rem;
-		}
-
-		.suggestions-content {
-			padding: 0.75rem;
-		}
-
-		.suggestion-card {
-			padding: 1rem;
-		}
-
-		.suggestion-title {
-			font-size: 1.125rem;
-		}
-
-		.action-button {
-			width: 100%;
-		}
-
-		.item-header {
-			flex-wrap: wrap;
-		}
-
-		.item-info {
-			width: 100%;
-		}
-	}
-
-	/* High Contrast Mode */
-	@media (prefers-contrast: high) {
-		.suggestion-card {
-			border-width: 3px;
-		}
-
-		.suggestion-item {
-			border-left-width: 6px;
-		}
-	}
-
-	/* Reduced Motion */
-	@media (prefers-reduced-motion: reduce) {
-		.refresh-button,
-		.dismiss-button,
-		.action-button {
-			transition: none;
-		}
 	}
 </style>

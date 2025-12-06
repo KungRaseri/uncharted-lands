@@ -82,19 +82,28 @@
 	}
 </script>
 
-<nav class="quick-actions-bar" aria-label="Quick actions">
+<nav
+	class="flex gap-2 p-4 md:p-4 bg-surface-200 dark:bg-surface-800 rounded-xl flex-wrap md:gap-2 md:rounded-xl p-2 gap-1"
+	aria-label="Quick actions"
+>
 	<!-- Alerts Button (replaced Aid) -->
 	<button
 		onclick={handleAlerts}
 		aria-label="View alerts and warnings (keyboard shortcut: A)"
 		title="View alerts (A)"
-		class="quick-action"
-		class:has-critical={criticalAlertCount > 0}
+		class="flex items-center gap-1 px-4 py-2 bg-primary-500 dark:bg-primary-600 text-white border-none rounded-lg cursor-pointer font-semibold min-h-11 transition-all duration-200 text-sm hover:bg-primary-600 dark:hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_4px_8px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:bg-surface-300 dark:disabled:bg-surface-700 disabled:text-surface-500 dark:disabled:text-surface-500 disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-500 focus-visible:outline-offset-2 md:flex-initial md:justify-start flex-1 basis-[calc(50%-0.25rem)] justify-center {criticalAlertCount >
+		0
+			? 'bg-error-500 dark:bg-error-600 hover:bg-error-600 dark:hover:bg-error-700 animate-pulse-critical'
+			: ''}"
 	>
-		<span class="icon" aria-hidden="true">⚠️</span>
-		<span class="label">Alerts</span>
+		<span class="text-xl leading-none" aria-hidden="true">⚠️</span>
+		<span class="text-sm md:inline hidden">Alerts</span>
 		{#if alertCount > 0}
-			<span class="badge" class:critical={criticalAlertCount > 0}>
+			<span
+				class="px-1.5 py-0.5 rounded-xl text-xs font-bold ml-1 {criticalAlertCount > 0
+					? 'bg-error-500 dark:bg-error-600 text-white'
+					: 'bg-white dark:bg-surface-100 text-primary-500 dark:text-primary-600'}"
+			>
 				{alertCount}
 			</span>
 		{/if}
@@ -107,15 +116,17 @@
 		data-testid="build-structure-btn"
 		aria-label="Build structure (keyboard shortcut: B)"
 		title="Build structure (B)"
-		class="quick-action"
+		class="flex items-center gap-1 px-4 py-2 bg-primary-500 dark:bg-primary-600 text-white border-none rounded-lg cursor-pointer font-semibold min-h-11 transition-all duration-200 text-sm hover:bg-primary-600 dark:hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_4px_8px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:bg-surface-300 dark:disabled:bg-surface-700 disabled:text-surface-500 dark:disabled:text-surface-500 disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-500 focus-visible:outline-offset-2 md:flex-initial md:justify-start flex-1 basis-[calc(50%-0.25rem)] justify-center"
 	>
-		<span class="icon" aria-hidden="true">🏗️</span>
-		<span class="label">Build</span>
+		<span class="text-xl leading-none" aria-hidden="true">🏗️</span>
+		<span class="text-sm md:inline hidden">Build</span>
 		{#if recentBuild}
-			<span class="recent">({recentBuild})</span>
+			<span class="text-xs opacity-80 md:inline hidden">({recentBuild})</span>
 		{/if}
 		{#if constructionQueueLength > 0}
-			<span class="badge">
+			<span
+				class="bg-white dark:bg-surface-100 text-primary-500 dark:text-primary-600 px-1.5 py-0.5 rounded-xl text-xs font-bold ml-1"
+			>
 				{activeConstructionCount}/{constructionQueueLength}
 			</span>
 		{/if}
@@ -126,10 +137,10 @@
 		onclick={handleCollect}
 		aria-label="Collect resources (keyboard shortcut: C)"
 		title="Collect resources (C)"
-		class="quick-action"
+		class="flex items-center gap-1 px-4 py-2 bg-primary-500 dark:bg-primary-600 text-white border-none rounded-lg cursor-pointer font-semibold min-h-11 transition-all duration-200 text-sm hover:bg-primary-600 dark:hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_4px_8px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:bg-surface-300 dark:disabled:bg-surface-700 disabled:text-surface-500 dark:disabled:text-surface-500 disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-500 focus-visible:outline-offset-2 md:flex-initial md:justify-start flex-1 basis-[calc(50%-0.25rem)] justify-center"
 	>
-		<span class="icon" aria-hidden="true">📦</span>
-		<span class="label">Collect</span>
+		<span class="text-xl leading-none" aria-hidden="true">📦</span>
+		<span class="text-sm md:inline hidden">Collect</span>
 	</button>
 
 	<!-- Upgrade Button -->
@@ -138,12 +149,16 @@
 		disabled={!canUpgrade}
 		aria-label="Upgrade next structure (keyboard shortcut: U)"
 		title="Upgrade next structure (U)"
-		class="quick-action"
+		class="flex items-center gap-1 px-4 py-2 bg-primary-500 dark:bg-primary-600 text-white border-none rounded-lg cursor-pointer font-semibold min-h-11 transition-all duration-200 text-sm hover:bg-primary-600 dark:hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_4px_8px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:bg-surface-300 dark:disabled:bg-surface-700 disabled:text-surface-500 dark:disabled:text-surface-500 disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-500 focus-visible:outline-offset-2 md:flex-initial md:justify-start flex-1 basis-[calc(50%-0.25rem)] justify-center"
 	>
-		<span class="icon" aria-hidden="true">⬆️</span>
-		<span class="label">Upgrade</span>
+		<span class="text-xl leading-none" aria-hidden="true">⬆️</span>
+		<span class="text-sm md:inline hidden">Upgrade</span>
 		{#if canUpgrade}
-			<span class="badge">1</span>
+			<span
+				class="bg-white dark:bg-surface-100 text-primary-500 dark:text-primary-600 px-1.5 py-0.5 rounded-xl text-xs font-bold ml-1"
+			>
+				1
+			</span>
 		{/if}
 	</button>
 
@@ -153,129 +168,16 @@
 		disabled={!canRepair}
 		aria-label="Repair damaged structures (keyboard shortcut: R)"
 		title="Repair damaged structures (R)"
-		class="quick-action"
+		class="flex items-center gap-1 px-4 py-2 bg-primary-500 dark:bg-primary-600 text-white border-none rounded-lg cursor-pointer font-semibold min-h-11 transition-all duration-200 text-sm hover:bg-primary-600 dark:hover:bg-primary-700 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_4px_8px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:bg-surface-300 dark:disabled:bg-surface-700 disabled:text-surface-500 dark:disabled:text-surface-500 disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-500 focus-visible:outline-offset-2 md:flex-initial md:justify-start flex-1 basis-[calc(50%-0.25rem)] justify-center"
 	>
-		<span class="icon" aria-hidden="true">🔧</span>
-		<span class="label">Repair</span>
+		<span class="text-xl leading-none" aria-hidden="true">🔧</span>
+		<span class="text-sm md:inline hidden">Repair</span>
 		{#if canRepair}
-			<span class="badge critical">2</span>
+			<span
+				class="bg-error-500 dark:bg-error-600 text-white px-1.5 py-0.5 rounded-xl text-xs font-bold ml-1"
+			>
+				2
+			</span>
 		{/if}
 	</button>
 </nav>
-
-<style>
-	.quick-actions-bar {
-		display: flex;
-		gap: var(--spacing-sm, 0.5rem);
-		padding: var(--spacing-md, 1rem);
-		background: var(--surface-200, #e5e7eb);
-		border-radius: var(--radius-lg, 0.75rem);
-		flex-wrap: wrap;
-	}
-
-	.quick-action {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-xs, 0.25rem);
-		padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
-		background: var(--primary-500, #3b82f6);
-		color: white;
-		border: none;
-		border-radius: var(--radius-md, 0.5rem);
-		cursor: pointer;
-		font-weight: 600;
-		min-height: 44px; /* Touch target size */
-		transition: all 0.2s;
-		font-size: 0.875rem;
-	}
-
-	.quick-action:hover:not(:disabled) {
-		background: var(--primary-600, #2563eb);
-		transform: translateY(-2px);
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-	}
-
-	.quick-action:active:not(:disabled) {
-		transform: translateY(0);
-	}
-
-	.quick-action:disabled {
-		background: var(--surface-300, #d1d5db);
-		color: var(--text-disabled, #9ca3af);
-		cursor: not-allowed;
-	}
-
-	.quick-action:focus-visible {
-		outline: 3px solid var(--primary-300, #93c5fd);
-		outline-offset: 2px;
-	}
-
-	.quick-action.has-critical {
-		background: var(--error-500, #ef4444);
-		animation: pulse-critical 2s ease-in-out infinite;
-	}
-
-	.quick-action.has-critical:hover:not(:disabled) {
-		background: var(--error-600, #dc2626);
-	}
-
-	@keyframes pulse-critical {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.85;
-		}
-	}
-
-	.icon {
-		font-size: 1.25rem;
-		line-height: 1;
-	}
-
-	.label {
-		font-size: 0.875rem;
-	}
-
-	.recent {
-		font-size: 0.75rem;
-		opacity: 0.8;
-	}
-
-	.badge {
-		background: white;
-		color: var(--primary-500, #3b82f6);
-		padding: 2px 6px;
-		border-radius: 12px;
-		font-size: 0.75rem;
-		font-weight: 700;
-		margin-left: var(--spacing-xs, 0.25rem);
-	}
-
-	.badge.critical {
-		background: var(--error-500, #ef4444);
-		color: white;
-	}
-
-	/* Mobile adjustments */
-	@media (max-width: 767px) {
-		.quick-actions-bar {
-			padding: var(--spacing-sm, 0.5rem);
-			gap: var(--spacing-xs, 0.25rem);
-		}
-
-		.quick-action {
-			flex: 1 1 calc(50% - var(--spacing-xs, 0.25rem));
-			justify-content: center;
-		}
-
-		.label {
-			display: none; /* Show icons only on mobile */
-		}
-
-		.recent {
-			display: none;
-		}
-	}
-</style>
