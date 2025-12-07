@@ -29,6 +29,7 @@
 	import ConstructionQueuePanel from './panels/ConstructionQueuePanel.svelte';
 	import NextActionSuggestion from './panels/NextActionSuggestion.svelte';
 	import StructureGridPanel from './panels/StructureGridPanel.svelte';
+	import ProductionOverviewPanel from './panels/ProductionOverviewPanel.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
 	import { alertsStore } from '$lib/stores/game/alerts.svelte';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
@@ -251,20 +252,108 @@
 		}
 	];
 
-	// Settlement info mock data
-	const mockSettlementInfo = {
-		name: settlementName,
-		level: 3,
-		type: 'VILLAGE' as const,
-		location: { x: 125, y: 89 },
-		population: {
-			current: realPopulation?.current,
-			capacity: realPopulation?.capacity
+	// Production overview mock data
+	const mockProduction = {
+		rates: {
+			food: 45,
+			water: 60,
+			wood: 30,
+			stone: 25,
+			ore: 15
 		},
-		happiness: realPopulation?.happiness,
-		founded: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // 45 days ago
-		resilience: 35
+		extractors: [
+			{
+				id: '1',
+				type: 'FARM' as const,
+				name: 'Main Farm',
+				level: 2,
+				health: 85,
+				quality: 75,
+				production: 25,
+				location: { x: 2, y: 3 }
+			},
+			{
+				id: '6',
+				type: 'FARM' as const,
+				name: 'North Farm',
+				level: 1,
+				health: 100,
+				quality: 60,
+				production: 20,
+				location: { x: 3, y: 1 }
+			},
+			{
+				id: '7',
+				type: 'WELL' as const,
+				name: 'Central Well',
+				level: 2,
+				health: 95,
+				quality: 85,
+				production: 40,
+				location: { x: 5, y: 4 }
+			},
+			{
+				id: '8',
+				type: 'WELL' as const,
+				name: 'South Well',
+				level: 1,
+				health: 78,
+				quality: 70,
+				production: 20,
+				location: { x: 6, y: 8 }
+			},
+			{
+				id: '3',
+				type: 'LUMBER_MILL' as const,
+				name: 'Lumber Mill',
+				level: 3,
+				health: 92,
+				quality: 80,
+				production: 30,
+				location: { x: 1, y: 1 }
+			},
+			{
+				id: '9',
+				type: 'QUARRY' as const,
+				name: 'Stone Quarry',
+				level: 2,
+				health: 88,
+				quality: 65,
+				production: 25,
+				location: { x: 8, y: 2 }
+			},
+			{
+				id: '10',
+				type: 'MINE' as const,
+				name: 'Iron Mine',
+				level: 1,
+				health: 100,
+				quality: 55,
+				production: 15,
+				location: { x: 9, y: 5 }
+			}
+		]
 	};
+
+	// Settlement info mock data (reactive to population changes)
+	const mockSettlementInfo = $derived.by(() => {
+		// Return undefined if population data not available yet
+		if (!realPopulation) return undefined;
+
+		return {
+			name: settlementName,
+			level: 3,
+			type: 'VILLAGE' as const,
+			location: { x: 125, y: 89 },
+			population: {
+				current: realPopulation.current,
+				capacity: realPopulation.capacity
+			},
+			happiness: realPopulation.happiness,
+			founded: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // 45 days ago
+			resilience: 35
+		};
+	});
 
 	// Get current layout and viewport from store
 	const currentLayout = $derived(layoutStore.getCurrentLayout());
@@ -364,6 +453,8 @@
 				announcement = `Selected ${structure.name}`;
 			}}
 		/>
+	{:else if panel.id === 'production-overview'}
+		<ProductionOverviewPanel {settlementId} production={mockProduction} />
 	{:else}
 		<!-- Fallback for unmapped panels -->
 		<div

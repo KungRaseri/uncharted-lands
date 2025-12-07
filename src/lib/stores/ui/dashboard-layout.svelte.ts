@@ -40,10 +40,11 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 			{ id: 'settlement-info', position: 1, size: 'medium', visible: true, collapsed: false },
 			{ id: 'population', position: 2, size: 'medium', visible: true, collapsed: false },
 			// Center column (positions 3-5)
-			{ id: 'construction', position: 3, size: 'medium', visible: true, collapsed: false },
-			{ id: 'structures', position: 4, size: 'large', visible: true, collapsed: false },
+			{ id: 'structures', position: 3, size: 'large', visible: true, collapsed: false },
+			{ id: 'production-overview', position: 4, size: 'large', visible: true, collapsed: false },
 			{ id: 'trade', position: 5, size: 'small', visible: false, collapsed: true },
-			{ id: 'diplomacy', position: 6, size: 'small', visible: false, collapsed: true }
+			// Right sidebar (positions 6+)
+			{ id: 'construction', position: 6, size: 'medium', visible: true, collapsed: false }
 		],
 		quickActions: ['build', 'collect', 'upgrade', 'repair', 'aid'],
 		theme: 'auto'
@@ -54,14 +55,16 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 		panels: [
 			// Header row
 			{ id: 'resource-header', position: -1, size: 'large', visible: true, collapsed: false },
-			// Focused on building/planning (center/left combined)
-			{ id: 'construction', position: 1, size: 'large', visible: true, collapsed: false },
-			{ id: 'structures', position: 2, size: 'large', visible: true, collapsed: false },
-			{ id: 'settlement-info', position: 3, size: 'medium', visible: true, collapsed: false },
-			{ id: 'population', position: 4, size: 'small', visible: true, collapsed: true },
-			{ id: 'alerts', position: 5, size: 'small', visible: true, collapsed: true },
-			{ id: 'trade', position: 6, size: 'small', visible: false, collapsed: true },
-			{ id: 'diplomacy', position: 7, size: 'small', visible: false, collapsed: true }
+			// Left sidebar - building focus
+			{ id: 'settlement-info', position: 0, size: 'medium', visible: true, collapsed: false },
+			{ id: 'population', position: 1, size: 'small', visible: true, collapsed: true },
+			{ id: 'alerts', position: 2, size: 'small', visible: true, collapsed: true },
+			// Center column - structures and production
+			{ id: 'structures', position: 3, size: 'large', visible: true, collapsed: false },
+			{ id: 'production-overview', position: 4, size: 'large', visible: true, collapsed: false },
+			{ id: 'trade', position: 5, size: 'small', visible: false, collapsed: true },
+			// Right sidebar - construction queue prominent
+			{ id: 'construction', position: 6, size: 'large', visible: true, collapsed: false }
 		],
 		quickActions: ['build', 'upgrade', 'collect'],
 		theme: 'auto'
@@ -76,11 +79,12 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 			{ id: 'alerts', position: 0, size: 'large', visible: true, collapsed: false },
 			{ id: 'population', position: 1, size: 'large', visible: true, collapsed: false },
 			{ id: 'settlement-info', position: 2, size: 'medium', visible: true, collapsed: false },
-			// Center - structures and construction
+			// Center - structures and production (collapsed to save space)
 			{ id: 'structures', position: 3, size: 'medium', visible: true, collapsed: false },
-			{ id: 'construction', position: 4, size: 'small', visible: true, collapsed: true },
+			{ id: 'production-overview', position: 4, size: 'small', visible: true, collapsed: true },
 			{ id: 'trade', position: 5, size: 'small', visible: false, collapsed: true },
-			{ id: 'diplomacy', position: 6, size: 'small', visible: false, collapsed: true }
+			// Right sidebar - construction for repairs
+			{ id: 'construction', position: 6, size: 'small', visible: true, collapsed: true }
 		],
 		quickActions: ['repair', 'aid', 'build'],
 		theme: 'auto'
@@ -95,10 +99,10 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 			{ id: 'alerts', position: 0, size: 'medium', visible: true, collapsed: false },
 			{ id: 'settlement-info', position: 1, size: 'medium', visible: true, collapsed: true },
 			{ id: 'population', position: 2, size: 'medium', visible: true, collapsed: true },
-			{ id: 'construction', position: 3, size: 'medium', visible: true, collapsed: true },
-			{ id: 'structures', position: 4, size: 'medium', visible: true, collapsed: true },
-			{ id: 'trade', position: 5, size: 'small', visible: false, collapsed: true },
-			{ id: 'diplomacy', position: 6, size: 'small', visible: false, collapsed: true }
+			{ id: 'structures', position: 3, size: 'medium', visible: true, collapsed: true },
+			{ id: 'construction', position: 4, size: 'medium', visible: true, collapsed: true },
+			{ id: 'production-overview', position: 5, size: 'medium', visible: true, collapsed: true },
+			{ id: 'trade', position: 6, size: 'small', visible: false, collapsed: true }
 		],
 		quickActions: ['build', 'collect'],
 		theme: 'auto'
