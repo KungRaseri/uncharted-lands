@@ -88,7 +88,7 @@
 {#if open}
 	<!-- Backdrop -->
 	<div
-		class="bottom-sheet-backdrop"
+		class="fixed top-0 left-0 right-0 bottom-0 bg-black/50 z-1000 flex items-end"
 		onclick={handleBackdropClick}
 		transition:fade={{ duration: 200 }}
 		role="presentation"
@@ -97,10 +97,10 @@
 		<!-- Sheet -->
 		<div
 			bind:this={sheetElement}
-			class="bottom-sheet"
-			class:auto={height === 'auto'}
-			class:half={height === 'half'}
-			class:full={height === 'full'}
+			class="w-full bg-surface-50 dark:bg-surface-900 rounded-t-2xl shadow-[0_-4px_16px_rgba(0,0,0,0.2)] max-h-[90vh] flex flex-col transition-transform duration-300"
+			class:h-auto={height === 'auto'}
+			class:h-[50vh]={height === 'half'}
+			class:h-[90vh]={height === 'full'}
 			transition:fly={{ y: 400, duration: 300 }}
 			ontouchstart={handleTouchStart}
 			ontouchmove={handleTouchMove}
@@ -110,145 +110,29 @@
 			aria-labelledby="sheet-title"
 		>
 			<!-- Drag Handle -->
-			<div class="drag-handle" aria-hidden="true">
-				<div class="handle-bar"></div>
+			<div class="flex justify-center py-2 cursor-grab active:cursor-grabbing" aria-hidden="true">
+				<div class="w-10 h-1 bg-surface-400 dark:bg-surface-600 rounded-sm"></div>
 			</div>
 
 			<!-- Header -->
-			<header class="sheet-header">
-				<h2 id="sheet-title" class="sheet-title">{title}</h2>
-				<button class="close-button" onclick={onClose} aria-label="Close" type="button"> ✕ </button>
+			<header
+				class="flex justify-between items-center px-6 py-4 border-b border-surface-200 dark:border-surface-700"
+			>
+				<h2 id="sheet-title" class="text-xl font-semibold m-0">{title}</h2>
+				<button
+					class="flex items-center justify-center w-11 h-11 bg-transparent border-0 cursor-pointer text-2xl text-surface-600 dark:text-surface-400 rounded-full transition-colors duration-200 hover:bg-surface-200 dark:hover:bg-surface-800 active:bg-surface-300 focus-visible:outline-primary-300 focus-visible:outline-offset-2"
+					onclick={onClose}
+					aria-label="Close"
+					type="button"
+				>
+					✕
+				</button>
 			</header>
 
 			<!-- Content -->
-			<div class="sheet-content">
+			<div class="flex-1 overflow-y-auto p-6 [-webkit-overflow-scrolling:touch]">
 				{@render children()}
 			</div>
 		</div>
 	</div>
 {/if}
-
-<style>
-	.bottom-sheet-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.5);
-		z-index: 1000;
-		display: flex;
-		align-items: flex-end;
-	}
-
-	.bottom-sheet {
-		width: 100%;
-		background: white;
-		border-radius: 1rem 1rem 0 0;
-		box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
-		max-height: 90vh;
-		display: flex;
-		flex-direction: column;
-		transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-
-	.bottom-sheet.auto {
-		height: auto;
-	}
-
-	.bottom-sheet.half {
-		height: 50vh;
-	}
-
-	.bottom-sheet.full {
-		height: 90vh;
-	}
-
-	.drag-handle {
-		display: flex;
-		justify-content: center;
-		padding: 0.5rem 0;
-		cursor: grab;
-	}
-
-	.drag-handle:active {
-		cursor: grabbing;
-	}
-
-	.handle-bar {
-		width: 40px;
-		height: 4px;
-		background: rgb(var(--color-surface-400));
-		border-radius: 2px;
-	}
-
-	.sheet-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 1rem 1.5rem;
-		border-bottom: 1px solid rgb(var(--color-surface-200));
-	}
-
-	.sheet-title {
-		font-size: 1.25rem;
-		font-weight: 600;
-		margin: 0;
-	}
-
-	.close-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 44px;
-		height: 44px;
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		font-size: 1.5rem;
-		color: rgb(var(--color-surface-600));
-		border-radius: 50%;
-		transition: background 0.2s;
-	}
-
-	.close-button:hover {
-		background: rgb(var(--color-surface-200));
-	}
-
-	.close-button:active {
-		background: rgb(var(--color-surface-300));
-	}
-
-	.close-button:focus-visible {
-		outline: 3px solid rgb(var(--color-primary-300));
-		outline-offset: 2px;
-	}
-
-	.sheet-content {
-		flex: 1;
-		overflow-y: auto;
-		padding: 1.5rem;
-		-webkit-overflow-scrolling: touch;
-	}
-
-	/* Dark mode support */
-	:global(.dark) .bottom-sheet {
-		background: rgb(var(--color-surface-900));
-	}
-
-	:global(.dark) .sheet-header {
-		border-bottom-color: rgb(var(--color-surface-700));
-	}
-
-	:global(.dark) .handle-bar {
-		background: rgb(var(--color-surface-600));
-	}
-
-	:global(.dark) .close-button {
-		color: rgb(var(--color-surface-400));
-	}
-
-	:global(.dark) .close-button:hover {
-		background: rgb(var(--color-surface-800));
-	}
-</style>

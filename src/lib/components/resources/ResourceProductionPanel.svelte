@@ -286,33 +286,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	.resource-production-panel {
-		max-width: 1400px;
-		margin: 0 auto;
-	}
-
-	.resource-total-card {
-		transition: all 0.2s ease;
-	}
-
-	.resource-total-card:hover {
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-md);
-	}
-
-	.production-summary {
-		border-bottom: 1px solid rgb(var(--color-surface-300) / 0.3);
-		padding-bottom: 1.5rem;
-	}
-
-	.tile-card {
-		transition: all 0.2s ease;
-	}
-
-	.tile-card:hover {
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-md);
-	}
-</style>

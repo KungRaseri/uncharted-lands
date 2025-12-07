@@ -147,14 +147,14 @@
 
 {#if isOpen}
 	<div
-		class="modal-backdrop"
+		class="fixed inset-0 w-full h-full bg-black/50 flex items-center justify-center z-1000 p-4 backdrop-blur-sm"
 		onclick={handleClose}
 		onkeydown={(e) => e.key === 'Escape' && handleClose()}
 		role="presentation"
 		tabindex="-1"
 	>
 		<div
-			class="modal-content"
+			class="bg-surface-50 dark:bg-surface-900 rounded-container-token p-8 max-w-[600px] w-full max-h-[90vh] overflow-y-auto shadow-xl"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.stopPropagation()}
 			role="dialog"
@@ -162,7 +162,9 @@
 			aria-labelledby="modal-title"
 			tabindex="-1"
 		>
-			<div class="modal-header">
+			<div
+				class="flex justify-between items-start mb-6 pb-4 border-b border-surface-300/30 dark:border-surface-700/30"
+			>
 				<div>
 					<h2 class="text-2xl font-bold">Build Extractor</h2>
 					<p class="text-sm text-surface-600-300-token">
@@ -236,9 +238,19 @@
 				<h3 class="font-semibold">Select Extractor Type</h3>
 				{#each extractorOptions() as option (option.type)}
 					<button
-						class="extractor-option"
-						class:selected={selectedExtractor === option.type}
-						class:disabled={!option.available}
+						class="w-full flex items-center justify-between p-4 border-2 rounded-base cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed {selectedExtractor ===
+						option.type
+							? 'dark:bg-primary-900/30'
+							: 'dark:bg-surface-800'} {selectedExtractor !== option.type
+							? 'dark:border-surface-600'
+							: ''}"
+						class:border-primary-500={selectedExtractor === option.type}
+						class:bg-primary-50={selectedExtractor === option.type}
+						class:border-surface-300={selectedExtractor !== option.type}
+						class:bg-surface-50={selectedExtractor !== option.type}
+						class:hover:border-primary-500={option.available}
+						class:hover:-translate-y-0.5={option.available}
+						class:hover:shadow-md={option.available}
 						onclick={() => option.available && (selectedExtractor = option.type)}
 						disabled={!option.available || isBuilding}
 						type="button"
@@ -324,86 +336,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-		padding: 1rem;
-		backdrop-filter: blur(4px);
-	}
-
-	.modal-content {
-		background: rgb(var(--color-surface-50));
-		border-radius: var(--theme-rounded-container);
-		padding: 2rem;
-		max-width: 600px;
-		width: 100%;
-		max-height: 90vh;
-		overflow-y: auto;
-		box-shadow: var(--shadow-xl);
-	}
-
-	:global(.dark) .modal-content {
-		background: rgb(var(--color-surface-900));
-	}
-
-	.modal-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: start;
-		margin-bottom: 1.5rem;
-		padding-bottom: 1rem;
-		border-bottom: 1px solid rgb(var(--color-surface-300) / 0.3);
-	}
-
-	:global(.dark) .modal-header {
-		border-bottom-color: rgb(var(--color-surface-700) / 0.3);
-	}
-
-	.extractor-option {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 1rem;
-		border: 2px solid rgb(var(--color-surface-300));
-		border-radius: var(--theme-rounded-base);
-		background: rgb(var(--color-surface-50));
-		cursor: pointer;
-		transition: all 0.2s ease;
-	}
-
-	:global(.dark) .extractor-option {
-		background: rgb(var(--color-surface-800));
-		border-color: rgb(var(--color-surface-600));
-	}
-
-	.extractor-option:hover:not(.disabled) {
-		border-color: rgb(var(--color-primary-500));
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-md);
-	}
-
-	.extractor-option.selected {
-		border-color: rgb(var(--color-primary-500));
-		background: rgb(var(--color-primary-50));
-	}
-
-	:global(.dark) .extractor-option.selected {
-		background: rgb(var(--color-primary-900) / 0.3);
-	}
-
-	.extractor-option.disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-</style>

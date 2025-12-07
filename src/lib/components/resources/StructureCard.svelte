@@ -45,14 +45,16 @@
 	}
 </script>
 
-<div class="structure-card variant-glass-surface p-4 rounded-lg">
+<div
+	class="variant-glass-surface p-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+>
 	<div class="flex justify-between items-start mb-3">
 		<div>
 			{#await getStructureDisplay()}
 				<h3 class="text-lg font-semibold">Loading...</h3>
 			{:then display}
 				<h3 class="text-lg font-semibold">{display.name}</h3>
-				<p class="text-sm text-surface-600-300-token">{display.description}</p>
+				<p class="text-sm text-surface-600 dark:text-surface-300">{display.description}</p>
 			{/await}
 		</div>
 		<div class="badge variant-filled-primary">
@@ -72,14 +74,14 @@
 
 	<!-- Settlement Info -->
 	{#if structure.settlement}
-		<div class="text-sm text-surface-600-300-token mb-3">
+		<div class="text-sm text-surface-600 dark:text-surface-300 mb-3">
 			Settlement: <span class="font-medium">{structure.settlement.name}</span>
 		</div>
 	{/if}
 
 	<!-- Upgrade Section -->
 	{#if canUpgrade}
-		<div class="border-t border-surface-300-600-token pt-3 mt-3">
+		<div class="border-t border-surface-300 dark:border-surface-600 pt-3 mt-3">
 			<div class="flex justify-between items-center mb-2">
 				<span class="text-sm font-medium">Upgrade to Level {structure.level + 1}</span>
 				<span class="badge variant-filled-secondary">
@@ -109,29 +111,18 @@
 			{/if}
 		</div>
 	{:else}
-		<div class="text-sm text-surface-600-300-token italic text-center py-2">
+		<div class="text-sm text-surface-600 dark:text-surface-300 italic text-center py-2">
 			Maximum level reached
 		</div>
 	{/if}
 
 	<!-- Timestamps -->
-	<div class="text-xs text-surface-500-400-token mt-3 pt-2 border-t border-surface-300-600-token">
+	<div
+		class="text-xs text-surface-500 dark:text-surface-400 mt-3 pt-2 border-t border-surface-300 dark:border-surface-600"
+	>
 		<div>Built: {new Date(structure.createdAt).toLocaleDateString()}</div>
 		{#if structure.updatedAt !== structure.createdAt}
 			<div>Last Upgraded: {new Date(structure.updatedAt).toLocaleDateString()}</div>
 		{/if}
 	</div>
 </div>
-
-<style>
-	.structure-card {
-		transition:
-			transform 0.2s ease,
-			box-shadow 0.2s ease;
-	}
-
-	.structure-card:hover {
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-lg);
-	}
-</style>
