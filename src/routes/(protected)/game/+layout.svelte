@@ -3,7 +3,6 @@
 	import type { Snippet } from 'svelte';
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
-	import SocketStatus from '$lib/components/game/SocketStatus.svelte';
 	import { socketStore } from '$lib/stores/game/socket';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
@@ -22,32 +21,28 @@
 		if (data.sessionToken) {
 			console.log('[GAME LAYOUT] Auto-connecting Socket.IO...');
 			socketStore.connect(undefined, data.sessionToken);
-
-			// Initialize store listeners after socket connects
-			// This ensures all Socket.IO events are properly subscribed
-			resourcesStore.initializeListeners();
-			populationStore.initializeListeners();
 		} else {
 			console.warn('[GAME LAYOUT] No session token - Socket.IO will not auto-connect');
 		}
 
-		// Update times periodically
+		return () => {
+			console.log('[GAME LAYOUT] Cleaning up game connection...');
+			// Disconnect Socket.IO when leaving game section
+			socketStore.disconnect();
+		};
+	});
+
+	$effect(() => {
 		const updateTimes = () => {
 			const now = new Date();
 			localTime = now.toLocaleTimeString();
-			// For now, assume server time is same as local (update when server API available)
 			serverTime = now.toUTCString().split(' ')[4] + ' UTC';
 		};
 
 		updateTimes();
 		const interval = setInterval(updateTimes, 1000);
 
-		return () => {
-			console.log('[GAME LAYOUT] Cleaning up game connection...');
-			clearInterval(interval);
-			// Disconnect Socket.IO when leaving game section
-			socketStore.disconnect();
-		};
+		return () => clearInterval(interval);
 	});
 </script>
 
@@ -77,12 +72,7 @@
 	<!-- Footer -->
 	{#if data.account?.profile}
 		<footer class="flex-none">
-			<GameFooter />
+			<GameFooter server={data.server} />
 		</footer>
-	{/if}
-
-	<!-- Socket connection status indicator -->
-	{#if data.account?.profile}
-		<SocketStatus sessionToken={data.sessionToken} />
 	{/if}
 </div>

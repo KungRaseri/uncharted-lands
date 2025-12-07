@@ -1,9 +1,38 @@
 <script lang="ts">
 	import { Globe, Server, Wifi } from 'lucide-svelte';
+	import { socketStore } from '$lib/stores/game/socket';
 
-	let serverStatus = $state<'online' | 'offline' | 'connecting'>('online');
-	let serverName = $state('Main Server');
-	let worldName = $state('New World');
+	interface Props {
+		server: { name: string; worlds: { id: string; name: string }[] } | null;
+	}
+
+	let { server }: Props = $props();
+
+	// Derive server and world names from prop with fallbacks
+	let serverName = $derived(server?.name || 'Unknown Server');
+	let worldName = $derived(server?.worlds?.[0]?.name || 'Unknown World');
+
+	// Subscribe to socket connection state and ping
+	let connectionState = $state<'connected' | 'connecting' | 'disconnected' | 'error'>(
+		'disconnected'
+	);
+	let lastPing = $state<number | null>(null);
+	let socketId = $state<string | null>(null);
+
+	socketStore.subscribe((store) => {
+		connectionState = store.connectionState;
+		lastPing = store.lastPing;
+		socketId = store.socket?.id || null;
+	});
+
+	// Format last ping time
+	let lastPingTime = $derived(() => {
+		if (!lastPing) return 'Never';
+		const seconds = Math.floor((Date.now() - lastPing) / 1000);
+		if (seconds < 60) return `${seconds}s ago`;
+		const minutes = Math.floor(seconds / 60);
+		return `${minutes}m ago`;
+	});
 </script>
 
 <footer
@@ -23,19 +52,43 @@
 				</div>
 			</div>
 
-			<!-- Connection Status -->
-			<div class="flex items-center gap-2">
-				<Wifi
-					size={14}
-					class={serverStatus === 'online'
-						? 'text-success-500'
-						: serverStatus === 'offline'
-							? 'text-error-500'
-							: 'text-warning-500'}
-				/>
-				<span class="text-surface-600 dark:text-surface-400 capitalize">
-					{serverStatus}
-				</span>
+			<!-- Connection Status with Hover Tooltip -->
+			<div class="relative group">
+				<div class="flex items-center gap-2 cursor-help">
+					<Wifi
+						size={14}
+						class={connectionState === 'connected'
+							? 'text-success-500'
+							: connectionState === 'disconnected'
+								? 'text-error-500'
+								: 'text-warning-500'}
+					/>
+					<span class="text-surface-600 dark:text-surface-400 capitalize">
+						{connectionState === 'connected'
+							? 'Online'
+							: connectionState === 'disconnected'
+								? 'Disconnected'
+								: 'Connecting'}
+					</span>
+				</div>
+
+				<!-- Tooltip -->
+				<div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+					<div
+						class="bg-surface-900 text-surface-100 text-xs rounded-lg px-3 py-2 shadow-lg whitespace-nowrap"
+					>
+						<div class="font-semibold mb-1">Connection Status</div>
+						<div class="space-y-1 text-surface-300">
+							<div>State: <span class="capitalize">{connectionState}</span></div>
+							{#if socketId}
+								<div>
+									Socket ID: <span class="font-mono text-[10px]">{socketId.slice(0, 8)}...</span>
+								</div>
+							{/if}
+							<div>Last Ping: {lastPingTime()}</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
