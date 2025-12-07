@@ -33,9 +33,13 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 	default: {
 		layoutName: 'Default',
 		panels: [
+			// Header row (position -1)
+			{ id: 'resource-header', position: -1, size: 'large', visible: true, collapsed: false },
+			// Left sidebar (positions 0-2)
 			{ id: 'alerts', position: 0, size: 'medium', visible: true, collapsed: false },
-			{ id: 'resources', position: 1, size: 'large', visible: true, collapsed: false },
+			{ id: 'settlement-info', position: 1, size: 'medium', visible: true, collapsed: false },
 			{ id: 'population', position: 2, size: 'medium', visible: true, collapsed: false },
+			// Center column (positions 3-5)
 			{ id: 'construction', position: 3, size: 'medium', visible: true, collapsed: false },
 			{ id: 'structures', position: 4, size: 'large', visible: true, collapsed: false },
 			{ id: 'trade', position: 5, size: 'small', visible: false, collapsed: true },
@@ -48,13 +52,16 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 	planning: {
 		layoutName: 'Planning Mode',
 		panels: [
-			{ id: 'resources', position: 0, size: 'large', visible: true, collapsed: false },
+			// Header row
+			{ id: 'resource-header', position: -1, size: 'large', visible: true, collapsed: false },
+			// Focused on building/planning (center/left combined)
 			{ id: 'construction', position: 1, size: 'large', visible: true, collapsed: false },
 			{ id: 'structures', position: 2, size: 'large', visible: true, collapsed: false },
-			{ id: 'population', position: 3, size: 'small', visible: true, collapsed: true },
-			{ id: 'alerts', position: 4, size: 'small', visible: true, collapsed: true },
-			{ id: 'trade', position: 5, size: 'small', visible: false, collapsed: true },
-			{ id: 'diplomacy', position: 6, size: 'small', visible: false, collapsed: true }
+			{ id: 'settlement-info', position: 3, size: 'medium', visible: true, collapsed: false },
+			{ id: 'population', position: 4, size: 'small', visible: true, collapsed: true },
+			{ id: 'alerts', position: 5, size: 'small', visible: true, collapsed: true },
+			{ id: 'trade', position: 6, size: 'small', visible: false, collapsed: true },
+			{ id: 'diplomacy', position: 7, size: 'small', visible: false, collapsed: true }
 		],
 		quickActions: ['build', 'upgrade', 'collect'],
 		theme: 'auto'
@@ -63,9 +70,13 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 	combat: {
 		layoutName: 'Disaster Response',
 		panels: [
+			// Header row
+			{ id: 'resource-header', position: -1, size: 'large', visible: true, collapsed: false },
+			// Left sidebar - critical info during disasters
 			{ id: 'alerts', position: 0, size: 'large', visible: true, collapsed: false },
 			{ id: 'population', position: 1, size: 'large', visible: true, collapsed: false },
-			{ id: 'resources', position: 2, size: 'medium', visible: true, collapsed: false },
+			{ id: 'settlement-info', position: 2, size: 'medium', visible: true, collapsed: false },
+			// Center - structures and construction
 			{ id: 'structures', position: 3, size: 'medium', visible: true, collapsed: false },
 			{ id: 'construction', position: 4, size: 'small', visible: true, collapsed: true },
 			{ id: 'trade', position: 5, size: 'small', visible: false, collapsed: true },
@@ -78,8 +89,11 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 	mobile: {
 		layoutName: 'Mobile Optimized',
 		panels: [
+			// Header row (collapsed by default on mobile)
+			{ id: 'resource-header', position: -1, size: 'medium', visible: true, collapsed: true },
+			// Stack vertically - most important first
 			{ id: 'alerts', position: 0, size: 'medium', visible: true, collapsed: false },
-			{ id: 'resources', position: 1, size: 'medium', visible: true, collapsed: true },
+			{ id: 'settlement-info', position: 1, size: 'medium', visible: true, collapsed: true },
 			{ id: 'population', position: 2, size: 'medium', visible: true, collapsed: true },
 			{ id: 'construction', position: 3, size: 'medium', visible: true, collapsed: true },
 			{ id: 'structures', position: 4, size: 'medium', visible: true, collapsed: true },

@@ -16,5 +16,12 @@ yarn.lock
 src/error.html
 src/app.html
 
-# Ignore template files with placeholder syntax
-docs/templates/Feature-Spec-Template.md
+# Ignore all markdown files
+*.md
+
+# Ignore build output and coverage directories
+.vercel
+coverage
+.nyc_output
+playwright-report
+test-results

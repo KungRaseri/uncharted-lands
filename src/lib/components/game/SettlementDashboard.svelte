@@ -23,6 +23,8 @@
 	import SettingsModal from './modals/SettingsModal.svelte';
 	import AlertsPanel from './panels/AlertsPanel.svelte';
 	import ResourcePanel from './panels/ResourcePanel.svelte';
+	import ResourceHeaderBar from './panels/ResourceHeaderBar.svelte';
+	import SettlementInfoPanel from './panels/SettlementInfoPanel.svelte';
 	import PopulationPanel from './panels/PopulationPanel.svelte';
 	import ConstructionQueuePanel from './panels/ConstructionQueuePanel.svelte';
 	import NextActionSuggestion from './panels/NextActionSuggestion.svelte';
@@ -249,6 +251,21 @@
 		}
 	];
 
+	// Settlement info mock data
+	const mockSettlementInfo = {
+		name: settlementName,
+		level: 3,
+		type: 'VILLAGE' as const,
+		location: { x: 125, y: 89 },
+		population: {
+			current: realPopulation?.current,
+			capacity: realPopulation?.capacity
+		},
+		happiness: realPopulation?.happiness,
+		founded: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // 45 days ago
+		resilience: 35
+	};
+
 	// Get current layout and viewport from store
 	const currentLayout = $derived(layoutStore.getCurrentLayout());
 	const viewport = $derived(layoutStore.getViewport());
@@ -308,6 +325,10 @@
 			currentTime={new Date()}
 			onSettings={() => (settingsOpen = true)}
 		/>
+	{:else if panel.id === 'resource-header'}
+		<ResourceHeaderBar {settlementId} resources={realResources} />
+	{:else if panel.id === 'settlement-info'}
+		<SettlementInfoPanel {settlementId} info={mockSettlementInfo ?? undefined} />
 	{:else if panel.id === 'alerts'}
 		<AlertsPanel {settlementId} alerts={realAlerts} />
 	{:else if panel.id === 'resources'}
