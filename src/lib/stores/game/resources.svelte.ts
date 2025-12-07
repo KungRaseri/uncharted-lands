@@ -3,6 +3,7 @@
  * Manages settlement resource state with real-time Socket.IO updates
  */
 
+import { browser } from '$app/environment';
 import { socketStore } from './socket';
 
 // Types
@@ -198,13 +199,15 @@ function initializeListeners() {
 }
 
 /**
- * Subscribe to socket connection state changes
+ * Subscribe to socket connection state changes (only in browser)
  */
-socketStore.subscribe(($socket) => {
-	if ($socket.connectionState === 'connected' && $socket.socket) {
-		initializeListeners();
-	}
-});
+if (browser) {
+	socketStore.subscribe(($socket) => {
+		if ($socket.connectionState === 'connected' && $socket.socket) {
+			initializeListeners();
+		}
+	});
+}
 
 /**
  * Public API

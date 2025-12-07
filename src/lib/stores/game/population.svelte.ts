@@ -4,6 +4,7 @@
  * Manages settlement population data and real-time updates via Socket.IO
  */
 
+import { browser } from '$app/environment';
 import { socketStore } from './socket';
 
 interface PopulationState {
@@ -193,12 +194,14 @@ function addEvent(event: Omit<PopulationEvent, 'id'>) {
 	}
 }
 
-// Initialize listeners when socket connects
-socketStore.subscribe(($socket) => {
-	if ($socket.connectionState === 'connected' && $socket.socket) {
-		initializeListeners();
-	}
-});
+// Initialize listeners when socket connects (only in browser)
+if (browser) {
+	socketStore.subscribe(($socket) => {
+		if ($socket.connectionState === 'connected' && $socket.socket) {
+			initializeListeners();
+		}
+	});
+}
 
 // Export store interface
 export const populationStore = {

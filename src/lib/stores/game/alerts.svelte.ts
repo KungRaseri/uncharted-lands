@@ -4,6 +4,7 @@
  * Manages settlement alerts and real-time updates via Socket.IO
  */
 
+import { browser } from '$app/environment';
 import { socketStore } from './socket';
 
 type AlertSeverity = 'critical' | 'warning' | 'info';
@@ -124,12 +125,14 @@ function initializeListeners() {
 	);
 }
 
-// Initialize listeners when socket connects
-socketStore.subscribe(($socket) => {
-	if ($socket.connectionState === 'connected' && $socket.socket) {
-		initializeListeners();
-	}
-});
+// Initialize listeners when socket connects (only in browser)
+if (browser) {
+	socketStore.subscribe(($socket) => {
+		if ($socket.connectionState === 'connected' && $socket.socket) {
+			initializeListeners();
+		}
+	});
+}
 
 // Public API
 export const alertsStore = {

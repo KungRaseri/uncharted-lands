@@ -111,7 +111,8 @@ function createSocketStore() {
 			});
 
 			// Ping/pong for latency monitoring
-			socket.on('ping', () => {
+			// Socket.IO emits 'pong' event on client when it receives a ping from server
+			socket.io.on('ping', () => {
 				update((state) => ({ ...state, lastPing: Date.now() }));
 			});
 

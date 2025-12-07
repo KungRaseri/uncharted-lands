@@ -5,6 +5,7 @@
  * Tracks active building projects and queued projects per settlement.
  */
 
+import { browser } from '$app/environment';
 import { socketStore } from './socket';
 
 type BuildingType = 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER';
@@ -191,17 +192,19 @@ function initializeListeners(): void {
 	);
 }
 
-// Subscribe to socket connection state
-socketStore.subscribe(($socket) => {
-	if ($socket.connectionState === 'connected' && $socket.socket) {
-		initializeListeners();
+// Subscribe to socket connection state (only in browser)
+if (browser) {
+	socketStore.subscribe(($socket) => {
+		if ($socket.connectionState === 'connected' && $socket.socket) {
+			initializeListeners();
 
-		// Request initial construction state for all settlements we have in the map
-		if (state.construction.size === 0) {
-			// Will be populated when settlement page loads and requests state
+			// Request initial construction state for all settlements we have in the map
+			if (state.construction.size === 0) {
+				// Will be populated when settlement page loads and requests state
+			}
 		}
-	}
-});
+	});
+}
 
 // Exported API
 export const constructionStore = {
