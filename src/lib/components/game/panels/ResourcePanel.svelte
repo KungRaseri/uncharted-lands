@@ -1,14 +1,13 @@
 <script lang="ts">
 	/**
-	 * Resource Panel Component
-	 * Displays current resource 				{@const warningLevel = getWarningLevel(percentage)}
-				{@const netRate = getNetRate(resource)}
-
-				<li class="resource-item" data-resource="{resource.type}" role="listitem">
-					<div class="resource-header">
-						<div class="resource-name-group"> with progress bars
+	 * Unified Resource Panel Component
+	 * Combines resource display, production rates, and tile management
+	 * Collapsible sections for compact/expanded views
 	 * WCAG 2.1 AA Compliant
 	 */
+
+	import type { TileWithRelations } from '$lib/types/api';
+	import { getResourceIcon, getResourceName } from '$lib/utils/resource-production';
 
 	interface Resource {
 		type: 'food' | 'water' | 'wood' | 'stone' | 'ore';
@@ -20,10 +19,26 @@
 
 	interface Props {
 		settlementId: string;
+		settlementName?: string;
 		resources?: Resource[];
+		tiles?: TileWithRelations[];
+		collapsed?: boolean; // Start in compact mode?
+		onHarvestAll?: () => void;
 	}
 
-	let { resources = [] }: Props = $props();
+	let {
+		settlementId,
+		settlementName = 'Settlement',
+		resources = [],
+		tiles = [],
+		collapsed = false,
+		onHarvestAll
+	}: Props = $props();
+
+	// State for collapsible sections
+	let isCollapsed = $state(collapsed);
+	let showProduction = $state(false);
+	let showTiles = $state(false);
 
 	// Resource display configuration
 	const resourceConfig = {

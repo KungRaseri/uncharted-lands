@@ -7,12 +7,23 @@
 	 *
 	 * Displays settlement extractors grouped by tile in a grid layout with:
 	 * - Tile grouping (one section per tile)
-	 * - Slot usage display (X/Y slots used per tile)
+	 * - 5-slot grid visualization (filled vs empty slots)
+	 * - Tile context (coordinates, biome, resource qualities)
 	 * - Extractor cards with name, level, health bars
-	 * - Action buttons (upgrade, repair, demolish)
-	 * - Production rate display
+	 * - Action buttons (upgrade, repair, demolish, build)
 	 * - Accessibility features (keyboard navigation, ARIA)
 	 */
+
+	interface Tile {
+		id: string;
+		xCoord: number;
+		yCoord: number;
+		biome: string;
+		foodQuality: number;
+		woodQuality: number;
+		stoneQuality: number;
+		oreQuality: number;
+	}
 
 	interface Extractor {
 		id: string;
@@ -29,20 +40,24 @@
 
 	interface Props {
 		extractorsByTile: Record<string, Extractor[]>;
+		tiles: Map<string, Tile> | Record<string, Tile>; // Tile data for context
 		totalSlotsPerTile?: number; // Default to 5 if not provided
 		settlementId: string;
 		onUpgrade?: (extractorId: string) => void;
 		onRepair?: (extractorId: string) => void;
 		onDemolish?: (extractorId: string) => void;
+		onBuildExtractor?: (tileId: string, slotPosition: number) => void;
 	}
 
 	let {
 		extractorsByTile = {},
+		tiles,
 		totalSlotsPerTile = 5,
 		settlementId,
 		onUpgrade,
 		onRepair,
-		onDemolish
+		onDemolish,
+		onBuildExtractor
 	}: Props = $props();
 
 	// Compute tile stats
@@ -50,6 +65,14 @@
 	const totalExtractors = $derived(
 		Object.values(extractorsByTile).reduce((sum, extractors) => sum + extractors.length, 0)
 	);
+
+	// Utility to get tile data (handles both Map and Record)
+	function getTile(tileId: string): Tile | undefined {
+		if (tiles instanceof Map) {
+			return tiles.get(tileId);
+		}
+		return tiles[tileId];
+	}
 
 	function getSlotsUsed(tileId: string): number {
 		return extractorsByTile[tileId]?.length ?? 0;
@@ -66,6 +89,45 @@
 		if (percentage >= 100) return 'text-error-500';
 		if (percentage >= 80) return 'text-warning-500';
 		return 'text-success-500';
+	}
+
+	// Create array of slot positions (0-4) for visualization
+	function getSlotArray(): number[] {
+		return Array.from({ length: totalSlotsPerTile }, (_, i) => i);
+	}
+
+	// Check if a slot is filled
+	function isSlotFilled(tileId: string, slotPosition: number): boolean {
+		const extractors = extractorsByTile[tileId] ?? [];
+		return extractors.some((e) => e.slotPosition === slotPosition);
+	}
+
+	// Get extractor in a specific slot
+	function getExtractorInSlot(tileId: string, slotPosition: number): Extractor | undefined {
+		const extractors = extractorsByTile[tileId] ?? [];
+		return extractors.find((e) => e.slotPosition === slotPosition);
+	}
+
+	// Resource quality color coding
+	function getQualityColor(quality: number): string {
+		if (quality >= 80) return 'text-success-500';
+		if (quality >= 60) return 'text-primary-500';
+		if (quality >= 40) return 'text-warning-500';
+		return 'text-error-500';
+	}
+
+	// Biome badge color
+	function getBiomeColor(biome: string): string {
+		const biomeMap: Record<string, string> = {
+			GRASSLAND: 'variant-soft-success',
+			FOREST: 'variant-soft-tertiary',
+			DESERT: 'variant-soft-warning',
+			MOUNTAIN: 'variant-soft-surface',
+			TUNDRA: 'variant-soft-primary',
+			SWAMP: 'variant-soft-secondary',
+			COASTAL: 'variant-soft-primary'
+		};
+		return biomeMap[biome.toUpperCase()] ?? 'variant-soft-surface';
 	}
 
 	function getHealthColor(health: number): string {
@@ -121,23 +183,89 @@
 					class="card variant-soft p-4 space-y-3"
 					transition:slide={{ duration: 300, easing: quintOut }}
 				>
-					<!-- Tile Header -->
-					<header
-						class="flex items-center justify-between border-b border-surface-300-600-token pb-2"
-					>
-						<div>
-							<h4 class="font-semibold">Tile {tileId.slice(0, 8)}...</h4>
-							<p class="text-xs text-surface-500-400-token mt-1">
-								{getSlotsUsed(tileId)} extractor{getSlotsUsed(tileId) !== 1 ? 's' : ''}
-							</p>
+					<!-- Tile Header with Enhanced Context -->
+					<header class="flex flex-col gap-3 border-b border-surface-300-600-token pb-3">
+						<!-- Top Row: Tile ID + Slot Usage -->
+						<div class="flex items-center justify-between">
+							<div>
+								<h4 class="font-semibold">Tile {tileId.slice(0, 8)}...</h4>
+								{#if getTile(tileId)}
+									{@const tile = getTile(tileId)!}
+									<p class="text-xs text-surface-500-400-token mt-0.5">
+										📍 ({tile.xCoord}, {tile.yCoord})
+									</p>
+								{/if}
+							</div>
+							<div class="text-right">
+								<p class={`text-sm font-medium ${getSlotUsageColor(tileId)}`}>
+									{getSlotUsageText(tileId)}
+								</p>
+								<p class="text-xs text-surface-500-400-token mt-1">
+									{totalSlotsPerTile - getSlotsUsed(tileId)} available
+								</p>
+							</div>
 						</div>
-						<div class="text-right">
-							<p class={`text-sm font-medium ${getSlotUsageColor(tileId)}`}>
-								{getSlotUsageText(tileId)}
-							</p>
-							<p class="text-xs text-surface-500-400-token mt-1">
-								{totalSlotsPerTile - getSlotsUsed(tileId)} available
-							</p>
+
+						<!-- Biome + Resource Qualities -->
+						{#if getTile(tileId)}
+							{@const tile = getTile(tileId)!}
+							<div class="flex flex-wrap items-center gap-2">
+								<!-- Biome Badge -->
+								<span class="badge {getBiomeColor(tile.biome)} text-xs">
+									{tile.biome}
+								</span>
+
+								<!-- Resource Quality Badges -->
+								<div class="flex items-center gap-1.5 text-xs">
+									<span class={getQualityColor(tile.foodQuality)} title="Food Quality">
+										🌾 {tile.foodQuality}
+									</span>
+									<span class={getQualityColor(tile.woodQuality)} title="Wood Quality">
+										🪵 {tile.woodQuality}
+									</span>
+									<span class={getQualityColor(tile.stoneQuality)} title="Stone Quality">
+										🪨 {tile.stoneQuality}
+									</span>
+									<span class={getQualityColor(tile.oreQuality)} title="Ore Quality">
+										⛏️ {tile.oreQuality}
+									</span>
+								</div>
+							</div>
+						{/if}
+
+						<!-- 5-Slot Grid Visualization -->
+						<div class="flex gap-2" role="list" aria-label="Tile slots">
+							{#each getSlotArray() as slotPosition}
+								{#if isSlotFilled(tileId, slotPosition)}
+									{@const extractor = getExtractorInSlot(tileId, slotPosition)}
+									{#if extractor}
+										<div
+											class="flex-1 card variant-ghost-primary p-2 text-center"
+											title="Slot {slotPosition}: {extractor.name} (Level {extractor.level})"
+											role="listitem"
+										>
+											<p class="text-xs font-medium">Slot {slotPosition}</p>
+											<p class="text-[10px] text-success-500 mt-0.5">
+												{extractor.name.split(' ')[0]}
+											</p>
+										</div>
+									{/if}
+								{:else}
+									<button
+										type="button"
+										class="flex-1 card variant-ghost p-2 text-center hover:variant-soft-surface transition-colors"
+										onclick={() => onBuildExtractor?.(tileId, slotPosition)}
+										onkeydown={(e) =>
+											handleKeydown(e, () => onBuildExtractor?.(tileId, slotPosition))}
+										title="Build extractor in slot {slotPosition}"
+										aria-label="Build extractor in slot {slotPosition}"
+										role="listitem"
+									>
+										<p class="text-xs text-surface-500-400-token">Slot {slotPosition}</p>
+										<p class="text-[10px] text-primary-500 mt-0.5">+ Build</p>
+									</button>
+								{/if}
+							{/each}
 						</div>
 					</header>
 

@@ -12,8 +12,6 @@
 	 * Part of left sidebar (position 1, 300px width)
 	 */
 
-	import { populationStore } from '$lib/stores/game/population.svelte';
-
 	interface Settlement {
 		id: string;
 		name: string;
@@ -37,49 +35,6 @@
 
 	let { settlementId, settlement, collapsed = false, onToggleCollapse }: Props = $props();
 
-	// Get real population data from store
-	const populationData = $derived(populationStore.getSettlement(settlementId));
-
-	// Calculate population capacity from structures (simplified for now)
-	// In reality, this should come from settlement structures
-	const populationCapacity = $derived(populationData?.capacity ?? 100);
-	const currentPopulation = $derived(populationData?.current ?? 0);
-	const happiness = $derived(populationData?.happiness ?? 50);
-
-	// Derive settlement type based on population (simplified)
-	const settlementType = $derived.by(() => {
-		if (currentPopulation >= 500) return 'CITY';
-		if (currentPopulation >= 200) return 'TOWN';
-		if (currentPopulation >= 50) return 'VILLAGE';
-		return 'OUTPOST';
-	});
-
-	// Derive settlement type label
-	const typeLabel = $derived.by(() => {
-		switch (settlementType) {
-			case 'OUTPOST':
-				return 'Outpost';
-			case 'VILLAGE':
-				return 'Village';
-			case 'TOWN':
-				return 'Town';
-			case 'CITY':
-				return 'City';
-			default:
-				return 'Settlement';
-		}
-	});
-
-	// Derive happiness status and color
-	const happinessStatus = $derived.by(() => {
-		if (happiness >= 75) return { label: 'Happy', color: 'text-success-600 dark:text-success-400' };
-		if (happiness >= 50)
-			return { label: 'Content', color: 'text-primary-600 dark:text-primary-400' };
-		if (happiness >= 25)
-			return { label: 'Unhappy', color: 'text-warning-600 dark:text-warning-400' };
-		return { label: 'Distressed', color: 'text-error-600 dark:text-error-400' };
-	});
-
 	// Format date as "X days ago"
 	function formatDaysAgo(dateInput: string | Date): string {
 		const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
@@ -90,9 +45,6 @@
 		if (diffDays === 1) return '1 day ago';
 		return `${diffDays} days ago`;
 	}
-
-	// Calculate settlement level based on population (simplified)
-	const settlementLevel = $derived(Math.floor(currentPopulation / 50) + 1);
 </script>
 
 <div
@@ -153,68 +105,9 @@
 					<span
 						class="inline-block px-2 py-0.5 text-xs font-medium rounded bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"
 					>
-						{typeLabel}
-					</span>
-					<span class="text-sm text-surface-600 dark:text-surface-400">
-						Level {settlementLevel}
+						Outpost
 					</span>
 				</div>
-			</div>
-
-			<!-- Population Summary -->
-			<div class="space-y-1">
-				<div class="flex items-center justify-between">
-					<span class="text-sm font-medium text-surface-700 dark:text-surface-300">Population</span>
-					<span class="text-sm font-semibold text-surface-900 dark:text-surface-100">
-						{currentPopulation}/{populationCapacity}
-					</span>
-				</div>
-				<div class="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2 overflow-hidden">
-					<div
-						class="h-full bg-primary-500 dark:bg-primary-400 transition-all duration-300"
-						style="width: {Math.min(100, (currentPopulation / populationCapacity) * 100)}%"
-						role="progressbar"
-						aria-valuenow={currentPopulation}
-						aria-valuemin={0}
-						aria-valuemax={populationCapacity}
-						aria-label="Population capacity"
-					></div>
-				</div>
-				<p class="text-xs text-surface-500 dark:text-surface-400 m-0">
-					{Math.round((currentPopulation / populationCapacity) * 100)}% capacity
-				</p>
-			</div>
-
-			<!-- Happiness Overview -->
-			<div class="space-y-1">
-				<div class="flex items-center justify-between">
-					<span class="text-sm font-medium text-surface-700 dark:text-surface-300">Happiness</span>
-					<span class="text-sm font-semibold {happinessStatus.color}">
-						{happinessStatus.label}
-					</span>
-				</div>
-				<div class="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2 overflow-hidden">
-					<div
-						class="h-full transition-all duration-300"
-						class:bg-success-500={happiness >= 75}
-						class:dark:bg-success-400={happiness >= 75}
-						class:bg-primary-500={happiness >= 50 && happiness < 75}
-						class:dark:bg-primary-400={happiness >= 50 && happiness < 75}
-						class:bg-warning-500={happiness >= 25 && happiness < 50}
-						class:dark:bg-warning-400={happiness >= 25 && happiness < 50}
-						class:bg-error-500={happiness < 25}
-						class:dark:bg-error-400={happiness < 25}
-						style="width: {happiness}%"
-						role="progressbar"
-						aria-valuenow={happiness}
-						aria-valuemin={0}
-						aria-valuemax={100}
-						aria-label="Settlement happiness"
-					></div>
-				</div>
-				<p class="text-xs text-surface-500 dark:text-surface-400 m-0">
-					{happiness}% happiness
-				</p>
 			</div>
 
 			<!-- Location -->
