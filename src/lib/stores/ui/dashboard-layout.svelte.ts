@@ -33,13 +33,13 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 	default: {
 		layoutName: 'Default',
 		panels: [
-			// Header rows (position -2, -1)
-			{ id: 'alerts', position: -2, size: 'large', visible: true, collapsed: false },
+			// Header rows (position -1)
+			{ id: 'alerts', position: -1, size: 'large', visible: true, collapsed: false },
 			{ id: 'resource-header', position: -1, size: 'large', visible: true, collapsed: false },
 			// Left sidebar (positions 0-2)
 			{ id: 'settlement-info', position: 0, size: 'medium', visible: true, collapsed: false },
 			{ id: 'population', position: 1, size: 'medium', visible: true, collapsed: false },
-			// Center column (positions 2-4)
+			// Center column (position 2-4)
 			{ id: 'structures', position: 2, size: 'large', visible: true, collapsed: false },
 			// { id: 'production-overview', position: 3, size: 'large', visible: true, collapsed: false },
 			{ id: 'trade', position: 4, size: 'small', visible: false, collapsed: true },

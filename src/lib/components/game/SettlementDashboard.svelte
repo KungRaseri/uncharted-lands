@@ -11,7 +11,6 @@
 
 	import { layoutStore } from '$lib/stores/ui/dashboard-layout.svelte';
 	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout.svelte';
-	import QuickActionsBar from './QuickActionsBar.svelte';
 	import DesktopLayout from './layouts/DesktopLayout.svelte';
 	import TabletLayout from './layouts/TabletLayout.svelte';
 	import MobileLayout from './layouts/MobileLayout.svelte';
@@ -497,7 +496,7 @@
 <svelte:window onkeydown={handleKeyboardShortcut} />
 
 {#snippet panelContent(panel: PanelConfig)}
-	{#if panel.id === 'header'}
+	{#if panel.id === 'alerts'}
 		<AlertsPanel {settlementId} alerts={realAlerts} />
 	{:else if panel.id === 'resource-header'}
 		<ResourceHeaderBar {settlementId} resources={realResources} />
@@ -567,13 +566,6 @@
 	<!-- Screen reader announcements -->
 	<div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
 		{announcement}
-	</div>
-
-	<!-- Quick Actions Bar (always visible) -->
-	<div
-		class="shrink-0 md:relative md:bottom-auto md:left-auto md:right-auto md:shadow-none md:z-100 fixed bottom-0 left-0 right-0 bg-white dark:bg-surface-900 shadow-[0_-4px_8px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_8px_rgba(0,0,0,0.3)] z-200"
-	>
-		<QuickActionsBar {settlementId} {onOpenBuildMenu} />
 	</div>
 
 	<!-- Main content with responsive layout -->
