@@ -22,14 +22,15 @@
 	// Modals
 	import SettingsModal from './modals/SettingsModal.svelte';
 	import AlertsPanel from './panels/AlertsPanel.svelte';
+	import SettlementInfoPanel from './panels/SettlementInfoPanel.svelte';
 	import ResourcePanel from './panels/ResourcePanel.svelte';
 	import ResourceHeaderBar from './panels/ResourceHeaderBar.svelte';
-	import SettlementInfoPanel from './panels/SettlementInfoPanel.svelte';
 	import PopulationPanel from './panels/PopulationPanel.svelte';
 	import ConstructionQueuePanel from './panels/ConstructionQueuePanel.svelte';
 	import NextActionSuggestion from './panels/NextActionSuggestion.svelte';
 	import StructureGridPanel from './panels/StructureGridPanel.svelte';
 	import BuildingsListPanel from './panels/BuildingsListPanel.svelte';
+	import ExtractorsGridPanel from './panels/ExtractorsGridPanel.svelte';
 	import ProductionOverviewPanel from './panels/ProductionOverviewPanel.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
 	import { API_URL } from '$lib/config';
@@ -60,34 +61,34 @@
 		}>;
 	}
 
+	interface Settlement {
+		id: string;
+		name: string;
+		tileId: string;
+		playerProfileId: string;
+		worldId: string;
+		resilience: number | null;
+		createdAt: string | Date;
+		Tile?: {
+			xCoord: number;
+			yCoord: number;
+		} | null;
+	}
+
 	interface Props {
 		settlementId: string;
 		settlementName: string;
 		onOpenBuildMenu?: () => void; // Handler to open build menu
 		settlementStructures?: SettlementStructure[]; // ✅ NEW: Optional for backward compatibility
-		settlement?: {
-			storage?: {
-				food: number;
-				water: number;
-				wood: number;
-				stone: number;
-				ore: number;
-			};
-			structures?: Array<{
-				id: string;
-				buildingType: string;
-				name?: string;
-				// ... other structure properties
-			}>;
-			// ... other settlement properties
-		};
+		settlement?: Settlement;
 	}
 
 	let {
 		settlementId,
 		settlementName,
 		onOpenBuildMenu,
-		settlementStructures = []
+		settlementStructures = [],
+		settlement
 	}: Props = $props();
 
 	// Settings modal state
@@ -497,18 +498,13 @@
 
 {#snippet panelContent(panel: PanelConfig)}
 	{#if panel.id === 'header'}
-		<DashboardHeader
-			{settlementId}
-			{settlementName}
-			currentTime={new Date()}
-			onSettings={() => (settingsOpen = true)}
-		/>
+		<AlertsPanel {settlementId} alerts={realAlerts} />
 	{:else if panel.id === 'resource-header'}
 		<ResourceHeaderBar {settlementId} resources={realResources} />
 	{:else if panel.id === 'settlement-info'}
-		<SettlementInfoPanel {settlementId} info={mockSettlementInfo ?? undefined} />
-	{:else if panel.id === 'alerts'}
-		<AlertsPanel {settlementId} alerts={realAlerts} />
+		{#if settlement}
+			<SettlementInfoPanel {settlementId} {settlement} />
+		{/if}
 	{:else if panel.id === 'resources'}
 		<ResourcePanel {settlementId} resources={realResources} />
 	{:else if panel.id === 'population'}
@@ -538,22 +534,16 @@
 			onDemolish={handleDemolishBuilding}
 		/>
 
-		<!-- TODO Phase 3: Replace this with ExtractorsGridPanel -->
-		<!-- For now, showing extractors with old StructureGridPanel -->
-		{#if extractors.length > 0}
+		<!-- Phase 3: Extractors grid view -->
+		{#if Object.keys(extractorsByTile).length > 0}
 			<div class="mt-4">
-				<StructureGridPanel
+				<ExtractorsGridPanel
+					{extractorsByTile}
 					{settlementId}
-					gridSize={10}
-					structures={extractors}
-					onCellClick={(cell) => {
-						console.log('Cell clicked:', cell);
-						announcement = `Selected cell at position ${cell.x}, ${cell.y}`;
-					}}
-					onStructureSelect={(structure) => {
-						console.log('Structure selected:', structure);
-						announcement = `Selected ${structure.name}`;
-					}}
+					totalSlotsPerTile={5}
+					onUpgrade={handleUpgradeBuilding}
+					onRepair={handleRepairBuilding}
+					onDemolish={handleDemolishBuilding}
 				/>
 			</div>
 		{/if}
@@ -600,22 +590,3 @@
 
 <!-- Settings Modal -->
 <SettingsModal bind:open={settingsOpen} onClose={() => (settingsOpen = false)} />
-
-<!-- Debug Panel (Development Only) -->
-{#if import.meta.env.DEV}
-	<div class="card variant-filled-surface p-4 mt-4">
-		<h3 class="h3 mb-2">🔧 Debug: Settlement Structures</h3>
-		<div class="grid grid-cols-2 gap-2 text-sm">
-			<div><strong>Total Structures:</strong> {settlementStructures.length}</div>
-			<div><strong>Buildings:</strong> {buildings.length}</div>
-			<div><strong>Extractors:</strong> {extractors.length}</div>
-			<div><strong>Tiles with Extractors:</strong> {Object.keys(extractorsByTile).length}</div>
-		</div>
-		<details class="mt-2">
-			<summary class="cursor-pointer hover:text-primary-500">View Raw Data</summary>
-			<pre class="text-xs mt-2 overflow-auto max-h-64 bg-surface-900 p-2 rounded">
-{JSON.stringify(settlementStructures, null, 2)}
-			</pre>
-		</details>
-	</div>
-{/if}

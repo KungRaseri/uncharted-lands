@@ -33,18 +33,18 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 	default: {
 		layoutName: 'Default',
 		panels: [
-			// Header row (position -1)
+			// Header rows (position -2, -1)
+			{ id: 'alerts', position: -2, size: 'large', visible: true, collapsed: false },
 			{ id: 'resource-header', position: -1, size: 'large', visible: true, collapsed: false },
 			// Left sidebar (positions 0-2)
-			{ id: 'alerts', position: 0, size: 'medium', visible: true, collapsed: false },
-			{ id: 'settlement-info', position: 1, size: 'medium', visible: true, collapsed: false },
-			{ id: 'population', position: 2, size: 'medium', visible: true, collapsed: false },
-			// Center column (positions 3-5)
-			{ id: 'structures', position: 3, size: 'large', visible: true, collapsed: false },
-			{ id: 'production-overview', position: 4, size: 'large', visible: true, collapsed: false },
-			{ id: 'trade', position: 5, size: 'small', visible: false, collapsed: true },
-			// Right sidebar (positions 6+)
-			{ id: 'construction', position: 6, size: 'medium', visible: true, collapsed: false }
+			{ id: 'settlement-info', position: 0, size: 'medium', visible: true, collapsed: false },
+			{ id: 'population', position: 1, size: 'medium', visible: true, collapsed: false },
+			// Center column (positions 2-4)
+			{ id: 'structures', position: 2, size: 'large', visible: true, collapsed: false },
+			// { id: 'production-overview', position: 3, size: 'large', visible: true, collapsed: false },
+			{ id: 'trade', position: 4, size: 'small', visible: false, collapsed: true },
+			// Right sidebar (positions 5+)
+			{ id: 'construction', position: 5, size: 'medium', visible: true, collapsed: false }
 		],
 		quickActions: ['build', 'collect', 'upgrade', 'repair', 'aid'],
 		theme: 'auto'
@@ -74,11 +74,10 @@ const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
 		layoutName: 'Disaster Response',
 		panels: [
 			// Header row
+			{ id: 'header', position: -2, size: 'large', visible: true, collapsed: false },
 			{ id: 'resource-header', position: -1, size: 'large', visible: true, collapsed: false },
 			// Left sidebar - critical info during disasters
-			{ id: 'alerts', position: 0, size: 'large', visible: true, collapsed: false },
-			{ id: 'population', position: 1, size: 'large', visible: true, collapsed: false },
-			{ id: 'settlement-info', position: 2, size: 'medium', visible: true, collapsed: false },
+			{ id: 'settlement-info', position: 0, size: 'medium', visible: true, collapsed: false },
 			// Center - structures and production (collapsed to save space)
 			{ id: 'structures', position: 3, size: 'medium', visible: true, collapsed: false },
 			{ id: 'production-overview', position: 4, size: 'small', visible: true, collapsed: true },

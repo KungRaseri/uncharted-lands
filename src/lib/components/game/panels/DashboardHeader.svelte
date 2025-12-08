@@ -10,9 +10,16 @@
 		settlementId: string;
 		currentTime?: Date;
 		onSettings?: () => void;
+		onOpenBuildMenu?: () => void;
 	}
 
-	let { settlementName, settlementId, currentTime = new Date(), onSettings }: Props = $props();
+	let {
+		settlementName,
+		settlementId,
+		currentTime = new Date(),
+		onSettings,
+		onOpenBuildMenu
+	}: Props = $props();
 
 	// Format time for display
 	const formattedTime = $derived(
@@ -70,33 +77,62 @@
 			</div>
 		</div>
 
-		{#if onSettings}
-			<button
-				type="button"
-				class="flex items-center justify-center min-w-11 min-h-11 p-2.5 bg-transparent border border-surface-300 dark:border-surface-600 rounded-md text-surface-600 dark:text-surface-400 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-800 dark:hover:text-surface-200 hover:border-surface-400 dark:hover:border-surface-500 focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:outline-offset-2 active:scale-95 transition-all duration-200 shrink-0 group"
-				onclick={onSettings}
-				aria-label="Open dashboard settings"
-				title="Customize dashboard (Ctrl+,)"
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="20"
-					height="20"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					aria-hidden="true"
-					class="w-5 h-5 transition-transform duration-300 group-hover:rotate-45"
+		<div class="flex items-center gap-2">
+			{#if onOpenBuildMenu}
+				<button
+					type="button"
+					class="flex items-center gap-2 px-4 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-md focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:outline-offset-2 active:scale-95 transition-all duration-200 shadow-sm hover:shadow-md"
+					onclick={onOpenBuildMenu}
+					aria-label="Open build menu (B)"
+					title="Build new structures (B)"
 				>
-					<circle cx="12" cy="12" r="3" />
-					<path
-						d="M12 1v6m0 6v6m-9-9h6m6 0h6m-16.97 6.97l4.24-4.24m5.46 0l4.24 4.24m-16.97-10.18l4.24 4.24m5.46 0l4.24-4.24"
-					/>
-				</svg>
-			</button>
-		{/if}
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+						class="w-5 h-5"
+					>
+						<path d="M12 2v20M2 12h20" />
+					</svg>
+					<span>Build</span>
+				</button>
+			{/if}
+
+			{#if onSettings}
+				<button
+					type="button"
+					class="flex items-center justify-center min-w-11 min-h-11 p-2.5 bg-transparent border border-surface-300 dark:border-surface-600 rounded-md text-surface-600 dark:text-surface-400 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-800 dark:hover:text-surface-200 hover:border-surface-400 dark:hover:border-surface-500 focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:outline-offset-2 active:scale-95 transition-all duration-200 shrink-0 group"
+					onclick={onSettings}
+					aria-label="Open dashboard settings"
+					title="Customize dashboard (Ctrl+,)"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+						class="w-5 h-5 transition-transform duration-300 group-hover:rotate-45"
+					>
+						<circle cx="12" cy="12" r="3" />
+						<path
+							d="M12 1v6m0 6v6m-9-9h6m6 0h6m-16.97 6.97l4.24-4.24m5.46 0l4.24 4.24m-16.97-10.18l4.24 4.24m5.46 0l4.24-4.24"
+						/>
+					</svg>
+				</button>
+			{/if}
+		</div>
 	</div>
 </header>
