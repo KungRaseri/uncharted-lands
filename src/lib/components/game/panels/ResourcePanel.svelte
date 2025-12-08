@@ -12,6 +12,7 @@
 -->
 
 <script lang="ts">
+	import { Portal, Tooltip } from '@skeletonlabs/skeleton-svelte';
 	import type { TileWithRelations } from '$lib/types/api';
 
 	interface Resource {
@@ -33,9 +34,6 @@
 
 	// Local state for toggling between compact and expanded
 	let isExpanded = $state(false);
-
-	// Tooltip state
-	let activeTooltip = $state<string | null>(null);
 
 	// Resource configuration
 	const resourceConfig = {
@@ -134,7 +132,7 @@
 		<!-- COMPACT MODE: Single horizontal row -->
 		<div class="px-4 py-3">
 			<div
-				class="flex items-center gap-4"
+				class="flex items-center gap-4 justify-between"
 				role="list"
 				aria-label="Resource levels for {settlementName}"
 			>
@@ -144,116 +142,123 @@
 					{@const warningLevel = getWarningLevel(percentage)}
 					{@const netRate = getNetRate(resource)}
 
-					<div
-						class="flex items-center gap-2 flex-1 relative group"
-						data-resource={resource.type}
-						role="listitem"
-						onmouseenter={() => (activeTooltip = resource.type)}
-						onmouseleave={() => (activeTooltip = null)}
-					>
-						<!-- Icon -->
-						<span class="text-xl leading-none" aria-hidden="true">{config.icon}</span>
-
-						<!-- Name + Values -->
-						<div class="flex flex-col gap-0.5 min-w-0">
-							<span class="text-xs font-semibold text-surface-900 dark:text-surface-100 truncate">
-								{config.label}
-							</span>
-							<div class="flex items-baseline gap-1">
-								<span class="text-xs font-bold text-surface-800 dark:text-surface-200 tabular-nums">
-									{formatNumber(resource.current)}
-								</span>
-								<span class="text-[10px] text-surface-500 dark:text-surface-500">/</span>
-								<span class="text-[10px] text-surface-600 dark:text-surface-400 tabular-nums">
-									{formatNumber(resource.capacity)}
-								</span>
-							</div>
-						</div>
-
-						<!-- Net Rate -->
-						<div class="flex flex-col items-end gap-0.5">
-							<span
-								class="text-xs font-semibold tabular-nums {netRate > 0
-									? 'text-success-600 dark:text-success-400'
-									: netRate < 0
-										? 'text-error-600 dark:text-error-400'
-										: 'text-surface-700 dark:text-surface-300'}"
-							>
-								{formatRate(netRate)}
-							</span>
-							{#if warningLevel === 'critical'}
-								<span class="text-[10px] font-bold text-error-700 dark:text-error-300">
-									⚠️ Critical
-								</span>
-							{/if}
-						</div>
-
-						<!-- Tooltip -->
-						{#if activeTooltip === resource.type}
+					<Tooltip positioning={{ placement: 'bottom' }} openDelay={0}>
+						<Tooltip.Trigger>
 							<div
-								class="absolute z-9999 bottom-full left-0 mb-2 w-64 bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3"
-								role="tooltip"
+								class="flex items-center gap-2 flex-1 relative group"
+								data-resource={resource.type}
+								role="listitem"
 							>
-								<div class="flex items-center gap-2 mb-2">
-									<span class="text-2xl" aria-hidden="true">{config.icon}</span>
-									<h3 class="text-sm font-semibold text-surface-100 m-0">{config.label}</h3>
-								</div>
-								<!-- Storage Info -->
-								<div class="mb-3">
-									<div class="flex justify-between text-xs mb-1">
-										<span class="text-surface-300">Storage:</span>
-										<span class="text-surface-100 font-semibold">
-											{formatNumber(resource.current)} / {formatNumber(resource.capacity)}
-										</span>
-									</div>
-									<div
-										class="w-full h-2 bg-surface-700 rounded-full overflow-hidden"
-										role="meter"
-										aria-valuenow={percentage}
-										aria-valuemin="0"
-										aria-valuemax="100"
-										aria-label="{config.label} storage at {percentage.toFixed(0)}%"
+								<!-- Icon -->
+								<span class="text-xl leading-none" aria-hidden="true">{config.icon}</span>
+
+								<!-- Name + Values -->
+								<div class="flex flex-col gap-0.5 min-w-0">
+									<span
+										class="text-xs font-semibold text-surface-900 dark:text-surface-100 truncate"
 									>
-										<div
-											class="h-full rounded-full"
-											style:width="{percentage}%"
-											style:background-color={config.color}
-										></div>
+										{config.label}
+									</span>
+									<div class="flex items-baseline gap-1">
+										<span
+											class="text-xs font-bold text-surface-800 dark:text-surface-200 tabular-nums"
+										>
+											{formatNumber(resource.current)}
+										</span>
+										<span class="text-[10px] text-surface-500 dark:text-surface-500">/</span>
+										<span class="text-[10px] text-surface-600 dark:text-surface-400 tabular-nums">
+											{formatNumber(resource.capacity)}
+										</span>
 									</div>
 								</div>
 
-								<!-- Production Breakdown -->
-								<div class="space-y-1.5 text-xs">
-									<div class="flex justify-between">
-										<span class="text-surface-400">Production:</span>
-										<span class="text-success-400 font-semibold tabular-nums">
-											{formatRate(resource.productionRate)}
-										</span>
-									</div>
-									<div class="flex justify-between">
-										<span class="text-surface-400">Consumption:</span>
-										<span class="text-error-400 font-semibold tabular-nums">
-											{formatRate(-resource.consumptionRate)}
-										</span>
-									</div>
-									<div
-										class="flex justify-between pt-1.5 border-t border-surface-700 dark:border-surface-600"
+								<!-- Net Rate -->
+								<div class="flex flex-col items-end gap-0.5">
+									<span
+										class="text-xs font-semibold tabular-nums {netRate > 0
+											? 'text-success-600 dark:text-success-400'
+											: netRate < 0
+												? 'text-error-600 dark:text-error-400'
+												: 'text-surface-700 dark:text-surface-300'}"
 									>
-										<span class="text-surface-300 font-semibold">Net:</span>
-										<span
-											class="font-bold tabular-nums {netRate > 0
-												? 'text-success-400'
-												: netRate < 0
-													? 'text-error-400'
-													: 'text-surface-300'}"
-										>
-											{formatRate(netRate)}
+										{formatRate(netRate)}
+									</span>
+									{#if warningLevel === 'critical'}
+										<span class="text-[10px] font-bold text-error-700 dark:text-error-300">
+											⚠️ Critical
 										</span>
-									</div>
+									{/if}
 								</div>
 							</div>
-						{/if}
-					</div>
+						</Tooltip.Trigger>
+
+						<Portal>
+							<Tooltip.Positioner class="z-9999">
+								<Tooltip.Content
+									class="card bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3 w-64"
+								>
+									<div class="flex items-center gap-2 mb-2">
+										<span class="text-2xl" aria-hidden="true">{config.icon}</span>
+										<h3 class="text-sm font-semibold text-surface-100 m-0">{config.label}</h3>
+									</div>
+
+									<!-- Storage Info -->
+									<div class="mb-3">
+										<div class="flex justify-between text-xs mb-1">
+											<span class="text-surface-300">Storage:</span>
+											<span class="text-surface-100 font-semibold">
+												{formatNumber(resource.current)} / {formatNumber(resource.capacity)}
+											</span>
+										</div>
+										<div
+											class="w-full h-2 bg-surface-700 rounded-full overflow-hidden"
+											role="meter"
+											aria-valuenow={percentage}
+											aria-valuemin="0"
+											aria-valuemax="100"
+											aria-label="{config.label} storage at {percentage.toFixed(0)}%"
+										>
+											<div
+												class="h-full rounded-full"
+												style:width="{percentage}%"
+												style:background-color={config.color}
+											></div>
+										</div>
+									</div>
+
+									<!-- Production Breakdown -->
+									<div class="space-y-1.5 text-xs">
+										<div class="flex justify-between">
+											<span class="text-surface-400">Production:</span>
+											<span class="text-success-400 font-semibold tabular-nums">
+												{formatRate(resource.productionRate)}
+											</span>
+										</div>
+										<div class="flex justify-between">
+											<span class="text-surface-400">Consumption:</span>
+											<span class="text-error-400 font-semibold tabular-nums">
+												{formatRate(-resource.consumptionRate)}
+											</span>
+										</div>
+										<div
+											class="flex justify-between pt-1.5 border-t border-surface-700 dark:border-surface-600"
+										>
+											<span class="text-surface-300 font-semibold">Net:</span>
+											<span
+												class="font-bold tabular-nums {netRate > 0
+													? 'text-success-400'
+													: netRate < 0
+														? 'text-error-400'
+														: 'text-surface-300'}"
+											>
+												{formatRate(netRate)}
+											</span>
+										</div>
+									</div>
+								</Tooltip.Content>
+							</Tooltip.Positioner>
+						</Portal>
+					</Tooltip>
 				{/each}
 			</div>
 		</div>
@@ -271,159 +276,170 @@
 					{@const warningLevel = getWarningLevel(percentage)}
 					{@const netRate = getNetRate(resource)}
 
-					<div
-						class="bg-surface-50 dark:bg-surface-900 rounded border {getWarningClasses(
-							warningLevel
-						)} p-2 flex flex-col gap-1.5 relative group"
-						data-resource={resource.type}
-						role="listitem"
-						onmouseenter={() => (activeTooltip = resource.type)}
-						onmouseleave={() => (activeTooltip = null)}
-					>
-						<!-- Icon + Label -->
-						<div class="flex items-center gap-1.5">
-							<span class="text-lg leading-none" aria-hidden="true">{config.icon}</span>
-							<h3 class="text-xs font-semibold text-surface-900 dark:text-surface-100 m-0 truncate">
-								{config.label}
-							</h3>
-						</div>
-
-						<!-- Current/Capacity -->
-						<div class="text-xs font-semibold text-surface-800 dark:text-surface-200 tabular-nums">
-							<span>{formatNumber(resource.current)}</span>
-							<span class="text-surface-400 dark:text-surface-600 mx-0.5">/</span>
-							<span class="text-surface-600 dark:text-surface-400"
-								>{formatNumber(resource.capacity)}</span
-							>
-						</div>
-
-						<!-- Progress Bar -->
-						<div
-							class="w-full h-1.5 bg-surface-200 dark:bg-surface-700 rounded-full overflow-hidden"
-							role="meter"
-							aria-valuenow={percentage}
-							aria-valuemin="0"
-							aria-valuemax="100"
-							aria-label="{config.label} storage level"
-						>
+					<Tooltip positioning={{ placement: 'bottom' }} openDelay={0}>
+						<Tooltip.Trigger>
 							<div
-								class="h-full rounded-full transition-all duration-300 {warningLevel === 'critical'
-									? 'animate-pulse'
-									: ''}"
-								style:width="{percentage}%"
-								style:background-color={config.color}
-							></div>
-						</div>
-
-						<!-- Production & Consumption Rates -->
-						<div class="space-y-0.5 text-[10px]">
-							<div class="flex items-center justify-between">
-								<span class="text-surface-600 dark:text-surface-400 font-medium">Production:</span>
-								<span class="text-success-600 dark:text-success-400 font-semibold tabular-nums">
-									{formatRate(resource.productionRate)}
-								</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-surface-600 dark:text-surface-400 font-medium">Consumption:</span>
-								<span class="text-error-600 dark:text-error-400 font-semibold tabular-nums">
-									{formatRate(-resource.consumptionRate)}
-								</span>
-							</div>
-						</div>
-
-						<!-- Net Rate -->
-						<div
-							class="flex items-center justify-between text-[10px] pt-1 border-t border-surface-200 dark:border-surface-700"
-						>
-							<span class="text-surface-700 dark:text-surface-300 font-semibold">Net:</span>
-							<span
-								class="font-bold tabular-nums {netRate > 0
-									? 'text-success-600 dark:text-success-400'
-									: netRate < 0
-										? 'text-error-600 dark:text-error-400'
-										: 'text-surface-700 dark:text-surface-300'}"
+								class="bg-surface-50 dark:bg-surface-900 rounded border {getWarningClasses(
+									warningLevel
+								)} p-2 flex flex-col gap-1.5 relative group"
+								data-resource={resource.type}
+								role="listitem"
 							>
-								{formatRate(netRate)}
-							</span>
-						</div>
-						<!-- Critical warning -->
-						{#if warningLevel === 'critical'}
-							<div
-								class="text-[10px] font-semibold text-error-700 dark:text-error-300 text-center"
-								role="alert"
-								aria-live="assertive"
-							>
-								⚠️ Critical
-							</div>
-						{/if}
-
-						<!-- Tooltip (same as compact mode) -->
-						{#if activeTooltip === resource.type}
-							<div
-								class="absolute z-9999 bottom-full left-0 mb-2 w-64 bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3"
-								role="tooltip"
-							>
-								<div class="flex items-center gap-2 mb-2">
-									<span class="text-2xl" aria-hidden="true">{config.icon}</span>
-									<h3 class="text-sm font-semibold text-surface-100 m-0">{config.label}</h3>
-								</div>
-
-								<!-- Storage Info -->
-								<div class="mb-3">
-									<div class="flex justify-between text-xs mb-1">
-										<span class="text-surface-300">Storage:</span>
-										<span class="text-surface-100 font-semibold">
-											{formatNumber(resource.current)} / {formatNumber(resource.capacity)}
-										</span>
-									</div>
-									<div
-										class="w-full h-2 bg-surface-700 rounded-full overflow-hidden"
-										role="meter"
-										aria-valuenow={percentage}
-										aria-valuemin="0"
-										aria-valuemax="100"
-										aria-label="{config.label} storage at {percentage.toFixed(0)}%"
+								<!-- Icon + Label -->
+								<div class="flex items-center gap-1.5">
+									<span class="text-lg leading-none" aria-hidden="true">{config.icon}</span>
+									<h3
+										class="text-xs font-semibold text-surface-900 dark:text-surface-100 m-0 truncate"
 									>
-										<div
-											class="h-full rounded-full"
-											style:width="{percentage}%"
-											style:background-color={config.color}
-										></div>
-									</div>
+										{config.label}
+									</h3>
 								</div>
 
-								<!-- Production Breakdown -->
-								<div class="space-y-1.5 text-xs">
-									<div class="flex justify-between">
-										<span class="text-surface-400">Production:</span>
-										<span class="text-success-400 font-semibold tabular-nums">
+								<!-- Current/Capacity -->
+								<div
+									class="text-xs font-semibold text-surface-800 dark:text-surface-200 tabular-nums"
+								>
+									<span>{formatNumber(resource.current)}</span>
+									<span class="text-surface-400 dark:text-surface-600 mx-0.5">/</span>
+									<span class="text-surface-600 dark:text-surface-400"
+										>{formatNumber(resource.capacity)}</span
+									>
+								</div>
+
+								<!-- Progress Bar -->
+								<div
+									class="w-full h-1.5 bg-surface-200 dark:bg-surface-700 rounded-full overflow-hidden"
+									role="meter"
+									aria-valuenow={percentage}
+									aria-valuemin="0"
+									aria-valuemax="100"
+									aria-label="{config.label} storage level"
+								>
+									<div
+										class="h-full rounded-full transition-all duration-300 {warningLevel ===
+										'critical'
+											? 'animate-pulse'
+											: ''}"
+										style:width="{percentage}%"
+										style:background-color={config.color}
+									></div>
+								</div>
+
+								<!-- Production & Consumption Rates -->
+								<div class="space-y-0.5 text-[10px]">
+									<div class="flex items-center justify-between">
+										<span class="text-surface-600 dark:text-surface-400 font-medium"
+											>Production:</span
+										>
+										<span class="text-success-600 dark:text-success-400 font-semibold tabular-nums">
 											{formatRate(resource.productionRate)}
 										</span>
 									</div>
-									<div class="flex justify-between">
-										<span class="text-surface-400">Consumption:</span>
-										<span class="text-error-400 font-semibold tabular-nums">
+									<div class="flex items-center justify-between">
+										<span class="text-surface-600 dark:text-surface-400 font-medium"
+											>Consumption:</span
+										>
+										<span class="text-error-600 dark:text-error-400 font-semibold tabular-nums">
 											{formatRate(-resource.consumptionRate)}
 										</span>
 									</div>
-									<div
-										class="flex justify-between pt-1.5 border-t border-surface-700 dark:border-surface-600"
-									>
-										<span class="text-surface-300 font-semibold">Net:</span>
-										<span
-											class="font-bold tabular-nums {netRate > 0
-												? 'text-success-400'
-												: netRate < 0
-													? 'text-error-400'
-													: 'text-surface-300'}"
-										>
-											{formatRate(netRate)}
-										</span>
-									</div>
 								</div>
+
+								<!-- Net Rate -->
+								<div
+									class="flex items-center justify-between text-[10px] pt-1 border-t border-surface-200 dark:border-surface-700"
+								>
+									<span class="text-surface-700 dark:text-surface-300 font-semibold">Net:</span>
+									<span
+										class="font-bold tabular-nums {netRate > 0
+											? 'text-success-600 dark:text-success-400'
+											: netRate < 0
+												? 'text-error-600 dark:text-error-400'
+												: 'text-surface-700 dark:text-surface-300'}"
+									>
+										{formatRate(netRate)}
+									</span>
+								</div>
+								<!-- Critical warning -->
+								{#if warningLevel === 'critical'}
+									<div
+										class="text-[10px] font-semibold text-error-700 dark:text-error-300 text-center"
+										role="alert"
+										aria-live="assertive"
+									>
+										⚠️ Critical
+									</div>
+								{/if}
 							</div>
-						{/if}
-					</div>
+						</Tooltip.Trigger>
+
+						<Portal>
+							<Tooltip.Positioner class="z-9999">
+								<Tooltip.Content
+									class="card bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3 w-64"
+								>
+									<div class="flex items-center gap-2 mb-2">
+										<span class="text-2xl" aria-hidden="true">{config.icon}</span>
+										<h3 class="text-sm font-semibold text-surface-100 m-0">{config.label}</h3>
+									</div>
+
+									<!-- Storage Info -->
+									<div class="mb-3">
+										<div class="flex justify-between text-xs mb-1">
+											<span class="text-surface-300">Storage:</span>
+											<span class="text-surface-100 font-semibold">
+												{formatNumber(resource.current)} / {formatNumber(resource.capacity)}
+											</span>
+										</div>
+										<div
+											class="w-full h-2 bg-surface-700 rounded-full overflow-hidden"
+											role="meter"
+											aria-valuenow={percentage}
+											aria-valuemin="0"
+											aria-valuemax="100"
+											aria-label="{config.label} storage at {percentage.toFixed(0)}%"
+										>
+											<div
+												class="h-full rounded-full"
+												style:width="{percentage}%"
+												style:background-color={config.color}
+											></div>
+										</div>
+									</div>
+
+									<!-- Production Breakdown -->
+									<div class="space-y-1.5 text-xs">
+										<div class="flex justify-between">
+											<span class="text-surface-400">Production:</span>
+											<span class="text-success-400 font-semibold tabular-nums">
+												{formatRate(resource.productionRate)}
+											</span>
+										</div>
+										<div class="flex justify-between">
+											<span class="text-surface-400">Consumption:</span>
+											<span class="text-error-400 font-semibold tabular-nums">
+												{formatRate(-resource.consumptionRate)}
+											</span>
+										</div>
+										<div
+											class="flex justify-between pt-1.5 border-t border-surface-700 dark:border-surface-600"
+										>
+											<span class="text-surface-300 font-semibold">Net:</span>
+											<span
+												class="font-bold tabular-nums {netRate > 0
+													? 'text-success-400'
+													: netRate < 0
+														? 'text-error-400'
+														: 'text-surface-300'}"
+											>
+												{formatRate(netRate)}
+											</span>
+										</div>
+									</div>
+								</Tooltip.Content>
+							</Tooltip.Positioner>
+						</Portal>
+					</Tooltip>
 				{/each}
 			</div>
 		</div>
