@@ -147,8 +147,9 @@
 				<!-- Scrolling alerts container -->
 				<div class="flex-1 overflow-hidden pl-14 pr-4" role="list">
 					<div
-						class="flex gap-4 {shouldAnimate ? 'animate-marquee-rtl' : ''}"
-						style="animation-duration: {activeAlerts.length * 10}s"
+						class="flex gap-4 animate-marquee-rtl"
+						style="animation-duration: {activeAlerts.length *
+							20}s; animation-play-state: {shouldAnimate ? 'running' : 'paused'}"
 					>
 						<!-- Alert cards -->
 						{#each activeAlerts as alert (alert.id)}

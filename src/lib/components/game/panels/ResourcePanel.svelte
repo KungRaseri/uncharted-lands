@@ -95,7 +95,7 @@
 </script>
 
 <section
-	class="bg-surface-50 dark:bg-surface-900 rounded-lg border border-surface-200 dark:border-surface-700"
+	class="bg-surface-50 dark:bg-surface-900 rounded-lg border border-surface-200 dark:border-surface-700 overflow-visible"
 	data-testid="resource-panel"
 	aria-labelledby="resources-heading"
 >
@@ -191,7 +191,7 @@
 						<!-- Tooltip -->
 						{#if activeTooltip === resource.type}
 							<div
-								class="absolute z-50 bottom-full left-0 mb-2 w-64 bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3"
+								class="absolute z-9999 bottom-full left-0 mb-2 w-64 bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3"
 								role="tooltip"
 							>
 								<div class="flex items-center gap-2 mb-2">
@@ -360,7 +360,7 @@
 						<!-- Tooltip (same as compact mode) -->
 						{#if activeTooltip === resource.type}
 							<div
-								class="absolute z-50 bottom-full left-0 mb-2 w-64 bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3"
+								class="absolute z-9999 bottom-full left-0 mb-2 w-64 bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3"
 								role="tooltip"
 							>
 								<div class="flex items-center gap-2 mb-2">
