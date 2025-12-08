@@ -23,7 +23,6 @@
 	import AlertsPanel from './panels/AlertsPanel.svelte';
 	import SettlementInfoPanel from './panels/SettlementInfoPanel.svelte';
 	import ResourcePanel from './panels/ResourcePanel.svelte';
-	import ResourceHeaderBar from './panels/ResourceHeaderBar.svelte';
 	import PopulationPanel from './panels/PopulationPanel.svelte';
 	import ConstructionQueuePanel from './panels/ConstructionQueuePanel.svelte';
 	import NextActionSuggestion from './panels/NextActionSuggestion.svelte';
@@ -499,13 +498,11 @@
 	{#if panel.id === 'alerts'}
 		<AlertsPanel {settlementId} alerts={realAlerts} />
 	{:else if panel.id === 'resource-header'}
-		<ResourceHeaderBar {settlementId} resources={realResources} />
+		<ResourcePanel {settlementId} settlementName={settlement?.name} resources={realResources} />
 	{:else if panel.id === 'settlement-info'}
 		{#if settlement}
 			<SettlementInfoPanel {settlementId} {settlement} />
 		{/if}
-	{:else if panel.id === 'resources'}
-		<ResourcePanel {settlementId} resources={realResources} />
 	{:else if panel.id === 'population'}
 		<PopulationPanel {settlementId} population={realPopulation} />
 	{:else if panel.id === 'construction'}

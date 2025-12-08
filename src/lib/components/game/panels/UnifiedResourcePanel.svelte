@@ -25,7 +25,7 @@
 
 	interface Props {
 		settlementId: string;
-		settlementName: string;
+		settlementName?: string;
 		resources?: Resource[];
 		tiles?: TileWithRelations[];
 		mode?: 'compact' | 'expanded' | 'full'; // Default: compact
@@ -95,6 +95,7 @@
 
 	// Tile production calculation
 	function getProducingTiles(): TileWithRelations[] {
+		if (!tiles) return [];
 		return tiles.filter(
 			(t) =>
 				t.foodQuality > 0 ||
@@ -121,7 +122,6 @@
 	class="bg-surface-50 dark:bg-surface-900 rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden"
 	data-testid="unified-resource-panel"
 	aria-labelledby="resources-heading"
-	role="region"
 >
 	<!-- Header (always visible in all modes) -->
 	<header

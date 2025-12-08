@@ -40,7 +40,7 @@
 
 	interface Props {
 		extractorsByTile: Record<string, Extractor[]>;
-		tiles: Map<string, Tile> | Record<string, Tile>; // Tile data for context
+		tiles?: Map<string, Tile> | Record<string, Tile>; // Tile data for context (optional)
 		totalSlotsPerTile?: number; // Default to 5 if not provided
 		settlementId: string;
 		onUpgrade?: (extractorId: string) => void;
@@ -68,6 +68,7 @@
 
 	// Utility to get tile data (handles both Map and Record)
 	function getTile(tileId: string): Tile | undefined {
+		if (!tiles) return undefined;
 		if (tiles instanceof Map) {
 			return tiles.get(tileId);
 		}
