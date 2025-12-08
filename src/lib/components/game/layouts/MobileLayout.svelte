@@ -3,6 +3,8 @@
 	 * Mobile Layout Component
 	 *
 	 * Single-column stacked layout for mobile viewports (<768px)
+	 * Panels can override their order with `mobileColumn` property (stacked vertically)
+	 *
 	 * Features:
 	 * - Vertical scrolling
 	 * - Collapsible panels to save space
@@ -21,9 +23,12 @@
 
 	let { panels, renderPanel }: Props = $props();
 
-	// Sort all visible panels by position
+	// Sort all visible panels by order (mobile ignores column, just stacks vertically)
+	// If mobileColumn is 'hidden', panel is hidden on mobile
 	const sortedPanels = $derived(
-		panels.filter((p) => p.visible).toSorted((a, b) => a.position - b.position)
+		panels
+			.filter((p) => p.visible && p.mobileColumn !== 'hidden')
+			.toSorted((a, b) => a.order - b.order)
 	);
 
 	// Touch gesture handling for swipe-to-dismiss
@@ -69,7 +74,7 @@
 				class:overflow-hidden={panel.collapsed}
 				class:touch-pan-y={panel.id === 'alerts'}
 				data-panel-id={panel.id}
-				style="order: {panel.position};"
+				style="order: {panel.order};"
 				ontouchstart={(e) => handleTouchStart(e, panel.id)}
 				ontouchend={(e) => handleTouchEnd(e, panel.id)}
 			>

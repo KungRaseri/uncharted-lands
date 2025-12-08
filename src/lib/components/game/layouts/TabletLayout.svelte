@@ -3,8 +3,9 @@
 	 * Tablet Layout Component
 	 *
 	 * 2-column layout for tablet viewports (768px-1023px)
-	 * - Left column: Quick Actions, Resources, Population
-	 * - Right column: Construction, Structures, Alerts
+	 * Panels can override their column assignment with `tabletColumn` property
+	 * - Left column: Information and monitoring panels
+	 * - Right column: Action and management panels
 	 */
 
 	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout.svelte';
@@ -18,16 +19,28 @@
 
 	let { panels, renderPanel }: Props = $props();
 
-	// Group panels by position (even: left, odd: right)
+	// Group panels by column (with tablet override support)
+	// Tablet has only left/right, so header and center panels need column assignment
 	const leftPanels = $derived(
 		panels
-			.filter((p) => p.visible && p.position % 2 === 0)
-			.toSorted((a, b) => a.position - b.position)
+			.filter((p) => {
+				if (!p.visible) return false;
+				// Use tabletColumn override if specified, otherwise use desktop column
+				const column = p.tabletColumn || p.column;
+				return column === 'left' || column === 'header'; // Header goes to left by default
+			})
+			.toSorted((a, b) => a.order - b.order)
 	);
+
 	const rightPanels = $derived(
 		panels
-			.filter((p) => p.visible && p.position % 2 === 1)
-			.toSorted((a, b) => a.position - b.position)
+			.filter((p) => {
+				if (!p.visible) return false;
+				// Use tabletColumn override if specified, otherwise use desktop column
+				const column = p.tabletColumn || p.column;
+				return column === 'right' || column === 'center'; // Center goes to right by default
+			})
+			.toSorted((a, b) => a.order - b.order)
 	);
 </script>
 
@@ -44,7 +57,7 @@
 				class:max-h-12={panel.collapsed}
 				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				style="order: {panel.position};"
+				style="order: {panel.order};"
 			>
 				{@render renderPanel(panel)}
 			</div>
@@ -63,7 +76,7 @@
 				class:max-h-12={panel.collapsed}
 				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				style="order: {panel.position};"
+				style="order: {panel.order};"
 			>
 				{@render renderPanel(panel)}
 			</div>

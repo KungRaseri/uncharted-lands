@@ -4,10 +4,10 @@
 	 *
 	 * Grid-based 2-row layout for desktop viewports (≥1024px)
 	 * - Row 1 (Header): Full-width resource header bar
-	 * - Rows 2 (Body): 3-column grid
-	 *   - Left column: Settlement info, Population, Alerts
-	 *   - Center column: Tile Slots, Structure List, Production Overview
-	 *   - Right column: Construction Queue, Quick Actions
+	 * - Row 2 (Body): 3-column grid
+	 *   - Left column (300px): Settlement info, Population, Alerts
+	 *   - Center column (flexible): Tile Slots, Structure List, Production Overview
+	 *   - Right column (350px): Construction Queue, Quick Actions
 	 */
 
 	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout.svelte';
@@ -21,26 +21,21 @@
 
 	let { panels, renderPanel }: Props = $props();
 
-	// Group panels by position
-	// Position -1: Header bar (full width)
-	// Position 0-2: Left column
-	// Position 3-5: Center column
-	// Position 6+: Right column
+	// Group panels by column, sorted by order within each column
 	const headerPanels = $derived(
-		panels.filter((p) => p.visible && p.position === -1).toSorted((a, b) => a.position - b.position)
+		panels.filter((p) => p.visible && p.column === 'header').toSorted((a, b) => a.order - b.order)
 	);
+
 	const leftPanels = $derived(
-		panels
-			.filter((p) => p.visible && p.position >= 0 && p.position <= 2)
-			.toSorted((a, b) => a.position - b.position)
+		panels.filter((p) => p.visible && p.column === 'left').toSorted((a, b) => a.order - b.order)
 	);
+
 	const centerPanels = $derived(
-		panels
-			.filter((p) => p.visible && p.position >= 3 && p.position <= 5)
-			.toSorted((a, b) => a.position - b.position)
+		panels.filter((p) => p.visible && p.column === 'center').toSorted((a, b) => a.order - b.order)
 	);
+
 	const rightPanels = $derived(
-		panels.filter((p) => p.visible && p.position >= 6).toSorted((a, b) => a.position - b.position)
+		panels.filter((p) => p.visible && p.column === 'right').toSorted((a, b) => a.order - b.order)
 	);
 </script>
 
@@ -62,7 +57,7 @@
 				class:max-h-12={panel.collapsed}
 				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				style="order: {panel.position};"
+				style="order: {panel.order};"
 			>
 				{@render renderPanel(panel)}
 			</div>
@@ -82,7 +77,7 @@
 				class:max-h-12={panel.collapsed}
 				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				style="order: {panel.position};"
+				style="order: {panel.order};"
 			>
 				{@render renderPanel(panel)}
 			</div>
@@ -102,7 +97,7 @@
 				class:max-h-12={panel.collapsed}
 				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				style="order: {panel.position};"
+				style="order: {panel.order};"
 			>
 				{@render renderPanel(panel)}
 			</div>
@@ -122,7 +117,7 @@
 				class:max-h-12={panel.collapsed}
 				class:overflow-hidden={panel.collapsed}
 				data-panel-id={panel.id}
-				style="order: {panel.position};"
+				style="order: {panel.order};"
 			>
 				{@render renderPanel(panel)}
 			</div>
