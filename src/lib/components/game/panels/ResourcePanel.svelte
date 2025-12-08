@@ -1,13 +1,12 @@
 <!--
-	Unified Resource Panel Component
+	Resource Panel Component
 	
-	Combines ResourceHeaderBar, ResourcePanel, and ResourceProductionPanel into a single,
-	compact, and flexible component with collapsible sections.
+	Displays settlement resources in two modes:
+	- Compact (default): Single horizontal row with all resources
+	- Expanded: Grid layout with detailed cards for each resource
 	
-	Modes:
-	- Compact (header): Horizontal icons + values + mini progress bars
-	- Expanded: Add production/consumption rates, net rates
-	- Full: Add per-tile production details
+	Toggle between modes with "Show/Hide Details" button.
+	Hover tooltips provide additional production/consumption breakdown.
 	
 	WCAG 2.1 AA Compliant
 -->
@@ -28,20 +27,15 @@
 		settlementName?: string;
 		resources?: Resource[];
 		tiles?: TileWithRelations[];
-		mode?: 'compact' | 'expanded' | 'full'; // Default: compact
-		showTileDetails?: boolean; // Toggle for tile production details
-		onHarvestAll?: () => void;
 	}
 
-	let {
-		settlementId,
-		settlementName,
-		resources = [],
-		tiles = [],
-		mode = 'compact',
-		showTileDetails = $bindable(false),
-		onHarvestAll
-	}: Props = $props();
+	let { settlementId, settlementName = 'Settlement', resources = [], tiles = [] }: Props = $props();
+
+	// Local state for toggling between compact and expanded
+	let isExpanded = $state(false);
+
+	// Tooltip state
+	let activeTooltip = $state<string | null>(null);
 
 	// Resource configuration
 	const resourceConfig = {
@@ -51,6 +45,11 @@
 		stone: { label: 'Stone', icon: '🪨', color: 'var(--surface-600)' },
 		ore: { label: 'Ore', icon: '⛏️', color: 'var(--error-600)' }
 	};
+
+	// Toggle expand/collapse
+	function toggleExpanded() {
+		isExpanded = !isExpanded;
+	}
 
 	// Helper functions
 	function getPercentage(current: number, capacity: number): number {
@@ -77,13 +76,6 @@
 		return resource.productionRate - resource.consumptionRate;
 	}
 
-	function getResourceLabel(resource: Resource): string {
-		const config = resourceConfig[resource.type];
-		const percentage = getPercentage(resource.current, resource.capacity);
-		const netRate = getNetRate(resource);
-		return `${config.label}: ${formatNumber(resource.current)} of ${formatNumber(resource.capacity)}, ${percentage.toFixed(0)}% full, net ${formatRate(netRate)}`;
-	}
-
 	function getWarningClasses(warningLevel: 'critical' | 'warning' | 'normal'): string {
 		if (warningLevel === 'critical') {
 			return 'border-error-500 dark:border-error-400';
@@ -92,22 +84,6 @@
 		}
 		return 'border-surface-300 dark:border-surface-700';
 	}
-
-	// Tile production calculation
-	function getProducingTiles(): TileWithRelations[] {
-		if (!tiles) return [];
-		return tiles.filter(
-			(t) =>
-				t.foodQuality > 0 ||
-				t.waterQuality > 0 ||
-				t.woodQuality > 0 ||
-				t.stoneQuality > 0 ||
-				t.oreQuality > 0
-		);
-	}
-
-	let producingTiles = $derived(getProducingTiles());
-	let activeTilesCount = $derived(producingTiles.length);
 
 	// Keyboard handler
 	function handleKeydown(event: KeyboardEvent, callback: () => void) {
@@ -119,15 +95,15 @@
 </script>
 
 <section
-	class="bg-surface-50 dark:bg-surface-900 rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden"
-	data-testid="unified-resource-panel"
+	class="bg-surface-50 dark:bg-surface-900 rounded-lg border border-surface-200 dark:border-surface-700"
+	data-testid="resource-panel"
 	aria-labelledby="resources-heading"
 >
-	<!-- Header (always visible in all modes) -->
+	<!-- Header -->
 	<header
-		class="bg-surface-100 dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 px-4 py-3"
+		class="bg-surface-100 dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 px-2"
 	>
-		<div class="flex items-center justify-between mb-3">
+		<div class="flex items-center justify-between">
 			<h2
 				id="resources-heading"
 				class="text-sm font-semibold text-surface-900 dark:text-surface-100 m-0"
@@ -135,31 +111,30 @@
 				Resources
 			</h2>
 
-			<!-- Mode toggle buttons -->
-			<div class="flex items-center gap-2">
-				{#if mode !== 'compact'}
-					<button
-						type="button"
-						class="btn btn-sm variant-ghost-surface text-xs"
-						onclick={() => (showTileDetails = !showTileDetails)}
-						onkeydown={(e) => handleKeydown(e, () => (showTileDetails = !showTileDetails))}
-						aria-label="Toggle tile production details"
-						aria-expanded={showTileDetails}
-					>
-						{showTileDetails ? '📊 Hide Details' : '📊 Show Details'}
-					</button>
-				{/if}
-			</div>
+			<!-- Toggle Button (always visible) -->
+			<button
+				type="button"
+				class="btn btn-sm variant-ghost-surface text-xs"
+				onclick={toggleExpanded}
+				onkeydown={(e) => handleKeydown(e, toggleExpanded)}
+				aria-label="{isExpanded ? 'Hide' : 'Show'} resource details"
+				aria-expanded={isExpanded}
+			>
+				{isExpanded ? '📊 Hide Details' : '📊 Show Details'}
+			</button>
 		</div>
+	</header>
 
-		<!-- Resource Grid (Compact Horizontal View) -->
-		{#if resources.length === 0}
-			<div class="text-center py-2" role="status">
-				<p class="text-xs text-surface-600 dark:text-surface-400">No resource data</p>
-			</div>
-		{:else}
+	<!-- Resource Display -->
+	{#if resources.length === 0}
+		<div class="text-center py-2" role="status">
+			<p class="text-xs text-surface-600 dark:text-surface-400">No resource data</p>
+		</div>
+	{:else if !isExpanded}
+		<!-- COMPACT MODE: Single horizontal row -->
+		<div class="px-4 py-3">
 			<div
-				class="grid grid-cols-5 gap-3"
+				class="flex items-center gap-4"
 				role="list"
 				aria-label="Resource levels for {settlementName}"
 			>
@@ -170,11 +145,140 @@
 					{@const netRate = getNetRate(resource)}
 
 					<div
-						class="bg-surface-50 dark:bg-surface-900 rounded border {getWarningClasses(
-							warningLevel
-						)} p-2 flex flex-col gap-1.5"
+						class="flex items-center gap-2 flex-1 relative group"
 						data-resource={resource.type}
 						role="listitem"
+						onmouseenter={() => (activeTooltip = resource.type)}
+						onmouseleave={() => (activeTooltip = null)}
+					>
+						<!-- Icon -->
+						<span class="text-xl leading-none" aria-hidden="true">{config.icon}</span>
+
+						<!-- Name + Values -->
+						<div class="flex flex-col gap-0.5 min-w-0">
+							<span class="text-xs font-semibold text-surface-900 dark:text-surface-100 truncate">
+								{config.label}
+							</span>
+							<div class="flex items-baseline gap-1">
+								<span class="text-xs font-bold text-surface-800 dark:text-surface-200 tabular-nums">
+									{formatNumber(resource.current)}
+								</span>
+								<span class="text-[10px] text-surface-500 dark:text-surface-500">/</span>
+								<span class="text-[10px] text-surface-600 dark:text-surface-400 tabular-nums">
+									{formatNumber(resource.capacity)}
+								</span>
+							</div>
+						</div>
+
+						<!-- Net Rate -->
+						<div class="flex flex-col items-end gap-0.5">
+							<span
+								class="text-xs font-semibold tabular-nums {netRate > 0
+									? 'text-success-600 dark:text-success-400'
+									: netRate < 0
+										? 'text-error-600 dark:text-error-400'
+										: 'text-surface-700 dark:text-surface-300'}"
+							>
+								{formatRate(netRate)}
+							</span>
+							{#if warningLevel === 'critical'}
+								<span class="text-[10px] font-bold text-error-700 dark:text-error-300">
+									⚠️ Critical
+								</span>
+							{/if}
+						</div>
+
+						<!-- Tooltip -->
+						{#if activeTooltip === resource.type}
+							<div
+								class="absolute z-50 bottom-full left-0 mb-2 w-64 bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3"
+								role="tooltip"
+							>
+								<div class="flex items-center gap-2 mb-2">
+									<span class="text-2xl" aria-hidden="true">{config.icon}</span>
+									<h3 class="text-sm font-semibold text-surface-100 m-0">{config.label}</h3>
+								</div>
+								<!-- Storage Info -->
+								<div class="mb-3">
+									<div class="flex justify-between text-xs mb-1">
+										<span class="text-surface-300">Storage:</span>
+										<span class="text-surface-100 font-semibold">
+											{formatNumber(resource.current)} / {formatNumber(resource.capacity)}
+										</span>
+									</div>
+									<div
+										class="w-full h-2 bg-surface-700 rounded-full overflow-hidden"
+										role="meter"
+										aria-valuenow={percentage}
+										aria-valuemin="0"
+										aria-valuemax="100"
+										aria-label="{config.label} storage at {percentage.toFixed(0)}%"
+									>
+										<div
+											class="h-full rounded-full"
+											style:width="{percentage}%"
+											style:background-color={config.color}
+										></div>
+									</div>
+								</div>
+
+								<!-- Production Breakdown -->
+								<div class="space-y-1.5 text-xs">
+									<div class="flex justify-between">
+										<span class="text-surface-400">Production:</span>
+										<span class="text-success-400 font-semibold tabular-nums">
+											{formatRate(resource.productionRate)}
+										</span>
+									</div>
+									<div class="flex justify-between">
+										<span class="text-surface-400">Consumption:</span>
+										<span class="text-error-400 font-semibold tabular-nums">
+											{formatRate(-resource.consumptionRate)}
+										</span>
+									</div>
+									<div
+										class="flex justify-between pt-1.5 border-t border-surface-700 dark:border-surface-600"
+									>
+										<span class="text-surface-300 font-semibold">Net:</span>
+										<span
+											class="font-bold tabular-nums {netRate > 0
+												? 'text-success-400'
+												: netRate < 0
+													? 'text-error-400'
+													: 'text-surface-300'}"
+										>
+											{formatRate(netRate)}
+										</span>
+									</div>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</div>
+		</div>
+	{:else}
+		<!-- EXPANDED MODE: Grid layout with detailed cards -->
+		<div class="p-4">
+			<div
+				class="grid grid-cols-5 gap-3"
+				role="list"
+				aria-label="Resource details for {settlementName}"
+			>
+				{#each resources as resource (resource.type)}
+					{@const config = resourceConfig[resource.type]}
+					{@const percentage = getPercentage(resource.current, resource.capacity)}
+					{@const warningLevel = getWarningLevel(percentage)}
+					{@const netRate = getNetRate(resource)}
+
+					<div
+						class="bg-surface-50 dark:bg-surface-900 rounded border {getWarningClasses(
+							warningLevel
+						)} p-2 flex flex-col gap-1.5 relative group"
+						data-resource={resource.type}
+						role="listitem"
+						onmouseenter={() => (activeTooltip = resource.type)}
+						onmouseleave={() => (activeTooltip = null)}
 					>
 						<!-- Icon + Label -->
 						<div class="flex items-center gap-1.5">
@@ -185,10 +289,7 @@
 						</div>
 
 						<!-- Current/Capacity -->
-						<div
-							class="text-xs font-semibold text-surface-800 dark:text-surface-200 tabular-nums"
-							aria-label={getResourceLabel(resource)}
-						>
+						<div class="text-xs font-semibold text-surface-800 dark:text-surface-200 tabular-nums">
 							<span>{formatNumber(resource.current)}</span>
 							<span class="text-surface-400 dark:text-surface-600 mx-0.5">/</span>
 							<span class="text-surface-600 dark:text-surface-400"
@@ -214,23 +315,38 @@
 							></div>
 						</div>
 
-						<!-- Net Rate (compact mode shows only this) -->
-						{#if mode === 'compact'}
-							<div class="flex items-center justify-between text-[10px]">
-								<span class="text-surface-600 dark:text-surface-400 font-medium">Net:</span>
-								<span
-									class="font-semibold tabular-nums {netRate > 0
-										? 'text-success-600 dark:text-success-400'
-										: netRate < 0
-											? 'text-error-600 dark:text-error-400'
-											: 'text-surface-700 dark:text-surface-300'}"
-								>
-									{formatRate(netRate)}
+						<!-- Production & Consumption Rates -->
+						<div class="space-y-0.5 text-[10px]">
+							<div class="flex items-center justify-between">
+								<span class="text-surface-600 dark:text-surface-400 font-medium">Production:</span>
+								<span class="text-success-600 dark:text-success-400 font-semibold tabular-nums">
+									{formatRate(resource.productionRate)}
 								</span>
 							</div>
-						{/if}
+							<div class="flex items-center justify-between">
+								<span class="text-surface-600 dark:text-surface-400 font-medium">Consumption:</span>
+								<span class="text-error-600 dark:text-error-400 font-semibold tabular-nums">
+									{formatRate(-resource.consumptionRate)}
+								</span>
+							</div>
+						</div>
 
-						<!-- Critical warning (all modes) -->
+						<!-- Net Rate -->
+						<div
+							class="flex items-center justify-between text-[10px] pt-1 border-t border-surface-200 dark:border-surface-700"
+						>
+							<span class="text-surface-700 dark:text-surface-300 font-semibold">Net:</span>
+							<span
+								class="font-bold tabular-nums {netRate > 0
+									? 'text-success-600 dark:text-success-400'
+									: netRate < 0
+										? 'text-error-600 dark:text-error-400'
+										: 'text-surface-700 dark:text-surface-300'}"
+							>
+								{formatRate(netRate)}
+							</span>
+						</div>
+						<!-- Critical warning -->
 						{#if warningLevel === 'critical'}
 							<div
 								class="text-[10px] font-semibold text-error-700 dark:text-error-300 text-center"
@@ -240,154 +356,76 @@
 								⚠️ Critical
 							</div>
 						{/if}
-					</div>
-				{/each}
-			</div>
-		{/if}
-	</header>
 
-	<!-- Expanded Details (mode: expanded or full) -->
-	{#if mode !== 'compact' && resources.length > 0}
-		<div class="p-4 space-y-4">
-			<!-- Production/Consumption Breakdown -->
-			<div class="space-y-3">
-				<h3 class="text-sm font-semibold text-surface-900 dark:text-surface-100">
-					Production Breakdown
-				</h3>
-				{#each resources as resource (resource.type)}
-					{@const config = resourceConfig[resource.type]}
-					{@const netRate = getNetRate(resource)}
-
-					<div class="bg-surface-100 dark:bg-surface-800 rounded p-3 space-y-2">
-						<div class="flex items-center gap-2 mb-2">
-							<span class="text-xl" aria-hidden="true">{config.icon}</span>
-							<h4 class="text-sm font-semibold text-surface-900 dark:text-surface-100 m-0">
-								{config.label}
-							</h4>
-						</div>
-
-						<div class="grid grid-cols-3 gap-2 text-xs">
-							<div class="flex flex-col gap-0.5">
-								<span class="text-surface-600 dark:text-surface-400 font-medium">Production:</span>
-								<span class="font-semibold text-success-600 dark:text-success-400 tabular-nums">
-									{formatRate(resource.productionRate)}
-								</span>
-							</div>
-
-							<div class="flex flex-col gap-0.5">
-								<span class="text-surface-600 dark:text-surface-400 font-medium">Consumption:</span>
-								<span class="font-semibold text-error-600 dark:text-error-400 tabular-nums">
-									{formatRate(-resource.consumptionRate)}
-								</span>
-							</div>
-
+						<!-- Tooltip (same as compact mode) -->
+						{#if activeTooltip === resource.type}
 							<div
-								class="flex flex-col gap-0.5 border-l border-surface-300 dark:border-surface-600 pl-2"
+								class="absolute z-50 bottom-full left-0 mb-2 w-64 bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3"
+								role="tooltip"
 							>
-								<span class="text-surface-600 dark:text-surface-400 font-medium">Net:</span>
-								<span
-									class="font-semibold tabular-nums {netRate > 0
-										? 'text-success-600 dark:text-success-400'
-										: netRate < 0
-											? 'text-error-600 dark:text-error-400'
-											: 'text-surface-700 dark:text-surface-300'}"
-								>
-									{formatRate(netRate)}
-								</span>
-							</div>
-						</div>
-					</div>
-				{/each}
-			</div>
+								<div class="flex items-center gap-2 mb-2">
+									<span class="text-2xl" aria-hidden="true">{config.icon}</span>
+									<h3 class="text-sm font-semibold text-surface-100 m-0">{config.label}</h3>
+								</div>
 
-			<!-- Tile Production Details (mode: full or toggled in expanded) -->
-			{#if (mode === 'full' || showTileDetails) && tiles.length > 0}
-				<div class="space-y-3 border-t border-surface-200 dark:border-surface-700 pt-4">
-					<div class="flex items-center justify-between">
-						<h3 class="text-sm font-semibold text-surface-900 dark:text-surface-100">
-							Tile Production ({activeTilesCount} active)
-						</h3>
-						{#if onHarvestAll && activeTilesCount > 0}
-							<button
-								type="button"
-								class="btn btn-sm variant-filled-primary"
-								onclick={onHarvestAll}
-								onkeydown={(e) => handleKeydown(e, () => onHarvestAll?.())}
-							>
-								🌾 Harvest All
-							</button>
-						{/if}
-					</div>
-
-					{#if producingTiles.length > 0}
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-							{#each producingTiles as tile (tile.id)}
-								<div
-									class="bg-surface-100 dark:bg-surface-800 rounded p-3 border border-surface-200 dark:border-surface-700"
-								>
-									<div class="flex justify-between items-start mb-2">
-										<div>
-											<h4 class="text-xs font-semibold text-surface-900 dark:text-surface-100">
-												Tile ({tile.x}, {tile.y})
-											</h4>
-											<p class="text-[10px] text-surface-600 dark:text-surface-400">
-												{tile.biome}
-											</p>
-										</div>
+								<!-- Storage Info -->
+								<div class="mb-3">
+									<div class="flex justify-between text-xs mb-1">
+										<span class="text-surface-300">Storage:</span>
+										<span class="text-surface-100 font-semibold">
+											{formatNumber(resource.current)} / {formatNumber(resource.capacity)}
+										</span>
 									</div>
-
-									<div class="space-y-1.5">
-										{#if tile.foodQuality > 0}
-											<div class="flex items-center justify-between text-xs">
-												<span class="flex items-center gap-1">
-													🌾 <span>Food</span>
-												</span>
-												<span class="font-medium">{tile.foodQuality.toFixed(1)}%</span>
-											</div>
-										{/if}
-										{#if tile.waterQuality > 0}
-											<div class="flex items-center justify-between text-xs">
-												<span class="flex items-center gap-1">
-													💧 <span>Water</span>
-												</span>
-												<span class="font-medium">{tile.waterQuality.toFixed(1)}%</span>
-											</div>
-										{/if}
-										{#if tile.woodQuality > 0}
-											<div class="flex items-center justify-between text-xs">
-												<span class="flex items-center gap-1">
-													🪵 <span>Wood</span>
-												</span>
-												<span class="font-medium">{tile.woodQuality.toFixed(1)}%</span>
-											</div>
-										{/if}
-										{#if tile.stoneQuality > 0}
-											<div class="flex items-center justify-between text-xs">
-												<span class="flex items-center gap-1">
-													🪨 <span>Stone</span>
-												</span>
-												<span class="font-medium">{tile.stoneQuality.toFixed(1)}%</span>
-											</div>
-										{/if}
-										{#if tile.oreQuality > 0}
-											<div class="flex items-center justify-between text-xs">
-												<span class="flex items-center gap-1">
-													⛏️ <span>Ore</span>
-												</span>
-												<span class="font-medium">{tile.oreQuality.toFixed(1)}%</span>
-											</div>
-										{/if}
+									<div
+										class="w-full h-2 bg-surface-700 rounded-full overflow-hidden"
+										role="meter"
+										aria-valuenow={percentage}
+										aria-valuemin="0"
+										aria-valuemax="100"
+										aria-label="{config.label} storage at {percentage.toFixed(0)}%"
+									>
+										<div
+											class="h-full rounded-full"
+											style:width="{percentage}%"
+											style:background-color={config.color}
+										></div>
 									</div>
 								</div>
-							{/each}
-						</div>
-					{:else}
-						<p class="text-xs text-surface-600 dark:text-surface-400 text-center py-4">
-							No active tiles producing resources
-						</p>
-					{/if}
-				</div>
-			{/if}
+
+								<!-- Production Breakdown -->
+								<div class="space-y-1.5 text-xs">
+									<div class="flex justify-between">
+										<span class="text-surface-400">Production:</span>
+										<span class="text-success-400 font-semibold tabular-nums">
+											{formatRate(resource.productionRate)}
+										</span>
+									</div>
+									<div class="flex justify-between">
+										<span class="text-surface-400">Consumption:</span>
+										<span class="text-error-400 font-semibold tabular-nums">
+											{formatRate(-resource.consumptionRate)}
+										</span>
+									</div>
+									<div
+										class="flex justify-between pt-1.5 border-t border-surface-700 dark:border-surface-600"
+									>
+										<span class="text-surface-300 font-semibold">Net:</span>
+										<span
+											class="font-bold tabular-nums {netRate > 0
+												? 'text-success-400'
+												: netRate < 0
+													? 'text-error-400'
+													: 'text-surface-300'}"
+										>
+											{formatRate(netRate)}
+										</span>
+									</div>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</div>
 		</div>
 	{/if}
 </section>
