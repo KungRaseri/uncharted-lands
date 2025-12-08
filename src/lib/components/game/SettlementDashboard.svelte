@@ -35,6 +35,8 @@
 	import { alertsStore } from '$lib/stores/game/alerts.svelte';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
+	import { generateSuggestions } from '$lib/utils/settlement-suggestions';
+	import { calculateProduction } from '$lib/utils/production-calculator';
 
 	// ✅ NEW: TypeScript interface for settlement structures
 	interface SettlementStructure {
@@ -188,55 +190,21 @@
 		];
 	});
 
-	// Suggestions mock data
-	const mockSuggestions = [
-		{
-			id: '1',
-			priority: 'critical' as const,
-			category: 'resources' as const,
-			title: 'Increase food production',
-			reasoning:
-				'Food consumption (25/hr) exceeds production (15/hr). You will run out of food in approximately 2 hours.',
-			actionLabel: 'Build Farm',
-			actionHref: '/game/build/farm',
-			estimatedTime: '10 minutes',
-			impact: 'High'
-		},
-		{
-			id: '2',
-			priority: 'high' as const,
-			category: 'population' as const,
-			title: 'Build more housing',
-			reasoning:
-				'Population is at 82% capacity (245/300). Immigration will stop soon without more housing.',
-			actionLabel: 'Build House',
-			actionHref: '/game/build/house',
-			estimatedTime: '5 minutes',
-			impact: 'Medium'
-		},
-		{
-			id: '3',
-			priority: 'medium' as const,
-			category: 'construction' as const,
-			title: 'Upgrade lumber mill',
-			reasoning: 'Upgrading lumber mill will increase wood production by 40%.',
-			actionLabel: 'Upgrade',
-			actionHref: '/game/upgrade/lumber-mill-1',
-			estimatedTime: '15 minutes',
-			impact: 'Medium'
-		},
-		{
-			id: '4',
-			priority: 'low' as const,
-			category: 'expansion' as const,
-			title: 'Scout nearby region',
-			reasoning: 'Unexplored tiles detected to the north. Scouting may reveal valuable resources.',
-			actionLabel: 'Send Scout',
-			actionHref: '/game/scout/north',
-			estimatedTime: '30 minutes',
-			impact: 'Low'
-		}
-	];
+	// ✅ REAL: Generate suggestions from real data
+	const realSuggestions = $derived.by(() => {
+		return generateSuggestions({
+			settlementId,
+			resources: resourcesStore.getResourcesState(settlementId),
+			population: realPopulation
+				? {
+						current: realPopulation.current,
+						capacity: realPopulation.capacity,
+						happiness: realPopulation.happiness
+					}
+				: undefined,
+			structures: settlementStructures
+		});
+	});
 
 	// ✅ NEW: Split structures into buildings and extractors
 	const buildings = $derived(settlementStructures.filter((s) => s.category === 'BUILDING'));
@@ -335,111 +303,35 @@
 		console.log('[Dashboard] Real structures loaded:', {
 			total: settlementStructures.length,
 			buildings: buildings.length,
-			extractors: extractors.length,
-			tilesWithExtractors: Object.keys(extractorsByTile).length
+			extractors: extractors.length
 		});
 	});
 
-	// Production overview mock data
-	const mockProduction = {
-		rates: {
-			food: 45,
-			water: 60,
-			wood: 30,
-			stone: 25,
-			ore: 15
-		},
-		extractors: [
-			{
-				id: '1',
-				type: 'FARM' as const,
-				name: 'Main Farm',
-				level: 2,
-				health: 85,
-				quality: 75,
-				production: 25,
-				location: { x: 2, y: 3 }
-			},
-			{
-				id: '6',
-				type: 'FARM' as const,
-				name: 'North Farm',
-				level: 1,
-				health: 100,
-				quality: 60,
-				production: 20,
-				location: { x: 3, y: 1 }
-			},
-			{
-				id: '7',
-				type: 'WELL' as const,
-				name: 'Central Well',
-				level: 2,
-				health: 95,
-				quality: 85,
-				production: 40,
-				location: { x: 5, y: 4 }
-			},
-			{
-				id: '8',
-				type: 'WELL' as const,
-				name: 'South Well',
-				level: 1,
-				health: 78,
-				quality: 70,
-				production: 20,
-				location: { x: 6, y: 8 }
-			},
-			{
-				id: '3',
-				type: 'LUMBER_MILL' as const,
-				name: 'Lumber Mill',
-				level: 3,
-				health: 92,
-				quality: 80,
-				production: 30,
-				location: { x: 1, y: 1 }
-			},
-			{
-				id: '9',
-				type: 'QUARRY' as const,
-				name: 'Stone Quarry',
-				level: 2,
-				health: 88,
-				quality: 65,
-				production: 25,
-				location: { x: 8, y: 2 }
-			},
-			{
-				id: '10',
-				type: 'MINE' as const,
-				name: 'Iron Mine',
-				level: 1,
-				health: 100,
-				quality: 55,
-				production: 15,
-				location: { x: 9, y: 5 }
-			}
-		]
-	};
+	// ✅ REAL: Calculate production from real structures and tiles
+	const realProduction = $derived.by(() => {
+		// Note: Tile data not currently available, quality modifiers won't be applied
+		return calculateProduction(settlementStructures, undefined);
+	});
 
-	// Settlement info mock data (reactive to population changes)
-	const mockSettlementInfo = $derived.by(() => {
-		// Return undefined if population data not available yet
-		if (!realPopulation) return undefined;
+	// ✅ REAL: Use settlement data from server
+	const realSettlementInfo = $derived.by(() => {
+		if (!realPopulation || !settlement) return undefined;
 
 		return {
 			name: settlementName,
-			level: 3,
-			type: 'VILLAGE' as const,
-			location: { x: 125, y: 89 },
+			level: 1, // TODO: Get from settlement tier when implemented
+			type: 'OUTPOST' as const, // TODO: Get from settlement type when implemented
+			location: {
+				x: settlement.Tile?.xCoord || 0,
+				y: settlement.Tile?.yCoord || 0
+			},
 			population: {
 				current: realPopulation.current,
 				capacity: realPopulation.capacity
 			},
 			happiness: realPopulation.happiness,
-			founded: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // 45 days ago
-			resilience: 35
+			founded: new Date(settlement.createdAt),
+			resilience: settlement.resilience || 0
 		};
 	});
 
@@ -510,10 +402,10 @@
 	{:else if panel.id === 'suggestions'}
 		<NextActionSuggestion
 			{settlementId}
-			suggestions={mockSuggestions}
+			suggestions={realSuggestions}
 			onDismiss={(id) => {
 				console.log('Dismissed suggestion:', id);
-				announcement = `Dismissed suggestion: ${mockSuggestions.find((s) => s.id === id)?.title}`;
+				announcement = `Dismissed suggestion: ${realSuggestions.find((s) => s.id === id)?.title}`;
 			}}
 			onRefresh={() => {
 				console.log('Refreshing suggestions');
@@ -544,7 +436,7 @@
 			</div>
 		{/if}
 	{:else if panel.id === 'production-overview'}
-		<ProductionOverviewPanel {settlementId} production={mockProduction} />
+		<ProductionOverviewPanel {settlementId} production={realProduction} />
 	{:else}
 		<!-- Fallback for unmapped panels -->
 		<div
