@@ -47,14 +47,25 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 		// Continue without structure metadata - component can show error
 	}
 
+	// ✅ NEW: Fetch settlement structures
+	const structuresResponse = await fetch(`${API_URL}/structures/by-settlement/${params.id}`, {
+		headers: {
+			Cookie: `session=${sessionToken}`
+		}
+	});
+
+	const settlementStructures = structuresResponse.ok ? await structuresResponse.json() : [];
+
 	logger.debug('[SETTLEMENT DETAIL] Settlement loaded', {
 		settlementId: settlement.id,
-		name: settlement.name
+		name: settlement.name,
+		structuresCount: settlementStructures.length
 	});
 
 	return {
 		settlement,
 		structures,
+		settlementStructures, // ✅ NEW: Add to return object
 		lastUpdate: new Date().toISOString()
 	};
 }) satisfies PageServerLoad;

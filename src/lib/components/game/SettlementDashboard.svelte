@@ -29,16 +29,42 @@
 	import ConstructionQueuePanel from './panels/ConstructionQueuePanel.svelte';
 	import NextActionSuggestion from './panels/NextActionSuggestion.svelte';
 	import StructureGridPanel from './panels/StructureGridPanel.svelte';
+	import BuildingsListPanel from './panels/BuildingsListPanel.svelte';
 	import ProductionOverviewPanel from './panels/ProductionOverviewPanel.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
+	import { API_URL } from '$lib/config';
 	import { alertsStore } from '$lib/stores/game/alerts.svelte';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
+
+	// ✅ NEW: TypeScript interface for settlement structures
+	interface SettlementStructure {
+		id: string;
+		structureId: string;
+		settlementId: string;
+		tileId: string | null;
+		slotPosition: number | null;
+		level: number;
+		health: number;
+		name: string;
+		description: string;
+		category: string;
+		buildingType: string | null;
+		extractorType: string | null;
+		maxLevel: number;
+		modifiers: Array<{
+			id: string;
+			name: string;
+			description: string;
+			value: number;
+		}>;
+	}
 
 	interface Props {
 		settlementId: string;
 		settlementName: string;
 		onOpenBuildMenu?: () => void; // Handler to open build menu
+		settlementStructures?: SettlementStructure[]; // ✅ NEW: Optional for backward compatibility
 		settlement?: {
 			storage?: {
 				food: number;
@@ -57,7 +83,12 @@
 		};
 	}
 
-	let { settlementId, settlementName, onOpenBuildMenu }: Props = $props();
+	let {
+		settlementId,
+		settlementName,
+		onOpenBuildMenu,
+		settlementStructures = []
+	}: Props = $props();
 
 	// Settings modal state
 	let settingsOpen = $state(false);
@@ -208,49 +239,107 @@
 		}
 	];
 
-	// Structures mock data for grid
-	const mockStructures = [
-		{
-			id: '1',
-			type: 'FARM' as const,
-			position: { x: 2, y: 3 },
-			name: 'Main Farm',
-			level: 2,
-			health: 85
-		},
-		{
-			id: '2',
-			type: 'WATCHTOWER' as const,
-			position: { x: 5, y: 5 },
-			name: 'Guard Tower',
-			level: 1,
-			health: 100
-		},
-		{
-			id: '3',
-			type: 'LUMBER_MILL' as const,
-			position: { x: 1, y: 1 },
-			name: 'Lumber Mill',
-			level: 3,
-			health: 92
-		},
-		{
-			id: '4',
-			type: 'HOUSE' as const,
-			position: { x: 4, y: 2 },
-			name: 'Residence 1',
-			level: 1,
-			health: 78
-		},
-		{
-			id: '5',
-			type: 'WAREHOUSE' as const,
-			position: { x: 7, y: 4 },
-			name: 'Main Storage',
-			level: 2,
-			health: 95
+	// ✅ NEW: Split structures into buildings and extractors
+	const buildings = $derived(settlementStructures.filter((s) => s.category === 'BUILDING'));
+
+	const extractors = $derived(settlementStructures.filter((s) => s.category === 'EXTRACTOR'));
+
+	// ✅ NEW: Group extractors by tile for grid display
+	const extractorsByTile = $derived(
+		extractors.reduce(
+			(acc, extractor) => {
+				if (!extractor.tileId) return acc;
+				if (!acc[extractor.tileId]) {
+					acc[extractor.tileId] = [];
+				}
+				acc[extractor.tileId].push(extractor);
+				return acc;
+			},
+			{} as Record<string, SettlementStructure[]>
+		)
+	);
+
+	// ✅ NEW: Action handlers for buildings
+	async function handleUpgradeBuilding(buildingId: string) {
+		try {
+			const response = await fetch(`${API_URL}/structures/${buildingId}/upgrade`, {
+				method: 'POST',
+				credentials: 'include'
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('[Dashboard] Failed to upgrade building:', error);
+				// TODO: Add toast notification system
+				alert(error.error || 'Failed to upgrade building');
+				return;
+			}
+
+			console.log('[Dashboard] Building upgraded successfully');
+			// TODO: Add toast notification system
+		} catch (error) {
+			console.error('[Dashboard] Failed to upgrade building:', error);
+			alert('Network error - could not upgrade building');
 		}
-	];
+	}
+
+	async function handleRepairBuilding(buildingId: string) {
+		try {
+			const response = await fetch(`${API_URL}/structures/${buildingId}/repair`, {
+				method: 'POST',
+				credentials: 'include'
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('[Dashboard] Failed to repair building:', error);
+				alert(error.error || 'Failed to repair building');
+				return;
+			}
+
+			console.log('[Dashboard] Building repaired successfully');
+		} catch (error) {
+			console.error('[Dashboard] Failed to repair building:', error);
+			alert('Network error - could not repair building');
+		}
+	}
+
+	async function handleDemolishBuilding(buildingId: string) {
+		if (
+			!confirm('Are you sure you want to demolish this building? This action cannot be undone.')
+		) {
+			return;
+		}
+
+		try {
+			const response = await fetch(`${API_URL}/structures/${buildingId}`, {
+				method: 'DELETE',
+				credentials: 'include'
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('[Dashboard] Failed to demolish building:', error);
+				alert(error.error || 'Failed to demolish building');
+				return;
+			}
+
+			console.log('[Dashboard] Building demolished successfully');
+		} catch (error) {
+			console.error('[Dashboard] Failed to demolish building:', error);
+			alert('Network error - could not demolish building');
+		}
+	}
+
+	// ✅ NEW: Debug logging
+	$effect(() => {
+		console.log('[Dashboard] Real structures loaded:', {
+			total: settlementStructures.length,
+			buildings: buildings.length,
+			extractors: extractors.length,
+			tilesWithExtractors: Object.keys(extractorsByTile).length
+		});
+	});
 
 	// Production overview mock data
 	const mockProduction = {
@@ -440,19 +529,34 @@
 			}}
 		/>
 	{:else if panel.id === 'structures'}
-		<StructureGridPanel
+		<!-- Phase 2: Buildings list view -->
+		<BuildingsListPanel
+			{buildings}
 			{settlementId}
-			gridSize={10}
-			structures={mockStructures}
-			onCellClick={(cell) => {
-				console.log('Cell clicked:', cell);
-				announcement = `Selected cell at position ${cell.x}, ${cell.y}`;
-			}}
-			onStructureSelect={(structure) => {
-				console.log('Structure selected:', structure);
-				announcement = `Selected ${structure.name}`;
-			}}
+			onUpgrade={handleUpgradeBuilding}
+			onRepair={handleRepairBuilding}
+			onDemolish={handleDemolishBuilding}
 		/>
+
+		<!-- TODO Phase 3: Replace this with ExtractorsGridPanel -->
+		<!-- For now, showing extractors with old StructureGridPanel -->
+		{#if extractors.length > 0}
+			<div class="mt-4">
+				<StructureGridPanel
+					{settlementId}
+					gridSize={10}
+					structures={extractors}
+					onCellClick={(cell) => {
+						console.log('Cell clicked:', cell);
+						announcement = `Selected cell at position ${cell.x}, ${cell.y}`;
+					}}
+					onStructureSelect={(structure) => {
+						console.log('Structure selected:', structure);
+						announcement = `Selected ${structure.name}`;
+					}}
+				/>
+			</div>
+		{/if}
 	{:else if panel.id === 'production-overview'}
 		<ProductionOverviewPanel {settlementId} production={mockProduction} />
 	{:else}
@@ -496,3 +600,22 @@
 
 <!-- Settings Modal -->
 <SettingsModal bind:open={settingsOpen} onClose={() => (settingsOpen = false)} />
+
+<!-- Debug Panel (Development Only) -->
+{#if import.meta.env.DEV}
+	<div class="card variant-filled-surface p-4 mt-4">
+		<h3 class="h3 mb-2">🔧 Debug: Settlement Structures</h3>
+		<div class="grid grid-cols-2 gap-2 text-sm">
+			<div><strong>Total Structures:</strong> {settlementStructures.length}</div>
+			<div><strong>Buildings:</strong> {buildings.length}</div>
+			<div><strong>Extractors:</strong> {extractors.length}</div>
+			<div><strong>Tiles with Extractors:</strong> {Object.keys(extractorsByTile).length}</div>
+		</div>
+		<details class="mt-2">
+			<summary class="cursor-pointer hover:text-primary-500">View Raw Data</summary>
+			<pre class="text-xs mt-2 overflow-auto max-h-64 bg-surface-900 p-2 rounded">
+{JSON.stringify(settlementStructures, null, 2)}
+			</pre>
+		</details>
+	</div>
+{/if}

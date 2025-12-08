@@ -101,6 +101,7 @@
 		settlementId={data.settlement.id}
 		settlementName={data.settlement.name}
 		settlement={data.settlement}
+		settlementStructures={data.settlementStructures}
 		onOpenBuildMenu={handleOpenBuildMenu}
 	/>
 {:else}
