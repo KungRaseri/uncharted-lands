@@ -3,7 +3,6 @@
 
 	import type { ActionData } from './$types';
 	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
 
 	import { slide } from 'svelte/transition';
 
@@ -23,7 +22,6 @@
 			class="space-y-1 md:space-y-3"
 			use:enhance={() => {
 				return async ({ result }) => {
-					invalidateAll();
 					await applyAction(result);
 				};
 			}}

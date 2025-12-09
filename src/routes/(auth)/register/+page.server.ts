@@ -37,7 +37,10 @@ function handleRegistrationError(response: Response, error: { code?: string; err
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.account) {
-		throw redirect(302, '/');
+		// If user is already authenticated, redirect to appropriate page
+		// If they have a profile (completed onboarding), go to game
+		// Otherwise, redirect to getting-started to complete onboarding
+		throw redirect(302, locals.account.profile ? '/game' : '/game/getting-started');
 	}
 };
 
@@ -96,9 +99,9 @@ const register: Action = async ({ cookies, request, fetch }) => {
 			maxAge: 60 * 60 * 6
 		});
 
-		// Redirect to /game which will handle onboarding if needed
-		// This matches the login flow and ensures proper authentication
-		throw redirect(302, '/game');
+		// Redirect new users directly to getting-started page
+		// They need to choose server, world, and username before playing
+		throw redirect(302, '/game/getting-started');
 	} catch (error) {
 		// Re-throw redirects (SvelteKit redirect objects have a status property)
 		if (error && typeof error === 'object' && 'status' in error && 'location' in error) {

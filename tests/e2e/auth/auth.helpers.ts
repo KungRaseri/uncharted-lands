@@ -75,11 +75,12 @@ export async function registerUser(page: Page, email: string, password: string):
 	await page.fill('input[name="password"]', password);
 
 	// Click submit button (don't wait for navigation here)
-	// Registration redirects to /game, which then redirects to / (home) for incomplete users
+	// Registration redirects new users directly to /game/getting-started
+	// where they choose server, world, and username
 	await page.locator('button[type="submit"]').click({ timeout: 5000 });
 
-	// Wait for the redirect chain to complete
-	await page.waitForURL('/', {
+	// Wait for redirect to getting-started page
+	await page.waitForURL('/game/getting-started', {
 		waitUntil: 'networkidle',
 		timeout: 10000
 	});
@@ -139,8 +140,17 @@ export async function isAuthenticated(page: Page): Promise<boolean> {
  * @param page - Playwright page object
  */
 export async function assertRedirectedToHome(page: Page): Promise<void> {
-	await page.waitForURL('/', { timeout: 5000 });
-	await expect(page).toHaveURL('/');
+	await page.waitForURL('/game', { timeout: 5000 });
+	await expect(page).toHaveURL('/game');
+}
+
+/**
+ * Assert that user is redirected to getting-started page after registration
+ * @param page - Playwright page object
+ */
+export async function assertRedirectedToGettingStarted(page: Page): Promise<void> {
+	await page.waitForURL('/game/getting-started', { timeout: 5000 });
+	await expect(page).toHaveURL('/game/getting-started');
 }
 
 /**

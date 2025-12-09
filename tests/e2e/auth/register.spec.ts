@@ -12,7 +12,7 @@ import { test, expect } from '@playwright/test';
 import {
 	TEST_USERS,
 	registerUser,
-	assertRedirectedToHome,
+	assertRedirectedToGettingStarted,
 	assertErrorMessage,
 	assertInputErrors,
 	generateUniqueEmail,
@@ -40,8 +40,8 @@ test.describe('Registration', () => {
 
 			await registerUser(page, uniqueEmail, password);
 
-			// Should redirect to home page (user not fully set up yet)
-			await assertRedirectedToHome(page);
+			// Should redirect to getting-started page for onboarding
+			await assertRedirectedToGettingStarted(page);
 
 			// Should be authenticated (session cookie set)
 			const authenticated = await isAuthenticated(page);
@@ -55,11 +55,11 @@ test.describe('Registration', () => {
 
 			await registerUser(page, uniqueEmail, password);
 
-			// Wait for redirect to home page
-			await page.waitForURL('/', { timeout: 5000 });
+			// Wait for redirect to getting-started page
+			await page.waitForURL('/game/getting-started', { timeout: 5000 });
 
-			// Verify user is on authenticated page
-			await expect(page).toHaveURL('/');
+			// Verify user is on getting-started page for onboarding
+			await expect(page).toHaveURL('/game/getting-started');
 
 			// Session cookie should exist
 			const cookies = await page.context().cookies();
@@ -74,7 +74,7 @@ test.describe('Registration', () => {
 			const password = TEST_USERS.VALID.password;
 
 			await registerUser(page, uniqueEmail, password);
-			await page.waitForURL('/', { timeout: 5000 });
+			await page.waitForURL('/game/getting-started', { timeout: 5000 });
 
 			const cookies = await page.context().cookies();
 			const sessionCookie = cookies.find((c) => c.name === 'session');
@@ -177,7 +177,7 @@ test.describe('Registration', () => {
 
 			// First registration (successful)
 			await registerUser(page, email, password);
-			await page.waitForURL('/', { timeout: 5000 });
+			await page.waitForURL('/game/getting-started', { timeout: 5000 });
 
 			// Clear session and try to register again with same email (should fail)
 			await page.context().clearCookies();
@@ -279,14 +279,14 @@ test.describe('Registration', () => {
 			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;
 			await registerUser(page, email, password);
-			await page.waitForURL('/', { timeout: 5000 });
+			await page.waitForURL('/game/getting-started', { timeout: 5000 });
 
 			// Try to access register page while authenticated
 			await page.goto('/register');
 
-			// Should redirect to home
-			await page.waitForURL('/', { timeout: 5000 });
-			await expect(page).toHaveURL('/');
+			// Should redirect to getting-started (user hasn't completed onboarding)
+			await page.waitForURL('/game/getting-started', { timeout: 5000 });
+			await expect(page).toHaveURL('/game/getting-started');
 		});
 	});
 });
