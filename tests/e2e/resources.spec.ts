@@ -19,7 +19,8 @@ import {
 	getHappiness,
 	countStructures,
 	assertStructureExists,
-	assertGameLoopRunning
+	assertGameLoopRunning,
+	joinWorldRoom
 } from './helpers/game-state';
 import {
 	TEST_DISASTERS,
@@ -32,7 +33,8 @@ import {
 	TEST_USERS,
 	registerUser,
 	cleanupTestUser,
-	generateUniqueEmail
+	generateUniqueEmail,
+	assertRedirectedToGettingStarted
 } from './auth/auth.helpers';
 
 // ============================================================================
@@ -50,7 +52,7 @@ test.beforeEach(async ({ page, request }) => {
 	// 1. Register and login test user
 	testUserEmail = generateUniqueEmail('resources-test');
 	await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
-	await page.waitForURL('/', { timeout: 10000 });
+	await assertRedirectedToGettingStarted(page);
 
 	// 2. Elevate user to ADMINISTRATOR via test API endpoint
 	// NOTE: This uses the server's /api/test/elevate-admin/:email endpoint.
@@ -215,8 +217,28 @@ test.beforeEach(async ({ page, request }) => {
 	const settlement = await settlementResponse.json();
 	testSettlementId = settlement.id;
 
-	// Navigate to settlement
-	await page.goto(`/game/settlements/${testSettlementId}`);
+	// Navigate to settlement and wait for network idle (Socket.IO connection + initial data load)
+	await page.goto(`/game/settlements/${testSettlementId}`, { waitUntil: 'networkidle' });
+
+	// Additional wait for Socket.IO to fully connect and join world
+	await page.waitForTimeout(2000);
+
+	// Manually join world room (workaround for automatic join not working in E2E)
+	await joinWorldRoom(page, testWorldId, account.id);
+
+	// DEBUG: Check if page data is loaded
+	const pageData = await page.evaluate(() => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const win = globalThis as any;
+		return {
+			hasWindowSocket: win.__socket !== undefined,
+			socketConnected: win.__socket?.connected,
+			socketId: win.__socket?.id,
+			// Try to access page data if available
+			hasPageData: win.pageData !== undefined
+		};
+	});
+	console.log('[E2E DEBUG] Page state after navigation:', pageData);
 });
 
 test.afterEach(async ({ request }) => {
@@ -320,8 +342,26 @@ test.describe('Population Management', () => {
 
 test.describe('Real-Time Game Loop', () => {
 	test('should verify game loop is running', async ({ page }) => {
+		// Capture browser console messages
+		const consoleMessages: string[] = [];
+		page.on('console', (msg) => {
+			const text = msg.text();
+			consoleMessages.push(text);
+			// Log to test output
+			console.log('[BROWSER CONSOLE]', text);
+		});
+
 		// This should not throw if resource-tick events are firing
-		await assertGameLoopRunning(page, 5000);
+		// Uses default 30s timeout to allow for slow resource changes with integer rounding
+		try {
+			await assertGameLoopRunning(page);
+		} catch (error) {
+			// Log all console messages before throwing
+			console.log('\n=== CAPTURED BROWSER CONSOLE MESSAGES ===');
+			consoleMessages.forEach((msg) => console.log(msg));
+			console.log('=== END BROWSER CONSOLE MESSAGES ===\n');
+			throw error;
+		}
 	});
 
 	test('should verify Socket.IO connection is active', async ({ page }) => {

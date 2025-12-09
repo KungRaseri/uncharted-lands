@@ -24,6 +24,8 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 			});
 			return {
 				server: null,
+				worldId: null,
+				profileId: locals.account?.profile?.id || null,
 				sessionToken: sessionToken || null
 			};
 		}
@@ -42,6 +44,8 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 			logger.debug('[GAME LAYOUT] No profile ID - using first server');
 			return {
 				server: servers && servers.length > 0 ? servers[0] : null,
+				worldId: null,
+				profileId: null,
 				sessionToken: sessionToken || null
 			};
 		}
@@ -95,6 +99,8 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 							});
 							return {
 								server: matchingServer,
+								worldId,
+								profileId,
 								sessionToken: sessionToken || null
 							};
 						} else {
@@ -134,12 +140,16 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 		logger.debug('[GAME LAYOUT] Using fallback (first server)');
 		return {
 			server: servers && servers.length > 0 ? servers[0] : null,
+			worldId: null,
+			profileId,
 			sessionToken: sessionToken || null
 		};
 	} catch (error) {
 		logger.error('[GAME LAYOUT] Error fetching servers', error);
 		return {
 			server: null,
+			worldId: null,
+			profileId: null,
 			sessionToken: null
 		};
 	}

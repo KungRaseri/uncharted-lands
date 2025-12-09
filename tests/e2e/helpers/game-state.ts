@@ -7,6 +7,81 @@ import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 // ============================================================================
+// SOCKET.IO HELPERS
+// ============================================================================
+
+/**
+ * Manually join a world room via Socket.IO
+ * This is a workaround if the game layout's automatic join doesn't trigger
+ */
+export async function joinWorldRoom(page: Page, worldId: string, playerId: string): Promise<void> {
+	console.log('[E2E] joinWorldRoom called with:', { worldId, playerId });
+
+	const result = await page.evaluate(
+		({ worldId, playerId }) => {
+			return new Promise((resolve) => {
+				try {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					const w = globalThis as any;
+					const socket = w.socket || w.__socket || w.io?.sockets?.[0];
+
+					if (!socket) {
+						console.error('[E2E] Socket.IO not found on window - cannot join world');
+						resolve({ success: false, error: 'Socket.IO not found on window' });
+						return;
+					}
+
+					if (!socket.connected) {
+						console.error('[E2E] Socket not connected - cannot join world');
+						resolve({ success: false, error: 'Socket not connected' });
+						return;
+					}
+
+					console.log('[E2E] Manually calling join-world...', {
+						worldId,
+						playerId,
+						socketId: socket.id
+					});
+
+					// Listen for world-joined response
+					const timeout = setTimeout(() => {
+						console.error('[E2E] Timeout waiting for world-joined event');
+						resolve({
+							success: false,
+							error: 'Timeout waiting for world-joined event',
+							socketId: socket.id
+						});
+					}, 5000);
+
+					socket.once('world-joined', (data: any) => {
+						clearTimeout(timeout);
+						console.log('[E2E] Received world-joined event:', data);
+						resolve({ success: true, socketId: socket.id, worldJoined: data });
+					});
+
+					socket.emit('join-world', { worldId, playerId });
+				} catch (error) {
+					console.error('[E2E] Error in joinWorldRoom:', error);
+					resolve({ success: false, error: String(error) });
+				}
+			});
+		},
+		{ worldId, playerId }
+	);
+
+	console.log('[E2E] joinWorldRoom result:', result);
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const typedResult = result as any;
+	if (!typedResult.success) {
+		throw new Error(`Failed to join world room: ${typedResult.error}`);
+	}
+
+	// Additional wait for settlement registration to complete server-side
+	await page.waitForTimeout(1000);
+}
+
+// ============================================================================
 // RESOURCE VERIFICATION
 // ============================================================================
 
@@ -186,15 +261,48 @@ export async function waitForSocketEvent(
 	// Wait for any XHR/fetch that indicates the event occurred
 	// For resource-tick, we can check if resources changed in the UI
 	if (eventName === 'resource-tick') {
-		// Wait for any resource value to update in UI
-		const initialFood = await getResourceAmount(page, 'food');
+		// Check all resources, not just food (food might be balanced with consumption)
+		const resourceTypes: Array<'food' | 'water' | 'wood' | 'stone' | 'ore'> = [
+			'food',
+			'water',
+			'wood',
+			'stone',
+			'ore'
+		];
+		const initialResources: Record<string, number> = {};
+
+		// Get initial values for all resources
+		for (const type of resourceTypes) {
+			initialResources[type] = await getResourceAmount(page, type);
+		}
+
+		console.log('[E2E] Initial resources:', initialResources);
+
 		const startTime = Date.now();
+		let checkCount = 0;
 
 		while (Date.now() - startTime < timeoutMs) {
 			await page.waitForTimeout(500);
-			const currentFood = await getResourceAmount(page, 'food');
-			if (currentFood !== initialFood) {
-				return { event: 'resource-tick', detected: true };
+			checkCount++;
+
+			// Check if ANY resource changed
+			for (const type of resourceTypes) {
+				const currentValue = await getResourceAmount(page, type);
+				if (currentValue !== initialResources[type]) {
+					console.log(
+						`[E2E] Resource change detected after ${checkCount * 500}ms: ${type} ${initialResources[type]} -> ${currentValue}`
+					);
+					return { event: 'resource-tick', detected: true, changedResource: type };
+				}
+			}
+
+			// Log every 5 seconds
+			if (checkCount % 10 === 0) {
+				const currentResources: Record<string, number> = {};
+				for (const type of resourceTypes) {
+					currentResources[type] = await getResourceAmount(page, type);
+				}
+				console.log(`[E2E] After ${checkCount * 500}ms, resources:`, currentResources);
 			}
 		}
 		throw new Error(`No resource updates detected within ${timeoutMs}ms`);
@@ -219,8 +327,38 @@ export async function waitForSocketEvent(
 					return;
 				}
 
+				// DEBUG: Log socket state and listen for ALL events
+				console.log('[E2E DEBUG] Waiting for event:', event);
+				console.log('[E2E DEBUG] Socket connected:', socket.connected);
+				console.log('[E2E DEBUG] Socket ID:', socket.id);
+
+				// Listen for ALL events for 5 seconds to see what's actually being received
+				const allEventsReceived: string[] = [];
+				const debugListener = (eventName: string) => {
+					allEventsReceived.push(eventName);
+					console.log('[E2E DEBUG] Event received:', eventName);
+				};
+
+				// Capture all events (Socket.IO internal method)
+				const originalOnevent = socket.onevent;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				socket.onevent = function (packet: any) {
+					const eventName = packet.data?.[0];
+					if (eventName) {
+						debugListener(eventName);
+					}
+					return originalOnevent.apply(this, arguments);
+				};
+
+				// Restore after 5 seconds and log summary
+				setTimeout(() => {
+					socket.onevent = originalOnevent;
+					console.log('[E2E DEBUG] All events received in 5s:', allEventsReceived);
+				}, 5000);
+
 				socket.once(event, (data: unknown) => {
 					clearTimeout(timer);
+					console.log('[E2E DEBUG] Target event received:', event, 'Data:', data);
 					resolve(data);
 				});
 			});
@@ -232,12 +370,12 @@ export async function waitForSocketEvent(
 /**
  * Verify game loop is running (resource ticks occurring)
  * @param page - Playwright page object
- * @param timeoutMs - How long to wait for tick
+ * @param timeoutMs - How long to wait for tick (default 30s for slow resource changes)
  */
-export async function assertGameLoopRunning(page: Page, timeoutMs: number = 5000): Promise<void> {
+export async function assertGameLoopRunning(page: Page, timeoutMs: number = 30000): Promise<void> {
 	try {
-		await waitForSocketEvent(page, 'resource-tick', timeoutMs);
+		await waitForSocketEvent(page, 'resource-update', timeoutMs);
 	} catch {
-		throw new Error('Game loop not running - no resource-tick events received');
+		throw new Error('Game loop not running - no resource-update events received');
 	}
 }

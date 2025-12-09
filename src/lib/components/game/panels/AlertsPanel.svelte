@@ -32,22 +32,9 @@
 	let isPaused = $state(false);
 	let hoveredAlertId = $state<string | null>(null);
 
-	// Development: Add test alert
-	const testAlerts: Alert[] = [
-		{
-			id: 'test-alert-1',
-			severity: 'critical',
-			title: 'Severe Weather Warning',
-			message: 'A severe storm is approaching your settlement. Seek shelter immediately.',
-			timestamp: new Date(new Date().getTime() - 5 * 60000), // 5 minutes ago
-			location: 'Settlement Alpha',
-			dismissed: false
-		}
-	];
-
 	// Filter non-dismissed alerts and sort by severity
 	const activeAlerts = $derived(
-		[...alerts, ...testAlerts]
+		alerts
 			.filter((alert) => !alert.dismissed)
 			.sort((a, b) => {
 				const severityOrder = { critical: 0, warning: 1, info: 2 };
