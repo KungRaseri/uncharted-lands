@@ -6,8 +6,14 @@
  * - Mobile vs Desktop rendering (BottomSheet vs modal)
  * - Layout preset selection
  * - Panel visibility toggles
- * - Panel reordering
- * - Keyboard shortcuts
+ * - Panel reorderi	describe('Desktop Modal Rendering', () => {
+		beforeEach(() => {
+			Object.defineProperty(globalThis, 'innerWidth', {
+				writable: true,
+				configurable: true,
+				value: 1024
+			});
+		});Keyboard shortcuts
  * - Accessibility
  */
 
@@ -94,11 +100,12 @@ describe('SettingsModal', () => {
 			// Wait for effect to run
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// Desktop modal should be visible
-			const modalBackdrop = container.querySelector('.modal-backdrop');
+			// Desktop modal should be visible - backdrop has role="presentation"
+			const modalBackdrop = container.querySelector('[role="presentation"]');
 			expect(modalBackdrop).toBeTruthy();
 
-			const modalContainer = container.querySelector('.modal-container');
+			// Modal container has role="dialog"
+			const modalContainer = container.querySelector('[role="dialog"]');
 			expect(modalContainer).toBeTruthy();
 			expect(modalContainer?.getAttribute('role')).toBe('dialog');
 			expect(modalContainer?.getAttribute('aria-modal')).toBe('true');
@@ -114,7 +121,7 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			const modalBackdrop = container.querySelector('.modal-backdrop');
+			const modalBackdrop = container.querySelector('[role="presentation"]');
 			expect(modalBackdrop).toBeFalsy();
 		});
 
@@ -143,11 +150,12 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			const sections = container.querySelectorAll('.settings-section');
+			// Sections are just <section> tags, no class name
+			const sections = container.querySelectorAll('section');
 			expect(sections.length).toBeGreaterThanOrEqual(3);
 
 			// Check for section headings
-			const headings = Array.from(container.querySelectorAll('.settings-section h3')).map((h) =>
+			const headings = Array.from(container.querySelectorAll('section h3')).map((h) =>
 				h.textContent?.trim()
 			);
 
@@ -160,7 +168,7 @@ describe('SettingsModal', () => {
 	describe('Rendering - Mobile BottomSheet', () => {
 		beforeEach(() => {
 			// Set mobile viewport (< 768px)
-			Object.defineProperty(window, 'innerWidth', {
+			Object.defineProperty(globalThis, 'innerWidth', {
 				writable: true,
 				configurable: true,
 				value: 375
@@ -178,19 +186,24 @@ describe('SettingsModal', () => {
 			// Wait for effect to run and re-render
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// BottomSheet should be rendered (check for BottomSheet-specific classes)
-			const bottomSheet = container.querySelector('.bottom-sheet');
-			expect(bottomSheet).toBeTruthy();
+			// On mobile, BottomSheet component is used (not mocked, actually renders)
+			// Desktop modal has aria-labelledby="settings-modal-title"
+			// BottomSheet has aria-labelledby="sheet-title"
+			const desktopDialog = container.querySelector('[aria-labelledby="settings-modal-title"]');
+			expect(desktopDialog).toBeFalsy();
 
-			// Desktop modal should NOT be rendered
-			const modalBackdrop = container.querySelector('.modal-backdrop');
-			expect(modalBackdrop).toBeFalsy();
+			// Verify BottomSheet is rendered instead
+			const mobileDialog = container.querySelector('[aria-labelledby="sheet-title"]');
+			expect(mobileDialog).toBeTruthy();
+
+			// Note: BottomSheet is mocked, so actual component structure won't be in DOM
+			// The test validates that desktop modal doesn't render on mobile
 		});
 	});
 
 	describe('Panel Visibility Toggles', () => {
 		beforeEach(() => {
-			Object.defineProperty(window, 'innerWidth', {
+			Object.defineProperty(globalThis, 'innerWidth', {
 				writable: true,
 				configurable: true,
 				value: 1024
@@ -207,12 +220,13 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			const checkboxes = container.querySelectorAll('.panel-toggle input[type="checkbox"]');
+			// Checkboxes are in labels, no .panel-toggle class
+			const checkboxes = container.querySelectorAll('label input[type="checkbox"]');
 			expect(checkboxes.length).toBeGreaterThan(0);
 
-			// Check first few panels are rendered
-			const panelToggles = container.querySelectorAll('.panel-toggle');
-			expect(panelToggles.length).toBeGreaterThanOrEqual(4);
+			// Check first few panels are rendered (labels contain checkboxes)
+			const panelLabels = container.querySelectorAll('label:has(input[type="checkbox"])');
+			expect(panelLabels.length).toBeGreaterThanOrEqual(4);
 		});
 
 		it('should call hidePanel when visible panel is toggled off', async () => {
@@ -225,8 +239,8 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// Find the first visible panel (alerts)
-			const checkboxes = container.querySelectorAll('.panel-toggle input[type="checkbox"]');
+			// Find the first visible panel (alerts) - no .panel-toggle class
+			const checkboxes = container.querySelectorAll('label input[type="checkbox"]');
 			const firstCheckbox = checkboxes[0] as HTMLInputElement;
 
 			expect(firstCheckbox.checked).toBe(true);
@@ -247,7 +261,7 @@ describe('SettingsModal', () => {
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			// Find the hidden panel (population - order 2, visible: false)
-			const checkboxes = container.querySelectorAll('.panel-toggle input[type="checkbox"]');
+			const checkboxes = container.querySelectorAll('label input[type="checkbox"]');
 			const hiddenCheckbox = checkboxes[2] as HTMLInputElement;
 
 			expect(hiddenCheckbox.checked).toBe(false);
@@ -260,7 +274,7 @@ describe('SettingsModal', () => {
 
 	describe('Reset Functionality', () => {
 		beforeEach(() => {
-			Object.defineProperty(window, 'innerWidth', {
+			Object.defineProperty(globalThis, 'innerWidth', {
 				writable: true,
 				configurable: true,
 				value: 1024
@@ -384,13 +398,12 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			const closeButton = container.querySelector('.close-button');
+			// Close button is a <button> with aria-label, no .close-button class
+			const closeButton = container.querySelector('button[aria-label="Close settings"]');
 			expect(closeButton).toBeTruthy();
-			expect(closeButton?.getAttribute('aria-label')).toBe('Close settings');
 
-			await fireEvent.click(closeButton!);
+			await fireEvent.click(closeButton as HTMLButtonElement);
 
-			// Component calls onClose from both the button and BottomSheet wrapper
 			expect(mockOnClose).toHaveBeenCalled();
 		});
 
@@ -406,10 +419,11 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			const backdrop = container.querySelector('.modal-backdrop');
+			// Backdrop has role="presentation", not .modal-backdrop class
+			const backdrop = container.querySelector('[role="presentation"]');
 			expect(backdrop).toBeTruthy();
 
-			await fireEvent.click(backdrop!);
+			await fireEvent.click(backdrop as HTMLElement);
 
 			expect(mockOnClose).toHaveBeenCalledTimes(1);
 		});
@@ -434,11 +448,12 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			const modalContainer = container.querySelector('.modal-container');
-			expect(modalContainer?.getAttribute('role')).toBe('dialog');
-			expect(modalContainer?.getAttribute('aria-modal')).toBe('true');
-			expect(modalContainer?.getAttribute('aria-labelledby')).toBe('settings-modal-title');
-			expect(modalContainer?.getAttribute('tabindex')).toBe('-1');
+			// Modal uses role="dialog", not .modal-container class
+			const dialog = container.querySelector('[role="dialog"]');
+			expect(dialog?.getAttribute('role')).toBe('dialog');
+			expect(dialog?.getAttribute('aria-modal')).toBe('true');
+			expect(dialog?.getAttribute('aria-labelledby')).toBe('settings-modal-title');
+			expect(dialog?.getAttribute('tabindex')).toBe('-1');
 		});
 
 		it('should have aria-label on panel visibility checkboxes', async () => {
@@ -451,7 +466,8 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			const checkboxes = container.querySelectorAll('.panel-toggle input[type="checkbox"]');
+			// Checkboxes are in labels, no .panel-toggle class
+			const checkboxes = container.querySelectorAll('label input[type="checkbox"]');
 			for (const checkbox of checkboxes) {
 				const ariaLabel = checkbox.getAttribute('aria-label');
 				expect(ariaLabel).toBeTruthy();
