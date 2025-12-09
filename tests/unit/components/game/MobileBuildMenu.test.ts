@@ -39,7 +39,8 @@ describe('MobileBuildMenu', () => {
 				props: mockProps
 			});
 
-			const categoryTabs = container.querySelectorAll('.category-tab');
+			// Component uses role="tab" for category tabs
+			const categoryTabs = container.querySelectorAll('[role="tab"]');
 			expect(categoryTabs.length).toBeGreaterThan(0);
 		});
 
@@ -48,7 +49,8 @@ describe('MobileBuildMenu', () => {
 				props: mockProps
 			});
 
-			const structureCards = container.querySelectorAll('.structure-card');
+			// Component uses data-structure-type attribute on structure buttons
+			const structureCards = container.querySelectorAll('button[data-structure-type]');
 			expect(structureCards.length).toBeGreaterThan(0);
 		});
 	});
@@ -59,12 +61,13 @@ describe('MobileBuildMenu', () => {
 				props: mockProps
 			});
 
-			const categoryTabs = container.querySelectorAll('.category-tab');
+			const categoryTabs = container.querySelectorAll('[role="tab"]');
 			const extractorTab = Array.from(categoryTabs).find((tab) =>
 				tab.textContent?.includes('EXTRACTOR')
 			);
 
-			expect(extractorTab?.classList.contains('active')).toBe(true);
+			// Component uses aria-selected="true" instead of 'active' class
+			expect(extractorTab?.getAttribute('aria-selected')).toBe('true');
 		});
 
 		it('should switch categories when tab is clicked', async () => {
@@ -72,7 +75,7 @@ describe('MobileBuildMenu', () => {
 				props: mockProps
 			});
 
-			const categoryTabs = container.querySelectorAll('.category-tab');
+			const categoryTabs = container.querySelectorAll('[role="tab"]');
 			const buildingTab = Array.from(categoryTabs).find((tab) =>
 				tab.textContent?.includes('BUILDING')
 			);
@@ -80,8 +83,8 @@ describe('MobileBuildMenu', () => {
 			if (buildingTab) {
 				await fireEvent.click(buildingTab);
 
-				// Should now have active class
-				expect(buildingTab.classList.contains('active')).toBe(true);
+				// Should now have aria-selected="true"
+				expect(buildingTab.getAttribute('aria-selected')).toBe('true');
 			}
 		});
 
@@ -91,7 +94,7 @@ describe('MobileBuildMenu', () => {
 			});
 
 			// Switch category
-			const categoryTabs = container.querySelectorAll('.category-tab');
+			const categoryTabs = container.querySelectorAll('[role="tab"]');
 			const buildingTab = Array.from(categoryTabs).find((tab) =>
 				tab.textContent?.includes('BUILDING')
 			);
@@ -100,7 +103,7 @@ describe('MobileBuildMenu', () => {
 				await fireEvent.click(buildingTab);
 
 				// Structure cards should be rendered for the new category
-				const updatedCards = container.querySelectorAll('.structure-card');
+				const updatedCards = container.querySelectorAll('button[data-structure-type]');
 				// At minimum, the grid should still exist
 				expect(updatedCards.length).toBeGreaterThanOrEqual(0);
 			}
@@ -114,7 +117,7 @@ describe('MobileBuildMenu', () => {
 				props: { ...mockProps, onClose: onCloseMock }
 			});
 
-			const structureCards = container.querySelectorAll('.structure-card');
+			const structureCards = container.querySelectorAll('button[data-structure-type]');
 			if (structureCards.length > 0) {
 				await fireEvent.click(structureCards[0]);
 

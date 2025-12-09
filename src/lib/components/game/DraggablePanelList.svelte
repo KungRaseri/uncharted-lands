@@ -25,8 +25,8 @@
 	let isDragging = $state(false);
 	let touchStartY = $state(0);
 
-	// Sort panels by position for display
-	const sortedPanels = $derived([...panels].sort((a, b) => a.position - b.position));
+	// Sort panels by order for display
+	const sortedPanels = $derived([...panels].sort((a, b) => a.order - b.order));
 
 	// Drag handlers (Mouse)
 	function handleDragStart(e: DragEvent, panelId: string) {
@@ -57,7 +57,7 @@
 		if (draggedPanelId && draggedPanelId !== targetPanelId) {
 			const targetPanel = panels.find((p) => p.id === targetPanelId);
 			if (targetPanel) {
-				onReorder(draggedPanelId, targetPanel.position);
+				onReorder(draggedPanelId, targetPanel.order);
 			}
 		}
 
@@ -91,7 +91,7 @@
 		if (draggedPanelId && draggedOverPanelId && draggedPanelId !== draggedOverPanelId) {
 			const targetPanel = panels.find((p) => p.id === draggedOverPanelId);
 			if (targetPanel) {
-				onReorder(draggedPanelId, targetPanel.position);
+				onReorder(draggedPanelId, targetPanel.order);
 			}
 		}
 
@@ -107,28 +107,28 @@
 
 		switch (e.key) {
 			case 'ArrowUp':
-				if (panel.position > 0) {
-					onReorder(panelId, panel.position - 1);
+				if (panel.order > 0) {
+					onReorder(panelId, panel.order - 1);
 					handled = true;
 				}
 				break;
 
 			case 'ArrowDown':
-				if (panel.position < panels.length - 1) {
-					onReorder(panelId, panel.position + 1);
+				if (panel.order < panels.length - 1) {
+					onReorder(panelId, panel.order + 1);
 					handled = true;
 				}
 				break;
 
 			case 'Home':
-				if (panel.position !== 0) {
+				if (panel.order !== 0) {
 					onReorder(panelId, 0);
 					handled = true;
 				}
 				break;
 
 			case 'End':
-				if (panel.position !== panels.length - 1) {
+				if (panel.order !== panels.length - 1) {
 					onReorder(panelId, panels.length - 1);
 					handled = true;
 				}
@@ -163,7 +163,7 @@
 			ontouchend={handleTouchEnd}
 			tabindex="0"
 			onkeydown={(e) => handleKeydown(e, panel.id)}
-			aria-label={`${panelNames[panel.id]}, position ${panel.position + 1} of ${panels.length}. Use arrow keys to reorder.`}
+			aria-label={`${panelNames[panel.id]}, position ${panel.order + 1} of ${panels.length}. Use arrow keys to reorder.`}
 		>
 			<!-- Drag Handle -->
 			<div
@@ -190,7 +190,7 @@
 					>{panelNames[panel.id]}</span
 				>
 				<span class="text-xs text-surface-600 dark:text-surface-400"
-					>Position {panel.position + 1}</span
+					>Position {panel.order + 1}</span
 				>
 			</div>
 
