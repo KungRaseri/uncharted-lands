@@ -74,7 +74,15 @@ export async function registerUser(page: Page, email: string, password: string):
 	await page.fill('input[name="email"]', email);
 	await page.fill('input[name="password"]', password);
 
-	await page.click('button[type="submit"]');
+	// Click submit button (don't wait for navigation here)
+	// Registration redirects to /game, which then redirects to / (home) for incomplete users
+	await page.locator('button[type="submit"]').click({ timeout: 5000 });
+
+	// Wait for the redirect chain to complete
+	await page.waitForURL('/', {
+		waitUntil: 'networkidle',
+		timeout: 10000
+	});
 }
 
 /**
@@ -100,7 +108,10 @@ export async function loginUser(
 		await page.check('input[name="remember_me"]');
 	}
 
+	// Click login and wait for redirect to complete
+	// Login redirects to /game on success
 	await page.click('button:has-text("Login")');
+	await page.waitForURL('/game', { waitUntil: 'networkidle' });
 }
 
 /**

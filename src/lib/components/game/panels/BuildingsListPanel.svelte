@@ -34,12 +34,13 @@
 	interface Props {
 		buildings: Building[];
 		settlementId: string;
+		onBuild?: () => void;
 		onUpgrade?: (buildingId: string) => void;
 		onRepair?: (buildingId: string) => void;
 		onDemolish?: (buildingId: string) => void;
 	}
 
-	let { buildings = [], settlementId, onUpgrade, onRepair, onDemolish }: Props = $props();
+	let { buildings = [], settlementId, onBuild, onUpgrade, onRepair, onDemolish }: Props = $props();
 
 	// Expanded building IDs for showing modifiers
 	let expandedBuildings = $state<Set<string>>(new Set());
@@ -91,7 +92,15 @@
 		<h3 id="buildings-heading" class="h4">
 			Buildings ({buildings.length})
 		</h3>
-		<p class="text-sm text-surface-600-300-token">Settlement infrastructure</p>
+		<button
+			onclick={() => onBuild?.()}
+			data-testid="build-structure-btn"
+			class="btn variant-filled-primary btn-sm"
+			aria-label="Build new structure"
+		>
+			<span aria-hidden="true">🏗️</span>
+			Build
+		</button>
 	</header>
 
 	{#if buildings.length === 0}

@@ -417,6 +417,7 @@
 		<BuildingsListPanel
 			{buildings}
 			{settlementId}
+			onBuild={onOpenBuildMenu}
 			onUpgrade={handleUpgradeBuilding}
 			onRepair={handleRepairBuilding}
 			onDemolish={handleDemolishBuilding}

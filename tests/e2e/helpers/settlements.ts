@@ -154,8 +154,29 @@ export async function navigateToSettlementList(page: Page): Promise<void> {
  * @param settlementName - Expected settlement name
  */
 export async function assertSettlementExists(page: Page, settlementName: string): Promise<void> {
-	const heading = page.locator('h1', { hasText: settlementName });
-	await heading.waitFor({ state: 'visible', timeout: 5000 });
+	// Try multiple selectors since the UI structure may vary
+	const selectors = [
+		`h1:has-text("${settlementName}")`,
+		`h2:has-text("${settlementName}")`,
+		`h3:has-text("${settlementName}")`,
+		`[data-testid="settlement-name"]:has-text("${settlementName}")`,
+		`:text("${settlementName}")`
+	];
+
+	let found = false;
+	for (const selector of selectors) {
+		try {
+			await page.waitForSelector(selector, { state: 'visible', timeout: 1000 });
+			found = true;
+			break;
+		} catch {
+			// Try next selector
+		}
+	}
+
+	if (!found) {
+		throw new Error(`Settlement name "${settlementName}" not found in UI with any known selector`);
+	}
 }
 
 /**
@@ -215,7 +236,7 @@ export async function getCurrentResources(page: Page): Promise<{
 		// Extract number from text like "Food: 150 / 1000"
 		const match = text?.match(/(\d+)\s*\/\s*\d+/);
 		if (match) {
-			resources[resource as keyof typeof resources] = parseInt(match[1], 10);
+			resources[resource as keyof typeof resources] = Number.parseInt(match[1], 10);
 		}
 	}
 

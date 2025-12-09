@@ -180,6 +180,27 @@ export async function waitForSocketEvent(
 	eventName: string,
 	timeoutMs: number = 10000
 ): Promise<unknown> {
+	// Alternative approach: Wait for network activity instead of direct socket access
+	// This works because Playwright can't easily access the Socket.IO client
+
+	// Wait for any XHR/fetch that indicates the event occurred
+	// For resource-tick, we can check if resources changed in the UI
+	if (eventName === 'resource-tick') {
+		// Wait for any resource value to update in UI
+		const initialFood = await getResourceAmount(page, 'food');
+		const startTime = Date.now();
+
+		while (Date.now() - startTime < timeoutMs) {
+			await page.waitForTimeout(500);
+			const currentFood = await getResourceAmount(page, 'food');
+			if (currentFood !== initialFood) {
+				return { event: 'resource-tick', detected: true };
+			}
+		}
+		throw new Error(`No resource updates detected within ${timeoutMs}ms`);
+	}
+
+	// For other events, use the original approach with better error handling
 	return page.evaluate(
 		({ event, timeout }) => {
 			return new Promise((resolve, reject) => {
@@ -187,9 +208,18 @@ export async function waitForSocketEvent(
 					reject(new Error(`Socket event '${event}' did not fire within ${timeout}ms`));
 				}, timeout);
 
-				// Assuming socket is available globally as window.socket
+				// Try to find socket in various locations
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(window as any).socket?.once(event, (data: unknown) => {
+				const w = globalThis as any;
+				const socket = w.socket || w.__socket || w.io?.sockets?.[0];
+
+				if (!socket) {
+					clearTimeout(timer);
+					reject(new Error(`Socket not found on window object`));
+					return;
+				}
+
+				socket.once(event, (data: unknown) => {
 					clearTimeout(timer);
 					resolve(data);
 				});

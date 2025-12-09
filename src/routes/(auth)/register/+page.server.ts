@@ -86,6 +86,8 @@ const register: Action = async ({ cookies, request, fetch }) => {
 		const result = await response.json();
 		logger.info('[AUTH] ✓ Registration successful');
 
+		// IMPORTANT: Set session cookie BEFORE redirecting to protected route
+		// Otherwise the auth middleware will reject the redirect
 		cookies.set('session', result.account.userAuthToken, {
 			path: '/',
 			httpOnly: true,
@@ -94,8 +96,9 @@ const register: Action = async ({ cookies, request, fetch }) => {
 			maxAge: 60 * 60 * 6
 		});
 
-		// Redirect new users directly to onboarding/getting started
-		throw redirect(302, '/game/getting-started');
+		// Redirect to /game which will handle onboarding if needed
+		// This matches the login flow and ensures proper authentication
+		throw redirect(302, '/game');
 	} catch (error) {
 		// Re-throw redirects (SvelteKit redirect objects have a status property)
 		if (error && typeof error === 'object' && 'status' in error && 'location' in error) {

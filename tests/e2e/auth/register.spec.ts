@@ -40,7 +40,7 @@ test.describe('Registration', () => {
 
 			await registerUser(page, uniqueEmail, password);
 
-			// Should redirect to home page
+			// Should redirect to home page (user not fully set up yet)
 			await assertRedirectedToHome(page);
 
 			// Should be authenticated (session cookie set)
@@ -55,7 +55,7 @@ test.describe('Registration', () => {
 
 			await registerUser(page, uniqueEmail, password);
 
-			// Wait for redirect
+			// Wait for redirect to home page
 			await page.waitForURL('/', { timeout: 5000 });
 
 			// Verify user is on authenticated page
@@ -175,16 +175,29 @@ test.describe('Registration', () => {
 			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;
 
-			// First registration
+			// First registration (successful)
 			await registerUser(page, email, password);
 			await page.waitForURL('/', { timeout: 5000 });
 
-			// Clear session and try to register again with same email
+			// Clear session and try to register again with same email (should fail)
 			await page.context().clearCookies();
-			await registerUser(page, email, password);
+
+			// Navigate to register page
+			await page.goto('/register');
+			await page.waitForLoadState('networkidle');
+
+			// Fill form with duplicate email
+			await page.fill('input[name="email"]', email);
+			await page.fill('input[name="password"]', password);
+
+			// Submit form - should fail and stay on page
+			await page.locator('button[type="submit"]').click();
+
+			// Wait a moment for error to appear
+			await page.waitForTimeout(1000);
 
 			// Should show error about existing account
-			await assertErrorMessage(page, 'Please enter the account information again');
+			await assertErrorMessage(page, 'An account with this email already exists');
 
 			// Should stay on registration page
 			await expect(page).toHaveURL(/\/register/);
