@@ -1,6 +1,7 @@
 <script lang="ts">
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import { structures, type StructureType } from '$lib/game/structures';
+	import { PUBLIC_API_URL } from '$env/static/public';
 
 	interface Props {
 		open: boolean;
@@ -39,10 +40,36 @@
 
 	let selectedCategory = $state<string>('EXTRACTOR');
 
-	function handleBuild(structureType: StructureType) {
-		// TODO: Call build API
+	async function handleBuild(structureType: StructureType) {
 		console.log('Building:', structureType, 'at settlement:', settlementId);
-		onClose();
+
+		try {
+			const response = await fetch(`${PUBLIC_API_URL}/structures/create`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					settlementId,
+					structureName: structureType
+				})
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('[MobileBuildMenu] Failed to create structure:', error);
+				alert(error.error || 'Failed to create structure');
+				return;
+			}
+
+			console.log('[MobileBuildMenu] Structure created successfully');
+
+			onClose();
+		} catch (error) {
+			console.error('[MobileBuildMenu] Failed to create structure:', error);
+			alert('Network error - could not create structure');
+		}
 	}
 </script>
 

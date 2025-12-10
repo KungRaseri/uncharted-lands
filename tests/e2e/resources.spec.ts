@@ -279,7 +279,7 @@ test.describe('Resource Production Flow', () => {
 		console.log('[E2E DEBUG] Page state after navigation:', pageData);
 	});
 
-	test.afterEach(async ({ request }) => {
+	test.afterAll(async ({ request }) => {
 		// Clean up test settlements
 		if (testSettlementId && sessionCookieValue) {
 			await request.delete(`${apiUrl}/settlements/${testSettlementId}`, {

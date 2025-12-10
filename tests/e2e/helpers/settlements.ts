@@ -197,14 +197,26 @@ export async function assertStartingResources(
 	// Wait for resource panel to load
 	await page.waitForSelector('[data-testid="resource-panel"]', { timeout: 5000 });
 
-	// Check each resource
+	// Check each resource (allow ±10 tolerance for game loop production that may have occurred)
 	for (const [resource, amount] of Object.entries(expectedResources)) {
 		const resourceDisplay = page.locator(`[data-resource="${resource}"]`);
 		const text = await resourceDisplay.textContent();
 
-		// Text should contain the amount (e.g., "Food: 50 / 1000")
-		if (!text?.includes(amount.toString())) {
-			throw new Error(`Expected ${resource} to be ${amount}, but got: ${text}`);
+		// Extract the actual amount from text (e.g., "🌾 Food 59 / 1,000 +3,600/hr")
+		const match = text?.match(/(\d+)\s*\/\s*\d+/);
+		if (!match) {
+			throw new Error(`Could not parse ${resource} amount from: ${text}`);
+		}
+
+		const actualAmount = Number.parseInt(match[1], 10);
+		const tolerance = 10; // Allow ±10 for production that may have occurred
+		const min = amount - tolerance;
+		const max = amount + tolerance;
+
+		if (actualAmount < min || actualAmount > max) {
+			throw new Error(
+				`Expected ${resource} to be ${amount} (±${tolerance}), but got ${actualAmount}`
+			);
 		}
 	}
 }
