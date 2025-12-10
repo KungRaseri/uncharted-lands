@@ -244,8 +244,8 @@ test.describe('Resource Production Flow', () => {
 		const settlement = await settlementResponse.json();
 		testSettlementId = settlement.id;
 
-		// Navigate to settlement and wait for network idle (Socket.IO connection + initial data load)
-		await page.goto(`/game/settlements/${testSettlementId}`, { waitUntil: 'networkidle' });
+		// Navigate to settlement and wait for page load (Socket.IO keeps connection open, so networkidle won't work)
+		await page.goto(`/game/settlements/${testSettlementId}`, { waitUntil: 'load' });
 
 		// Wait for Socket.IO to connect before attempting to join world
 		try {
@@ -333,11 +333,9 @@ test.describe('Resource Production Flow', () => {
 			// Build a farm
 			await page.click('[data-testid="build-structure-btn"]');
 			await page.click('[data-structure-type="FARM"]');
-			await page.click('[data-testid="confirm-build-btn"]');
+			// Building happens immediately when structure is clicked (no confirm needed)
 
-			await assertStructureExists(page, 'Farm');
-
-			// Verify production rate is at least 0.5 food/second (30/minute)
+			await assertStructureExists(page, 'Farm'); // Verify production rate is at least 0.5 food/second (30/minute)
 			await assertProductionRate(page, 'food', 0.5, 5);
 		});
 	});
