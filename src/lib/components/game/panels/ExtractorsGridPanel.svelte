@@ -273,7 +273,11 @@
 					<!-- Extractors Grid -->
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 						{#each extractorsByTile[tileId] as extractor (extractor.id)}
-							<div class="card variant-ghost p-3 space-y-2" transition:fade={{ duration: 200 }}>
+							<div
+								data-testid="structure"
+								class="card variant-ghost p-3 space-y-2"
+								transition:fade={{ duration: 200 }}
+							>
 								<!-- Extractor Header -->
 								<div class="flex items-start justify-between gap-2">
 									<div class="flex-1 min-w-0">

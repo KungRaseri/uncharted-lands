@@ -26,7 +26,6 @@
 	import PopulationPanel from './panels/PopulationPanel.svelte';
 	import ConstructionQueuePanel from './panels/ConstructionQueuePanel.svelte';
 	import NextActionSuggestion from './panels/NextActionSuggestion.svelte';
-	import StructureGridPanel from './panels/StructureGridPanel.svelte';
 	import BuildingsListPanel from './panels/BuildingsListPanel.svelte';
 	import ExtractorsGridPanel from './panels/ExtractorsGridPanel.svelte';
 	import ProductionOverviewPanel from './panels/ProductionOverviewPanel.svelte';

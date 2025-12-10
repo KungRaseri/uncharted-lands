@@ -112,6 +112,7 @@
 		<ul class="space-y-3" role="list">
 			{#each buildings as building (building.id)}
 				<li
+					data-testid="structure"
 					class="card variant-soft p-4 space-y-2"
 					transition:slide={{ duration: 300, easing: quintOut }}
 				>
