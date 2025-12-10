@@ -4,14 +4,14 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { fetchStructureMetadata, type StructureMetadata } from '$lib/api/structures';
 
-export const load = (async ({ params, depends, cookies, fetch }) => {
+export const load = (async ({ params, depends, cookies }) => {
 	// Mark this data as dependent on game state changes
 	depends('game:settlement');
 	depends('game:data');
 
 	const sessionToken = cookies.get('session');
 
-	// Fetch settlement data
+	// Fetch settlement data (use native fetch, not SvelteKit fetch)
 	const settlementResponse = await fetch(`${API_URL}/settlements/${params.id}`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
@@ -33,10 +33,10 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 
 	const settlement = await settlementResponse.json();
 
-	// Fetch structure metadata from API
+	// Fetch structure metadata from API (use default native fetch)
 	let structures: StructureMetadata[] = [];
 	try {
-		structures = await fetchStructureMetadata(false, fetch);
+		structures = await fetchStructureMetadata(false);
 		logger.debug('[SETTLEMENT DETAIL] Structure metadata loaded', {
 			count: structures.length
 		});
@@ -54,7 +54,24 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 		}
 	});
 
-	const settlementStructures = structuresResponse.ok ? await structuresResponse.json() : [];
+	let settlementStructures = [];
+	if (structuresResponse.ok) {
+		settlementStructures = await structuresResponse.json();
+		logger.debug('[SETTLEMENT DETAIL] Structures loaded via API', {
+			count: settlementStructures.length
+		});
+	} else {
+		logger.error('[SETTLEMENT DETAIL] Failed to fetch structures via API', {
+			status: structuresResponse.status
+		});
+		// ✅ FALLBACK: Use structures from settlement if API fails
+		if (settlement?.structures) {
+			settlementStructures = settlement.structures;
+			logger.debug('[SETTLEMENT DETAIL] Using structures from settlement object', {
+				count: settlementStructures.length
+			});
+		}
+	}
 
 	// ✅ NEW: Fetch tile data for the settlement
 	let tile = null;
@@ -83,7 +100,8 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 	logger.debug('[SETTLEMENT DETAIL] Settlement loaded', {
 		settlementId: settlement.id,
 		name: settlement.name,
-		structuresCount: settlementStructures.length
+		structuresCount: settlementStructures.length,
+		tileLoaded: !!tile
 	});
 
 	return {

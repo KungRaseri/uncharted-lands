@@ -15,7 +15,7 @@
 		id: string;
 		xCoord: number;
 		yCoord: number;
-		biome: string;
+		biome: any;
 		foodQuality: number;
 		waterQuality: number;
 		woodQuality: number;
@@ -112,7 +112,7 @@
 		<div>
 			<h3 id="tile-plots-heading" class="h5 flex items-center gap-2">
 				<span>Plot Slots</span>
-				<span class="badge variant-soft text-xs">{JSON.stringify(tile.biome)}</span>
+				<span class="badge variant-soft text-xs">{tile.biome.name}</span>
 			</h3>
 			<p class="text-xs text-surface-600-300-token mt-1">
 				📍 Tile ({tile.xCoord}, {tile.yCoord}) • {extractors.length}/{tile.plotSlots} occupied

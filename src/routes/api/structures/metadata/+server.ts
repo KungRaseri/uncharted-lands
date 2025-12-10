@@ -9,9 +9,14 @@ import { API_URL } from '$lib/config';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async ({ fetch }) => {
+export const GET: RequestHandler = async ({ cookies }) => {
 	try {
-		const response = await fetch(`${API_URL}/structures/metadata`);
+		const sessionToken = cookies.get('session');
+		const response = await fetch(`${API_URL}/structures/metadata`, {
+			headers: {
+				Cookie: `session=${sessionToken}`
+			}
+		});
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({
