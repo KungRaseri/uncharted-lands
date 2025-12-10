@@ -6,6 +6,7 @@
 	import { socketStore, gameSocket } from '$lib/stores/game/socket';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
+	import { exposeSocketForTesting } from '$lib/utils/environment';
 	import { onMount } from 'svelte';
 
 	let { data, children }: { data: PageData; children: Snippet } = $props();
@@ -23,7 +24,7 @@
 			socketStore.connect(undefined, data.sessionToken);
 
 			// Expose socket to window for E2E testing
-			if (import.meta.env.DEV || import.meta.env.MODE === 'test') {
+			if (exposeSocketForTesting) {
 				const socket = socketStore.getSocket();
 				if (socket && typeof window !== 'undefined') {
 					(window as any).__socket = socket;

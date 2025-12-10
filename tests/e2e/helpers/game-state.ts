@@ -16,51 +16,65 @@ import { expect } from '@playwright/test';
  *
  * @param page - Playwright page object
  * @param timeoutMs - Maximum time to wait in milliseconds (default: 10000)
- * @returns Promise<void> - Resolves when connected, rejects on timeout
+ * @param required - If false, returns false instead of throwing on timeout (default: true)
+ * @returns Promise<boolean> - True if connected, false if timeout (when required=false)
  *
  * @example
  * await page.goto('/game/settlements/abc123');
- * await waitForSocketConnection(page);
- * await joinWorldRoom(page, worldId, playerId);
+ * const connected = await waitForSocketConnection(page, 5000, false);
+ * if (connected) {
+ *   await joinWorldRoom(page, worldId, playerId);
+ * }
  */
 export async function waitForSocketConnection(
 	page: Page,
-	timeoutMs: number = 10000
-): Promise<void> {
-	console.log('[E2E] Waiting for Socket.IO connection...', { timeoutMs });
+	timeoutMs: number = 10000,
+	required: boolean = true
+): Promise<boolean> {
+	console.log('[E2E] Waiting for Socket.IO connection...', { timeoutMs, required });
 
 	const startTime = Date.now();
 	const pollInterval = 100; // Check every 100ms
 
 	while (Date.now() - startTime < timeoutMs) {
-		const isConnected = await page.evaluate(() => {
+		const debugInfo = await page.evaluate(() => {
 			try {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				const w = globalThis as any;
 				const socket = w.socket || w.__socket || w.io?.sockets?.[0];
 
-				if (!socket) {
-					console.log('[E2E] Socket.IO not found on window yet');
-					return false;
-				}
-
-				if (socket.connected) {
-					console.log('[E2E] Socket.IO connected!', { socketId: socket.id });
-					return true;
-				}
-
-				console.log('[E2E] Socket.IO found but not connected yet');
-				return false;
+				return {
+					hasSocket: !!socket,
+					hasWindow: typeof w !== 'undefined',
+					socketKeys: socket ? Object.keys(socket).slice(0, 10) : [],
+					connected: socket?.connected || false,
+					socketId: socket?.id || null,
+					env: {
+						dev: (w as any).import?.meta?.env?.DEV,
+						mode: (w as any).import?.meta?.env?.MODE
+					}
+				};
 			} catch (error) {
-				console.error('[E2E] Error checking socket connection:', error);
-				return false;
+				return {
+					error: error instanceof Error ? error.message : String(error),
+					hasSocket: false,
+					hasWindow: false,
+					socketKeys: [],
+					connected: false,
+					socketId: null
+				};
 			}
 		});
 
-		if (isConnected) {
+		console.log('[E2E] Socket check:', debugInfo);
+
+		if (debugInfo.connected) {
 			const duration = Date.now() - startTime;
-			console.log('[E2E] Socket.IO connection established', { duration });
-			return;
+			console.log('[E2E] Socket.IO connection established', {
+				duration,
+				socketId: debugInfo.socketId
+			});
+			return true;
 		}
 
 		// Wait before next poll
@@ -69,7 +83,12 @@ export async function waitForSocketConnection(
 
 	// Timeout
 	const duration = Date.now() - startTime;
-	throw new Error(`Socket.IO connection timeout after ${duration}ms`);
+	if (required) {
+		throw new Error(`Socket.IO connection timeout after ${duration}ms`);
+	}
+
+	console.warn(`[E2E] Socket.IO connection timeout after ${duration}ms (not required, continuing)`);
+	return false;
 }
 
 /**

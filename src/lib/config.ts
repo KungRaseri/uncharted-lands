@@ -29,11 +29,7 @@ export const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
 export const WS_URL = env.PUBLIC_WS_URL || 'http://localhost:3001';
 
 /**
- * Check if running in development mode
+ * Re-export environment utilities for convenience
+ * @deprecated Import from $lib/utils/environment instead
  */
-export const isDevelopment = import.meta.env.DEV;
-
-/**
- * Check if running in production mode
- */
-export const isProduction = import.meta.env.PROD;
+export { isDevelopment, isProduction } from './utils/environment';

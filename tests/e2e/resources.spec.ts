@@ -93,7 +93,42 @@ test.describe('Resource Production Flow', () => {
 		// Store cookie value for cleanup in afterEach
 		sessionCookieValue = sessionCookie.value;
 
-		// 3. Get account information
+		// 4. Clean up old test worlds before creating new ones
+		console.log('[E2E] Cleaning up old test worlds...');
+		try {
+			const worldsResponse = await request.get(`${apiUrl}/worlds`, {
+				headers: {
+					Cookie: `session=${sessionCookie.value}`
+				}
+			});
+
+			if (worldsResponse.ok()) {
+				const worlds = await worldsResponse.json();
+				const oldTestWorlds = worlds.filter((w: { name: string }) =>
+					w.name.startsWith('E2E Test World')
+				);
+
+				console.log(`[E2E] Found ${oldTestWorlds.length} old test worlds to clean up`);
+
+				for (const world of oldTestWorlds) {
+					try {
+						await request.delete(`${apiUrl}/worlds/${world.id}`, {
+							headers: {
+								Cookie: `session=${sessionCookie.value}`
+							}
+						});
+						console.log(`[E2E] Deleted old test world: ${world.name}`);
+					} catch (error) {
+						console.warn(`[E2E] Failed to delete old test world ${world.id}:`, error);
+					}
+				}
+			}
+		} catch (error) {
+			console.warn('[E2E] Failed to clean up old test worlds:', error);
+			// Continue with test - cleanup failure is not critical
+		}
+
+		// 5. Get account information
 		const accountResponse = await request.get(`${apiUrl}/account/me`, {
 			headers: {
 				Cookie: `session=${sessionCookie.value}`
@@ -154,15 +189,17 @@ test.describe('Resource Production Flow', () => {
 		}
 
 		// 5. Create test world (with async generation polling)
-		console.log('[E2E] Creating test world...');
+		// Use unique world name to prevent conflicts with existing test worlds
+		const uniqueWorldName = `E2E Test World ${Date.now()}`;
+		console.log('[E2E] Creating test world:', uniqueWorldName);
 		const world = await createWorldViaAPI(
 			request,
 			testServer.id,
 			sessionCookie.value, // Pass session token for authentication
 			{
-				name: 'E2E Test World',
+				name: uniqueWorldName,
 				size: 'TINY', // Use TINY (5x5) for fast E2E test generation
-				seed: 123456789
+				seed: Date.now() // Use unique seed based on timestamp
 			},
 			true // Wait for generation to complete
 		);

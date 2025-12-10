@@ -4,6 +4,8 @@
  * Centralized logging for the client application with different levels and structured output
  */
 
+import { isDevelopment as envIsDevelopment } from './environment';
+
 export enum LogLevel {
 	DEBUG = 0,
 	INFO = 1,
@@ -20,8 +22,8 @@ class ClientLogger {
 	private readonly isDevelopment: boolean;
 
 	constructor() {
-		// Detect environment
-		this.isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
+		// Detect environment using centralized utility
+		this.isDevelopment = envIsDevelopment;
 
 		// Allow override via localStorage for production debugging
 		const storedLevel =
