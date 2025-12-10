@@ -56,6 +56,29 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 
 	const settlementStructures = structuresResponse.ok ? await structuresResponse.json() : [];
 
+	// ✅ NEW: Fetch tile data for the settlement
+	let tile = null;
+	if (settlement?.tileId) {
+		const tileResponse = await fetch(`${API_URL}/tiles/${settlement.tileId}`, {
+			headers: {
+				Cookie: `session=${sessionToken}`
+			}
+		});
+
+		if (tileResponse.ok) {
+			tile = await tileResponse.json();
+			logger.debug('[SETTLEMENT DETAIL] Tile data loaded', {
+				tileId: tile.id,
+				plotSlots: tile.plotSlots
+			});
+		} else {
+			logger.error('[SETTLEMENT DETAIL] Failed to fetch tile data', {
+				tileId: settlement.tileId,
+				status: tileResponse.status
+			});
+		}
+	}
+
 	logger.debug('[SETTLEMENT DETAIL] Settlement loaded', {
 		settlementId: settlement.id,
 		name: settlement.name,
@@ -66,6 +89,7 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 		settlement,
 		structures,
 		settlementStructures, // ✅ NEW: Add to return object
+		tile, // ✅ NEW: Add tile data
 		lastUpdate: new Date().toISOString()
 	};
 }) satisfies PageServerLoad;

@@ -17,9 +17,11 @@
 
 	// Panel Components
 	import DashboardHeader from './panels/DashboardHeader.svelte';
+	import TilePlotsPanel from './panels/TilePlotsPanel.svelte';
 
 	// Modals
 	import SettingsModal from './modals/SettingsModal.svelte';
+	import ExtractorTypeSelector from './modals/ExtractorTypeSelector.svelte';
 	import AlertsPanel from './panels/AlertsPanel.svelte';
 	import SettlementInfoPanel from './panels/SettlementInfoPanel.svelte';
 	import ResourcePanel from './panels/ResourcePanel.svelte';
@@ -74,12 +76,27 @@
 		} | null;
 	}
 
+	// ✅ NEW: Add Tile type definition (must match TilePlotsPanel)
+	interface Tile {
+		id: string;
+		xCoord: number;
+		yCoord: number;
+		biome: string;
+		plotSlots: number;
+		foodQuality: number;
+		waterQuality: number;
+		woodQuality: number;
+		stoneQuality: number;
+		oreQuality: number;
+	}
+
 	interface Props {
 		settlementId: string;
 		settlementName: string;
 		onOpenBuildMenu?: () => void; // Handler to open build menu
 		settlementStructures?: SettlementStructure[]; // ✅ NEW: Optional for backward compatibility
 		settlement?: Settlement;
+		tile?: Tile | null; // ✅ NEW: Add tile data
 	}
 
 	let {
@@ -87,11 +104,16 @@
 		settlementName,
 		onOpenBuildMenu,
 		settlementStructures = [],
-		settlement
+		settlement,
+		tile = null
 	}: Props = $props();
 
 	// Settings modal state
 	let settingsOpen = $state(false);
+
+	// ✅ NEW: Extractor selection modal state
+	let extractorSelectorOpen = $state(false);
+	let selectedSlot = $state<number | null>(null);
 
 	// Get resources from store with real-time Socket.IO updates
 	const realResources = $derived.by(() => resourcesStore.getResources(settlementId));
@@ -210,6 +232,14 @@
 
 	const extractors = $derived(settlementStructures.filter((s) => s.category === 'EXTRACTOR'));
 
+	// ✅ DEBUG: Log tile and extractor data
+	$effect(() => {
+		console.log('[Dashboard] Tile data:', tile);
+		console.log('[Dashboard] Extractors:', extractors);
+		console.log('[Dashboard] Tile is truthy:', !!tile);
+		console.log('[Dashboard] Extractors count:', extractors.length);
+	});
+
 	// ✅ NEW: Group extractors by tile for grid display
 	const extractorsByTile = $derived(
 		extractors.reduce(
@@ -294,6 +324,55 @@
 		} catch (error) {
 			console.error('[Dashboard] Failed to demolish building:', error);
 			alert('Network error - could not demolish building');
+		}
+	}
+
+	// ✅ NEW: Handlers for plot slot interactions
+	function handleBuildExtractor(tileId: string, slotPosition: number) {
+		console.log('[Dashboard] Build extractor requested for tile:', tileId, 'slot:', slotPosition);
+		selectedSlot = slotPosition;
+		extractorSelectorOpen = true;
+	}
+
+	async function handleExtractorBuild(tileId: string, slotPosition: number, extractorType: string) {
+		console.log(
+			'[Dashboard] Building extractor:',
+			extractorType,
+			'on tile:',
+			tileId,
+			'slot:',
+			slotPosition
+		);
+
+		try {
+			const response = await fetch(`${API_URL}/structures/create`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					settlementId,
+					buildingType: extractorType,
+					tileId,
+					slotPosition
+				})
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('[Dashboard] Failed to create extractor:', error);
+				alert(error.error || 'Failed to create extractor');
+				return;
+			}
+
+			console.log('[Dashboard] Extractor created successfully');
+			extractorSelectorOpen = false;
+			selectedSlot = null;
+			// TODO: Add toast notification system
+		} catch (error) {
+			console.error('[Dashboard] Failed to create extractor:', error);
+			alert('Network error - could not create extractor');
 		}
 	}
 
@@ -412,6 +491,13 @@
 			}}
 		/>
 	{:else if panel.id === 'structures'}
+		<!-- Phase 1: Tile Plots Panel - Shows plot slots for the settlement's tile -->
+		{#if tile}
+			<div class="mb-4">
+				<TilePlotsPanel {tile} {extractors} onBuildExtractor={handleBuildExtractor} />
+			</div>
+		{/if}
+
 		<!-- Phase 2: Buildings list view -->
 		<BuildingsListPanel
 			{buildings}
@@ -422,7 +508,7 @@
 			onDemolish={handleDemolishBuilding}
 		/>
 
-		<!-- Phase 3: Extractors grid view -->
+		<!-- Phase 3: Extractors grid view (legacy - could be removed) -->
 		{#if Object.keys(extractorsByTile).length > 0}
 			<div class="mt-4">
 				<ExtractorsGridPanel
@@ -471,3 +557,24 @@
 
 <!-- Settings Modal -->
 <SettingsModal bind:open={settingsOpen} onClose={() => (settingsOpen = false)} />
+
+<!-- Extractor Type Selector Modal -->
+{#if tile && extractorSelectorOpen && selectedSlot !== null}
+	<ExtractorTypeSelector
+		bind:open={extractorSelectorOpen}
+		tileId={tile.id}
+		slotPosition={selectedSlot}
+		resourceQuality={{
+			food: tile.foodQuality,
+			water: tile.waterQuality,
+			wood: tile.woodQuality,
+			stone: tile.stoneQuality,
+			ore: tile.oreQuality
+		}}
+		onClose={() => {
+			extractorSelectorOpen = false;
+			selectedSlot = null;
+		}}
+		onBuild={handleExtractorBuild}
+	/>
+{/if}

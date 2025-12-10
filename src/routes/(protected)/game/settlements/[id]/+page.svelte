@@ -97,11 +97,14 @@
 
 <!-- Main Settlement Dashboard -->
 {#if data.settlement}
+	{@const tileData = (data as any).tile}
+	{@const _ = console.log('[SETTLEMENT PAGE] Passing tile to dashboard:', tileData)}
 	<SettlementDashboard
 		settlementId={data.settlement.id}
 		settlementName={data.settlement.name}
 		settlement={data.settlement}
 		settlementStructures={data.settlementStructures}
+		tile={tileData}
 		onOpenBuildMenu={handleOpenBuildMenu}
 	/>
 {:else}
