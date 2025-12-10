@@ -59,7 +59,8 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 	// ✅ NEW: Fetch tile data for the settlement
 	let tile = null;
 	if (settlement?.tileId) {
-		const tileResponse = await fetch(`${API_URL}/tiles/${settlement.tileId}`, {
+		// ✅ FIXED: Correct URL is /regions/tiles/:id (geography router is mounted at /regions)
+		const tileResponse = await fetch(`${API_URL}/regions/tiles/${settlement.tileId}`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}

@@ -112,7 +112,7 @@
 		<div>
 			<h3 id="tile-plots-heading" class="h5 flex items-center gap-2">
 				<span>Plot Slots</span>
-				<span class="badge variant-soft text-xs">{tile.biome}</span>
+				<span class="badge variant-soft text-xs">{JSON.stringify(tile.biome)}</span>
 			</h3>
 			<p class="text-xs text-surface-600-300-token mt-1">
 				📍 Tile ({tile.xCoord}, {tile.yCoord}) • {extractors.length}/{tile.plotSlots} occupied
