@@ -58,6 +58,9 @@ test.describe('Resource Production Flow', () => {
 	// Run tests serially to prevent server overload during parallel world generation
 	test.describe.configure({ mode: 'serial' });
 
+	// Increase timeout for E2E tests (setup + execution can take 40-50 seconds)
+	test.setTimeout(60000); // 60 seconds
+
 	test.beforeEach(async ({ page, request }) => {
 		// Capture all browser console logs for debugging
 		const consoleMessages: string[] = [];
