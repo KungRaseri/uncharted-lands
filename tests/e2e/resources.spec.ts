@@ -206,7 +206,7 @@ test.describe('Resource Production Flow', () => {
 			sessionCookie.value, // Pass session token for authentication
 			{
 				name: uniqueWorldName,
-				size: 'TINY', // Use TINY (5x5) for fast E2E test generation
+				size: 'SMALL', // Use SMALL (10x10 = 100 tiles) for E2E tests - better chance of viable tiles
 				seed: Date.now() // Use unique seed based on timestamp
 			},
 			true // Wait for generation to complete
