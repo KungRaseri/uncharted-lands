@@ -209,9 +209,19 @@ export async function getResourceAmount(
 	const element = page.locator(`[data-resource="${resource}"]`);
 	const text = await element.textContent();
 
-	// Extract number from "Resource: 150 / 1000"
-	const match = text?.match(/(\d+)\s*\/\s*\d+/);
-	return match ? parseInt(match[1], 10) : 0;
+	console.log(`[E2E] getResourceAmount for ${resource}:`, { text });
+
+	// Extract first number (should be current amount)
+	// Format can be "Food 150 / 1000 +2.5/s" or similar
+	const match = text?.match(/(\d+(?:,\d{3})*)/);
+	if (!match) {
+		console.warn(`[E2E] No number found in resource text for ${resource}:`, text);
+		return 0;
+	}
+
+	const amount = parseInt(match[1].replace(/,/g, ''), 10);
+	console.log(`[E2E] Extracted ${resource} amount:`, amount);
+	return amount;
 }
 
 /**
