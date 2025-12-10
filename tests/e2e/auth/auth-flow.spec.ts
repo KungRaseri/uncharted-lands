@@ -39,7 +39,7 @@ test.describe('Authentication Flow', () => {
 
 			// Step 1: Register
 			await registerUser(page, email, password);
-			await page.waitForURL('/', { timeout: 5000 });
+			// registerUser already waits for /game/getting-started - no additional wait needed
 			expect(await isAuthenticated(page)).toBe(true);
 
 			// Step 2: Logout
@@ -48,7 +48,7 @@ test.describe('Authentication Flow', () => {
 
 			// Step 3: Login again
 			await loginUser(page, email, password);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 			expect(await isAuthenticated(page)).toBe(true);
 
 			// Step 4: Verify can access protected routes
@@ -62,7 +62,7 @@ test.describe('Authentication Flow', () => {
 			const password = TEST_USERS.VALID.password;
 
 			await registerUser(page, email, password);
-			await page.waitForURL('/', { timeout: 5000 });
+			// registerUser already waits for /game/getting-started - no additional wait needed
 
 			// Should be authenticated without explicit login
 			expect(await isAuthenticated(page)).toBe(true);
@@ -85,7 +85,7 @@ test.describe('Authentication Flow', () => {
 
 			const page = await browser.newPage();
 			await registerUser(page, userEmail, userPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// registerUser already waits for /game/getting-started - no additional wait needed
 			await page.close();
 		});
 
@@ -106,7 +106,7 @@ test.describe('Authentication Flow', () => {
 		test('should allow authenticated users to access protected routes', async ({ page }) => {
 			// Login first
 			await loginUser(page, userEmail, userPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 
 			// Access protected route
 			await page.goto('/game/world');
@@ -138,17 +138,17 @@ test.describe('Authentication Flow', () => {
 		test('should prevent access to auth pages when logged in', async ({ page }) => {
 			// Login
 			await loginUser(page, userEmail, userPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 
 			// Try to access sign-in page
 			await page.goto('/sign-in');
-			await page.waitForURL('/', { timeout: 5000 });
-			await expect(page).toHaveURL('/');
+			await page.waitForURL('/game', { timeout: 5000 });
+			await expect(page).toHaveURL('/game');
 
 			// Try to access register page
 			await page.goto('/register');
-			await page.waitForURL('/', { timeout: 5000 });
-			await expect(page).toHaveURL('/');
+			await page.waitForURL('/game', { timeout: 5000 });
+			await expect(page).toHaveURL('/game');
 		});
 	});
 
@@ -162,7 +162,7 @@ test.describe('Authentication Flow', () => {
 
 			const page = await browser.newPage();
 			await registerUser(page, userEmail, userPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// registerUser already waits for /game/getting-started - no additional wait needed
 			await page.close();
 		});
 
@@ -173,7 +173,7 @@ test.describe('Authentication Flow', () => {
 
 		test('should maintain session across page navigation', async ({ page }) => {
 			await loginUser(page, userEmail, userPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 
 			// Navigate to different pages
 			await page.goto('/introduction');
@@ -188,7 +188,7 @@ test.describe('Authentication Flow', () => {
 
 		test('should maintain session after page reload', async ({ page }) => {
 			await loginUser(page, userEmail, userPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 
 			// Get session cookie
 			const cookiesBefore = await page.context().cookies();
@@ -209,7 +209,7 @@ test.describe('Authentication Flow', () => {
 
 		test('should lose session after clearing cookies', async ({ page }) => {
 			await loginUser(page, userEmail, userPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 			expect(await isAuthenticated(page)).toBe(true);
 
 			// Clear cookies
@@ -238,7 +238,7 @@ test.describe('Authentication Flow', () => {
 
 			const page = await browser.newPage();
 			await registerUser(page, userEmail, userPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// registerUser already waits for /game/getting-started - no additional wait needed
 			await page.close();
 		});
 
@@ -257,10 +257,10 @@ test.describe('Authentication Flow', () => {
 
 			// Login in both contexts
 			await loginUser(page1, userEmail, userPassword);
-			await page1.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 
 			await loginUser(page2, userEmail, userPassword);
-			await page2.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 
 			// Both should be authenticated
 			expect(await isAuthenticated(page1)).toBe(true);
@@ -307,8 +307,8 @@ test.describe('Authentication Flow', () => {
 			// Try again
 			await page.click('button[type="submit"]');
 
-			// Should eventually succeed
-			await page.waitForURL('/', { timeout: 10000 });
+			// Should eventually succeed (wait for getting-started since this is registration)
+			await page.waitForURL('/game/getting-started', { timeout: 10000 });
 			expect(await isAuthenticated(page)).toBe(true);
 		});
 
@@ -350,8 +350,8 @@ test.describe('Authentication Flow', () => {
 			await submitButton.click();
 			await submitButton.click();
 
-			// Should only register once
-			await page.waitForURL('/', { timeout: 5000 });
+			// Should only register once (wait for getting-started since this is registration)
+			await page.waitForURL('/game/getting-started', { timeout: 5000 });
 			expect(await isAuthenticated(page)).toBe(true);
 		});
 

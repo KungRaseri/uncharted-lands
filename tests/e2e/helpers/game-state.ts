@@ -11,8 +11,72 @@ import { expect } from '@playwright/test';
 // ============================================================================
 
 /**
+ * Wait for Socket.IO to connect to the server
+ * Polls window.socket.connected until true or timeout
+ *
+ * @param page - Playwright page object
+ * @param timeoutMs - Maximum time to wait in milliseconds (default: 10000)
+ * @returns Promise<void> - Resolves when connected, rejects on timeout
+ *
+ * @example
+ * await page.goto('/game/settlements/abc123');
+ * await waitForSocketConnection(page);
+ * await joinWorldRoom(page, worldId, playerId);
+ */
+export async function waitForSocketConnection(
+	page: Page,
+	timeoutMs: number = 10000
+): Promise<void> {
+	console.log('[E2E] Waiting for Socket.IO connection...', { timeoutMs });
+
+	const startTime = Date.now();
+	const pollInterval = 100; // Check every 100ms
+
+	while (Date.now() - startTime < timeoutMs) {
+		const isConnected = await page.evaluate(() => {
+			try {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const w = globalThis as any;
+				const socket = w.socket || w.__socket || w.io?.sockets?.[0];
+
+				if (!socket) {
+					console.log('[E2E] Socket.IO not found on window yet');
+					return false;
+				}
+
+				if (socket.connected) {
+					console.log('[E2E] Socket.IO connected!', { socketId: socket.id });
+					return true;
+				}
+
+				console.log('[E2E] Socket.IO found but not connected yet');
+				return false;
+			} catch (error) {
+				console.error('[E2E] Error checking socket connection:', error);
+				return false;
+			}
+		});
+
+		if (isConnected) {
+			const duration = Date.now() - startTime;
+			console.log('[E2E] Socket.IO connection established', { duration });
+			return;
+		}
+
+		// Wait before next poll
+		await page.waitForTimeout(pollInterval);
+	}
+
+	// Timeout
+	const duration = Date.now() - startTime;
+	throw new Error(`Socket.IO connection timeout after ${duration}ms`);
+}
+
+/**
  * Manually join a world room via Socket.IO
  * This is a workaround if the game layout's automatic join doesn't trigger
+ *
+ * NOTE: Call waitForSocketConnection() BEFORE this function
  */
 export async function joinWorldRoom(page: Page, worldId: string, playerId: string): Promise<void> {
 	console.log('[E2E] joinWorldRoom called with:', { worldId, playerId });

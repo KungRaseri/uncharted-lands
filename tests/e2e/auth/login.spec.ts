@@ -35,7 +35,7 @@ test.describe('Login', () => {
 
 		const page = await browser.newPage();
 		await registerUser(page, testUserEmail, testUserPassword);
-		await page.waitForURL('/', { timeout: 5000 });
+		// registerUser already waits for /game/getting-started - no additional wait needed
 		await page.close();
 	});
 
@@ -58,7 +58,7 @@ test.describe('Login', () => {
 
 		test('should set session cookie after successful login', async ({ page }) => {
 			await loginUser(page, testUserEmail, testUserPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 
 			const cookies = await page.context().cookies();
 			const sessionCookie = cookies.find((c) => c.name === 'session');
@@ -71,7 +71,7 @@ test.describe('Login', () => {
 
 		test('should persist session across page reloads', async ({ page }) => {
 			await loginUser(page, testUserEmail, testUserPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game - no additional wait needed
 
 			// Reload the page
 			await page.reload();

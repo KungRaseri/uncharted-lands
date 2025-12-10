@@ -74,16 +74,12 @@ export async function registerUser(page: Page, email: string, password: string):
 	await page.fill('input[name="email"]', email);
 	await page.fill('input[name="password"]', password);
 
-	// Click submit button (don't wait for navigation here)
-	// Registration redirects new users directly to /game/getting-started
-	// where they choose server, world, and username
-	await page.locator('button[type="submit"]').click({ timeout: 5000 });
-
-	// Wait for redirect to getting-started page
-	await page.waitForURL('/game/getting-started', {
-		waitUntil: 'networkidle',
-		timeout: 10000
-	});
+	// Click submit and wait for navigation to complete
+	// SvelteKit form action will redirect to /game/getting-started
+	await Promise.all([
+		page.waitForURL('/game/getting-started', { timeout: 15000 }),
+		page.locator('button[type="submit"]').click({ timeout: 5000 })
+	]);
 }
 
 /**

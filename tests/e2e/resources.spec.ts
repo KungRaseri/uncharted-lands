@@ -20,7 +20,8 @@ import {
 	countStructures,
 	assertStructureExists,
 	assertGameLoopRunning,
-	joinWorldRoom
+	joinWorldRoom,
+	waitForSocketConnection
 } from './helpers/game-state';
 import {
 	TEST_DISASTERS,
@@ -36,6 +37,14 @@ import {
 	generateUniqueEmail,
 	assertRedirectedToGettingStarted
 } from './auth/auth.helpers';
+import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
+
+// ============================================================================
+// TEST CONFIGURATION
+// ============================================================================
+
+// Run tests serially to prevent server overload during parallel world generation
+test.describe.configure({ mode: 'serial' });
 
 // ============================================================================
 // TEST SETUP & TEARDOWN
@@ -143,56 +152,28 @@ test.beforeEach(async ({ page, request }) => {
 		console.log('[E2E] Using existing test server:', testServer.id);
 	}
 
-	// 5. Get or create test world (with server-side generation - now possible because user is admin)
-	const worldsResponse = await request.get(`${apiUrl}/worlds`, {
-		headers: {
-			Cookie: `session=${sessionCookie.value}`
-		}
-	});
-
-	if (!worldsResponse.ok()) {
-		throw new Error(`Failed to get worlds: ${worldsResponse.status()}`);
-	}
-
-	const worlds = await worldsResponse.json();
-	let world = worlds.find((w: { name: string }) => w.name === 'E2E Test World');
-
-	if (!world) {
-		console.log('[E2E] Creating test world with server-side generation...');
-		const createWorldResponse = await request.post(`${apiUrl}/worlds`, {
-			headers: {
-				Cookie: `session=${sessionCookie.value}`
-			},
-			data: {
-				name: 'E2E Test World',
-				serverId: testServer.id, // ✅ REQUIRED
-				generate: true, // ✅ REQUIRED for tile generation
-				width: 100, // ✅ SMALL world = 100x100
-				height: 100, // ✅ SMALL world = 100x100
-				elevationSeed: 123456789, // Consistent seed for reproducibility
-				worldTemplateType: 'STANDARD' // Optional
-			}
-		});
-
-		if (!createWorldResponse.ok()) {
-			throw new Error(
-				`Failed to create world: ${createWorldResponse.status()} ${await createWorldResponse.text()}`
-			);
-		}
-
-		world = await createWorldResponse.json();
-
-		// Verify world is ready
-		if (world.status !== 'ready') {
-			throw new Error(`World generation failed, status: ${world.status}`);
-		}
-
-		console.log(
-			`[E2E] Test world created with ${world.regionCount || 'unknown'} regions and ${world.tileCount || 'unknown'} tiles`
-		);
-	}
+	// 5. Create test world (with async generation polling)
+	console.log('[E2E] Creating test world...');
+	const world = await createWorldViaAPI(
+		request,
+		testServer.id,
+		sessionCookie.value, // Pass session token for authentication
+		{
+			name: 'E2E Test World',
+			size: 'TINY', // Use TINY (5x5) for fast E2E test generation
+			seed: 123456789
+		},
+		true // Wait for generation to complete
+	);
 
 	testWorldId = world.id;
+
+	console.log('[E2E] Test world ready:', {
+		id: world.id,
+		status: world.status,
+		regionCount: world.regionCount,
+		tileCount: world.tileCount
+	});
 
 	// 5. Create test settlement via API (with session cookie and required fields)
 	const settlementResponse = await request.post(`${apiUrl}/settlements`, {
@@ -220,8 +201,8 @@ test.beforeEach(async ({ page, request }) => {
 	// Navigate to settlement and wait for network idle (Socket.IO connection + initial data load)
 	await page.goto(`/game/settlements/${testSettlementId}`, { waitUntil: 'networkidle' });
 
-	// Additional wait for Socket.IO to fully connect and join world
-	await page.waitForTimeout(2000);
+	// Wait for Socket.IO to connect before attempting to join world
+	await waitForSocketConnection(page);
 
 	// Manually join world room (workaround for automatic join not working in E2E)
 	await joinWorldRoom(page, testWorldId, account.id);
@@ -249,6 +230,11 @@ test.afterEach(async ({ request }) => {
 				Cookie: `session=${sessionCookieValue}`
 			}
 		});
+	}
+
+	// Clean up test world
+	if (testWorldId && sessionCookieValue) {
+		await deleteWorld(request, testWorldId);
 	}
 
 	// Clear any active disasters
