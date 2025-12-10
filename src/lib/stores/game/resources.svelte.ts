@@ -76,28 +76,70 @@ function initializeListeners() {
 	});
 
 	/**
-	 * Single resource update (amount change)
+	 * Resource update from game loop (all resources updated at once)
 	 */
 	socket.on(
 		'resource-update',
-		(data: { settlementId: string; type: ResourceType; current: number; capacity?: number }) => {
+		(data: {
+			type: 'auto-production' | 'manual-collection';
+			settlementId: string;
+			resources: { food: number; water: number; wood: number; stone: number; ore: number };
+			production: { food: number; water: number; wood: number; stone: number; ore: number };
+			consumption: { food: number; water: number; wood: number; stone: number; ore: number };
+			netProduction: { food: number; water: number; wood: number; stone: number; ore: number };
+			population: number;
+			timestamp: number;
+		}) => {
 			console.log('[ResourcesStore] Received resource-update:', data);
 
-			if (!data.settlementId || !data.type) {
+			if (!data.settlementId || !data.resources) {
 				console.error('[ResourcesStore] Invalid resource-update data:', data);
 				return;
 			}
 
 			const existing = state.resources.get(data.settlementId);
-			if (existing?.[data.type]) {
-				existing[data.type].current = data.current;
-				if (data.capacity !== undefined) {
-					existing[data.type].capacity = data.capacity;
-				}
+			if (existing) {
+				// Update all resource current amounts
+				existing.food.current = data.resources.food;
+				existing.water.current = data.resources.water;
+				existing.wood.current = data.resources.wood;
+				existing.stone.current = data.resources.stone;
+				existing.ore.current = data.resources.ore;
+
+				// Update production rates (convert from per-interval to per-hour)
+				// Production rates in the payload are for the tick interval, need to convert to hourly
+				// Note: In E2E this is 10 seconds, in production it's 3600 seconds (1 hour)
+				const RESOURCE_INTERVAL_SEC = 10; // From environment variable RESOURCE_INTERVAL_SEC
+				const secondsPerHour = 3600;
+				const intervalsPerHour = secondsPerHour / RESOURCE_INTERVAL_SEC;
+
+				existing.food.productionRate = data.production.food * intervalsPerHour;
+				existing.water.productionRate = data.production.water * intervalsPerHour;
+				existing.wood.productionRate = data.production.wood * intervalsPerHour;
+				existing.stone.productionRate = data.production.stone * intervalsPerHour;
+				existing.ore.productionRate = data.production.ore * intervalsPerHour;
+
+				existing.food.consumptionRate = data.consumption.food * intervalsPerHour;
+				existing.water.consumptionRate = data.consumption.water * intervalsPerHour;
+				existing.wood.consumptionRate = data.consumption.wood * intervalsPerHour;
+				existing.stone.consumptionRate = data.consumption.stone * intervalsPerHour;
+				existing.ore.consumptionRate = data.consumption.ore * intervalsPerHour;
+
 				existing.lastUpdate = Date.now();
 
 				// Trigger reactivity
 				state.resources = new Map(state.resources);
+
+				console.log('[ResourcesStore] Updated all resources for settlement:', data.settlementId, {
+					resources: data.resources,
+					productionRates: {
+						food: existing.food.productionRate,
+						water: existing.water.productionRate,
+						wood: existing.wood.productionRate,
+						stone: existing.stone.productionRate,
+						ore: existing.ore.productionRate
+					}
+				});
 			} else {
 				console.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for resource update`
