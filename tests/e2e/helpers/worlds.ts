@@ -41,7 +41,7 @@ export async function waitForWorldGeneration(
 		const world = await response.json();
 
 		// Check if generation is complete
-		if (world.status === 'READY') {
+		if (world.status === 'ready') {
 			console.log('[E2E] World generation complete!', {
 				worldId,
 				status: world.status,
@@ -51,7 +51,7 @@ export async function waitForWorldGeneration(
 		}
 
 		// Check for failure
-		if (world.status === 'FAILED') {
+		if (world.status === 'failed') {
 			throw new Error(`World generation failed: ${world.id}`);
 		}
 
@@ -128,6 +128,13 @@ export async function createWorldViaAPI(
 
 	// If requested, wait for generation to complete
 	if (waitForGeneration) {
+		// Check if world is already ready (synchronous generation for tiny worlds)
+		if (world.status === 'ready') {
+			console.log('[E2E] World generation completed synchronously');
+			return world;
+		}
+
+		// Otherwise poll for completion
 		return await waitForWorldGeneration(api, world.id, sessionToken);
 	}
 
