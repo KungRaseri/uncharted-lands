@@ -4,14 +4,19 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { fetchStructureMetadata, type StructureMetadata } from '$lib/api/structures';
 
-export const load = (async ({ params, depends, cookies, fetch }) => {
+export const load = (async ({ params, depends, cookies }) => {
 	// Mark this data as dependent on game state changes
 	depends('game:settlement');
 	depends('game:data');
 
 	const sessionToken = cookies.get('session');
 
-	// Fetch settlement data (external API - need explicit Cookie header)
+	logger.debug('[SETTLEMENT DETAIL] Session token', {
+		hasToken: !!sessionToken,
+		tokenLength: sessionToken?.length
+	});
+
+	// Fetch settlement data (external Express API - requires explicit Cookie header)
 	const settlementResponse = await fetch(`${SERVER_API_URL}/settlements/${params.id}`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
@@ -47,7 +52,14 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 		// Continue without structure metadata - component can show error
 	}
 
-	// ✅ NEW: Fetch settlement structures (external API - need explicit Cookie header)
+	// ✅ NEW: Fetch settlement structures (external Express API - requires explicit Cookie header)
+	logger.debug('[SETTLEMENT DETAIL] Fetching structures with auth', {
+		url: `${SERVER_API_URL}/structures/by-settlement/${params.id}`,
+		hasSessionToken: !!sessionToken,
+		tokenLength: sessionToken?.length,
+		cookieHeader: `session=${sessionToken?.substring(0, 8)}...`
+	});
+
 	const structuresResponse = await fetch(
 		`${SERVER_API_URL}/structures/by-settlement/${params.id}`,
 		{
@@ -79,6 +91,13 @@ export const load = (async ({ params, depends, cookies, fetch }) => {
 	// ✅ NEW: Fetch tile data for the settlement
 	let tile = null;
 	if (settlement?.tileId) {
+		logger.debug('[SETTLEMENT DETAIL] Fetching tile with auth', {
+			url: `${SERVER_API_URL}/regions/tiles/${settlement.tileId}`,
+			hasSessionToken: !!sessionToken,
+			tokenLength: sessionToken?.length,
+			cookieHeader: `session=${sessionToken?.substring(0, 8)}...`
+		});
+
 		// ✅ FIXED: Correct URL is /regions/tiles/:id (geography router is mounted at /regions)
 		const tileResponse = await fetch(`${SERVER_API_URL}/regions/tiles/${settlement.tileId}`, {
 			headers: {
