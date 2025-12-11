@@ -14,11 +14,15 @@ export const load = (async ({ locals, depends, cookies }) => {
 
 	const sessionToken = cookies.get('session');
 
-	const response = await fetch(`${SERVER_API_URL}/settlements?playerProfileId=${profileId}`, {
-		headers: {
-			Cookie: `session=${sessionToken}`
+	// ✅ EXTERNAL Express API (use native fetch)
+	const response = await globalThis.fetch(
+		`${SERVER_API_URL}/settlements?playerProfileId=${profileId}`,
+		{
+			headers: {
+				Cookie: `session=${sessionToken}`
+			}
 		}
-	});
+	);
 
 	if (!response.ok) {
 		logger.error('[SETTLEMENTS] Failed to fetch settlements', {

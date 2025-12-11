@@ -4,7 +4,7 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { fetchStructureMetadata, type StructureMetadata } from '$lib/api/structures';
 
-export const load = (async ({ params, depends, cookies }) => {
+export const load = (async ({ params, depends, cookies, fetch: eventFetch }) => {
 	// Mark this data as dependent on game state changes
 	depends('game:settlement');
 	depends('game:data');
@@ -16,8 +16,9 @@ export const load = (async ({ params, depends, cookies }) => {
 		tokenLength: sessionToken?.length
 	});
 
+	// ✅ Use native fetch for external Express API calls
 	// Fetch settlement data (external Express API - requires explicit Cookie header)
-	const settlementResponse = await fetch(`${SERVER_API_URL}/settlements/${params.id}`, {
+	const settlementResponse = await globalThis.fetch(`${SERVER_API_URL}/settlements/${params.id}`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
 		}
@@ -38,10 +39,10 @@ export const load = (async ({ params, depends, cookies }) => {
 
 	const settlement = await settlementResponse.json();
 
-	// Fetch structure metadata from API (use event.fetch)
+	// ✅ Fetch structure metadata from INTERNAL SvelteKit API (use event.fetch)
 	let structures: StructureMetadata[] = [];
 	try {
-		structures = await fetchStructureMetadata(false, fetch);
+		structures = await fetchStructureMetadata(false, eventFetch);
 		logger.debug('[SETTLEMENT DETAIL] Structure metadata loaded', {
 			count: structures.length
 		});
@@ -52,7 +53,7 @@ export const load = (async ({ params, depends, cookies }) => {
 		// Continue without structure metadata - component can show error
 	}
 
-	// ✅ NEW: Fetch settlement structures (external Express API - requires explicit Cookie header)
+	// ✅ Fetch settlement structures from EXTERNAL Express API (use native fetch)
 	logger.debug('[SETTLEMENT DETAIL] Fetching structures with auth', {
 		url: `${SERVER_API_URL}/structures/by-settlement/${params.id}`,
 		hasSessionToken: !!sessionToken,
@@ -60,7 +61,7 @@ export const load = (async ({ params, depends, cookies }) => {
 		cookieHeader: `session=${sessionToken?.substring(0, 8)}...`
 	});
 
-	const structuresResponse = await fetch(
+	const structuresResponse = await globalThis.fetch(
 		`${SERVER_API_URL}/structures/by-settlement/${params.id}`,
 		{
 			headers: {
@@ -88,7 +89,7 @@ export const load = (async ({ params, depends, cookies }) => {
 		}
 	}
 
-	// ✅ NEW: Fetch tile data for the settlement
+	// ✅ Fetch tile data from EXTERNAL Express API (use native fetch)
 	let tile = null;
 	if (settlement?.tileId) {
 		logger.debug('[SETTLEMENT DETAIL] Fetching tile with auth', {
@@ -99,11 +100,14 @@ export const load = (async ({ params, depends, cookies }) => {
 		});
 
 		// ✅ FIXED: Correct URL is /regions/tiles/:id (geography router is mounted at /regions)
-		const tileResponse = await fetch(`${SERVER_API_URL}/regions/tiles/${settlement.tileId}`, {
-			headers: {
-				Cookie: `session=${sessionToken}`
+		const tileResponse = await globalThis.fetch(
+			`${SERVER_API_URL}/regions/tiles/${settlement.tileId}`,
+			{
+				headers: {
+					Cookie: `session=${sessionToken}`
+				}
 			}
-		});
+		);
 
 		if (tileResponse.ok) {
 			tile = await tileResponse.json();
@@ -136,7 +140,7 @@ export const load = (async ({ params, depends, cookies }) => {
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-	buildStructure: async ({ request, params, cookies, fetch }) => {
+	buildStructure: async ({ request, params, cookies }) => {
 		const formData = await request.formData();
 		const sessionToken = cookies.get('session');
 		const structureId = formData.get('structureId');
@@ -176,9 +180,9 @@ export const actions: Actions = {
 				requestBody.slotPosition = Number.parseInt(slotPosition, 10);
 			}
 
-			// Call the REST API endpoint for building structures
+			// ✅ Call the REST API endpoint - EXTERNAL Express API (use native fetch)
 			// External API - need explicit Cookie header for authentication
-			const response = await fetch(`${SERVER_API_URL}/structures/create`, {
+			const response = await globalThis.fetch(`${SERVER_API_URL}/structures/create`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -235,7 +239,7 @@ export const actions: Actions = {
 		}
 	},
 
-	upgradeStructure: async ({ request, cookies, fetch }) => {
+	upgradeStructure: async ({ request, cookies }) => {
 		const formData = await request.formData();
 		const sessionToken = cookies.get('session');
 		const structureId = formData.get('structureId');
@@ -249,13 +253,17 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}/upgrade`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Cookie: `session=${sessionToken}`
+			// ✅ EXTERNAL Express API (use native fetch)
+			const response = await globalThis.fetch(
+				`${SERVER_API_URL}/structures/${structureId}/upgrade`,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Cookie: `session=${sessionToken}`
+					}
 				}
-			});
+			);
 
 			if (!response.ok) {
 				const result = await response.json();
@@ -296,7 +304,7 @@ export const actions: Actions = {
 		}
 	},
 
-	repairStructure: async ({ request, cookies, fetch }) => {
+	repairStructure: async ({ request, cookies }) => {
 		const formData = await request.formData();
 		const sessionToken = cookies.get('session');
 		const structureId = formData.get('structureId');
@@ -310,13 +318,17 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}/repair`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Cookie: `session=${sessionToken}`
+			// ✅ EXTERNAL Express API (use native fetch)
+			const response = await globalThis.fetch(
+				`${SERVER_API_URL}/structures/${structureId}/repair`,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Cookie: `session=${sessionToken}`
+					}
 				}
-			});
+			);
 
 			if (!response.ok) {
 				const result = await response.json();
@@ -357,7 +369,7 @@ export const actions: Actions = {
 		}
 	},
 
-	demolishStructure: async ({ request, cookies, fetch }) => {
+	demolishStructure: async ({ request, cookies }) => {
 		const formData = await request.formData();
 		const sessionToken = cookies.get('session');
 		const structureId = formData.get('structureId');
@@ -371,7 +383,8 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}`, {
+			// ✅ EXTERNAL Express API (use native fetch)
+			const response = await globalThis.fetch(`${SERVER_API_URL}/structures/${structureId}`, {
 				method: 'DELETE',
 				headers: {
 					'Content-Type': 'application/json',

@@ -15,8 +15,8 @@ export const load: PageServerLoad = async ({ locals, depends, cookies }) => {
 
 	const sessionToken = cookies.get('session');
 
-	// Fetch settlements from REST API
-	const response = await fetch(
+	// ✅ Fetch settlements from EXTERNAL Express API (use native fetch)
+	const response = await globalThis.fetch(
 		`${SERVER_API_URL}/settlements?playerProfileId=${locals.account.profile.id}`,
 		{
 			headers: {

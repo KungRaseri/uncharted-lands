@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 };
 
-const register: Action = async ({ cookies, request, fetch }) => {
+const register: Action = async ({ cookies, request }) => {
 	const data = await request.formData();
 	const email = data.get('email');
 	const password = data.get('password');
@@ -69,9 +69,10 @@ const register: Action = async ({ cookies, request, fetch }) => {
 	}
 
 	try {
+		// ✅ Send to EXTERNAL Express API (use native fetch)
 		// Send plain password to API (server will handle hashing)
 		// This is secure when using HTTPS
-		const response = await fetch(`${SERVER_API_URL}/auth/register`, {
+		const response = await globalThis.fetch(`${SERVER_API_URL}/auth/register`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({

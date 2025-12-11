@@ -12,7 +12,8 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = async ({ cookies }) => {
 	try {
 		const sessionToken = cookies.get('session');
-		const response = await fetch(`${SERVER_API_URL}/structures/metadata`, {
+		// ✅ Use native fetch for EXTERNAL Express API
+		const response = await globalThis.fetch(`${SERVER_API_URL}/structures/metadata`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}

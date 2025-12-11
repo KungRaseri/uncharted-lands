@@ -31,8 +31,8 @@ export const load: PageServerLoad = async ({ locals, cookies, setHeaders }) => {
 			hasSessionToken: !!sessionToken
 		});
 
-		// Fetch servers
-		const serversResponse = await fetch(`${SERVER_API_URL}/servers`, {
+		// ✅ Fetch servers from EXTERNAL Express API (use native fetch)
+		const serversResponse = await globalThis.fetch(`${SERVER_API_URL}/servers`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			},
@@ -49,8 +49,8 @@ export const load: PageServerLoad = async ({ locals, cookies, setHeaders }) => {
 
 		const servers = await serversResponse.json();
 
-		// Fetch worlds
-		const worldsResponse = await fetch(`${SERVER_API_URL}/worlds`, {
+		// ✅ Fetch worlds from EXTERNAL Express API (use native fetch)
+		const worldsResponse = await globalThis.fetch(`${SERVER_API_URL}/worlds`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			},
