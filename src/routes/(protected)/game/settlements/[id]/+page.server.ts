@@ -4,14 +4,14 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { fetchStructureMetadata, type StructureMetadata } from '$lib/api/structures';
 
-export const load = (async ({ params, depends, cookies }) => {
+export const load = (async ({ params, depends, cookies, fetch }) => {
 	// Mark this data as dependent on game state changes
 	depends('game:settlement');
 	depends('game:data');
 
 	const sessionToken = cookies.get('session');
 
-	// Fetch settlement data (use native fetch, not SvelteKit fetch)
+	// Fetch settlement data (external API - need explicit Cookie header)
 	const settlementResponse = await fetch(`${SERVER_API_URL}/settlements/${params.id}`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
@@ -33,10 +33,10 @@ export const load = (async ({ params, depends, cookies }) => {
 
 	const settlement = await settlementResponse.json();
 
-	// Fetch structure metadata from API (use default native fetch)
+	// Fetch structure metadata from API (use event.fetch)
 	let structures: StructureMetadata[] = [];
 	try {
-		structures = await fetchStructureMetadata(false);
+		structures = await fetchStructureMetadata(false, fetch);
 		logger.debug('[SETTLEMENT DETAIL] Structure metadata loaded', {
 			count: structures.length
 		});
@@ -47,7 +47,7 @@ export const load = (async ({ params, depends, cookies }) => {
 		// Continue without structure metadata - component can show error
 	}
 
-	// ✅ NEW: Fetch settlement structures
+	// ✅ NEW: Fetch settlement structures (external API - need explicit Cookie header)
 	const structuresResponse = await fetch(
 		`${SERVER_API_URL}/structures/by-settlement/${params.id}`,
 		{
@@ -117,8 +117,9 @@ export const load = (async ({ params, depends, cookies }) => {
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-	buildStructure: async ({ request, params, cookies }) => {
+	buildStructure: async ({ request, params, cookies, fetch }) => {
 		const formData = await request.formData();
+		const sessionToken = cookies.get('session');
 		const structureId = formData.get('structureId');
 		const tileId = formData.get('tileId');
 		const slotPosition = formData.get('slotPosition');
@@ -130,8 +131,6 @@ export const actions: Actions = {
 				message: 'Invalid structure ID'
 			});
 		}
-
-		const sessionToken = cookies.get('session');
 
 		try {
 			// Build request body with optional tileId and slotPosition for extractors
@@ -159,11 +158,12 @@ export const actions: Actions = {
 			}
 
 			// Call the REST API endpoint for building structures
+			// External API - need explicit Cookie header for authentication
 			const response = await fetch(`${SERVER_API_URL}/structures/create`, {
 				method: 'POST',
 				headers: {
-					Cookie: `session=${sessionToken}`,
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					Cookie: `session=${sessionToken}`
 				},
 				body: JSON.stringify(requestBody)
 			});
@@ -216,8 +216,9 @@ export const actions: Actions = {
 		}
 	},
 
-	upgradeStructure: async ({ request, cookies }) => {
+	upgradeStructure: async ({ request, cookies, fetch }) => {
 		const formData = await request.formData();
+		const sessionToken = cookies.get('session');
 		const structureId = formData.get('structureId');
 
 		if (!structureId || typeof structureId !== 'string') {
@@ -228,14 +229,12 @@ export const actions: Actions = {
 			});
 		}
 
-		const sessionToken = cookies.get('session');
-
 		try {
 			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}/upgrade`, {
 				method: 'POST',
 				headers: {
-					Cookie: `session=${sessionToken}`,
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					Cookie: `session=${sessionToken}`
 				}
 			});
 
@@ -278,8 +277,9 @@ export const actions: Actions = {
 		}
 	},
 
-	repairStructure: async ({ request, cookies }) => {
+	repairStructure: async ({ request, cookies, fetch }) => {
 		const formData = await request.formData();
+		const sessionToken = cookies.get('session');
 		const structureId = formData.get('structureId');
 
 		if (!structureId || typeof structureId !== 'string') {
@@ -290,14 +290,12 @@ export const actions: Actions = {
 			});
 		}
 
-		const sessionToken = cookies.get('session');
-
 		try {
 			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}/repair`, {
 				method: 'POST',
 				headers: {
-					Cookie: `session=${sessionToken}`,
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					Cookie: `session=${sessionToken}`
 				}
 			});
 
@@ -340,8 +338,9 @@ export const actions: Actions = {
 		}
 	},
 
-	demolishStructure: async ({ request, cookies }) => {
+	demolishStructure: async ({ request, cookies, fetch }) => {
 		const formData = await request.formData();
+		const sessionToken = cookies.get('session');
 		const structureId = formData.get('structureId');
 
 		if (!structureId || typeof structureId !== 'string') {
@@ -352,14 +351,12 @@ export const actions: Actions = {
 			});
 		}
 
-		const sessionToken = cookies.get('session');
-
 		try {
 			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}`, {
 				method: 'DELETE',
 				headers: {
-					Cookie: `session=${sessionToken}`,
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					Cookie: `session=${sessionToken}`
 				}
 			});
 
