@@ -112,6 +112,12 @@ describe('MobileBuildMenu', () => {
 
 	describe('Structure Interaction', () => {
 		it('should call onClose when structure is selected', async () => {
+			// Mock fetch to return successful response
+			globalThis.fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () => ({ success: true, data: { id: 'structure-1' } })
+			});
+
 			const onCloseMock = vi.fn();
 			const { container } = render(MobileBuildMenu, {
 				props: { ...mockProps, onClose: onCloseMock }
@@ -121,7 +127,10 @@ describe('MobileBuildMenu', () => {
 			if (structureCards.length > 0) {
 				await fireEvent.click(structureCards[0]);
 
-				expect(onCloseMock).toHaveBeenCalledTimes(1);
+				// Wait for async handleBuild to complete
+				await vi.waitFor(() => {
+					expect(onCloseMock).toHaveBeenCalledTimes(1);
+				});
 			}
 		});
 	});
