@@ -32,7 +32,6 @@
 	import ExtractorsGridPanel from './panels/ExtractorsGridPanel.svelte';
 	import ProductionOverviewPanel from './panels/ProductionOverviewPanel.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
-	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 	import { alertsStore } from '$lib/stores/game/alerts.svelte';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
@@ -255,19 +254,22 @@
 		)
 	);
 
-	// ✅ NEW: Action handlers for buildings
+	// ✅ FIXED: Action handlers for buildings - Use form submissions to go through SvelteKit actions
 	async function handleUpgradeBuilding(buildingId: string) {
 		try {
-			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/${buildingId}/upgrade`, {
+			const formData = new FormData();
+			formData.append('structureId', buildingId);
+
+			const response = await fetch('?/upgradeStructure', {
 				method: 'POST',
-				credentials: 'include'
+				body: formData
 			});
 
-			if (!response.ok) {
-				const error = await response.json();
-				console.error('[Dashboard] Failed to upgrade building:', error);
-				// TODO: Add toast notification system
-				alert(error.error || 'Failed to upgrade building');
+			const result = await response.json();
+
+			if (!result.success && result.success !== undefined) {
+				console.error('[Dashboard] Failed to upgrade building:', result);
+				alert(result.message || 'Failed to upgrade building');
 				return;
 			}
 
@@ -281,15 +283,19 @@
 
 	async function handleRepairBuilding(buildingId: string) {
 		try {
-			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/${buildingId}/repair`, {
+			const formData = new FormData();
+			formData.append('structureId', buildingId);
+
+			const response = await fetch('?/repairStructure', {
 				method: 'POST',
-				credentials: 'include'
+				body: formData
 			});
 
-			if (!response.ok) {
-				const error = await response.json();
-				console.error('[Dashboard] Failed to repair building:', error);
-				alert(error.error || 'Failed to repair building');
+			const result = await response.json();
+
+			if (!result.success && result.success !== undefined) {
+				console.error('[Dashboard] Failed to repair building:', result);
+				alert(result.message || 'Failed to repair building');
 				return;
 			}
 
@@ -308,15 +314,19 @@
 		}
 
 		try {
-			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/${buildingId}`, {
-				method: 'DELETE',
-				credentials: 'include'
+			const formData = new FormData();
+			formData.append('structureId', buildingId);
+
+			const response = await fetch('?/demolishStructure', {
+				method: 'POST',
+				body: formData
 			});
 
-			if (!response.ok) {
-				const error = await response.json();
-				console.error('[Dashboard] Failed to demolish building:', error);
-				alert(error.error || 'Failed to demolish building');
+			const result = await response.json();
+
+			if (!result.success && result.success !== undefined) {
+				console.error('[Dashboard] Failed to demolish building:', result);
+				alert(result.message || 'Failed to demolish building');
 				return;
 			}
 

@@ -135,16 +135,17 @@ export const actions: Actions = {
 
 		try {
 			// Build request body with optional tileId and slotPosition for extractors
+			// Note: API expects "structureName" not "buildingType"
 			const requestBody: {
 				settlementId: string;
-				buildingType: string;
+				structureName: string;
 				name?: string;
 				description?: string;
 				tileId?: string;
 				slotPosition?: number;
 			} = {
 				settlementId: params.id,
-				buildingType: structureId,
+				structureName: structureId,
 				name: undefined,
 				description: undefined
 			};
@@ -211,6 +212,191 @@ export const actions: Actions = {
 			return fail(500, {
 				success: false,
 				message: 'An error occurred while building the structure'
+			});
+		}
+	},
+
+	upgradeStructure: async ({ request, cookies }) => {
+		const formData = await request.formData();
+		const structureId = formData.get('structureId');
+
+		if (!structureId || typeof structureId !== 'string') {
+			logger.error('[UPGRADE STRUCTURE] Invalid structure ID', { structureId });
+			return fail(400, {
+				success: false,
+				message: 'Invalid structure ID'
+			});
+		}
+
+		const sessionToken = cookies.get('session');
+
+		try {
+			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}/upgrade`, {
+				method: 'POST',
+				headers: {
+					Cookie: `session=${sessionToken}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				const result = await response.json();
+				logger.error('[UPGRADE STRUCTURE] Failed to upgrade structure', {
+					structureId,
+					status: response.status,
+					error: result
+				});
+
+				return fail(response.status, {
+					success: false,
+					message: result.message || 'Failed to upgrade structure',
+					reasons: [result.code || 'UNKNOWN_ERROR']
+				});
+			}
+
+			const result = await response.json();
+
+			logger.info('[UPGRADE STRUCTURE] Structure upgraded successfully', {
+				structureId,
+				structureName: result.name
+			});
+
+			return {
+				success: true,
+				message: `${result.name || 'Structure'} upgraded successfully!`
+			};
+		} catch (error) {
+			logger.error('[UPGRADE STRUCTURE] Error upgrading structure', {
+				structureId,
+				error
+			});
+
+			return fail(500, {
+				success: false,
+				message: 'An error occurred while upgrading the structure'
+			});
+		}
+	},
+
+	repairStructure: async ({ request, cookies }) => {
+		const formData = await request.formData();
+		const structureId = formData.get('structureId');
+
+		if (!structureId || typeof structureId !== 'string') {
+			logger.error('[REPAIR STRUCTURE] Invalid structure ID', { structureId });
+			return fail(400, {
+				success: false,
+				message: 'Invalid structure ID'
+			});
+		}
+
+		const sessionToken = cookies.get('session');
+
+		try {
+			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}/repair`, {
+				method: 'POST',
+				headers: {
+					Cookie: `session=${sessionToken}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				const result = await response.json();
+				logger.error('[REPAIR STRUCTURE] Failed to repair structure', {
+					structureId,
+					status: response.status,
+					error: result
+				});
+
+				return fail(response.status, {
+					success: false,
+					message: result.message || 'Failed to repair structure',
+					reasons: [result.code || 'UNKNOWN_ERROR']
+				});
+			}
+
+			const result = await response.json();
+
+			logger.info('[REPAIR STRUCTURE] Structure repaired successfully', {
+				structureId,
+				structureName: result.name
+			});
+
+			return {
+				success: true,
+				message: `${result.name || 'Structure'} repaired successfully!`
+			};
+		} catch (error) {
+			logger.error('[REPAIR STRUCTURE] Error repairing structure', {
+				structureId,
+				error
+			});
+
+			return fail(500, {
+				success: false,
+				message: 'An error occurred while repairing the structure'
+			});
+		}
+	},
+
+	demolishStructure: async ({ request, cookies }) => {
+		const formData = await request.formData();
+		const structureId = formData.get('structureId');
+
+		if (!structureId || typeof structureId !== 'string') {
+			logger.error('[DEMOLISH STRUCTURE] Invalid structure ID', { structureId });
+			return fail(400, {
+				success: false,
+				message: 'Invalid structure ID'
+			});
+		}
+
+		const sessionToken = cookies.get('session');
+
+		try {
+			const response = await fetch(`${SERVER_API_URL}/structures/${structureId}`, {
+				method: 'DELETE',
+				headers: {
+					Cookie: `session=${sessionToken}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				const result = await response.json();
+				logger.error('[DEMOLISH STRUCTURE] Failed to demolish structure', {
+					structureId,
+					status: response.status,
+					error: result
+				});
+
+				return fail(response.status, {
+					success: false,
+					message: result.message || 'Failed to demolish structure',
+					reasons: [result.code || 'UNKNOWN_ERROR']
+				});
+			}
+
+			await response.json();
+
+			logger.info('[DEMOLISH STRUCTURE] Structure demolished successfully', {
+				structureId
+			});
+
+			return {
+				success: true,
+				message: `Structure demolished successfully!`
+			};
+		} catch (error) {
+			logger.error('[DEMOLISH STRUCTURE] Error demolishing structure', {
+				structureId,
+				error
+			});
+
+			return fail(500, {
+				success: false,
+				message: 'An error occurred while demolishing the structure'
 			});
 		}
 	}
