@@ -1,7 +1,7 @@
 <script lang="ts">
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import { structures, type StructureType } from '$lib/game/structures';
-	import { PUBLIC_API_URL } from '$env/static/public';
+	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 
 	interface Props {
 		open: boolean;
@@ -43,8 +43,21 @@
 	async function handleBuild(structureType: StructureType) {
 		console.log('Building:', structureType, 'at settlement:', settlementId);
 
+		// Get the structure definition to send the proper name to the API
+		const structure = structures[structureType];
+		if (!structure) {
+			console.error('[MobileBuildMenu] Unknown structure type:', structureType);
+			alert('Unknown structure type');
+			return;
+		}
+
 		try {
-			const response = await fetch(`${PUBLIC_API_URL}/structures/create`, {
+			console.log('[MobileBuildMenu] Sending request:', {
+				settlementId,
+				structureName: structure.name
+			});
+
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/create`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -52,22 +65,24 @@
 				},
 				body: JSON.stringify({
 					settlementId,
-					structureName: structureType
+					structureName: structure.name // Send "Farm" not "FARM"
 				})
 			});
+			console.log('[MobileBuildMenu] Response status:', response.status, response.statusText);
 
 			if (!response.ok) {
 				const error = await response.json();
-				console.error('[MobileBuildMenu] Failed to create structure:', error);
-				alert(error.error || 'Failed to create structure');
+				console.error('[MobileBuildMenu] API Error Response:', JSON.stringify(error, null, 2));
+				alert(error.error || error.message || 'Failed to create structure');
 				return;
 			}
 
-			console.log('[MobileBuildMenu] Structure created successfully');
+			const result = await response.json();
+			console.log('[MobileBuildMenu] Structure created successfully:', result);
 
 			onClose();
 		} catch (error) {
-			console.error('[MobileBuildMenu] Failed to create structure:', error);
+			console.error('[MobileBuildMenu] Network error:', error);
 			alert('Network error - could not create structure');
 		}
 	}

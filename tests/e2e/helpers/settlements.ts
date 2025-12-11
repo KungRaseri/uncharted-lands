@@ -19,7 +19,7 @@ export const TEST_SETTLEMENTS = {
 			water: 100,
 			wood: 50,
 			stone: 30,
-			ore: 0
+			ore: 10 // Updated to match server config (per GDD spec)
 		}
 	},
 	COASTAL: {
@@ -30,7 +30,7 @@ export const TEST_SETTLEMENTS = {
 			water: 100,
 			wood: 50,
 			stone: 30,
-			ore: 0
+			ore: 10 // Updated to match server config (per GDD spec)
 		}
 	},
 	DESERT: {
@@ -41,7 +41,7 @@ export const TEST_SETTLEMENTS = {
 			water: 100,
 			wood: 50,
 			stone: 30,
-			ore: 0
+			ore: 10 // Updated to match server config (per GDD spec)
 		}
 	}
 } as const;

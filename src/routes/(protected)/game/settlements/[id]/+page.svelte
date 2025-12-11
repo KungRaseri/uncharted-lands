@@ -11,6 +11,8 @@
 	import { createGameRefreshInterval } from '$lib/stores/game/gameState.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
+	import { socketStore } from '$lib/stores/game/socket';
+	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -74,9 +76,55 @@
 			console.error('[SETTLEMENT PAGE] No settlement data available!');
 		}
 
+		// Listen for structure:built events to refresh the page data
+		const handleStructureBuilt = (eventData: any) => {
+			console.log('[SETTLEMENT PAGE] structure:built event received:', eventData);
+
+			// Check if the structure was built in this settlement
+			if (eventData.settlementId === data.settlement?.id) {
+				console.log('[SETTLEMENT PAGE] Structure built in current settlement, refreshing data...');
+
+				// Invalidate the page data to trigger a reload
+				invalidate('game:settlement');
+			}
+		};
+
+		// Track if listener is already attached to prevent duplicates
+		let listenerAttached = false;
+
+		// Subscribe to socketStore and set up listener when socket connects
+		const unsubscribe = socketStore.subscribe((state) => {
+			const socket = state.socket;
+
+			console.log('[SETTLEMENT PAGE] Socket state changed:', {
+				hasSocket: !!socket,
+				connected: socket?.connected,
+				listenerAttached
+			});
+
+			if (socket && socket.connected && !listenerAttached) {
+				console.log('[SETTLEMENT PAGE] Socket connected, setting up structure:built listener');
+				socket.on('structure:built', handleStructureBuilt);
+				listenerAttached = true;
+			}
+		});
+
 		// Auto-refresh every minute to catch tick updates (fallback if Socket.IO fails)
-		const cleanup = createGameRefreshInterval('game:settlement');
-		return cleanup;
+		const gameRefreshCleanup = createGameRefreshInterval('game:settlement');
+
+		// Cleanup function
+		return () => {
+			console.log('[SETTLEMENT PAGE] Cleaning up Socket.IO listeners...');
+
+			// Get current socket for cleanup
+			const currentSocket = socketStore.getSocket();
+			if (currentSocket) {
+				currentSocket.off('structure:built', handleStructureBuilt);
+			}
+
+			unsubscribe();
+			gameRefreshCleanup();
+		};
 	});
 </script>
 
