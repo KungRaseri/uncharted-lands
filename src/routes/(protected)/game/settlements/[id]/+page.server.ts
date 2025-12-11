@@ -120,6 +120,8 @@ export const actions: Actions = {
 	buildStructure: async ({ request, params, cookies }) => {
 		const formData = await request.formData();
 		const structureId = formData.get('structureId');
+		const tileId = formData.get('tileId');
+		const slotPosition = formData.get('slotPosition');
 
 		if (!structureId || typeof structureId !== 'string') {
 			logger.error('[BUILD STRUCTURE] Invalid structure ID', { structureId });
@@ -132,6 +134,29 @@ export const actions: Actions = {
 		const sessionToken = cookies.get('session');
 
 		try {
+			// Build request body with optional tileId and slotPosition for extractors
+			const requestBody: {
+				settlementId: string;
+				buildingType: string;
+				name?: string;
+				description?: string;
+				tileId?: string;
+				slotPosition?: number;
+			} = {
+				settlementId: params.id,
+				buildingType: structureId,
+				name: undefined,
+				description: undefined
+			};
+
+			// Add tileId and slotPosition if building an extractor
+			if (tileId && typeof tileId === 'string') {
+				requestBody.tileId = tileId;
+			}
+			if (slotPosition && typeof slotPosition === 'string') {
+				requestBody.slotPosition = Number.parseInt(slotPosition, 10);
+			}
+
 			// Call the REST API endpoint for building structures
 			const response = await fetch(`${SERVER_API_URL}/structures/create`, {
 				method: 'POST',
@@ -139,12 +164,7 @@ export const actions: Actions = {
 					Cookie: `session=${sessionToken}`,
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({
-					settlementId: params.id,
-					buildingType: structureId,
-					name: undefined,
-					description: undefined
-				})
+				body: JSON.stringify(requestBody)
 			});
 
 			if (!response.ok) {
@@ -152,6 +172,8 @@ export const actions: Actions = {
 				logger.error('[BUILD STRUCTURE] Failed to build structure', {
 					settlementId: params.id,
 					structureId,
+					tileId,
+					slotPosition,
 					status: response.status,
 					error: result
 				});
@@ -168,6 +190,8 @@ export const actions: Actions = {
 			logger.info('[BUILD STRUCTURE] Structure built successfully', {
 				settlementId: params.id,
 				structureId,
+				tileId,
+				slotPosition,
 				structureName: result.name
 			});
 
@@ -179,6 +203,8 @@ export const actions: Actions = {
 			logger.error('[BUILD STRUCTURE] Error building structure', {
 				settlementId: params.id,
 				structureId,
+				tileId,
+				slotPosition,
 				error
 			});
 

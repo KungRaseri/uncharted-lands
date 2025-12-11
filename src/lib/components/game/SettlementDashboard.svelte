@@ -334,6 +334,7 @@
 		extractorSelectorOpen = true;
 	}
 
+	// ✅ FIXED: Use form submission to go through SvelteKit server-side action
 	async function handleExtractorBuild(tileId: string, slotPosition: number, extractorType: string) {
 		console.log(
 			'[Dashboard] Building extractor:',
@@ -345,24 +346,23 @@
 		);
 
 		try {
-			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/create`, {
+			// Create a form and submit it to trigger the buildStructure action
+			const formData = new FormData();
+			formData.append('structureId', extractorType);
+			formData.append('tileId', tileId);
+			formData.append('slotPosition', slotPosition.toString());
+
+			// Submit to the current page's buildStructure action
+			const response = await fetch('?/buildStructure', {
 				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					settlementId,
-					buildingType: extractorType,
-					tileId,
-					slotPosition
-				})
+				body: formData
 			});
 
-			if (!response.ok) {
-				const error = await response.json();
-				console.error('[Dashboard] Failed to create extractor:', error);
-				alert(error.error || 'Failed to create extractor');
+			const result = await response.json();
+
+			if (!result.success && result.success !== undefined) {
+				console.error('[Dashboard] Failed to create extractor:', result);
+				alert(result.message || 'Failed to create extractor');
 				return;
 			}
 
