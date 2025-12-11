@@ -152,6 +152,7 @@
 		settlementId={data.settlement.id}
 		settlementName={data.settlement.name}
 		settlement={data.settlement}
+		structures={data.structures}
 		settlementStructures={data.settlementStructures}
 		tile={tileData}
 		onOpenBuildMenu={handleOpenBuildMenu}

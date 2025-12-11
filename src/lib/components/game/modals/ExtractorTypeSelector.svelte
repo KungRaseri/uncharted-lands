@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import type { StructureMetadata } from '$lib/api/structures';
 
 	/**
 	 * ExtractorTypeSelector Modal
@@ -11,24 +12,6 @@
 	 * - Displays resource requirements and production info from database
 	 * - Handles build action with actual structure IDs
 	 */
-
-	// ✅ NEW: Structure metadata from database
-	interface StructureMetadata {
-		id: string; // Database structure ID
-		name: string;
-		description: string;
-		category: 'EXTRACTOR' | 'BUILDING';
-		extractorType: string | null;
-		buildingType: string | null;
-		maxLevel: number;
-		requirements: {
-			food?: number;
-			water?: number;
-			wood?: number;
-			stone?: number;
-			ore?: number;
-		};
-	}
 
 	type ResourceQuality = {
 		food: number;

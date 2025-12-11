@@ -37,6 +37,7 @@
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { generateSuggestions } from '$lib/utils/settlement-suggestions';
 	import { calculateProduction } from '$lib/utils/production-calculator';
+	import type { StructureMetadata } from '$lib/api/structures';
 
 	// ✅ NEW: TypeScript interface for settlement structures
 	interface SettlementStructure {
@@ -93,6 +94,7 @@
 		settlementId: string;
 		settlementName: string;
 		onOpenBuildMenu?: () => void; // Handler to open build menu
+		structures?: StructureMetadata[];
 		settlementStructures?: SettlementStructure[]; // ✅ NEW: Optional for backward compatibility
 		settlement?: Settlement;
 		tile?: Tile | null; // ✅ NEW: Add tile data
@@ -102,6 +104,7 @@
 		settlementId,
 		settlementName,
 		onOpenBuildMenu,
+		structures = [],
 		settlementStructures = [],
 		settlement,
 		tile = null
@@ -581,6 +584,7 @@
 			stone: tile.stoneQuality,
 			ore: tile.oreQuality
 		}}
+		{structures}
 		onClose={() => {
 			extractorSelectorOpen = false;
 			selectedSlot = null;

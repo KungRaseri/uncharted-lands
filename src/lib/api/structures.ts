@@ -16,9 +16,12 @@ export interface StructureMetadata {
 	id: string;
 	name: string;
 	description: string;
+	category: string;
+	extractorType: string;
+	buildingType: string;
 
 	// Build costs (all resources, defaulted to 0)
-	costs: {
+	requirements: {
 		food: number;
 		water: number;
 		wood: number;
@@ -140,21 +143,21 @@ export function canBuildStructure(
 ): { canBuild: boolean; reasons: string[] } {
 	const reasons: string[] = [];
 
-	// Check resource costs
-	if (storage.food < structure.costs.food) {
-		reasons.push(`Need ${structure.costs.food} food (have ${storage.food})`);
+	// Check resource requirements
+	if (storage.food < structure.requirements.food) {
+		reasons.push(`Need ${structure.requirements.food} food (have ${storage.food})`);
 	}
-	if (storage.water < structure.costs.water) {
-		reasons.push(`Need ${structure.costs.water} water (have ${storage.water})`);
+	if (storage.water < structure.requirements.water) {
+		reasons.push(`Need ${structure.requirements.water} water (have ${storage.water})`);
 	}
-	if (storage.wood < structure.costs.wood) {
-		reasons.push(`Need ${structure.costs.wood} wood (have ${storage.wood})`);
+	if (storage.wood < structure.requirements.wood) {
+		reasons.push(`Need ${structure.requirements.wood} wood (have ${storage.wood})`);
 	}
-	if (storage.stone < structure.costs.stone) {
-		reasons.push(`Need ${structure.costs.stone} stone (have ${storage.stone})`);
+	if (storage.stone < structure.requirements.stone) {
+		reasons.push(`Need ${structure.requirements.stone} stone (have ${storage.stone})`);
 	}
-	if (storage.ore < structure.costs.ore) {
-		reasons.push(`Need ${structure.costs.ore} ore (have ${storage.ore})`);
+	if (storage.ore < structure.requirements.ore) {
+		reasons.push(`Need ${structure.requirements.ore} ore (have ${storage.ore})`);
 	}
 
 	return {
