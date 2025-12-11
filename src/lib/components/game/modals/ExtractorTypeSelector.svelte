@@ -8,19 +8,27 @@
 	 * Modal for selecting which type of extractor to build on a plot slot:
 	 * - Shows all extractor types with resource quality heatmap colors
 	 * - Green (high quality), Yellow (medium), Red (low quality)
-	 * - Displays resource requirements and production info
-	 * - Handles build action
+	 * - Displays resource requirements and production info from database
+	 * - Handles build action with actual structure IDs
 	 */
 
-	type ExtractorType =
-		| 'FARM'
-		| 'WELL'
-		| 'LUMBER_MILL'
-		| 'QUARRY'
-		| 'MINE'
-		| 'FISHING_DOCK'
-		| 'HUNTERS_LODGE'
-		| 'HERB_GARDEN';
+	// ✅ NEW: Structure metadata from database
+	interface StructureMetadata {
+		id: string; // Database structure ID
+		name: string;
+		description: string;
+		category: 'EXTRACTOR' | 'BUILDING';
+		extractorType: string | null;
+		buildingType: string | null;
+		maxLevel: number;
+		requirements: {
+			food?: number;
+			water?: number;
+			wood?: number;
+			stone?: number;
+			ore?: number;
+		};
+	}
 
 	type ResourceQuality = {
 		food: number;
@@ -30,18 +38,23 @@
 		ore: number;
 	};
 
-	type ExtractorDefinition = {
-		type: ExtractorType;
-		name: string;
-		description: string;
-		icon: string;
-		resourceType: keyof ResourceQuality;
-		cost: {
-			wood?: number;
-			stone?: number;
-			ore?: number;
-		};
-		produces: string;
+	// ✅ NEW: Map extractor types to resource types and icons
+	const EXTRACTOR_CONFIG: Record<
+		string,
+		{
+			resourceType: keyof ResourceQuality;
+			icon: string;
+			produces: string;
+		}
+	> = {
+		FARM: { resourceType: 'food', icon: '🌾', produces: 'Food' },
+		WELL: { resourceType: 'water', icon: '💧', produces: 'Water' },
+		LUMBER_MILL: { resourceType: 'wood', icon: '🪵', produces: 'Wood' },
+		QUARRY: { resourceType: 'stone', icon: '🪨', produces: 'Stone' },
+		MINE: { resourceType: 'ore', icon: '⛏️', produces: 'Ore' },
+		FISHING_DOCK: { resourceType: 'food', icon: '🎣', produces: 'Food' },
+		HUNTERS_LODGE: { resourceType: 'food', icon: '🏹', produces: 'Food' },
+		HERB_GARDEN: { resourceType: 'food', icon: '🌿', produces: 'Herbs' }
 	};
 
 	type Props = {
@@ -49,8 +62,9 @@
 		tileId: string;
 		slotPosition: number;
 		resourceQuality: ResourceQuality;
+		structures: StructureMetadata[]; // ✅ NEW: Structures from database
 		onClose: () => void;
-		onBuild: (tileId: string, slotPosition: number, extractorType: ExtractorType) => void;
+		onBuild: (tileId: string, slotPosition: number, structureId: string) => void; // ✅ FIXED: Pass structureId instead of type
 	};
 
 	let {
@@ -58,85 +72,36 @@
 		tileId,
 		slotPosition,
 		resourceQuality,
+		structures,
 		onClose,
 		onBuild
 	}: Props = $props();
 
-	// Extractor type definitions
-	const extractorTypes: ExtractorDefinition[] = [
-		{
-			type: 'FARM',
-			name: 'Farm',
-			description: 'Cultivates crops for food production',
-			icon: '🌾',
-			resourceType: 'food',
-			cost: { wood: 50, stone: 20 },
-			produces: 'Food'
-		},
-		{
-			type: 'WELL',
-			name: 'Well',
-			description: 'Extracts fresh water from underground',
-			icon: '💧',
-			resourceType: 'water',
-			cost: { wood: 30, stone: 50 },
-			produces: 'Water'
-		},
-		{
-			type: 'LUMBER_MILL',
-			name: 'Lumber Mill',
-			description: 'Harvests and processes timber',
-			icon: '🪵',
-			resourceType: 'wood',
-			cost: { wood: 20, stone: 30 },
-			produces: 'Wood'
-		},
-		{
-			type: 'QUARRY',
-			name: 'Quarry',
-			description: 'Extracts stone from the earth',
-			icon: '🪨',
-			resourceType: 'stone',
-			cost: { wood: 40, stone: 10 },
-			produces: 'Stone'
-		},
-		{
-			type: 'MINE',
-			name: 'Mine',
-			description: 'Digs deep for valuable ores',
-			icon: '⛏️',
-			resourceType: 'ore',
-			cost: { wood: 60, stone: 40 },
-			produces: 'Ore'
-		},
-		{
-			type: 'FISHING_DOCK',
-			name: 'Fishing Dock',
-			description: 'Catches fish from nearby waters',
-			icon: '🎣',
-			resourceType: 'food',
-			cost: { wood: 80, stone: 20 },
-			produces: 'Food'
-		},
-		{
-			type: 'HUNTERS_LODGE',
-			name: "Hunter's Lodge",
-			description: 'Hunts game in nearby forests',
-			icon: '🏹',
-			resourceType: 'food',
-			cost: { wood: 70, stone: 30 },
-			produces: 'Food'
-		},
-		{
-			type: 'HERB_GARDEN',
-			name: 'Herb Garden',
-			description: 'Grows medicinal and special herbs',
-			icon: '🌿',
-			resourceType: 'food', // Using food as proxy for herbs
-			cost: { wood: 40, stone: 20 },
-			produces: 'Herbs'
-		}
-	];
+	// ✅ NEW: Filter extractors from structure metadata
+	const extractorStructures = $derived(
+		structures
+			.filter((s) => s.category === 'EXTRACTOR' && s.extractorType)
+			.map((structure) => {
+				const config = EXTRACTOR_CONFIG[structure.extractorType!];
+				if (!config) {
+					console.warn(`Unknown extractor type: ${structure.extractorType}`);
+					return null;
+				}
+
+				const quality = resourceQuality[config.resourceType];
+				return {
+					...structure,
+					...config,
+					quality,
+					qualityColor: getQualityColor(quality),
+					qualityLabel: getQualityLabel(quality)
+				};
+			})
+			.filter((e) => e !== null)
+	);
+
+	// ✅ Sort by quality (best first)
+	const sortedExtractors = $derived([...extractorStructures].sort((a, b) => b.quality - a.quality));
 
 	// Get quality color based on resource quality (heatmap: green > yellow > red)
 	function getQualityColor(quality: number): string {
@@ -152,23 +117,8 @@
 		return 'Poor';
 	}
 
-	// Get extractor with quality info
-	const extractorsWithQuality = $derived(
-		extractorTypes.map((ext) => ({
-			...ext,
-			quality: resourceQuality[ext.resourceType],
-			qualityColor: getQualityColor(resourceQuality[ext.resourceType]),
-			qualityLabel: getQualityLabel(resourceQuality[ext.resourceType])
-		}))
-	);
-
-	// Sort by quality (best first)
-	const sortedExtractors = $derived(
-		[...extractorsWithQuality].sort((a, b) => b.quality - a.quality)
-	);
-
-	function handleBuild(extractorType: ExtractorType) {
-		onBuild(tileId, slotPosition, extractorType);
+	function handleBuild(structureId: string) {
+		onBuild(tileId, slotPosition, structureId); // ✅ FIXED: Pass structureId instead of type
 		onClose();
 	}
 
@@ -190,7 +140,7 @@
 {#if open}
 	<!-- Modal Backdrop -->
 	<div
-		class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+		class="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4"
 		onclick={onClose}
 		onkeydown={handleEscape}
 		role="presentation"
@@ -198,7 +148,7 @@
 	>
 		<!-- Modal Content -->
 		<div
-			class="card variant-filled-surface p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-white dark:bg-surface-900 rounded-lg shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.stopPropagation()}
 			role="dialog"
@@ -208,16 +158,21 @@
 			transition:fly={{ y: 50, duration: 300, easing: quintOut }}
 		>
 			<!-- Header -->
-			<header class="flex items-center justify-between mb-4">
+			<header class="flex items-center justify-between mb-6">
 				<div>
-					<h3 id="extractor-selector-title" class="h4">Select Extractor Type</h3>
-					<p class="text-sm text-surface-600-300-token mt-1">
+					<h3
+						id="extractor-selector-title"
+						class="text-2xl font-bold text-surface-900 dark:text-surface-100"
+					>
+						Select Extractor Type
+					</h3>
+					<p class="text-sm text-surface-600 dark:text-surface-400 mt-1">
 						Building in Slot {slotPosition}
 					</p>
 				</div>
 				<button
 					type="button"
-					class="btn-icon btn-icon-sm variant-soft"
+					class="btn-icon btn-icon-sm variant-ghost-surface hover:variant-soft-error"
 					onclick={onClose}
 					aria-label="Close modal"
 				>
@@ -227,12 +182,12 @@
 
 			<!-- Extractor Grid -->
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-				{#each sortedExtractors as extractor (extractor.type)}
+				{#each sortedExtractors as extractor (extractor.id)}
 					<button
 						type="button"
-						class="card variant-ghost p-4 text-left hover:variant-soft-primary transition-all"
-						onclick={() => handleBuild(extractor.type)}
-						onkeydown={(e) => handleKeydown(e, () => handleBuild(extractor.type))}
+						class="p-4 text-left rounded-lg border-2 border-surface-300 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
+						onclick={() => handleBuild(extractor.id)}
+						onkeydown={(e) => handleKeydown(e, () => handleBuild(extractor.id))}
 						transition:fade={{ duration: 200 }}
 					>
 						<!-- Extractor Header -->
@@ -241,8 +196,10 @@
 								{extractor.icon}
 							</span>
 							<div class="flex-1 min-w-0">
-								<h4 class="font-semibold">{extractor.name}</h4>
-								<p class="text-xs text-surface-600-300-token line-clamp-2">
+								<h4 class="font-semibold text-surface-900 dark:text-surface-100">
+									{extractor.name}
+								</h4>
+								<p class="text-xs text-surface-600 dark:text-surface-400 line-clamp-2">
 									{extractor.description}
 								</p>
 							</div>
@@ -250,60 +207,47 @@
 
 						<!-- Quality Badge -->
 						<div class="flex items-center gap-2 mb-2">
-							<span class="text-xs text-surface-500-400-token">Quality:</span>
+							<span class="text-xs text-surface-500 dark:text-surface-400">Quality:</span>
 							<span class={`text-sm font-semibold ${extractor.qualityColor}`}>
 								{extractor.quality}% ({extractor.qualityLabel})
 							</span>
 						</div>
 
 						<!-- Cost -->
-						<div class="flex items-center gap-2 text-xs text-surface-600-300-token">
+						<div
+							class="flex items-center gap-2 text-xs text-surface-600 dark:text-surface-400 mb-1"
+						>
 							<span>Cost:</span>
 							<div class="flex items-center gap-1.5">
-								{#if extractor.cost.wood}
-									<span>🪵 {extractor.cost.wood}</span>
+								{#if extractor.requirements.wood}
+									<span>🪵 {extractor.requirements.wood}</span>
 								{/if}
-								{#if extractor.cost.stone}
-									<span>🪨 {extractor.cost.stone}</span>
+								{#if extractor.requirements.stone}
+									<span>🪨 {extractor.requirements.stone}</span>
 								{/if}
-								{#if extractor.cost.ore}
-									<span>⛏️ {extractor.cost.ore}</span>
+								{#if extractor.requirements.ore}
+									<span>⛏️ {extractor.requirements.ore}</span>
 								{/if}
 							</div>
 						</div>
 
 						<!-- Produces -->
-						<div class="flex items-center gap-2 text-xs mt-1">
-							<span class="text-surface-500-400-token">Produces:</span>
-							<span class="font-medium text-primary-500">{extractor.produces}</span>
+						<div class="flex items-center gap-2 text-xs">
+							<span class="text-surface-500 dark:text-surface-400">Produces:</span>
+							<span class="font-medium text-primary-600 dark:text-primary-400"
+								>{extractor.produces}</span
+							>
 						</div>
 					</button>
 				{/each}
 			</div>
 
 			<!-- Footer -->
-			<footer class="flex justify-end gap-2 mt-4 pt-4 border-t border-surface-300-600-token">
-				<button type="button" class="btn variant-soft" onclick={onClose}>Cancel</button>
+			<footer
+				class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-300 dark:border-surface-600"
+			>
+				<button type="button" class="btn variant-ghost-surface" onclick={onClose}>Cancel</button>
 			</footer>
 		</div>
 	</div>
 {/if}
-
-<style>
-	/* Dark mode adjustments */
-	:global(.dark) .card.variant-filled-surface {
-		background: rgb(15, 23, 42);
-	}
-
-	:global(.dark) .card.variant-ghost {
-		background: rgba(51, 65, 85, 0.3);
-	}
-
-	:global(.dark) .card.variant-ghost:hover {
-		background: rgba(59, 130, 246, 0.2);
-	}
-
-	:global(.dark) .border-surface-300-600-token {
-		border-color: rgb(71 85 105 / 0.5);
-	}
-</style>

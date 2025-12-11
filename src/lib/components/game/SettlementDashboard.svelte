@@ -345,10 +345,10 @@
 	}
 
 	// ✅ FIXED: Use form submission to go through SvelteKit server-side action
-	async function handleExtractorBuild(tileId: string, slotPosition: number, extractorType: string) {
+	async function handleExtractorBuild(tileId: string, slotPosition: number, structureId: string) {
 		console.log(
 			'[Dashboard] Building extractor:',
-			extractorType,
+			structureId,
 			'on tile:',
 			tileId,
 			'slot:',
@@ -358,7 +358,7 @@
 		try {
 			// Create a form and submit it to trigger the buildStructure action
 			const formData = new FormData();
-			formData.append('structureId', extractorType);
+			formData.append('structureId', structureId); // ✅ FIXED: Use structureId parameter
 			formData.append('tileId', tileId);
 			formData.append('slotPosition', slotPosition.toString());
 
