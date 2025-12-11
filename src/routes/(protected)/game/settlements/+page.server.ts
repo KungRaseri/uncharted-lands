@@ -1,4 +1,4 @@
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 import type { PageServerLoad } from './$types';
 
@@ -14,7 +14,7 @@ export const load = (async ({ locals, depends, cookies }) => {
 
 	const sessionToken = cookies.get('session');
 
-	const response = await fetch(`${API_URL}/settlements?playerProfileId=${profileId}`, {
+	const response = await fetch(`${SERVER_API_URL}/settlements?playerProfileId=${profileId}`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
 		}

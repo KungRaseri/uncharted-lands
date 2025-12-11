@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
 import type { PageServerLoad } from './$types';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
 	try {
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 			hasSessionToken: !!sessionToken
 		});
 
-		const response = await fetch(`${API_URL}/regions/tiles/${params.id}`, {
+		const response = await fetch(`${SERVER_API_URL}/regions/tiles/${params.id}`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}

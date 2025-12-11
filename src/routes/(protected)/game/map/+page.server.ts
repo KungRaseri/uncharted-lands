@@ -1,10 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
-import { env } from '$env/dynamic/public';
-
-// Use PUBLIC_API_URL which works in both client and server contexts
-const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
+import { SERVER_API_URL } from '$env/static/private';
 
 export const load = (async ({ locals, cookies, url }) => {
 	// Check authentication
@@ -37,7 +34,7 @@ export const load = (async ({ locals, cookies, url }) => {
 		}
 
 		// Fetch map data from server API
-		const response = await fetch(`${API_URL}/regions/map?${queryParams.toString()}`, {
+		const response = await fetch(`${SERVER_API_URL}/regions/map?${queryParams.toString()}`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}

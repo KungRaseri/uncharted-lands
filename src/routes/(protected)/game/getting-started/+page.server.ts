@@ -7,10 +7,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
-import { env } from '$env/dynamic/public';
-
-// Use PUBLIC_API_URL which works in both client and server contexts
-const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
+import { SERVER_API_URL } from '$env/static/private';
 
 export const load: PageServerLoad = async ({ locals, cookies, setHeaders }) => {
 	if (!locals.account) {
@@ -35,7 +32,7 @@ export const load: PageServerLoad = async ({ locals, cookies, setHeaders }) => {
 		});
 
 		// Fetch servers
-		const serversResponse = await fetch(`${API_URL}/servers`, {
+		const serversResponse = await fetch(`${SERVER_API_URL}/servers`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			},
@@ -53,7 +50,7 @@ export const load: PageServerLoad = async ({ locals, cookies, setHeaders }) => {
 		const servers = await serversResponse.json();
 
 		// Fetch worlds
-		const worldsResponse = await fetch(`${API_URL}/worlds`, {
+		const worldsResponse = await fetch(`${SERVER_API_URL}/worlds`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			},
@@ -130,7 +127,7 @@ export const actions: Actions = {
 			});
 
 			// Call server API to create settlement
-			const response = await fetch(`${API_URL}/settlements`, {
+			const response = await fetch(`${SERVER_API_URL}/settlements`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

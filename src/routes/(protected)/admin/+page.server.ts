@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 
 // Helper function to safely get array from response
@@ -25,10 +25,10 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 		// Fetch all required data in parallel
 		const [players, settlements, worlds, servers] = await Promise.all([
-			fetchData(`${API_URL}/players`, sessionToken),
-			fetchData(`${API_URL}/settlements`, sessionToken),
-			fetchData(`${API_URL}/worlds`, sessionToken),
-			fetchData(`${API_URL}/servers`, sessionToken)
+			fetchData(`${SERVER_API_URL}/players`, sessionToken),
+			fetchData(`${SERVER_API_URL}/settlements`, sessionToken),
+			fetchData(`${SERVER_API_URL}/worlds`, sessionToken),
+			fetchData(`${SERVER_API_URL}/servers`, sessionToken)
 		]);
 
 		// Calculate date ranges

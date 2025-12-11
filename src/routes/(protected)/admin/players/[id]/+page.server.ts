@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		const sessionToken = cookies.get('session');
 
 		// Fetch player account data
-		const response = await fetch(`${API_URL}/players/${params.id}`, {
+		const response = await fetch(`${SERVER_API_URL}/players/${params.id}`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		if (account.profile?.id) {
 			try {
 				const settlementsResponse = await fetch(
-					`${API_URL}/settlements?profileId=${account.profile.id}`,
+					`${SERVER_API_URL}/settlements?profileId=${account.profile.id}`,
 					{
 						headers: {
 							Cookie: `session=${sessionToken}`

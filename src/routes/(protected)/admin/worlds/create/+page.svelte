@@ -4,7 +4,7 @@
 	import type { ActionData, PageData } from './$types';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
 	import { generateMap } from '$lib/game/world-generator';
-	import { API_URL } from '$lib/config';
+	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 
 	import { Info } from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';

@@ -1,4 +1,4 @@
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
 import { logger } from '$lib/utils/logger';
@@ -71,7 +71,7 @@ const register: Action = async ({ cookies, request, fetch }) => {
 	try {
 		// Send plain password to API (server will handle hashing)
 		// This is secure when using HTTPS
-		const response = await fetch(`${API_URL}/auth/register`, {
+		const response = await fetch(`${SERVER_API_URL}/auth/register`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({

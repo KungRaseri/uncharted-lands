@@ -1,4 +1,4 @@
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
@@ -12,7 +12,7 @@ export const load = (async ({ params, depends, cookies }) => {
 	const sessionToken = cookies.get('session');
 
 	// Fetch settlement data (use native fetch, not SvelteKit fetch)
-	const settlementResponse = await fetch(`${API_URL}/settlements/${params.id}`, {
+	const settlementResponse = await fetch(`${SERVER_API_URL}/settlements/${params.id}`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
 		}
@@ -48,11 +48,14 @@ export const load = (async ({ params, depends, cookies }) => {
 	}
 
 	// ✅ NEW: Fetch settlement structures
-	const structuresResponse = await fetch(`${API_URL}/structures/by-settlement/${params.id}`, {
-		headers: {
-			Cookie: `session=${sessionToken}`
+	const structuresResponse = await fetch(
+		`${SERVER_API_URL}/structures/by-settlement/${params.id}`,
+		{
+			headers: {
+				Cookie: `session=${sessionToken}`
+			}
 		}
-	});
+	);
 
 	let settlementStructures = [];
 	if (structuresResponse.ok) {
@@ -77,7 +80,7 @@ export const load = (async ({ params, depends, cookies }) => {
 	let tile = null;
 	if (settlement?.tileId) {
 		// ✅ FIXED: Correct URL is /regions/tiles/:id (geography router is mounted at /regions)
-		const tileResponse = await fetch(`${API_URL}/regions/tiles/${settlement.tileId}`, {
+		const tileResponse = await fetch(`${SERVER_API_URL}/regions/tiles/${settlement.tileId}`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -130,7 +133,7 @@ export const actions: Actions = {
 
 		try {
 			// Call the REST API endpoint for building structures
-			const response = await fetch(`${API_URL}/structures/create`, {
+			const response = await fetch(`${SERVER_API_URL}/structures/create`, {
 				method: 'POST',
 				headers: {
 					Cookie: `session=${sessionToken}`,

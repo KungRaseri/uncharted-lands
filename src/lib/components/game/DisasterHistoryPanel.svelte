@@ -7,7 +7,7 @@
 		DisasterHistorySort,
 		DisasterHistorySortBy
 	} from '$lib/types/disaster';
-	import { API_URL } from '$lib/config';
+	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 
 	interface Props {
 		settlementId: string;
@@ -121,9 +121,12 @@
 		error = null;
 
 		try {
-			const response = await fetch(`${API_URL}/settlements/${settlementId}/disaster-history`, {
-				credentials: 'include' // Include session cookie
-			});
+			const response = await fetch(
+				`${PUBLIC_CLIENT_API_URL}/settlements/${settlementId}/disaster-history`,
+				{
+					credentials: 'include' // Include session cookie
+				}
+			);
 
 			if (!response.ok) {
 				if (response.status === 401) {

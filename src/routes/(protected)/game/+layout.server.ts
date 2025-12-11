@@ -1,4 +1,4 @@
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 import type { LayoutServerLoad } from './$types';
 
@@ -11,7 +11,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 		});
 
 		// Fetch all servers
-		const response = await fetch(`${API_URL}/servers`, {
+		const response = await fetch(`${SERVER_API_URL}/servers`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -55,7 +55,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 			logger.debug('[GAME LAYOUT] Fetching player settlements', { profileId });
 
 			const settlementsResponse = await fetch(
-				`${API_URL}/settlements?playerProfileId=${profileId}`,
+				`${SERVER_API_URL}/settlements?playerProfileId=${profileId}`,
 				{
 					headers: {
 						Cookie: `session=${sessionToken}`

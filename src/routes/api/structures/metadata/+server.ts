@@ -5,14 +5,14 @@
  * This allows the client to fetch structure metadata without CORS issues.
  */
 
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ cookies }) => {
 	try {
 		const sessionToken = cookies.get('session');
-		const response = await fetch(`${API_URL}/structures/metadata`, {
+		const response = await fetch(`${SERVER_API_URL}/structures/metadata`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}

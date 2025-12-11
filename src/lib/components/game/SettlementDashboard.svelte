@@ -32,7 +32,7 @@
 	import ExtractorsGridPanel from './panels/ExtractorsGridPanel.svelte';
 	import ProductionOverviewPanel from './panels/ProductionOverviewPanel.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
-	import { API_URL } from '$lib/config';
+	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 	import { alertsStore } from '$lib/stores/game/alerts.svelte';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
@@ -258,7 +258,7 @@
 	// ✅ NEW: Action handlers for buildings
 	async function handleUpgradeBuilding(buildingId: string) {
 		try {
-			const response = await fetch(`${API_URL}/structures/${buildingId}/upgrade`, {
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/${buildingId}/upgrade`, {
 				method: 'POST',
 				credentials: 'include'
 			});
@@ -281,7 +281,7 @@
 
 	async function handleRepairBuilding(buildingId: string) {
 		try {
-			const response = await fetch(`${API_URL}/structures/${buildingId}/repair`, {
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/${buildingId}/repair`, {
 				method: 'POST',
 				credentials: 'include'
 			});
@@ -308,7 +308,7 @@
 		}
 
 		try {
-			const response = await fetch(`${API_URL}/structures/${buildingId}`, {
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/${buildingId}`, {
 				method: 'DELETE',
 				credentials: 'include'
 			});
@@ -345,7 +345,7 @@
 		);
 
 		try {
-			const response = await fetch(`${API_URL}/structures/create`, {
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/create`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: {

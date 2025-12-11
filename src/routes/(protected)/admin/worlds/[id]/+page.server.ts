@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
 import type { PageServerLoad, Actions, Action } from './$types';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import type { WorldWithRelations, GameServer } from '$lib/types/api';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		let retries = 3;
 
 		for (let i = 0; i < retries; i++) {
-			response = await fetch(`${API_URL}/worlds/${params.id}`, {
+			response = await fetch(`${SERVER_API_URL}/worlds/${params.id}`, {
 				headers: {
 					Cookie: `session=${sessionToken}`
 				}
@@ -49,7 +49,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		const world: WorldWithRelations = await response.json();
 
 		// Load all servers for reassignment dropdown
-		const serversResponse = await fetch(`${API_URL}/servers`, {
+		const serversResponse = await fetch(`${SERVER_API_URL}/servers`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -116,7 +116,7 @@ const update: Action = async ({ request, params, cookies }) => {
 			serverId
 		});
 
-		const response = await fetch(`${API_URL}/worlds/${params.id}`, {
+		const response = await fetch(`${SERVER_API_URL}/worlds/${params.id}`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ const deleteWorld: Action = async ({ params, cookies }) => {
 
 		logger.debug('[ADMIN WORLD] Deleting world', { worldId: params.id });
 
-		const response = await fetch(`${API_URL}/worlds/${params.id}`, {
+		const response = await fetch(`${SERVER_API_URL}/worlds/${params.id}`, {
 			method: 'DELETE',
 			headers: {
 				Cookie: `session=${sessionToken}`
@@ -205,7 +205,7 @@ const generate: Action = async ({ request, params, cookies }) => {
 			dimensions: `${generationSettings.width}x${generationSettings.height}`
 		});
 
-		const response = await fetch(`${API_URL}/worlds/${params.id}/generate`, {
+		const response = await fetch(`${SERVER_API_URL}/worlds/${params.id}/generate`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

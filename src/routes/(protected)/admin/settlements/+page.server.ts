@@ -1,13 +1,13 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	try {
 		const sessionToken = cookies.get('session');
 
-		const response = await fetch(`${API_URL}/settlements`, {
+		const response = await fetch(`${SERVER_API_URL}/settlements`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}

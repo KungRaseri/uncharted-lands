@@ -1,7 +1,7 @@
 import type { PageServerLoad, Actions, Action } from './$types';
 import { fail } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import type { WorldWithRelations } from '$lib/types/api';
 
 export const load: PageServerLoad = async ({ cookies }) => {
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			hasSessionToken: !!sessionToken
 		});
 
-		const response = await fetch(`${API_URL}/worlds`, {
+		const response = await fetch(`${SERVER_API_URL}/worlds`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -53,7 +53,7 @@ const deleteWorld: Action = async ({ request, cookies }) => {
 
 		logger.debug('[ADMIN WORLDS] Deleting world', { worldId });
 
-		const response = await fetch(`${API_URL}/worlds/${worldId}`, {
+		const response = await fetch(`${SERVER_API_URL}/worlds/${worldId}`, {
 			method: 'DELETE',
 			headers: {
 				Cookie: `session=${sessionToken}`

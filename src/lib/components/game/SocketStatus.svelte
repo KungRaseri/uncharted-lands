@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { socketStore, connectionState, connectionError } from '$lib/stores/game/socket';
-	import { WS_URL } from '$lib/config';
+	import { PUBLIC_WS_URL } from '$env/static/public';
 	import { onMount, onDestroy } from 'svelte';
 
 	let { sessionToken }: { sessionToken?: string | null } = $props();
@@ -8,7 +8,7 @@
 	let showDetails = $state(false);
 
 	// Extract just the host:port for display
-	const serverDisplay = WS_URL.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
+	const serverDisplay = PUBLIC_WS_URL.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
 
 	onMount(() => {
 		// Connect to server when component mounts, passing the session token

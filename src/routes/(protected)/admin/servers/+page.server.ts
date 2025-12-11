@@ -1,7 +1,7 @@
 import type { PageServerLoad, Actions, Action } from './$types';
 import { fail } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import type { GameServerWithRelations } from '$lib/types/api';
 
 export const load: PageServerLoad = async ({ cookies }) => {
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			hasSessionToken: !!sessionToken
 		});
 
-		const response = await fetch(`${API_URL}/servers`, {
+		const response = await fetch(`${SERVER_API_URL}/servers`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -53,7 +53,7 @@ const deleteServer: Action = async ({ request, cookies }) => {
 
 		logger.debug('[ADMIN SERVERS] Deleting server', { serverId });
 
-		const response = await fetch(`${API_URL}/servers/${serverId}`, {
+		const response = await fetch(`${SERVER_API_URL}/servers/${serverId}`, {
 			method: 'DELETE',
 			headers: {
 				Cookie: `session=${sessionToken}`

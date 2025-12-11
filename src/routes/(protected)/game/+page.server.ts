@@ -1,4 +1,4 @@
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, depends, cookies }) => {
 
 	// Fetch settlements from REST API
 	const response = await fetch(
-		`${API_URL}/settlements?playerProfileId=${locals.account.profile.id}`,
+		`${SERVER_API_URL}/settlements?playerProfileId=${locals.account.profile.id}`,
 		{
 			headers: {
 				Cookie: `session=${sessionToken}`

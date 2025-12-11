@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from './$types';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 import type { PlayerWithRelations } from '$lib/types/api';
 import { fail } from '@sveltejs/kit';
@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	try {
 		const sessionToken = cookies.get('session');
 
-		const response = await fetch(`${API_URL}/players`, {
+		const response = await fetch(`${SERVER_API_URL}/players`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -50,7 +50,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await fetch(`${API_URL}/players/${accountId}`, {
+			const response = await fetch(`${SERVER_API_URL}/players/${accountId}`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await fetch(`${API_URL}/players/${accountId}`, {
+			const response = await fetch(`${SERVER_API_URL}/players/${accountId}`, {
 				method: 'DELETE',
 				headers: {
 					Cookie: `session=${sessionToken}`

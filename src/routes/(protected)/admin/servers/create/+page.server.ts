@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Action, Actions, PageServerLoad } from './$types';
-import { API_URL } from '$lib/config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from '$lib/utils/logger';
 
 export const load: PageServerLoad = async () => {
@@ -34,7 +34,7 @@ const createServer: Action = async ({ request, cookies }) => {
 	});
 
 	try {
-		const response = await fetch(`${API_URL}/servers`, {
+		const response = await fetch(`${SERVER_API_URL}/servers`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
