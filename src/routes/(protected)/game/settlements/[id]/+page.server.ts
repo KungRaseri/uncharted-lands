@@ -156,20 +156,16 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Build request body with optional tileId and slotPosition for extractors
-			// Note: API expects "structureName" not "buildingType"
+			// Build request body with required fields
+			// ✅ FIXED: Send structureId (database CUID), not structureName
 			const requestBody: {
 				settlementId: string;
-				structureName: string;
-				name?: string;
-				description?: string;
+				structureId: string;
 				tileId?: string;
 				slotPosition?: number;
 			} = {
 				settlementId: params.id,
-				structureName: structureId,
-				name: undefined,
-				description: undefined
+				structureId: structureId // Database CUID from metadata API
 			};
 
 			// Add tileId and slotPosition if building an extractor

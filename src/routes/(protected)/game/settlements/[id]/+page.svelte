@@ -140,6 +140,7 @@
 		open={buildMenuOpen}
 		onClose={handleCloseBuildMenu}
 		settlementId={data.settlement.id}
+		structures={data.structures}
 	/>
 {/if}
 

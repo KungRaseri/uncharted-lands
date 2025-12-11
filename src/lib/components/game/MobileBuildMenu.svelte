@@ -1,60 +1,49 @@
 <script lang="ts">
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
-	import { structures, type StructureType } from '$lib/game/structures';
+	import type { StructureMetadata } from '$lib/api/structures';
 	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 
 	interface Props {
 		open: boolean;
 		onClose: () => void;
 		settlementId: string;
+		structures: StructureMetadata[];
 	}
 
-	let { open, onClose, settlementId }: Props = $props();
+	let { open, onClose, settlementId, structures }: Props = $props();
 
 	// Log prop changes
 	$effect(() => {
 		console.log('🔍 [MobileBuildMenu] Props changed:');
 		console.log('  - open:', open);
 		console.log('  - settlementId:', settlementId);
+		console.log('  - structures count:', structures.length);
 		console.log('  - onClose exists:', !!onClose);
 	});
 
 	// Group structures by category
 	const structuresByCategory = $derived.by(() => {
-		const categories: Record<string, typeof structures> = {};
+		const categories: Record<string, StructureMetadata[]> = {};
 
-		for (const [key, structure] of Object.entries(structures)) {
-			if (!key || key === 'null') continue; // Skip null/undefined keys
+		for (const structure of structures) {
 			const category = structure.category || 'Other';
-			const structureKey = key as Exclude<StructureType, null>; // Exclude null from type
-			if (!category) continue; // Skip if category is somehow null
 			if (!categories[category]) {
-				categories[category] = {};
+				categories[category] = [];
 			}
-			// Type assertion needed because TS doesn't recognize the null check above
-			const categoryMap = categories[category]!;
-			categoryMap[structureKey] = structure;
+			categories[category].push(structure);
 		}
 		return categories;
 	});
 
 	let selectedCategory = $state<string>('EXTRACTOR');
 
-	async function handleBuild(structureType: StructureType) {
-		console.log('Building:', structureType, 'at settlement:', settlementId);
-
-		// Get the structure definition to send the proper name to the API
-		const structure = structures[structureType];
-		if (!structure) {
-			console.error('[MobileBuildMenu] Unknown structure type:', structureType);
-			alert('Unknown structure type');
-			return;
-		}
+	async function handleBuild(structure: StructureMetadata) {
+		console.log('Building:', structure.displayName, 'at settlement:', settlementId);
 
 		try {
 			console.log('[MobileBuildMenu] Sending request:', {
 				settlementId,
-				structureName: structure.name
+				structureId: structure.id
 			});
 
 			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/create`, {
@@ -65,7 +54,7 @@
 				},
 				body: JSON.stringify({
 					settlementId,
-					structureName: structure.name // Send "Farm" not "FARM"
+					structureId: structure.id // Send database CUID
 				})
 			});
 			console.log('[MobileBuildMenu] Response status:', response.status, response.statusText);
@@ -120,35 +109,37 @@
 		role="tabpanel"
 		aria-labelledby="category-{selectedCategory}"
 	>
-		{#each Object.entries(structuresByCategory[selectedCategory] || {}) as [key, structure]}
+		{#each structuresByCategory[selectedCategory] || [] as structure}
 			<button
 				class="flex items-center gap-4 p-4 bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl text-left cursor-pointer transition-all duration-200 min-h-20
 					hover:bg-surface-200 dark:hover:bg-surface-700 hover:border-primary-300 dark:hover:border-primary-600 hover:-translate-y-0.5 hover:shadow-md
 					active:translate-y-0
 					focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
-				data-structure-type={key}
-				onclick={() => handleBuild(key as StructureType)}
+				data-structure-id={structure.id}
+				onclick={() => handleBuild(structure)}
 				type="button"
 			>
 				<!-- Icon -->
 				<div
 					class="shrink-0 w-12 h-12 flex items-center justify-center bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-lg text-2xl font-bold"
 				>
-					{structure.name.charAt(0)}
+					{structure.displayName.charAt(0)}
 				</div>
 
 				<!-- Info -->
 				<div class="flex-1 min-w-0">
 					<h3 class="text-base font-semibold mb-1 text-surface-900 dark:text-surface-100">
-						{structure.name}
+						{structure.displayName}
 					</h3>
 					<p class="m-0 text-sm text-surface-600 dark:text-surface-400 flex flex-wrap gap-2">
-						{#if structure.cost}
-							{#each Object.entries(structure.cost) as [resource, amount]}
-								<span class="bg-surface-200 dark:bg-surface-700 px-2 py-0.5 rounded text-xs">
-									{amount}
-									{resource}
-								</span>
+						{#if structure.costs}
+							{#each Object.entries(structure.costs) as [resource, amount]}
+								{#if amount > 0}
+									<span class="bg-surface-200 dark:bg-surface-700 px-2 py-0.5 rounded text-xs">
+										{amount}
+										{resource}
+									</span>
+								{/if}
 							{/each}
 						{/if}
 					</p>

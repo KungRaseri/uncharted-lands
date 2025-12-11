@@ -13,8 +13,8 @@
  * Structure metadata from the API
  */
 export interface StructureMetadata {
-	id: string; // lowercase structure name (e.g., "farm")
-	name: string; // UPPERCASE structure name (e.g., "FARM")
+	id: string;
+	name: string;
 	description: string;
 
 	// Build costs (all resources, defaulted to 0)
@@ -24,13 +24,6 @@ export interface StructureMetadata {
 		wood: number;
 		stone: number;
 		ore: number;
-	};
-
-	// Plot requirements (optional - legacy fields being phased out)
-	requirements?: {
-		area?: number;
-		solar?: number;
-		wind?: number;
 	};
 
 	// Construction info
