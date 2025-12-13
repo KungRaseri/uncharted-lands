@@ -26,7 +26,7 @@ export function getAdminRegionTooltip(
 	biomeName?: string
 ): string {
 	const terrain = getTerrainType(elevation);
-	
+
 	let tooltip = `Region: ${region.name || 'Unknown'} (${region.xCoord}, ${region.yCoord})
 Tile: (${row}, ${col})
 Elevation: ${elevation.toFixed(3)}
@@ -36,16 +36,16 @@ Terrain: ${terrain}`;
 	if (precipitation !== undefined) {
 		tooltip += `\nPrecipitation: ${precipitation.toFixed(3)} (raw noise)`;
 	}
-	
+
 	if (temperature !== undefined) {
 		tooltip += `\nTemperature: ${temperature.toFixed(3)} (raw noise)`;
 	}
-	
+
 	// Add biome if available
 	if (biomeName) {
 		const displayName = getBiomeDisplayName(biomeName);
 		tooltip += `\nBiome: ${displayName} (${biomeName})`;
 	}
-	
+
 	return tooltip;
 }

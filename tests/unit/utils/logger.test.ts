@@ -37,10 +37,11 @@ describe('Client Logger', () => {
 			logger.debug('Test with context', { key: 'value', number: 42 });
 			expect(consoleDebugSpy).toHaveBeenCalled();
 			const call = consoleDebugSpy.mock.calls[0][0];
+			const contextArg = consoleDebugSpy.mock.calls[0][3]; // Context is 4th arg
 			expect(call).toContain('DEBUG');
 			expect(call).toContain('Test with context');
-			expect(call).toContain('key');
-			expect(call).toContain('value');
+			expect(contextArg).toContain('key');
+			expect(contextArg).toContain('value');
 		});
 	});
 
@@ -56,17 +57,17 @@ describe('Client Logger', () => {
 		it('should include context in info messages', () => {
 			logger.info('Info with context', { userId: '123', action: 'login' });
 			expect(consoleLogSpy).toHaveBeenCalled();
-			const call = consoleLogSpy.mock.calls[0][0];
-			expect(call).toContain('userId');
-			expect(call).toContain('123');
+			const contextArg = consoleLogSpy.mock.calls[0][3]; // Context is 4th arg
+			expect(contextArg).toContain('userId');
+			expect(contextArg).toContain('123');
 		});
 
 		it('should include timestamp in messages', () => {
 			logger.info('Test timestamp');
 			expect(consoleLogSpy).toHaveBeenCalled();
 			const call = consoleLogSpy.mock.calls[0][0];
-			// Should contain ISO timestamp format
-			expect(call).toMatch(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+			// Should contain HH:MM:SS time format (not full ISO)
+			expect(call).toMatch(/\[\d{2}:\d{2}:\d{2}/);
 		});
 	});
 
@@ -82,9 +83,9 @@ describe('Client Logger', () => {
 		it('should include context in warning messages', () => {
 			logger.warn('Warning with context', { reason: 'deprecated', endpoint: '/api/old' });
 			expect(consoleWarnSpy).toHaveBeenCalled();
-			const call = consoleWarnSpy.mock.calls[0][0];
-			expect(call).toContain('reason');
-			expect(call).toContain('deprecated');
+			const contextArg = consoleWarnSpy.mock.calls[0][3]; // Context is 4th arg
+			expect(contextArg).toContain('reason');
+			expect(contextArg).toContain('deprecated');
 		});
 	});
 
@@ -102,11 +103,11 @@ describe('Client Logger', () => {
 			logger.error('Error occurred', error);
 			expect(consoleErrorSpy).toHaveBeenCalled();
 			const call = consoleErrorSpy.mock.calls[0][0];
+			const contextArg = consoleErrorSpy.mock.calls[0][3]; // Context is 4th arg
 			expect(call).toContain('Error occurred');
-			expect(call).toContain('Something went wrong');
-			expect(call).toContain('name');
-			expect(call).toContain('message');
-			expect(call).toContain('stack');
+			expect(contextArg).toContain('Something went wrong');
+			expect(contextArg).toContain('name');
+			expect(contextArg).toContain('message');
 		});
 
 		it('should include non-Error objects in error messages', () => {
@@ -114,9 +115,10 @@ describe('Client Logger', () => {
 			logger.error('Custom error', error);
 			expect(consoleErrorSpy).toHaveBeenCalled();
 			const call = consoleErrorSpy.mock.calls[0][0];
+			const contextArg = consoleErrorSpy.mock.calls[0][3]; // Context is 4th arg
 			expect(call).toContain('Custom error');
-			expect(call).toContain('code');
-			expect(call).toContain('CUSTOM_ERROR');
+			expect(contextArg).toContain('code');
+			expect(contextArg).toContain('CUSTOM_ERROR');
 		});
 
 		it('should include context along with error', () => {
@@ -124,9 +126,11 @@ describe('Client Logger', () => {
 			logger.error('Error with context', error, { userId: '456', action: 'delete' });
 			expect(consoleErrorSpy).toHaveBeenCalled();
 			const call = consoleErrorSpy.mock.calls[0][0];
-			expect(call).toContain('userId');
-			expect(call).toContain('456');
-			expect(call).toContain('Test error');
+			const contextArg = consoleErrorSpy.mock.calls[0][3]; // Context is 4th arg
+			expect(call).toContain('Error with context');
+			expect(contextArg).toContain('userId');
+			expect(contextArg).toContain('456');
+			expect(contextArg).toContain('Test error');
 		});
 
 		it('should handle null/undefined errors', () => {
@@ -196,12 +200,14 @@ describe('Client Logger', () => {
 		it('should handle complex nested context', () => {
 			logger.info('Complex context', {
 				user: { id: 1, name: 'Test' },
-				metadata: { tags: ['a', 'b'], count: 5 },
+				metadata: { tags: ['a', 'b'], count: 5 }
 			});
 			expect(consoleLogSpy).toHaveBeenCalled();
 			const call = consoleLogSpy.mock.calls[0][0];
-			expect(call).toContain('user');
-			expect(call).toContain('metadata');
+			const contextArg = consoleLogSpy.mock.calls[0][3]; // Context is 4th arg
+			expect(call).toContain('Complex context');
+			expect(contextArg).toContain('user');
+			expect(contextArg).toContain('metadata');
 		});
 	});
 

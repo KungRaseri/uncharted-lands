@@ -262,6 +262,7 @@ describe('world-grid-utils', () => {
 		});
 
 		it('should handle non-array elevation map', () => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const regions = [{ elevationMap: 'not an array' as any }];
 			const stats = calculatePreviewStats(regions);
 			expect(stats).toEqual({
@@ -276,19 +277,10 @@ describe('world-grid-utils', () => {
 		it('should calculate stats from tile arrays', () => {
 			const regions = [
 				{
-					tiles: [
-						{ type: 'LAND' },
-						{ type: 'LAND' },
-						{ type: 'OCEAN' },
-						{ type: 'LAND' }
-					]
+					tiles: [{ type: 'LAND' }, { type: 'LAND' }, { type: 'OCEAN' }, { type: 'LAND' }]
 				},
 				{
-					tiles: [
-						{ type: 'OCEAN' },
-						{ type: 'OCEAN' },
-						{ type: 'LAND' }
-					]
+					tiles: [{ type: 'OCEAN' }, { type: 'OCEAN' }, { type: 'LAND' }]
 				}
 			];
 

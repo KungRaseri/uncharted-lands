@@ -25,7 +25,11 @@
 	<div class="flex items-start gap-6">
 		{#if icon}
 			{@const IconComponent = icon}
-			<div class="flex-none w-16 h-16 rounded-full {colorClasses[iconColor]} flex items-center justify-center">
+			<div
+				class="flex-none w-16 h-16 rounded-full {colorClasses[
+					iconColor
+				]} flex items-center justify-center"
+			>
 				<IconComponent size={32} />
 			</div>
 		{/if}
@@ -35,7 +39,7 @@
 			{#if subtitle}
 				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{subtitle}</p>
 			{/if}
-			
+
 			{#if metadata}
 				<div class="flex flex-wrap gap-4">
 					{@render metadata()}

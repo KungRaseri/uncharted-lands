@@ -7,7 +7,7 @@
 /**
  * Get elevation-based color for admin tile visualization
  * Uses numeric elevation values (not normalized 0-1 range)
- * 
+ *
  * @param elevation - Actual elevation value (can be negative for ocean)
  * @param tileType - Type of tile ('ocean' or 'land')
  * @returns Hex color string
@@ -19,7 +19,7 @@ export function getAdminElevationColor(elevation: number, tileType: string): str
 		if (elevation < -5) return '#003d66'; // Ocean
 		return '#006699'; // Shallow water
 	}
-	
+
 	// Land tiles (elevation >= 0)
 	if (elevation < 5) return '#c2b280'; // Beach/coastal lowland
 	if (elevation < 15) return '#228b22'; // Lowland/grassland
@@ -31,7 +31,7 @@ export function getAdminElevationColor(elevation: number, tileType: string): str
 /**
  * Get terrain description based on elevation and tile type
  * Provides human-readable terrain classification for admin views
- * 
+ *
  * @param elevation - Actual elevation value
  * @param tileType - Type of tile ('ocean' or 'land')
  * @returns Terrain description string
@@ -43,7 +43,7 @@ export function getAdminTerrainDescription(elevation: number, tileType: string):
 		if (elevation < -5) return 'Ocean';
 		return 'Shallow Water';
 	}
-	
+
 	// Land terrain types
 	if (elevation < 5) return 'Coastal/Beach';
 	if (elevation < 15) return 'Lowland';

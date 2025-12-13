@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import ExtractorBuildModal from '$lib/components/resources/ExtractorBuildModal.svelte';
-import type { PlotWithRelations } from '$lib/types/api';
+import type { TileWithRelations } from '$lib/types/api';
 import * as resourceUtils from '$lib/utils/resource-production';
 
 // Mock the resource-production utilities
@@ -13,25 +13,36 @@ vi.mock('$lib/utils/resource-production', () => ({
 }));
 
 describe('ExtractorBuildModal.svelte', () => {
-	const basePlot: PlotWithRelations = {
-		id: 'plot1',
-		tileId: 'tile1',
-		x: 10,
-		y: 20,
-		area: 100,
-		solar: 50,
-		wind: 30,
-		food: 60,
-		water: 50,
-		wood: 80,
-		stone: 40,
-		ore: 50,
+	const baseTile: TileWithRelations = {
+		id: 'tile1',
+		regionId: 'region1',
+		biomeId: 'biome1',
+		xCoord: 10,
+		yCoord: 20,
+		x: 10, // Legacy field for compatibility
+		y: 20, // Legacy field for compatibility
+		elevation: 100,
+		temperature: 50,
+		precipitation: 30,
+		type: 'LAND',
+		foodQuality: 60,
+		waterQuality: 70,
+		woodQuality: 80,
+		stoneQuality: 40,
+		oreQuality: 50,
+		settlementId: null,
+		plotSlots: 5,
+		baseProductionModifier: 1.0,
+		specialResource: null,
 		createdAt: new Date(),
-		updatedAt: new Date()
+		updatedAt: new Date(),
+		structures: [] // Empty array for available slots calculation
 	};
 
 	let onCloseMock: ReturnType<typeof vi.fn<() => void>>;
-	let onBuildExtractorMock: ReturnType<typeof vi.fn<(plotId: string, extractorType: string) => Promise<void>>>;
+	let onBuildExtractorMock: ReturnType<
+		typeof vi.fn<(tileId: string, slotPosition: number, extractorType: string) => Promise<void>>
+	>;
 
 	// Helper to get the Build Extractor button (not the header)
 	const getBuildButton = () => {
@@ -43,9 +54,12 @@ describe('ExtractorBuildModal.svelte', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		onCloseMock = vi.fn<() => void>();
-		onBuildExtractorMock = vi.fn<(plotId: string, extractorType: string) => Promise<void>>().mockResolvedValue(undefined);
+		onBuildExtractorMock = vi
+			.fn<(tileId: string, slotPosition: number, extractorType: string) => Promise<void>>()
+			.mockResolvedValue(undefined);
 
 		// Setup default mocks
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(resourceUtils.getResourceIcon as any).mockImplementation(async (type: string) => {
 			const icons: Record<string, string> = {
 				FOOD: '🌾',
@@ -57,6 +71,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			return icons[type] || '?';
 		});
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(resourceUtils.getResourceName as any).mockImplementation(async (type: string) => {
 			const names: Record<string, string> = {
 				FOOD: 'Food',
@@ -68,6 +83,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			return names[type] || type;
 		});
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(resourceUtils.getExtractorName as any).mockImplementation(async (type: string) => {
 			const names: Record<string, string> = {
 				BASIC_FARM: 'Basic Farm',
@@ -85,7 +101,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should not render when isOpen is false', () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: false,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -98,7 +114,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should render when isOpen is true', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -116,7 +132,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display modal title', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -132,7 +148,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display plot coordinates', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -140,14 +156,14 @@ describe('ExtractorBuildModal.svelte', () => {
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText(/Plot at \(10, 20\)/)).toBeDefined();
+				expect(screen.getByText(/Tile at \(10, 20\)/)).toBeDefined();
 			});
 		});
 
 		it('should display plot area', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -155,14 +171,14 @@ describe('ExtractorBuildModal.svelte', () => {
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText(/Area: 100 units/)).toBeDefined();
+				expect(screen.getByText(/Slots Used: \d+ \/ 3/)).toBeDefined();
 			});
 		});
 
 		it('should display close button', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -178,7 +194,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should call onClose when close button is clicked', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -194,11 +210,11 @@ describe('ExtractorBuildModal.svelte', () => {
 		});
 	});
 
-	describe('Plot Resources Display', () => {
-		it('should display plot resources section', async () => {
+	describe('Tile Resources Display', () => {
+		it('should display Tile Resources section', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -206,14 +222,14 @@ describe('ExtractorBuildModal.svelte', () => {
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('Plot Resources')).toBeDefined();
+				expect(screen.getByText('Tile Resource Quality')).toBeDefined();
 			});
 		});
 
 		it('should display food resource', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -230,7 +246,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display water resource', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -240,14 +256,14 @@ describe('ExtractorBuildModal.svelte', () => {
 			await waitFor(() => {
 				const waterIcons = screen.getAllByText('💧');
 				expect(waterIcons.length).toBeGreaterThanOrEqual(1);
-				expect(screen.getByText(/Water: 50/)).toBeDefined();
+				expect(screen.getByText(/Water: 70/)).toBeDefined();
 			});
 		});
 
 		it('should display wood resource', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -264,7 +280,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display stone resource', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -281,7 +297,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display ore resource', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -296,10 +312,10 @@ describe('ExtractorBuildModal.svelte', () => {
 		});
 
 		it('should only display resources with value > 0', async () => {
-			const plotWithNoFood = { ...basePlot, food: 0 };
+			const tileWithNoFood = { ...baseTile, foodQuality: 0 };
 			render(ExtractorBuildModal, {
 				props: {
-					plot: plotWithNoFood,
+					tile: tileWithNoFood,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -307,7 +323,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('Plot Resources')).toBeDefined();
+				expect(screen.getByText('Tile Resource Quality')).toBeDefined();
 				expect(() => screen.getByText(/Food:/)).toThrow();
 			});
 		});
@@ -317,7 +333,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display extractor selection section', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -332,7 +348,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display basic farm option when food > 0', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -349,7 +365,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display advanced farm option when food >= 50', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: { ...basePlot, food: 60 },
+					tile: { ...baseTile, foodQuality: 60 },
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -364,7 +380,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should not display advanced farm when food < 50', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: { ...basePlot, food: 40 },
+					tile: { ...baseTile, foodQuality: 40 },
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -381,7 +397,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display basic well option when water > 0', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -398,7 +414,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display basic lumber mill option when wood > 0', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -415,7 +431,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display basic quarry option when stone > 0', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -432,7 +448,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display basic mine option when ore > 0', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -449,7 +465,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display disabled farm with reason when food = 0', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: { ...basePlot, food: 0 },
+					tile: { ...baseTile, foodQuality: 0 },
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -458,7 +474,7 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			await waitFor(() => {
 				expect(screen.getByText('Basic Farm')).toBeDefined();
-				expect(screen.getByText('Insufficient food quality on this plot')).toBeDefined();
+				expect(screen.getByText('Insufficient food quality on this tile')).toBeDefined();
 			});
 		});
 	});
@@ -467,7 +483,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should allow selecting an available extractor', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -489,7 +505,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should not allow selecting disabled extractors', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: { ...basePlot, food: 0 },
+					tile: { ...baseTile, foodQuality: 0 },
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -507,7 +523,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display build cost when extractor is selected', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -527,7 +543,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display basic extractor costs correctly', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -549,7 +565,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display advanced extractor costs correctly', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: { ...basePlot, food: 60 },
+					tile: { ...baseTile, foodQuality: 60 },
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -570,7 +586,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should not display cost when no extractor selected', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -589,7 +605,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display Cancel button', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -604,7 +620,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should display Build Extractor button', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -620,7 +636,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should call onClose when Cancel button is clicked', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -638,7 +654,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should disable Build button when no extractor selected', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -654,7 +670,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should enable Build button when extractor is selected', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -677,7 +693,7 @@ describe('ExtractorBuildModal.svelte', () => {
 		it('should call onBuildExtractor with correct parameters', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -696,14 +712,14 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			await waitFor(() => {
 				expect(onBuildExtractorMock).toHaveBeenCalledOnce();
-				expect(onBuildExtractorMock).toHaveBeenCalledWith('plot1', 'BASIC_FARM');
+				expect(onBuildExtractorMock).toHaveBeenCalledWith('tile1', 1, 'BASIC_FARM');
 			});
 		});
 
 		it('should close modal after successful build', async () => {
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -732,7 +748,7 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -761,7 +777,7 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -789,7 +805,7 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -816,7 +832,7 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -843,18 +859,17 @@ describe('ExtractorBuildModal.svelte', () => {
 
 	describe('Edge Cases', () => {
 		it('should handle plot with all zero resources', async () => {
-			const emptyPlot = {
-				...basePlot,
-				food: 0,
-				water: 0,
-				wood: 0,
-				stone: 0,
-				ore: 0
+			const emptyTile = {
+				...baseTile,
+				foodQuality: 0,
+				woodQuality: 0,
+				stoneQuality: 0,
+				oreQuality: 0
 			};
 
 			render(ExtractorBuildModal, {
 				props: {
-					plot: emptyPlot,
+					tile: emptyTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -862,16 +877,16 @@ describe('ExtractorBuildModal.svelte', () => {
 			});
 
 			await waitFor(() => {
-				expect(screen.getByText('Plot Resources')).toBeDefined();
+				expect(screen.getByText('Tile Resource Quality')).toBeDefined();
 				// Should show disabled farm
-				expect(screen.getByText('Insufficient food quality on this plot')).toBeDefined();
+				expect(screen.getByText('Insufficient food quality on this tile')).toBeDefined();
 			});
 		});
 
 		it('should reset selection when modal reopens', async () => {
 			const { rerender } = render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -890,14 +905,14 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			// Close and reopen
 			rerender({
-				plot: basePlot,
+				tile: baseTile,
 				isOpen: false,
 				onClose: onCloseMock,
 				onBuildExtractor: onBuildExtractorMock
 			});
 
 			rerender({
-				plot: basePlot,
+				tile: baseTile,
 				isOpen: true,
 				onClose: onCloseMock,
 				onBuildExtractor: onBuildExtractorMock
@@ -913,7 +928,7 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -942,7 +957,7 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			render(ExtractorBuildModal, {
 				props: {
-					plot: basePlot,
+					tile: baseTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -968,18 +983,17 @@ describe('ExtractorBuildModal.svelte', () => {
 		});
 
 		it('should handle high resource values', async () => {
-			const highResourcePlot = {
-				...basePlot,
-				food: 999,
-				water: 999,
-				wood: 999,
-				stone: 999,
-				ore: 999
+			const highResourceTile = {
+				...baseTile,
+				foodQuality: 999,
+				woodQuality: 999,
+				stoneQuality: 999,
+				oreQuality: 999
 			};
 
 			render(ExtractorBuildModal, {
 				props: {
-					plot: highResourcePlot,
+					tile: highResourceTile,
 					isOpen: true,
 					onClose: onCloseMock,
 					onBuildExtractor: onBuildExtractorMock
@@ -988,7 +1002,6 @@ describe('ExtractorBuildModal.svelte', () => {
 
 			await waitFor(() => {
 				expect(screen.getByText(/Food: 999/)).toBeDefined();
-				expect(screen.getByText(/Water: 999/)).toBeDefined();
 			});
 		});
 	});

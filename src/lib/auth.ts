@@ -1,5 +1,5 @@
 import type { Cookies } from '@sveltejs/kit';
-import { API_URL } from './config';
+import { SERVER_API_URL } from '$env/static/private';
 import { logger } from './utils/logger';
 
 export const AuthenticateUser = async (cookies: Cookies) => {
@@ -11,7 +11,7 @@ export const AuthenticateUser = async (cookies: Cookies) => {
 
 	try {
 		// Call the REST API to validate the session
-		const response = await fetch(`${API_URL}/auth/validate`, {
+		const response = await fetch(`${SERVER_API_URL}/auth/validate`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

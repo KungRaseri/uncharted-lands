@@ -3,10 +3,10 @@
 	import { Clock, Calendar, MapPin, Building2, Users, Info, Filter, Search } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
-	
+
 	let searchTerm = $state('');
 	let filterType = $state('all');
-	
+
 	const activityTypes = ['all', 'settlements', 'resources', 'structures', 'social'];
 </script>
 
@@ -18,13 +18,13 @@
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3">
+			<h1
+				class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2 flex items-center gap-3"
+			>
 				<Clock size={32} class="text-primary-500" />
 				Activity History
 			</h1>
-			<p class="text-surface-600 dark:text-surface-400">
-				Your recent activities and events
-			</p>
+			<p class="text-surface-600 dark:text-surface-400">Your recent activities and events</p>
 		</div>
 	</div>
 
@@ -90,7 +90,9 @@
 		<div class="space-y-4">
 			{#each [1, 2, 3] as item}
 				<div class="flex gap-4 items-start p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
-					<div class="w-10 h-10 rounded-full bg-surface-300 dark:bg-surface-600 flex items-center justify-center shrink-0">
+					<div
+						class="w-10 h-10 rounded-full bg-surface-300 dark:bg-surface-600 flex items-center justify-center shrink-0"
+					>
 						<Clock size={20} class="text-surface-500" />
 					</div>
 					<div class="flex-1">
@@ -105,8 +107,6 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
-			← Back to Game Overview
-		</a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
 	</div>
 </div>

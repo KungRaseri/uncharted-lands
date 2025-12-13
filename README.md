@@ -1,6 +1,23 @@
-# Uncharted Lands | Browser-based Settlement game
+# Uncharted Lands | Browser-based Settlement Game
 
-> **📢 Deployment Fix Applied**: If you're experiencing migration issues, see [`docs/migration/DEPLOYMENT_READY.md`](docs/migration/DEPLOYMENT_READY.md) - the automated fix is already in place!
+## 📚 Game Design Documentation
+
+Complete game design documentation is available on the [GitHub Wiki](https://github.com/KungRaseri/uncharted-lands/wiki):
+
+- **📖 [Design Docs Quick Start](https://github.com/KungRaseri/uncharted-lands/wiki/GDD-Quick-Start)** - Start here to understand the documentation system
+- **📚 [Game Design Document (GDD)](https://github.com/KungRaseri/uncharted-lands/wiki/GDD-HOME)** - Complete specifications for all game systems (1,200+ lines)
+- **📊 [Implementation Tracker](https://github.com/KungRaseri/uncharted-lands/wiki/GDD-Implementation-Tracker)** - Current status of features (✅/🚧/📋)
+- **🔧 [Feature Spec Template](https://github.com/KungRaseri/uncharted-lands/wiki/Feature-Spec-Template)** - Template for new feature implementations
+
+**When implementing new features:**
+
+1. Check the GDD for design specifications and game mechanics
+2. Review the Implementation Tracker for current status and dependencies
+3. Create a feature spec from the template in `docs/features/[feature-name].md`
+4. Follow Svelte 5 + SvelteKit + Skeleton UI patterns
+5. Update the tracker when complete
+
+**Local Documentation**: The source files are also available in [`docs/game-design/`](docs/game-design/) for offline reference.
 
 ## Quality
 
@@ -19,21 +36,30 @@
 
 ### Backend
 
-- Prisma DB
-- PostgreSQL
+- Node.js + TypeScript
+- Socket.IO (real-time multiplayer)
+- Drizzle ORM + PostgreSQL
+- Event-driven game loop (60Hz)
+
+### Documentation
+
+- **Wiki**: See [`docs/`](docs/) folder for complete documentation
+- **Architecture**: See [root instructions](.github/copilot-instructions.md) for system overview
 
 ## Database
 
 ```bash
-# generate the typescript client
-npx prisma generate
+# Generate Drizzle migrations from schema changes
+npm run db:generate
 
-# run migration scripts against dev environment
-npx prisma migrate dev
+# Push schema changes to database (development)
+npm run db:push
 
-# push the schema to the database
-npx prisma db push
+# Open Drizzle Studio to view/edit data
+npm run db:studio
 ```
+
+**Note**: We migrated from Prisma to Drizzle ORM. See `server/src/db/` for the schema.
 
 ## Developing
 
@@ -55,3 +81,11 @@ npm run build
 ```
 
 You can preview the production build with `npm run preview`.
+
+## Documentation
+
+For detailed documentation:
+
+- **[GitHub Wiki](https://github.com/KungRaseri/uncharted-lands/wiki)** - Complete documentation hub
+- **[Game Design Documentation](https://github.com/KungRaseri/uncharted-lands/wiki/GDD-Monolith)** - Game specifications
+- **[Local Docs](docs/)** - Offline documentation in `docs/` folder

@@ -1,24 +1,38 @@
 <script lang="ts">
-	import type { PlotWithRelations } from '$lib/types/api';
-	import { getResourceIcon, getResourceName, getExtractorName } from '$lib/utils/resource-production';
+	import type { TileWithRelations } from '$lib/types/api';
+	import {
+		getResourceIcon,
+		getResourceName,
+		getExtractorName
+	} from '$lib/utils/resource-production';
 
-	let { 
-		plot, 
-		isOpen = false, 
-		onClose, 
-		onBuildExtractor 
-	}: { 
-		plot: PlotWithRelations; 
-		isOpen?: boolean; 
-		onClose: () => void; 
-		onBuildExtractor: (plotId: string, extractorType: string) => Promise<void>; 
+	let {
+		tile,
+		isOpen = false,
+		onClose,
+		onBuildExtractor
+	}: {
+		tile: TileWithRelations;
+		isOpen?: boolean;
+		onClose: () => void;
+		onBuildExtractor: (
+			tileId: string,
+			slotPosition: number,
+			extractorType: string
+		) => Promise<void>;
 	} = $props();
 
 	let isBuilding = $state(false);
 	let selectedExtractor = $state<string | null>(null);
+	let selectedSlotPosition = $state<number>(1); // Default to slot 1
 	let error = $state<string | null>(null);
 
-	// Determine available extractors based on plot's resource potential
+	// Calculate available slots (max 3 per tile)
+	const maxSlots = 3;
+	let usedSlots = $derived(tile.structures?.length || 0);
+	let availableSlots = $derived(maxSlots - usedSlots);
+
+	// Determine available extractors based on tile's resource potential
 	let extractorOptions = $derived(() => {
 		const options: Array<{
 			type: string;
@@ -28,13 +42,13 @@
 		}> = [];
 
 		// Food extractors
-		if (plot.food > 0) {
+		if (tile.foodQuality > 0) {
 			options.push({
 				type: 'BASIC_FARM',
 				resourceType: 'FOOD',
 				available: true
 			});
-			if (plot.food >= 50) {
+			if (tile.foodQuality >= 50) {
 				options.push({
 					type: 'ADVANCED_FARM',
 					resourceType: 'FOOD',
@@ -46,12 +60,12 @@
 				type: 'BASIC_FARM',
 				resourceType: 'FOOD',
 				available: false,
-				reason: 'Insufficient food quality on this plot'
+				reason: 'Insufficient food quality on this tile'
 			});
 		}
 
 		// Water extractors
-		if (plot.water > 0) {
+		if (tile.waterQuality > 0) {
 			options.push({
 				type: 'BASIC_WELL',
 				resourceType: 'WATER',
@@ -60,7 +74,7 @@
 		}
 
 		// Wood extractors
-		if (plot.wood > 0) {
+		if (tile.woodQuality > 0) {
 			options.push({
 				type: 'BASIC_LUMBER_MILL',
 				resourceType: 'WOOD',
@@ -69,7 +83,7 @@
 		}
 
 		// Stone extractors
-		if (plot.stone > 0) {
+		if (tile.stoneQuality > 0) {
 			options.push({
 				type: 'BASIC_QUARRY',
 				resourceType: 'STONE',
@@ -78,7 +92,7 @@
 		}
 
 		// Ore extractors
-		if (plot.ore > 0) {
+		if (tile.oreQuality > 0) {
 			options.push({
 				type: 'BASIC_MINE',
 				resourceType: 'ORE',
@@ -103,6 +117,7 @@
 	$effect(() => {
 		if (isOpen) {
 			selectedExtractor = null;
+			selectedSlotPosition = usedSlots + 1; // Next available slot
 			error = null;
 		}
 	});
@@ -114,7 +129,7 @@
 		error = null;
 
 		try {
-			await onBuildExtractor(plot.id, selectedExtractor);
+			await onBuildExtractor(tile.id, selectedSlotPosition, selectedExtractor);
 			onClose();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to build extractor';
@@ -131,15 +146,29 @@
 </script>
 
 {#if isOpen}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={handleClose} role="presentation">
-		<div class="modal-content" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
-			<div class="modal-header">
+	<div
+		class="fixed inset-0 w-full h-full bg-black/50 flex items-center justify-center z-1000 p-4 backdrop-blur-sm"
+		onclick={handleClose}
+		onkeydown={(e) => e.key === 'Escape' && handleClose()}
+		role="presentation"
+		tabindex="-1"
+	>
+		<div
+			class="bg-surface-50 dark:bg-surface-900 rounded-container-token p-8 max-w-[600px] w-full max-h-[90vh] overflow-y-auto shadow-xl"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="modal-title"
+			tabindex="-1"
+		>
+			<div
+				class="flex justify-between items-start mb-6 pb-4 border-b border-surface-300/30 dark:border-surface-700/30"
+			>
 				<div>
 					<h2 class="text-2xl font-bold">Build Extractor</h2>
 					<p class="text-sm text-surface-600-300-token">
-						Plot at ({plot.x}, {plot.y}) - Area: {plot.area} units
+						Tile at ({tile.x}, {tile.y}) - Slots Used: {usedSlots} / {maxSlots}
 					</p>
 				</div>
 				<button
@@ -153,47 +182,53 @@
 				</button>
 			</div>
 
+			{#if availableSlots === 0}
+				<div class="alert variant-filled-error mb-4">
+					<span>⚠️ No available slots on this tile. Maximum 3 extractors per tile.</span>
+				</div>
+			{/if}
+
 			<div class="variant-ghost-surface p-4 rounded-lg mb-6">
-				<h3 class="font-semibold mb-2">Plot Resources</h3>
+				<h3 class="font-semibold mb-2">Tile Resource Quality</h3>
 				<div class="grid grid-cols-2 gap-2 text-sm">
-					{#if plot.food > 0}
+					{#if tile.foodQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('FOOD') then icon}
 								<span>{icon}</span>
 							{/await}
-							Food: {plot.food}
+							Food: {tile.foodQuality}%
 						</div>
 					{/if}
-					{#if plot.water > 0}
+					{#if tile.waterQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('WATER') then icon}
 								<span>{icon}</span>
 							{/await}
-							Water: {plot.water}
+							Water: {tile.waterQuality}%
 						</div>
 					{/if}
-					{#if plot.wood > 0}
+					{#if tile.woodQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('WOOD') then icon}
 								<span>{icon}</span>
 							{/await}
-							Wood: {plot.wood}
+							Wood: {tile.woodQuality}%
 						</div>
 					{/if}
-					{#if plot.stone > 0}
+					{#if tile.stoneQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('STONE') then icon}
 								<span>{icon}</span>
 							{/await}
-							Stone: {plot.stone}
+							Stone: {tile.stoneQuality}%
 						</div>
 					{/if}
-					{#if plot.ore > 0}
+					{#if tile.oreQuality > 0}
 						<div class="flex items-center gap-1">
 							{#await getResourceIcon('ORE') then icon}
 								<span>{icon}</span>
 							{/await}
-							Ore: {plot.ore}
+							Ore: {tile.oreQuality}%
 						</div>
 					{/if}
 				</div>
@@ -203,9 +238,19 @@
 				<h3 class="font-semibold">Select Extractor Type</h3>
 				{#each extractorOptions() as option (option.type)}
 					<button
-						class="extractor-option"
-						class:selected={selectedExtractor === option.type}
-						class:disabled={!option.available}
+						class="w-full flex items-center justify-between p-4 border-2 rounded-base cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed {selectedExtractor ===
+						option.type
+							? 'dark:bg-primary-900/30'
+							: 'dark:bg-surface-800'} {selectedExtractor !== option.type
+							? 'dark:border-surface-600'
+							: ''}"
+						class:border-primary-500={selectedExtractor === option.type}
+						class:bg-primary-50={selectedExtractor === option.type}
+						class:border-surface-300={selectedExtractor !== option.type}
+						class:bg-surface-50={selectedExtractor !== option.type}
+						class:hover:border-primary-500={option.available}
+						class:hover:-translate-y-0.5={option.available}
+						class:hover:shadow-md={option.available}
 						onclick={() => option.available && (selectedExtractor = option.type)}
 						disabled={!option.available || isBuilding}
 						type="button"
@@ -291,86 +336,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-		padding: 1rem;
-		backdrop-filter: blur(4px);
-	}
-
-	.modal-content {
-		background: rgb(var(--color-surface-50));
-		border-radius: var(--theme-rounded-container);
-		padding: 2rem;
-		max-width: 600px;
-		width: 100%;
-		max-height: 90vh;
-		overflow-y: auto;
-		box-shadow: var(--shadow-xl);
-	}
-
-	:global(.dark) .modal-content {
-		background: rgb(var(--color-surface-900));
-	}
-
-	.modal-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: start;
-		margin-bottom: 1.5rem;
-		padding-bottom: 1rem;
-		border-bottom: 1px solid rgb(var(--color-surface-300) / 0.3);
-	}
-
-	:global(.dark) .modal-header {
-		border-bottom-color: rgb(var(--color-surface-700) / 0.3);
-	}
-
-	.extractor-option {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 1rem;
-		border: 2px solid rgb(var(--color-surface-300));
-		border-radius: var(--theme-rounded-base);
-		background: rgb(var(--color-surface-50));
-		cursor: pointer;
-		transition: all 0.2s ease;
-	}
-
-	:global(.dark) .extractor-option {
-		background: rgb(var(--color-surface-800));
-		border-color: rgb(var(--color-surface-600));
-	}
-
-	.extractor-option:hover:not(.disabled) {
-		border-color: rgb(var(--color-primary-500));
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-md);
-	}
-
-	.extractor-option.selected {
-		border-color: rgb(var(--color-primary-500));
-		background: rgb(var(--color-primary-50));
-	}
-
-	:global(.dark) .extractor-option.selected {
-		background: rgb(var(--color-primary-900) / 0.3);
-	}
-
-	.extractor-option.disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-</style>

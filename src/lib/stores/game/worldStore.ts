@@ -1,6 +1,6 @@
 /**
  * World Store - Reactive state management for game world data
- * 
+ *
  * Manages current world, regions, and provides actions for loading world data
  */
 
@@ -37,20 +37,7 @@ export interface TileInfo {
 	temperature: number;
 	precipitation: number;
 	type: 'OCEAN' | 'LAND';
-	plots?: PlotInfo[];
-}
-
-export interface PlotInfo {
-	id: string;
-	tileId: string;
-	area: number;
-	solar: number;
-	wind: number;
-	food: number;
-	water: number;
-	wood: number;
-	stone: number;
-	ore: number;
+	plotSlots?: number; // Number of extractor slots (default 5)
 }
 
 export interface RegionWithTiles extends RegionInfo {
@@ -84,16 +71,16 @@ function createWorldStore() {
 		 * Load world data from server
 		 */
 		async loadWorld(worldId: string, includeRegions: boolean = true): Promise<void> {
-			update(state => ({ ...state, loading: true, error: null }));
+			update((state) => ({ ...state, loading: true, error: null }));
 
 			try {
 				const response = await requestWorldData({ worldId, includeRegions });
 
 				if (response.success && response.world) {
-					update(state => ({
+					update((state) => ({
 						...state,
-						currentWorld: response.world!,
-						regions: response.regions || [],
+						currentWorld: response.world as unknown as WorldInfo,
+						regions: (response.regions as unknown as RegionInfo[]) || [],
 						loading: false,
 						error: null
 					}));
@@ -102,7 +89,7 @@ function createWorldStore() {
 				}
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-				update(state => ({
+				update((state) => ({
 					...state,
 					loading: false,
 					error: errorMessage
@@ -112,29 +99,30 @@ function createWorldStore() {
 		},
 
 		/**
-		 * Load detailed region data with tiles and plots
+		 * Load detailed region data with tiles
 		 */
 		async loadRegion(regionId: string, includeTiles: boolean = true): Promise<RegionWithTiles> {
-			update(state => ({ ...state, loading: true, error: null }));
+			update((state) => ({ ...state, loading: true, error: null }));
 
 			try {
 				const response = await requestRegionData({ regionId, includeTiles });
 
 				if (response.success && response.region) {
+					const region = response.region as unknown as RegionWithTiles;
 					const regionData: RegionWithTiles = {
-						id: response.region.id,
-						worldId: response.region.worldId,
-						name: response.region.name,
-						xCoord: response.region.xCoord,
-						yCoord: response.region.yCoord,
-						elevationMap: response.region.elevationMap,
-						precipitationMap: response.region.precipitationMap,
-						temperatureMap: response.region.temperatureMap,
-						tiles: response.region.tiles
+						id: region.id,
+						worldId: region.worldId,
+						name: region.name,
+						xCoord: region.xCoord,
+						yCoord: region.yCoord,
+						elevationMap: region.elevationMap,
+						precipitationMap: region.precipitationMap,
+						temperatureMap: region.temperatureMap,
+						tiles: region.tiles
 					};
 
 					// Cache the loaded region
-					update(state => {
+					update((state) => {
 						const newLoadedRegions = new Map(state.loadedRegions);
 						newLoadedRegions.set(regionId, regionData);
 						return {
@@ -151,7 +139,7 @@ function createWorldStore() {
 				}
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-				update(state => ({
+				update((state) => ({
 					...state,
 					loading: false,
 					error: errorMessage
@@ -164,7 +152,7 @@ function createWorldStore() {
 		 * Set world directly (useful after creation)
 		 */
 		setWorld(world: WorldInfo, regions?: RegionInfo[]): void {
-			update(state => ({
+			update((state) => ({
 				...state,
 				currentWorld: world,
 				regions: regions || state.regions,
@@ -189,14 +177,14 @@ function createWorldStore() {
 		 * Set loading state
 		 */
 		setLoading(loading: boolean): void {
-			update(state => ({ ...state, loading }));
+			update((state) => ({ ...state, loading }));
 		},
 
 		/**
 		 * Set error
 		 */
 		setError(error: string | null): void {
-			update(state => ({ ...state, error }));
+			update((state) => ({ ...state, error }));
 		},
 
 		/**
@@ -204,7 +192,7 @@ function createWorldStore() {
 		 */
 		getRegion(regionId: string): RegionWithTiles | undefined {
 			let region: RegionWithTiles | undefined;
-			update(state => {
+			update((state) => {
 				region = state.loadedRegions.get(regionId);
 				return state;
 			});
@@ -216,27 +204,12 @@ function createWorldStore() {
 export const worldStore = createWorldStore();
 
 // Derived stores for convenience
-export const currentWorld = derived(
-	worldStore,
-	$world => $world.currentWorld
-);
+export const currentWorld = derived(worldStore, ($world) => $world.currentWorld);
 
-export const worldRegions = derived(
-	worldStore,
-	$world => $world.regions
-);
+export const worldRegions = derived(worldStore, ($world) => $world.regions);
 
-export const worldLoading = derived(
-	worldStore,
-	$world => $world.loading
-);
+export const worldLoading = derived(worldStore, ($world) => $world.loading);
 
-export const worldError = derived(
-	worldStore,
-	$world => $world.error
-);
+export const worldError = derived(worldStore, ($world) => $world.error);
 
-export const hasWorld = derived(
-	worldStore,
-	$world => $world.currentWorld !== null
-);
+export const hasWorld = derived(worldStore, ($world) => $world.currentWorld !== null);

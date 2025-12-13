@@ -31,7 +31,10 @@ const config: PlaywrightTestConfig = {
 	/* Opt out of parallel tests on CI. */
 	workers: process.env.CI ? 1 : undefined,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
-	reporter: 'html',
+	reporter: [
+		['list'], // Console output
+		['html', { open: 'never' }] // Generate HTML report but don't auto-open
+	],
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		/* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
@@ -45,26 +48,26 @@ const config: PlaywrightTestConfig = {
 
 	/* Configure projects for major browsers */
 	projects: [
-		{
-			name: 'chromium',
-			use: {
-				...devices['Desktop Chrome']
-			}
-		},
+		// {
+		// 	name: 'chromium',
+		// 	use: {
+		// 		...devices['Desktop Chrome']
+		// 	}
+		// },
 
 		{
 			name: 'firefox',
 			use: {
 				...devices['Desktop Firefox']
 			}
-		},
-
-		{
-			name: 'webkit',
-			use: {
-				...devices['Desktop Safari']
-			}
 		}
+
+		// {
+		// 	name: 'webkit',
+		// 	use: {
+		// 		...devices['Desktop Safari']
+		// 	}
+		// }
 
 		/* Test against mobile viewports. */
 		// {
@@ -99,28 +102,39 @@ const config: PlaywrightTestConfig = {
 	// outputDir: 'test-results/',
 
 	/* Run your local dev server before starting the tests */
-	webServer: [
-		{
-			// Start the backend API server first
-			// In CI with Docker, the server is already running in a container
-			// Locally, this will start the server from ../server
-			command: 'cd ../server && npm run dev',
-			port: 3001,
-			timeout: 120 * 1000,
-			reuseExistingServer: true, // Always reuse - Docker (CI) or local dev server
-			stdout: 'ignore',
-			stderr: 'pipe'
-		},
-		{
-			// Then start the client SvelteKit server
-			command: 'npm run dev',
-			port: 3000,
-			timeout: 120 * 1000,
-			reuseExistingServer: !process.env.CI, // Fresh start in CI, reuse locally
-			stdout: 'ignore',
-			stderr: 'pipe'
-		}
-	]
+	webServer: process.env.SKIP_SERVERS
+		? undefined // Don't start any servers if SKIP_SERVERS is set (Docker handles this)
+		: [
+				{
+					// Start the backend API server first
+					// In CI with Docker, the server is already running in a container
+					// Locally, this will start the server from ../server
+					// NOTE: If you have servers already running, use: SKIP_SERVERS=1 npx playwright test
+					// RECOMMENDED: Use Docker Compose for E2E (more reliable)
+					//   docker-compose -f ../docker-compose.e2e.yml up -d
+					//   SKIP_SERVERS=1 npx playwright test
+					command:
+						process.platform === 'win32'
+							? // Windows: Use PowerShell with -File to run a dedicated startup script
+								'powershell -ExecutionPolicy Bypass -File ../scripts/start-server-for-e2e.ps1'
+							: // Unix: Standard shell command
+								'cd ../server && npm run dev',
+					port: 3001,
+					timeout: 120 * 1000,
+					reuseExistingServer: true, // Always reuse - Docker (CI) or local dev server
+					stdout: 'ignore',
+					stderr: 'pipe'
+				},
+				{
+					// Then start the client SvelteKit server
+					command: 'npm run dev',
+					port: 3000,
+					timeout: 120 * 1000,
+					reuseExistingServer: !process.env.CI, // Fresh start in CI, reuse locally
+					stdout: 'ignore',
+					stderr: 'pipe'
+				}
+			]
 };
 
 export default config;

@@ -4,7 +4,7 @@ import {
 	getTerrainType,
 	getTerrainData,
 	ELEVATION_THRESHOLDS,
-	TERRAIN_COLORS,
+	TERRAIN_COLORS
 } from '../../../src/lib/utils/tile-colors';
 
 describe('Map Colors Utilities', () => {
@@ -35,12 +35,12 @@ describe('Map Colors Utilities', () => {
 
 		it('should return beach color for low positive elevations', () => {
 			expect(getElevationColor(0)).toBe(TERRAIN_COLORS.BEACH);
-			expect(getElevationColor(0.05)).toBe(TERRAIN_COLORS.BEACH);
-			expect(getElevationColor(0.09)).toBe(TERRAIN_COLORS.BEACH);
+			expect(getElevationColor(0.04)).toBe(TERRAIN_COLORS.BEACH);
+			expect(getElevationColor(0.049)).toBe(TERRAIN_COLORS.BEACH);
 		});
 
 		it('should return plains color for low-medium elevations', () => {
-			expect(getElevationColor(0.1)).toBe(TERRAIN_COLORS.PLAINS);
+			expect(getElevationColor(0.05)).toBe(TERRAIN_COLORS.PLAINS);
 			expect(getElevationColor(0.2)).toBe(TERRAIN_COLORS.PLAINS);
 			expect(getElevationColor(0.29)).toBe(TERRAIN_COLORS.PLAINS);
 		});
@@ -92,8 +92,12 @@ describe('Map Colors Utilities', () => {
 			expect(getElevationColor(ELEVATION_THRESHOLDS.FOREST)).toBe(TERRAIN_COLORS.HILLS);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.HILLS)).toBe(TERRAIN_COLORS.MOUNTAINS);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.MOUNTAINS)).toBe(TERRAIN_COLORS.HIGH_MOUNTAINS);
-			expect(getElevationColor(ELEVATION_THRESHOLDS.HIGH_MOUNTAINS)).toBe(TERRAIN_COLORS.ALPINE_PEAKS);
-			expect(getElevationColor(ELEVATION_THRESHOLDS.ALPINE_PEAKS)).toBe(TERRAIN_COLORS.EXTREME_PEAKS);
+			expect(getElevationColor(ELEVATION_THRESHOLDS.HIGH_MOUNTAINS)).toBe(
+				TERRAIN_COLORS.ALPINE_PEAKS
+			);
+			expect(getElevationColor(ELEVATION_THRESHOLDS.ALPINE_PEAKS)).toBe(
+				TERRAIN_COLORS.EXTREME_PEAKS
+			);
 		});
 	});
 
@@ -103,7 +107,7 @@ describe('Map Colors Utilities', () => {
 			expect(getTerrainType(-0.6)).toBe('Abyss');
 			expect(getTerrainType(-0.4)).toBe('Deep Ocean');
 			expect(getTerrainType(-0.1)).toBe('Ocean');
-			expect(getTerrainType(0.05)).toBe('Beach');
+			expect(getTerrainType(0.04)).toBe('Beach');
 			expect(getTerrainType(0.2)).toBe('Plains');
 			expect(getTerrainType(0.4)).toBe('Forest');
 			expect(getTerrainType(0.6)).toBe('Hills');
@@ -150,7 +154,7 @@ describe('Map Colors Utilities', () => {
 			expect(ELEVATION_THRESHOLDS.ABYSS).toBe(-0.5);
 			expect(ELEVATION_THRESHOLDS.DEEP_OCEAN).toBe(-0.3);
 			expect(ELEVATION_THRESHOLDS.OCEAN).toBe(0);
-			expect(ELEVATION_THRESHOLDS.BEACH).toBe(0.1);
+			expect(ELEVATION_THRESHOLDS.BEACH).toBe(0.05);
 			expect(ELEVATION_THRESHOLDS.PLAINS).toBe(0.3);
 			expect(ELEVATION_THRESHOLDS.FOREST).toBe(0.5);
 			expect(ELEVATION_THRESHOLDS.HILLS).toBe(0.65);

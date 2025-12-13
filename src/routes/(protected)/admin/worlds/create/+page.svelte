@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { deserialize } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import type { ActionData, PageData } from './$types';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
 	import { generateMap } from '$lib/game/world-generator';
-	import { API_URL } from '$lib/config';
+	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 
 	import { Info } from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
@@ -82,13 +81,13 @@
 		precipitationOptions.amplitude = 0.5 + (climateVariation / 100) * 4.5; // 0.5-5
 		precipitationOptions.scale = 1; // Keep constant for precipitation
 		precipitationOptions.persistence = 0.5; // Keep constant
-		
+
 		temperatureOptions.octaves = Math.floor(4 + (climateVariation / 100) * 12); // 4-16
 		temperatureOptions.frequency = 0.01 + (climateVariation / 100) * 0.09; // 0.01-0.10
 		temperatureOptions.amplitude = 0.5 + (climateVariation / 100) * 4.5; // 0.5-5
 		temperatureOptions.scale = 1; // Keep constant for temperature
 		temperatureOptions.persistence = 0.5; // Keep constant
-		
+
 		// Keep persistence constant for elevation too
 		elevationOptions.persistence = 0.5;
 
@@ -105,7 +104,7 @@
 
 	async function generate() {
 		isGenerating = true;
-		
+
 		try {
 			// Update technical parameters from simple controls
 			if (!showAdvanced) {
@@ -190,74 +189,12 @@
 	}
 
 	/**
-	 * Poll for world status until it's ready or failed
-	 */
-	async function pollWorldStatus(worldId: string): Promise<boolean> {
-		const maxAttempts = 60; // Poll for up to 5 minutes (60 * 5s = 300s)
-		let attempts = 0;
-
-		console.log('[WORLD STATUS] Starting polling for world:', worldId);
-		console.log('[WORLD STATUS] API_URL:', API_URL);
-
-		while (attempts < maxAttempts) {
-			try {
-				console.log(`[WORLD STATUS] Poll attempt ${attempts + 1}/${maxAttempts}`);
-				
-				const response = await fetch(`${API_URL}/worlds/${worldId}`, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					credentials: 'include', // Send cookies for authentication
-				});
-
-				console.log('[WORLD STATUS] Response status:', response.status);
-
-				if (response.status === 401) {
-					// Unauthorized - session may have expired
-					console.error('[WORLD STATUS] Unauthorized - session expired');
-					saveError = 'Session expired. Please refresh and try again.';
-					generationProgress = '';
-					return false;
-				}
-
-				if (response.ok) {
-					const world = await response.json();
-					console.log('[WORLD STATUS] World status:', world.status);
-					
-					if (world.status === 'ready') {
-						generationProgress = 'World generated successfully!';
-						return true;
-					} else if (world.status === 'failed') {
-						saveError = 'World generation failed on the server.';
-						generationProgress = '';
-						return false;
-					} else {
-						// Still generating
-						generationProgress = `World is generating... (${Math.round((attempts / maxAttempts) * 100)}%)`;
-					}
-				} else {
-					console.error('[WORLD STATUS] Non-OK response:', response.status, response.statusText);
-				}
-			} catch (err) {
-				console.error('[WORLD STATUS] Error checking status:', err);
-			}
-
-			// Wait 5 seconds before next poll
-			await new Promise(resolve => setTimeout(resolve, 5000));
-			attempts++;
-		}
-
-		// Timeout after max attempts
-		console.log('[WORLD STATUS] Polling timed out after max attempts');
-		saveError = 'World generation is taking longer than expected. Check the worlds list later.';
-		generationProgress = '';
-		return false;
-	}
-
-	/**
-	 * Save world directly to API (bypasses Vercel serverless function timeout)
-	 * Includes polling mechanism for large worlds that might timeout
+	 * Save world using SvelteKit server action
+	 *
+	 * New Flow:
+	 * 1. Creates world record quickly (< 1 second)
+	 * 2. Navigates to world details page with generation settings
+	 * 3. World details page starts generation and polls for status
 	 */
 	async function saveWorld() {
 		if (!mapOptions.worldName || !mapOptions.serverId) {
@@ -267,21 +204,16 @@
 
 		isSaving = true;
 		saveError = null;
-		generationProgress = 'Starting world generation...';
+		generationProgress = 'Creating world record...';
 
 		try {
-			generationProgress = 'Creating world...';
-			
-			const response = await fetch(`${API_URL}/worlds`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include', // Send cookies for authentication
-				body: JSON.stringify({
+			// Use SvelteKit's form action via fetch
+			const formData = new FormData();
+			formData.append(
+				'worldData',
+				JSON.stringify({
 					name: mapOptions.worldName,
 					serverId: mapOptions.serverId,
-					generate: true,
 					width: mapOptions.width,
 					height: mapOptions.height,
 					elevationSeed: mapOptions.elevationSeed,
@@ -289,88 +221,80 @@
 					temperatureSeed: mapOptions.temperatureSeed,
 					elevationSettings: elevationOptions,
 					precipitationSettings: precipitationOptions,
-					temperatureSettings: temperatureOptions,
+					temperatureSettings: temperatureOptions
 				})
+			);
+
+			const response = await fetch('?/create', {
+				method: 'POST',
+				body: formData
 			});
 
-			if (!response.ok) {
-				const error = await response.json().catch(() => ({ error: 'Failed to create world' }));
-				saveError = error.error || 'Failed to create world';
+			console.log('[WORLD CREATE] Response status:', response.status, response.statusText);
+			console.log('[WORLD CREATE] Response ok:', response.ok);
+
+			// Use SvelteKit's deserialize to properly parse the response
+			const result = deserialize(await response.text());
+
+			console.log('[WORLD CREATE] Action result:', result);
+			console.log('[WORLD CREATE] Result type:', result.type);
+
+			// Type guard: Check result.type before accessing result.data
+			if (result.type === 'success') {
+				console.log('[WORLD CREATE] Result data:', result.data);
+			}
+
+			if (result.type === 'failure' || result.type === 'error') {
+				const errorMsg =
+					result.type === 'failure' && result.data
+						? (result.data.error as string) || 'Failed to create world'
+						: 'Failed to create world';
+				saveError = errorMsg;
 				generationProgress = '';
 				return;
 			}
 
-			const world = await response.json();
-			
-			// Check if world is still generating (happens when server returns before completion)
-			if (world.status === 'generating') {
-				generationProgress = 'World is generating on the server. Checking progress...';
-				const success = await pollWorldStatus(world.id);
-				
-				if (success) {
-					await goto(`/admin/worlds/${world.id}`);
-				}
-			} else if (world.status === 'ready') {
-				generationProgress = 'World created successfully!';
-				await goto(`/admin/worlds/${world.id}`);
-			} else if (world.status === 'failed') {
-				saveError = 'World generation failed.';
+			// Type guard: Only access data if result.type === 'success'
+			if (result.type !== 'success' || !result.data) {
+				saveError = 'World creation failed - no data returned';
 				generationProgress = '';
+				return;
 			}
+
+			const world = result.data.world;
+			const generationSettings = result.data.generationSettings;
+
+			console.log('[WORLD CREATE] Extracted world:', world);
+			console.log('[WORLD CREATE] Extracted settings:', generationSettings);
+
+			if (!world || !generationSettings) {
+				console.error(
+					'[WORLD CREATE] Missing data - world:',
+					!!world,
+					'settings:',
+					!!generationSettings
+				);
+				console.error('[WORLD CREATE] Full result.data:', result.data);
+				saveError = 'World was created but no data was returned';
+				generationProgress = '';
+				return;
+			}
+
+			// Type guard to ensure world has id property
+			if (typeof world !== 'object' || world === null || !('id' in world)) {
+				console.error('[WORLD CREATE] World object missing id property');
+				saveError = 'World was created but missing required data';
+				generationProgress = '';
+				return;
+			} // Navigate to world details page with generation settings
+			// The details page will handle starting generation and polling for status
+			generationProgress = 'World record created! Navigating to world details...';
+
+			const settingsParam = encodeURIComponent(JSON.stringify(generationSettings));
+			await goto(`/admin/worlds/${world.id}?startGeneration=true&settings=${settingsParam}`);
 		} catch (err) {
 			console.error('[WORLD CREATE] Error:', err);
-			
-			// If request fails (timeout, network error, etc.), check if world was created anyway
-			if (err instanceof Error && (err.name === 'AbortError' || err.message.includes('fetch'))) {
-				generationProgress = 'Connection lost. Checking if world was created...';
-				
-				// Wait a moment for server to potentially finish
-				await new Promise(resolve => setTimeout(resolve, 3000));
-				
-				// Try to find the world by name and server
-				try {
-					const checkResponse = await fetch(`${API_URL}/worlds`, {
-						method: 'GET',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						credentials: 'include', // Send cookies for authentication
-					});
-					
-					if (checkResponse.status === 401) {
-						// Unauthorized - session may have expired
-						saveError = 'Session expired. Please refresh and try again.';
-						generationProgress = '';
-						return;
-					}
-
-					if (checkResponse.ok) {
-						const worlds = await checkResponse.json();
-						const createdWorld = worlds.find(
-							(w: any) => w.name === mapOptions.worldName && w.serverId === mapOptions.serverId
-						);
-						
-						if (createdWorld) {
-							generationProgress = 'World found! Checking generation status...';
-							
-							// Poll for completion
-							const success = await pollWorldStatus(createdWorld.id);
-							
-							if (success) {
-								await goto(`/admin/worlds/${createdWorld.id}`);
-								return;
-							}
-						}
-					}
-				} catch (checkErr) {
-					console.error('[WORLD CREATE] Error checking for world:', checkErr);
-				}
-				
-				saveError = 'World creation timed out. The world may still be generating on the server. Check the worlds list in a moment.';
-			} else {
-				saveError = 'Failed to create world. Please try again.';
-			}
-			
+			saveError = 'Failed to create world. Please try again.';
 			generationProgress = '';
 		} finally {
 			isSaving = false;
@@ -400,12 +324,7 @@
 		<div class="flex space-x-3">
 			<label for="world-name" class="label">
 				<span>World Name</span>
-				<input
-					type="text"
-					class="input"
-					bind:value={mapOptions.worldName}
-					required
-				/>
+				<input type="text" class="input" bind:value={mapOptions.worldName} required />
 			</label>
 			<label for="server-id" class="label">
 				<span>Server ID</span>
@@ -423,7 +342,7 @@
 		</div>
 
 		<h2>World Settings</h2>
-		
+
 		{#if !showAdvanced}
 			<!-- Simple Controls -->
 			<div class="space-y-4">
@@ -440,19 +359,33 @@
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Terrain Roughness</Slider.Label>
 							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-								{terrainRoughness < 25 ? 'Smooth' : terrainRoughness < 50 ? 'Rolling' : terrainRoughness < 75 ? 'Hilly' : 'Rugged'}
+								{terrainRoughness < 25
+									? 'Smooth'
+									: terrainRoughness < 50
+										? 'Rolling'
+										: terrainRoughness < 75
+											? 'Hilly'
+											: 'Rugged'}
 							</span>
 						</div>
 						<Slider.Control class="relative flex items-center w-full h-2">
-							<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
 								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 							</Slider.Track>
-							<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
 								<Slider.HiddenInput />
 							</Slider.Thumb>
 						</Slider.Control>
 					</Slider>
-					<p class="text-xs text-surface-600 dark:text-surface-400">How varied the terrain is. Smooth creates gentle landscapes, while rugged creates complex terrain.</p>
+					<p class="text-xs text-surface-600 dark:text-surface-400">
+						How varied the terrain is. Smooth creates gentle landscapes, while rugged creates
+						complex terrain.
+					</p>
 				</div>
 
 				<div class="flex flex-col gap-2">
@@ -468,19 +401,33 @@
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Mountain Height</Slider.Label>
 							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-								{mountainHeight < 25 ? 'Flat' : mountainHeight < 50 ? 'Low Hills' : mountainHeight < 75 ? 'High Hills' : 'Extreme Peaks'}
+								{mountainHeight < 25
+									? 'Flat'
+									: mountainHeight < 50
+										? 'Low Hills'
+										: mountainHeight < 75
+											? 'High Hills'
+											: 'Extreme Peaks'}
 							</span>
 						</div>
 						<Slider.Control class="relative flex items-center w-full h-2">
-							<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
 								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 							</Slider.Track>
-							<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
 								<Slider.HiddenInput />
 							</Slider.Thumb>
 						</Slider.Control>
 					</Slider>
-					<p class="text-xs text-surface-600 dark:text-surface-400">Maximum elevation of terrain features. Flat creates plains, while extreme peaks creates tall mountains.</p>
+					<p class="text-xs text-surface-600 dark:text-surface-400">
+						Maximum elevation of terrain features. Flat creates plains, while extreme peaks creates
+						tall mountains.
+					</p>
 				</div>
 
 				<div class="flex flex-col gap-2">
@@ -496,19 +443,33 @@
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Land vs Water</Slider.Label>
 							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-								{waterLevel < 25 ? 'Ocean World' : waterLevel < 50 ? 'Archipelago' : waterLevel < 75 ? 'Continents' : 'Mostly Land'}
+								{waterLevel < 25
+									? 'Ocean World'
+									: waterLevel < 50
+										? 'Archipelago'
+										: waterLevel < 75
+											? 'Continents'
+											: 'Mostly Land'}
 							</span>
 						</div>
 						<Slider.Control class="relative flex items-center w-full h-2">
-							<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
 								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 							</Slider.Track>
-							<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
 								<Slider.HiddenInput />
 							</Slider.Thumb>
 						</Slider.Control>
 					</Slider>
-					<p class="text-xs text-surface-600 dark:text-surface-400">Ratio of water to land. Lower values create more oceans and islands, higher values create large continents.</p>
+					<p class="text-xs text-surface-600 dark:text-surface-400">
+						Ratio of water to land. Lower values create more oceans and islands, higher values
+						create large continents.
+					</p>
 				</div>
 
 				<div class="flex flex-col gap-2">
@@ -524,19 +485,33 @@
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Climate Variation</Slider.Label>
 							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-								{climateVariation < 25 ? 'Uniform' : climateVariation < 50 ? 'Moderate' : climateVariation < 75 ? 'Diverse' : 'Extreme'}
+								{climateVariation < 25
+									? 'Uniform'
+									: climateVariation < 50
+										? 'Moderate'
+										: climateVariation < 75
+											? 'Diverse'
+											: 'Extreme'}
 							</span>
 						</div>
 						<Slider.Control class="relative flex items-center w-full h-2">
-							<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
 								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
 							</Slider.Track>
-							<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
 								<Slider.HiddenInput />
 							</Slider.Thumb>
 						</Slider.Control>
 					</Slider>
-					<p class="text-xs text-surface-600 dark:text-surface-400">How much temperature and precipitation vary across the world. Uniform creates similar biomes, extreme creates diverse climates.</p>
+					<p class="text-xs text-surface-600 dark:text-surface-400">
+						How much temperature and precipitation vary across the world. Uniform creates similar
+						biomes, extreme creates diverse climates.
+					</p>
 				</div>
 			</div>
 		{/if}
@@ -545,415 +520,473 @@
 		<button
 			type="button"
 			class="btn preset-tonal text-sm mt-4"
-			onclick={() => showAdvanced = !showAdvanced}
+			onclick={() => (showAdvanced = !showAdvanced)}
 		>
 			{showAdvanced ? '← Simple Settings' : 'Advanced Settings →'}
 		</button>
 
 		{#if showAdvanced}
 			<h2>Elevation</h2>
-		<div class="flex space-x-3">
-			<label for="elevation-seed" class="label">
-				<span>Seed</span>
-				<input
-					type="number"
-					class="input"
-					bind:value={mapOptions.elevationSeed}
-				/>
-			</label>
+			<div class="flex space-x-3">
+				<label for="elevation-seed" class="label">
+					<span>Seed</span>
+					<input type="number" class="input" bind:value={mapOptions.elevationSeed} />
+				</label>
 
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={1}
-					min={1}
-					max={16}
-					value={[elevationOptions.octaves]}
-					onValueChange={(details) => {
-						elevationOptions.octaves = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{elevationOptions.octaves}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={1}
+						min={1}
+						max={16}
+						value={[elevationOptions.octaves]}
+						onValueChange={(details) => {
+							elevationOptions.octaves = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{elevationOptions.octaves}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.1}
+						min={1}
+						max={5}
+						value={[elevationOptions.amplitude]}
+						onValueChange={(details) => {
+							elevationOptions.amplitude = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{elevationOptions.amplitude}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.01}
+						min={0.01}
+						max={1}
+						value={[elevationOptions.frequency]}
+						onValueChange={(details) => {
+							elevationOptions.frequency = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{elevationOptions.frequency}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.01}
+						min={0.01}
+						max={1}
+						value={[elevationOptions.persistence]}
+						onValueChange={(details) => {
+							elevationOptions.persistence = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{elevationOptions.persistence}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
 			</div>
 
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.1}
-					min={1}
-					max={5}
-					value={[elevationOptions.amplitude]}
-					onValueChange={(details) => {
-						elevationOptions.amplitude = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{elevationOptions.amplitude}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
+			<h2>Precipitation</h2>
+			<div class="flex space-x-3">
+				<label for="precipitation-seed" class="label">
+					<span>Seed</span>
+					<input type="number" class="input" bind:value={mapOptions.precipitationSeed} />
+				</label>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.01}
+						min={0.01}
+						max={1}
+						value={[precipitationOptions.scale]}
+						onValueChange={(details) => {
+							precipitationOptions.scale = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Scale</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{precipitationOptions.scale}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={1}
+						min={1}
+						max={16}
+						value={[precipitationOptions.octaves]}
+						onValueChange={(details) => {
+							precipitationOptions.octaves = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{precipitationOptions.octaves}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.1}
+						min={1}
+						max={5}
+						value={[precipitationOptions.amplitude]}
+						onValueChange={(details) => {
+							precipitationOptions.amplitude = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{precipitationOptions.amplitude}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.01}
+						min={0.01}
+						max={1}
+						value={[precipitationOptions.frequency]}
+						onValueChange={(details) => {
+							precipitationOptions.frequency = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{precipitationOptions.frequency}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.01}
+						min={0.01}
+						max={1}
+						value={[precipitationOptions.persistence]}
+						onValueChange={(details) => {
+							precipitationOptions.persistence = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{precipitationOptions.persistence}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
 			</div>
 
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.01}
-					min={0.01}
-					max={1}
-					value={[elevationOptions.frequency]}
-					onValueChange={(details) => {
-						elevationOptions.frequency = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{elevationOptions.frequency}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
+			<h2>Temperature</h2>
+			<div class="flex space-x-3">
+				<label for="temperature-seed" class="label">
+					<span>Seed</span>
+					<input type="number" class="input" bind:value={mapOptions.temperatureSeed} />
+				</label>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.01}
+						min={0.01}
+						max={1}
+						value={[temperatureOptions.scale]}
+						onValueChange={(details) => {
+							temperatureOptions.scale = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Scale</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{temperatureOptions.scale}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={1}
+						min={1}
+						max={16}
+						value={[temperatureOptions.octaves]}
+						onValueChange={(details) => {
+							temperatureOptions.octaves = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{temperatureOptions.octaves}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.1}
+						min={1}
+						max={5}
+						value={[temperatureOptions.amplitude]}
+						onValueChange={(details) => {
+							temperatureOptions.amplitude = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{temperatureOptions.amplitude}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.01}
+						min={0.01}
+						max={1}
+						value={[temperatureOptions.frequency]}
+						onValueChange={(details) => {
+							temperatureOptions.frequency = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{temperatureOptions.frequency}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
+				<div class="flex flex-col gap-2 min-w-40">
+					<Slider
+						step={0.01}
+						min={0.01}
+						max={1}
+						value={[temperatureOptions.persistence]}
+						onValueChange={(details) => {
+							temperatureOptions.persistence = details.value[0];
+						}}
+					>
+						<div class="flex items-center justify-between mb-2">
+							<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
+							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+								{temperatureOptions.persistence}
+							</span>
+						</div>
+						<Slider.Control class="relative flex items-center w-full h-2">
+							<Slider.Track
+								class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden"
+							>
+								<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
+							</Slider.Track>
+							<Slider.Thumb
+								index={0}
+								class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							>
+								<Slider.HiddenInput />
+							</Slider.Thumb>
+						</Slider.Control>
+					</Slider>
+				</div>
 			</div>
-
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.01}
-					min={0.01}
-					max={1}
-					value={[elevationOptions.persistence]}
-					onValueChange={(details) => {
-						elevationOptions.persistence = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{elevationOptions.persistence}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-		</div>
-
-		<h2>Precipitation</h2>
-		<div class="flex space-x-3">
-			<label for="precipitation-seed" class="label">
-				<span>Seed</span>
-				<input
-					type="number"
-					class="input"
-					bind:value={mapOptions.precipitationSeed}
-				/>
-			</label>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.01}
-					min={0.01}
-					max={1}
-					value={[precipitationOptions.scale]}
-					onValueChange={(details) => {
-						precipitationOptions.scale = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Scale</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{precipitationOptions.scale}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={1}
-					min={1}
-					max={16}
-					value={[precipitationOptions.octaves]}
-					onValueChange={(details) => {
-						precipitationOptions.octaves = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{precipitationOptions.octaves}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.1}
-					min={1}
-					max={5}
-					value={[precipitationOptions.amplitude]}
-					onValueChange={(details) => {
-						precipitationOptions.amplitude = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{precipitationOptions.amplitude}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.01}
-					min={0.01}
-					max={1}
-					value={[precipitationOptions.frequency]}
-					onValueChange={(details) => {
-						precipitationOptions.frequency = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{precipitationOptions.frequency}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.01}
-					min={0.01}
-					max={1}
-					value={[precipitationOptions.persistence]}
-					onValueChange={(details) => {
-						precipitationOptions.persistence = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{precipitationOptions.persistence}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-		</div>
-
-		<h2>Temperature</h2>
-		<div class="flex space-x-3">
-			<label for="temperature-seed" class="label">
-				<span>Seed</span>
-				<input
-					type="number"
-					class="input"
-					bind:value={mapOptions.temperatureSeed}
-				/>
-			</label>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.01}
-					min={0.01}
-					max={1}
-					value={[temperatureOptions.scale]}
-					onValueChange={(details) => {
-						temperatureOptions.scale = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Scale</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{temperatureOptions.scale}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={1}
-					min={1}
-					max={16}
-					value={[temperatureOptions.octaves]}
-					onValueChange={(details) => {
-						temperatureOptions.octaves = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{temperatureOptions.octaves}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.1}
-					min={1}
-					max={5}
-					value={[temperatureOptions.amplitude]}
-					onValueChange={(details) => {
-						temperatureOptions.amplitude = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{temperatureOptions.amplitude}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.01}
-					min={0.01}
-					max={1}
-					value={[temperatureOptions.frequency]}
-					onValueChange={(details) => {
-						temperatureOptions.frequency = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{temperatureOptions.frequency}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-			<div class="flex flex-col gap-2 min-w-40">
-				<Slider
-					step={0.01}
-					min={0.01}
-					max={1}
-					value={[temperatureOptions.persistence]}
-					onValueChange={(details) => {
-						temperatureOptions.persistence = details.value[0];
-					}}
-				>
-					<div class="flex items-center justify-between mb-2">
-						<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
-						<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
-							{temperatureOptions.persistence}
-						</span>
-					</div>
-					<Slider.Control class="relative flex items-center w-full h-2">
-						<Slider.Track class="relative w-full h-2 bg-surface-300 dark:bg-surface-700 rounded-full overflow-hidden">
-							<Slider.Range class="absolute h-full bg-primary-500 rounded-full" />
-						</Slider.Track>
-						<Slider.Thumb index={0} class="block w-5 h-5 bg-primary-500 border-2 border-surface-50 dark:border-surface-900 rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-							<Slider.HiddenInput />
-						</Slider.Thumb>
-					</Slider.Control>
-				</Slider>
-			</div>
-		</div>
 		{/if}
 
 		<!-- Generate Preview Button (outside form) -->
@@ -983,8 +1016,10 @@
 					<div>
 						<p class="font-semibold">Large World Warning</p>
 						<p class="text-sm">
-							Generating a {mapOptions.width}×{mapOptions.height} world ({(mapOptions.width * mapOptions.height).toLocaleString()} tiles) 
-							may take 2-5 minutes. Please be patient and do not close this page.
+							Generating a {mapOptions.width}×{mapOptions.height} world ({(
+								mapOptions.width * mapOptions.height
+							).toLocaleString()} tiles) may take 2-5 minutes. Please be patient and do not close this
+							page.
 						</p>
 					</div>
 				</div>
@@ -1005,7 +1040,7 @@
 					<div class="alert-message"><Info />{generationProgress}</div>
 				</div>
 			{/if}
-			
+
 			<button
 				type="button"
 				class="btn preset-filled-primary-500 rounded-md"
@@ -1026,11 +1061,17 @@
 		<div class="card p-4 rounded-md">
 			<h2 class="text-xl font-semibold mb-4">World Preview</h2>
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-				This is a client-side preview. The actual world will be generated on the server when you save.
-				Use the view mode selector to see different aspects of your world (Satellite, Topographical, Temperature, Precipitation, Political).
+				This is a client-side preview. The actual world will be generated on the server when you
+				save. Use the view mode selector to see different aspects of your world (Satellite,
+				Topographical, Temperature, Precipitation, Political).
 			</p>
-			<WorldMap previewRegions={regions} mode="admin" showLegend={true} mapViewMode="satellite" showStats={true} />
+			<WorldMap
+				previewRegions={regions}
+				mode="admin"
+				showLegend={true}
+				mapViewMode="satellite"
+				showStats={true}
+			/>
 		</div>
 	{/if}
 </div>
-

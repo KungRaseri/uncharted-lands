@@ -15,3 +15,13 @@ yarn.lock
 # Ignore plain HTML error pages and SvelteKit templates
 src/error.html
 src/app.html
+
+# Ignore all markdown files
+*.md
+
+# Ignore build output and coverage directories
+.vercel
+coverage
+.nyc_output
+playwright-report
+test-results
