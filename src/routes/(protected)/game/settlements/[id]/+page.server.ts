@@ -40,9 +40,10 @@ export const load = (async ({ params, depends, cookies, fetch: eventFetch }) => 
 	const settlement = await settlementResponse.json();
 
 	// ✅ Fetch structure metadata from INTERNAL SvelteKit API (use event.fetch)
+	// Phase 5C: Removed forceRefresh parameter (caching removed from API wrapper)
 	let structures: StructureMetadata[] = [];
 	try {
-		structures = await fetchStructureMetadata(false, eventFetch);
+		structures = await fetchStructureMetadata(eventFetch);
 		logger.debug('[SETTLEMENT DETAIL] Structure metadata loaded', {
 			count: structures.length
 		});

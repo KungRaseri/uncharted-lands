@@ -4,10 +4,47 @@ import { fireEvent } from '@testing-library/svelte';
 import MobileBuildMenu from '$lib/components/game/MobileBuildMenu.svelte';
 
 describe('MobileBuildMenu', () => {
+	const mockStructures = [
+		{
+			id: 'farm-1',
+			name: 'FARM',
+			displayName: 'Farm',
+			description: 'Produces food',
+			category: 'EXTRACTOR',
+			type: 'FARM',
+			costs: { food: 0, water: 0, wood: 20, stone: 10, ore: 0 },
+			modifiers: [],
+			prerequisites: []
+		},
+		{
+			id: 'house-1',
+			name: 'HOUSE',
+			displayName: 'House',
+			description: 'Provides housing',
+			category: 'BUILDING',
+			type: 'HOUSE',
+			costs: { food: 0, water: 0, wood: 50, stone: 20, ore: 0 },
+			modifiers: [],
+			prerequisites: []
+		},
+		{
+			id: 'quarry-1',
+			name: 'QUARRY',
+			displayName: 'Quarry',
+			description: 'Produces stone',
+			category: 'EXTRACTOR',
+			type: 'QUARRY',
+			costs: { food: 0, water: 0, wood: 30, stone: 0, ore: 0 },
+			modifiers: [],
+			prerequisites: []
+		}
+	];
+
 	const mockProps = {
 		open: true,
 		onClose: vi.fn(),
-		settlementId: 'settlement-123'
+		settlementId: 'settlement-123',
+		structures: mockStructures
 	};
 
 	beforeEach(() => {
@@ -49,8 +86,8 @@ describe('MobileBuildMenu', () => {
 				props: mockProps
 			});
 
-			// Component uses data-structure-type attribute on structure buttons
-			const structureCards = container.querySelectorAll('button[data-structure-type]');
+			// Component uses data-structure-id attribute on structure buttons
+			const structureCards = container.querySelectorAll('button[data-structure-id]');
 			expect(structureCards.length).toBeGreaterThan(0);
 		});
 	});
@@ -103,7 +140,7 @@ describe('MobileBuildMenu', () => {
 				await fireEvent.click(buildingTab);
 
 				// Structure cards should be rendered for the new category
-				const updatedCards = container.querySelectorAll('button[data-structure-type]');
+				const updatedCards = container.querySelectorAll('button[data-structure-id]');
 				// At minimum, the grid should still exist
 				expect(updatedCards.length).toBeGreaterThanOrEqual(0);
 			}
@@ -123,7 +160,7 @@ describe('MobileBuildMenu', () => {
 				props: { ...mockProps, onClose: onCloseMock }
 			});
 
-			const structureCards = container.querySelectorAll('button[data-structure-type]');
+			const structureCards = container.querySelectorAll('button[data-structure-id]');
 			if (structureCards.length > 0) {
 				await fireEvent.click(structureCards[0]);
 

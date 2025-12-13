@@ -1,27 +1,40 @@
 /**
  * Structure Metadata API Client
  *
- * Fetches structure definitions from the server API instead of using
- * hardcoded data. The server is the authoritative source for all structure
- * costs, requirements, and modifiers.
+ * Fetches structure definitions from the server API. The server is the
+ * authoritative source for all structure costs, prerequisites, and modifiers.
+ *
+ * ARCHITECTURAL DECISIONS:
+ * - Decision 1: Modifiers calculated dynamically by server (no caching)
+ * - Decision 2: Area/solar/wind deprecated (removed)
+ * - Server Authority: All game data fetched from database per request
  *
  * Endpoint: GET /api/structures/metadata (SvelteKit proxy)
  * Backend: server/src/api/routes/structures-metadata.ts
  */
 
 /**
- * Structure metadata from the API
+ * Structure modifier (calculated dynamically by server)
+ */
+export interface StructureModifier {
+	type: string; // Required by Decision 1 (LINEAR, EXPONENTIAL, DIMINISHING)
+	name: string;
+	description: string;
+	value: number;
+}
+
+/**
+ * Structure metadata from the API (matches server response format)
  */
 export interface StructureMetadata {
 	id: string;
 	name: string;
 	description: string;
 	category: string;
-	extractorType: string;
-	buildingType: string;
+	type: string; // ExtractorType or BuildingType (from database enum)
 
-	// Build costs (all resources, defaulted to 0)
-	requirements: {
+	// Build costs (from StructureRequirements table)
+	costs: {
 		food: number;
 		water: number;
 		wood: number;
@@ -29,16 +42,18 @@ export interface StructureMetadata {
 		ore: number;
 	};
 
+	// Prerequisites (from StructurePrerequisites table)
+	prerequisites?: {
+		structureId: string;
+		minLevel: number;
+	}[];
+
 	// Construction info
 	constructionTime: number; // seconds
 	populationRequired: number;
 
-	// Effects/modifiers (optional)
-	modifiers?: {
-		name: string;
-		description: string;
-		value: number;
-	}[];
+	// Dynamically calculated modifiers (Decision 1: calculated per request)
+	modifiers: StructureModifier[];
 }
 
 /**
@@ -47,70 +62,78 @@ export interface StructureMetadata {
 interface StructureMetadataResponse {
 	success: boolean;
 	data: StructureMetadata[];
-	timestamp: number;
+	error?: string;
 }
-
-/**
- * Cached structure metadata
- */
-let cachedMetadata: StructureMetadata[] | null = null;
-let cacheTimestamp: number = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Fetch all structure metadata from the API
  *
- * @param forceRefresh - Force a fresh fetch, bypassing cache
+ * Server calculates modifiers dynamically (Decision 1), so no client-side caching.
+ * This ensures modifiers are always current and match server state.
+ *
  * @param fetchFn - Fetch function to use (event.fetch for server-side, global fetch for client-side)
- * @returns Array of structure metadata
+ * @returns Array of structure metadata with dynamically calculated modifiers
  */
 export async function fetchStructureMetadata(
-	forceRefresh = false,
 	fetchFn: typeof fetch = fetch
 ): Promise<StructureMetadata[]> {
-	// Return cached data if valid
-	const now = Date.now();
-	if (!forceRefresh && cachedMetadata && now - cacheTimestamp < CACHE_DURATION) {
-		return cachedMetadata;
+	// Use SvelteKit proxy route (avoids CORS, handles auth)
+	const response = await fetchFn('/api/structures/metadata', {
+		credentials: 'include' // Include session cookie
+	});
+
+	if (!response.ok) {
+		throw new Error(`API request failed: ${response.status} ${response.statusText}`);
 	}
 
-	try {
-		// Use SvelteKit proxy route (avoids CORS, handles auth)
-		const response = await fetchFn('/api/structures/metadata');
+	const result: StructureMetadataResponse = await response.json();
 
-		if (!response.ok) {
-			throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-		}
-
-		const result: StructureMetadataResponse = await response.json();
-
-		if (!result.success) {
-			throw new Error('API returned unsuccessful response');
-		}
-
-		// Update cache
-		cachedMetadata = result.data;
-		cacheTimestamp = result.timestamp;
-
-		return result.data;
-	} catch (error) {
-		console.error('Failed to fetch structure metadata:', error);
-
-		// Return cached data if available, even if stale
-		if (cachedMetadata) {
-			console.warn('Using stale cached data due to fetch error');
-			return cachedMetadata;
-		}
-
-		// Re-throw if no cached data available
-		throw error;
+	if (!result.success) {
+		throw new Error(result.error || 'Unknown error');
 	}
+
+	// Validate response structure
+	if (!Array.isArray(result.data)) {
+		throw new TypeError('Invalid structures response: expected array');
+	}
+
+	// Validate each structure has required fields
+	for (const structure of result.data) {
+		if (!structure.id || !structure.name || !structure.modifiers) {
+			throw new Error(`Invalid structure data: missing required fields`);
+		}
+
+		// Validate modifiers have 'type' field (Decision 1)
+		for (const modifier of structure.modifiers) {
+			if (!modifier.type) {
+				throw new Error(`Invalid modifier: missing 'type' field (required by Decision 1)`);
+			}
+		}
+
+		// Validate no deprecated fields (Decision 2)
+		type ResourceCosts = {
+			food: number;
+			water: number;
+			wood: number;
+			stone: number;
+			ore: number;
+			area?: number;
+			solar?: number;
+			wind?: number;
+		};
+		const costs = structure.costs as ResourceCosts;
+		if (costs.area !== undefined || costs.solar !== undefined || costs.wind !== undefined) {
+			throw new Error(`Invalid structure: contains deprecated area/solar/wind fields (Decision 2)`);
+		}
+	}
+
+	return result.data;
 }
 
 /**
  * Get structure metadata by ID
  *
- * @param id - Lowercase structure name (e.g., "farm")
+ * @param id - Structure ID (e.g., "FARM")
  * @param fetchFn - Fetch function to use (event.fetch for server-side, global fetch for client-side)
  * @returns Structure metadata or undefined if not found
  */
@@ -118,16 +141,8 @@ export async function getStructureMetadata(
 	id: string,
 	fetchFn: typeof fetch = fetch
 ): Promise<StructureMetadata | undefined> {
-	const metadata = await fetchStructureMetadata(false, fetchFn);
+	const metadata = await fetchStructureMetadata(fetchFn);
 	return metadata.find((s) => s.id === id);
-}
-
-/**
- * Clear the cache (useful for testing or forcing a refresh)
- */
-export function clearStructureMetadataCache(): void {
-	cachedMetadata = null;
-	cacheTimestamp = 0;
 }
 
 /**
@@ -143,21 +158,21 @@ export function canBuildStructure(
 ): { canBuild: boolean; reasons: string[] } {
 	const reasons: string[] = [];
 
-	// Check resource requirements
-	if (storage.food < structure.requirements.food) {
-		reasons.push(`Need ${structure.requirements.food} food (have ${storage.food})`);
+	// Check resource costs
+	if (storage.food < structure.costs.food) {
+		reasons.push(`Need ${structure.costs.food} food (have ${storage.food})`);
 	}
-	if (storage.water < structure.requirements.water) {
-		reasons.push(`Need ${structure.requirements.water} water (have ${storage.water})`);
+	if (storage.water < structure.costs.water) {
+		reasons.push(`Need ${structure.costs.water} water (have ${storage.water})`);
 	}
-	if (storage.wood < structure.requirements.wood) {
-		reasons.push(`Need ${structure.requirements.wood} wood (have ${storage.wood})`);
+	if (storage.wood < structure.costs.wood) {
+		reasons.push(`Need ${structure.costs.wood} wood (have ${storage.wood})`);
 	}
-	if (storage.stone < structure.requirements.stone) {
-		reasons.push(`Need ${structure.requirements.stone} stone (have ${storage.stone})`);
+	if (storage.stone < structure.costs.stone) {
+		reasons.push(`Need ${structure.costs.stone} stone (have ${storage.stone})`);
 	}
-	if (storage.ore < structure.requirements.ore) {
-		reasons.push(`Need ${structure.requirements.ore} ore (have ${storage.ore})`);
+	if (storage.ore < structure.costs.ore) {
+		reasons.push(`Need ${structure.costs.ore} ore (have ${storage.ore})`);
 	}
 
 	return {
