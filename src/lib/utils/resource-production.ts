@@ -180,3 +180,53 @@ export async function getBuildingName(buildingType: string): Promise<string> {
 	const building = config.buildingDisplay.find((b) => b.type === buildingType);
 	return building?.name || buildingType;
 }
+
+/**
+ * Get biome color class for Skeleton UI
+ * Returns Tailwind/Skeleton variant classes for badge styling
+ */
+export async function getBiomeColor(biomeType: string): Promise<string> {
+	const config = await ensureConfig();
+	const biome = config.biomeDisplay?.[biomeType];
+	return biome?.color || 'variant-soft-surface'; // Fallback to neutral
+}
+
+/**
+ * Get biome icon emoji
+ * Returns emoji character for visual representation
+ */
+export async function getBiomeIcon(biomeType: string): Promise<string> {
+	const config = await ensureConfig();
+	const biome = config.biomeDisplay?.[biomeType];
+	return biome?.icon || '❓'; // Fallback to question mark
+}
+
+/**
+ * Get biome human-readable name
+ * Converts BIOME_TYPE enum to "Biome Type" display format
+ */
+export async function getBiomeName(biomeType: string): Promise<string> {
+	const config = await ensureConfig();
+	const biome = config.biomeDisplay?.[biomeType];
+	return biome?.name || biomeType; // Fallback to enum value
+}
+
+/**
+ * Get extractor icon emoji
+ * Returns emoji character for extractor type
+ */
+export async function getExtractorIcon(extractorType: string): Promise<string> {
+	const config = await ensureConfig();
+	const extractor = config.extractorDisplay.find((e) => e.type === extractorType);
+	return extractor?.icon || '🏗️'; // Fallback to construction emoji
+}
+
+/**
+ * Get building icon emoji
+ * Returns emoji character for building type
+ */
+export async function getBuildingIcon(buildingType: string): Promise<string> {
+	const config = await ensureConfig();
+	const building = config.buildingDisplay.find((b) => b.type === buildingType);
+	return building?.icon || '🏗️'; // Fallback to construction emoji
+}

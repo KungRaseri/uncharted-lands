@@ -98,6 +98,13 @@ export interface AccumulationConfig {
 	maxHours: number;
 }
 
+export interface BiomeDisplayConfig {
+	icon: string;
+	color: string;
+	name: string;
+	description: string;
+}
+
 export interface ProductionRateConfig {
 	resourceType: ResourceType;
 	extractorType: ExtractorType;
@@ -137,4 +144,5 @@ export interface GameConfig {
 	buildingDisplay: BuildingDisplayConfig[];
 	qualityDisplay: QualityDisplayConfig[];
 	accumulation: AccumulationConfig;
+	biomeDisplay: Record<string, BiomeDisplayConfig>; // Phase 2: Biome display metadata
 }
