@@ -5,6 +5,7 @@
  * This ensures client and server use the same game balance values.
  */
 
+import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 import type { GameConfig } from '../types/game-config';
 
 let cachedConfig: GameConfig | null = null;
@@ -28,7 +29,7 @@ export async function getGameConfig(): Promise<GameConfig> {
 	// Fetch fresh config
 	configPromise = (async () => {
 		try {
-			const response = await fetch('/api/config/game');
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/config/game`);
 			if (!response.ok) {
 				throw new Error(`Failed to fetch game config: ${response.statusText}`);
 			}
@@ -162,7 +163,7 @@ export interface ProductionBaseRates {
  */
 export async function getProductionRates(): Promise<ProductionBaseRates> {
 	try {
-		const response = await fetch('/api/config/production-rates');
+		const response = await fetch(`${PUBLIC_CLIENT_API_URL}/config/production-rates`);
 		if (!response.ok) {
 			throw new Error(`Failed to fetch production rates: ${response.statusText}`);
 		}
