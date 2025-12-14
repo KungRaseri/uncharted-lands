@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { getBiomeColor } from '$lib/config/biomes';
 
 	/**
 	 * ExtractorsGridPanel Component
@@ -117,19 +118,7 @@
 		return 'text-error-500';
 	}
 
-	// Biome badge color
-	function getBiomeColor(biome: string): string {
-		const biomeMap: Record<string, string> = {
-			GRASSLAND: 'variant-soft-success',
-			FOREST: 'variant-soft-tertiary',
-			DESERT: 'variant-soft-warning',
-			MOUNTAIN: 'variant-soft-surface',
-			TUNDRA: 'variant-soft-primary',
-			SWAMP: 'variant-soft-secondary',
-			COASTAL: 'variant-soft-primary'
-		};
-		return biomeMap[biome.toUpperCase()] ?? 'variant-soft-surface';
-	}
+	// NOTE: getBiomeColor is now imported from $lib/config/biomes.ts
 
 	function getHealthColor(health: number): string {
 		if (health >= 80) return 'text-success-500';

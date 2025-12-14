@@ -2,6 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import type { StructureMetadata } from '$lib/api/structures';
+	import { getExtractorConfig } from '$lib/config/extractors';
 
 	/**
 	 * ExtractorTypeSelector Modal
@@ -21,33 +22,14 @@
 		ore: number;
 	};
 
-	// ✅ NEW: Map extractor types to resource types and icons
-	const EXTRACTOR_CONFIG: Record<
-		string,
-		{
-			resourceType: keyof ResourceQuality;
-			icon: string;
-			produces: string;
-		}
-	> = {
-		FARM: { resourceType: 'food', icon: '🌾', produces: 'Food' },
-		WELL: { resourceType: 'water', icon: '💧', produces: 'Water' },
-		LUMBER_MILL: { resourceType: 'wood', icon: '🪵', produces: 'Wood' },
-		QUARRY: { resourceType: 'stone', icon: '🪨', produces: 'Stone' },
-		MINE: { resourceType: 'ore', icon: '⛏️', produces: 'Ore' },
-		FISHING_DOCK: { resourceType: 'food', icon: '🎣', produces: 'Food' },
-		HUNTING_LODGE: { resourceType: 'food', icon: '🏹', produces: 'Food' },
-		HERB_GARDEN: { resourceType: 'food', icon: '🌿', produces: 'Herbs' }
-	};
-
 	type Props = {
 		open: boolean;
 		tileId: string;
 		slotPosition: number;
 		resourceQuality: ResourceQuality;
-		structures: StructureMetadata[]; // ✅ NEW: Structures from database
+		structures: StructureMetadata[]; // ✅ Structures from database
 		onClose: () => void;
-		onBuild: (tileId: string, slotPosition: number, structureId: string) => void; // ✅ FIXED: Pass structureId instead of type
+		onBuild: (tileId: string, slotPosition: number, structureId: string) => void; // ✅ Pass structureId instead of type
 	};
 
 	let {
@@ -60,18 +42,21 @@
 		onBuild
 	}: Props = $props();
 
-	// ✅ NEW: Filter extractors from structure metadata
+	// ✅ Filter extractors from structure metadata
 	const extractorStructures = $derived(
 		structures
 			.filter((s) => s.category === 'EXTRACTOR' && s.extractorType)
 			.map((structure) => {
-				const config = EXTRACTOR_CONFIG[structure.extractorType];
+				// ✅ Use centralized extractor config instead of hardcoded EXTRACTOR_CONFIG
+				const config = getExtractorConfig(structure.extractorType);
 				if (!config) {
 					console.warn(`Unknown extractor type: ${structure.extractorType}`);
 					return null;
 				}
 
-				const quality = resourceQuality[config.resourceType];
+				// Map resource type from config (uppercase) to quality field (lowercase)
+				const resourceKey = config.resourceType.toLowerCase() as keyof ResourceQuality;
+				const quality = resourceQuality[resourceKey];
 				return {
 					...structure,
 					...config,

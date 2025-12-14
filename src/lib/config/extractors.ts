@@ -177,6 +177,6 @@ export function getExtractorName(extractorType: string): string {
  */
 export function getExtractorsForResource(resourceType: ResourceType): ExtractorType[] {
 	return Object.entries(EXTRACTOR_CONFIG)
-		.filter(([_, config]) => config.resourceType === resourceType)
-		.map(([type, _]) => type as ExtractorType);
+		.filter(([, config]) => config.resourceType === resourceType)
+		.map(([type]) => type as ExtractorType);
 }
