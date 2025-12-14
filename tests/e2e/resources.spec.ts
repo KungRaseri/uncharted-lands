@@ -325,7 +325,7 @@ test.describe('Resource Production Flow', () => {
 			// Build a farm to produce food
 			await page.click('[data-testid="build-structure-btn"]');
 			await page.waitForTimeout(500); // Wait for menu to open
-			await page.click('[data-structure-type="FARM"]');
+			await page.click('[data-testid="build-structure-farm"]');
 
 			// Wait for build menu to close and structure to appear
 			await page.waitForTimeout(1000); // Wait for food production to increase
@@ -336,10 +336,12 @@ test.describe('Resource Production Flow', () => {
 		test('should calculate correct production rate', async ({ page }) => {
 			// Build a farm
 			await page.click('[data-testid="build-structure-btn"]');
-			await page.click('[data-structure-type="FARM"]');
+			await page.click('[data-testid="build-structure-farm"]');
 			// Building happens immediately when structure is clicked (no confirm needed)
 
-			await assertStructureExists(page, 'Farm'); // Verify production rate is at least 0.5 food/second (30/minute)
+			await assertStructureExists(page, 'Farm');
+
+			// Verify production rate is at least 0.5 food/second (30/minute)
 			await assertProductionRate(page, 'food', 0.5, 5);
 		});
 	});

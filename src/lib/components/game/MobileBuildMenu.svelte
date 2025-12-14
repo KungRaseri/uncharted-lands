@@ -116,6 +116,8 @@
 					active:translate-y-0
 					focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
 				data-structure-id={structure.id}
+				data-structure-name={structure.name}
+				data-testid="build-structure-{structure.name.toLowerCase()}"
 				onclick={() => handleBuild(structure)}
 				type="button"
 			>

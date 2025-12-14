@@ -260,7 +260,6 @@
 											handleKeydown(e, () => onBuildExtractor?.(tileId, slotPosition))}
 										title="Build extractor in slot {slotPosition}"
 										aria-label="Build extractor in slot {slotPosition}"
-										role="listitem"
 									>
 										<p class="text-xs text-surface-500-400-token">Slot {slotPosition}</p>
 										<p class="text-[10px] text-primary-500 mt-0.5">+ Build</p>

@@ -29,6 +29,7 @@ export interface StructureModifier {
 export interface StructureMetadata {
 	id: string;
 	name: string;
+	displayName: string;
 	description: string;
 	category: string;
 	type: string; // ExtractorType or BuildingType (from database enum)
