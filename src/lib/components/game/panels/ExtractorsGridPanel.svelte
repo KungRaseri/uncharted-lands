@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import { getBiomeColor } from '$lib/config/biomes';
+	import { getBiomeColor, getBiomeIcon, getBiomeName } from '$lib/utils/resource-production';
 
 	/**
 	 * ExtractorsGridPanel Component
@@ -61,6 +61,40 @@
 		onBuildExtractor
 	}: Props = $props();
 
+	// Cache biome display data (loaded async from server config)
+	let biomeColors = $state<Record<string, string>>({});
+	let biomeIcons = $state<Record<string, string>>({});
+	let biomeNames = $state<Record<string, string>>({});
+
+	// Load biome display data for all unique biomes in tiles
+	$effect(() => {
+		if (!tiles) return;
+
+		const uniqueBiomes = new Set<string>();
+		if (tiles instanceof Map) {
+			for (const tile of tiles.values()) {
+				uniqueBiomes.add(tile.biome);
+			}
+		} else {
+			for (const tile of Object.values(tiles)) {
+				uniqueBiomes.add(tile.biome);
+			}
+		}
+
+		// Load display data for each biome
+		for (const biome of uniqueBiomes) {
+			getBiomeColor(biome).then((color) => {
+				biomeColors[biome] = color;
+			});
+			getBiomeIcon(biome).then((icon) => {
+				biomeIcons[biome] = icon;
+			});
+			getBiomeName(biome).then((name) => {
+				biomeNames[biome] = name;
+			});
+		}
+	});
+
 	// Compute tile stats
 	const tileIds = $derived(Object.keys(extractorsByTile));
 	const totalExtractors = $derived(
@@ -118,7 +152,7 @@
 		return 'text-error-500';
 	}
 
-	// NOTE: getBiomeColor is now imported from $lib/config/biomes.ts
+	// NOTE: Biome display data (color, icon, name) loaded async from server config
 
 	function getHealthColor(health: number): string {
 		if (health >= 80) return 'text-success-500';
@@ -201,8 +235,9 @@
 							{@const tile = getTile(tileId)!}
 							<div class="flex flex-wrap items-center gap-2">
 								<!-- Biome Badge -->
-								<span class="badge {getBiomeColor(tile.biome)} text-xs">
-									{tile.biome}
+								<span class="badge {biomeColors[tile.biome] || 'variant-soft-surface'} text-xs">
+									{biomeIcons[tile.biome] || '🌍'}
+									{biomeNames[tile.biome] || tile.biome}
 								</span>
 
 								<!-- Resource Quality Badges -->

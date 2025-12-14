@@ -2,7 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import type { StructureMetadata } from '$lib/api/structures';
-	import { getExtractorConfig } from '$lib/config/extractors';
+	import { getExtractorIcon } from '$lib/utils/resource-production';
 
 	/**
 	 * ExtractorTypeSelector Modal
@@ -42,31 +42,74 @@
 		onBuild
 	}: Props = $props();
 
+	// Cache extractor icons (loaded async from server config)
+	let extractorIcons = $state<Record<string, string>>({});
+
+	// Load extractor icons for all extractors
+	$effect(() => {
+		if (!structures) return;
+
+		const extractorTypes = new Set<string>();
+		for (const structure of structures) {
+			if (structure.category === 'EXTRACTOR' && structure.extractorType) {
+				extractorTypes.add(structure.extractorType);
+			}
+		}
+
+		// Load icon for each extractor type
+		for (const extractorType of extractorTypes) {
+			getExtractorIcon(extractorType).then((icon) => {
+				extractorIcons[extractorType] = icon;
+			});
+		}
+	});
+
+	// Map extractor types to resource types (minimal local mapping until server provides this)
+	function getExtractorResourceType(extractorType: string): string {
+		const mapping: Record<string, string> = {
+			FARM: 'FOOD',
+			WELL: 'WATER',
+			LUMBER_MILL: 'WOOD',
+			QUARRY: 'STONE',
+			MINE: 'ORE',
+			FISHING_DOCK: 'FOOD',
+			HUNTING_LODGE: 'FOOD',
+			HERB_GARDEN: 'HERBS'
+		};
+		return mapping[extractorType] || 'FOOD';
+	}
+
+	// Format resource type for display (converts FOOD → Food)
+	function formatResourceName(resourceType: string): string {
+		return resourceType.charAt(0) + resourceType.slice(1).toLowerCase();
+	}
+
 	// ✅ Filter extractors from structure metadata
 	const extractorStructures = $derived(
 		structures
 			.filter((s) => s.category === 'EXTRACTOR' && s.extractorType)
 			.map((structure) => {
-				// ✅ Use centralized extractor config instead of hardcoded EXTRACTOR_CONFIG
-				const config = getExtractorConfig(structure.extractorType);
-				if (!config) {
-					console.warn(`Unknown extractor type: ${structure.extractorType}`);
-					return null;
-				}
+				const extractorType = structure.extractorType!;
 
-				// Map resource type from config (uppercase) to quality field (lowercase)
-				const resourceKey = config.resourceType.toLowerCase() as keyof ResourceQuality;
+				// Get icon from cached async data (with fallback)
+				const icon = extractorIcons[extractorType] || '🏗️';
+
+				// Get resource type mapping
+				const resourceType = getExtractorResourceType(extractorType);
+				const resourceKey = resourceType.toLowerCase() as keyof ResourceQuality;
 				const quality = resourceQuality[resourceKey];
+
 				return {
 					...structure,
-					...config,
-					type: structure.extractorType, // Add type field for compatibility
+					icon, // Use cached icon from server config
+					resourceType, // From local mapping
+					produces: formatResourceName(resourceType), // Human-readable: FOOD → Food
+					type: extractorType, // Add type field for compatibility
 					quality,
 					qualityColor: getQualityColor(quality),
 					qualityLabel: getQualityLabel(quality)
 				};
 			})
-			.filter((e) => e !== null)
 	);
 
 	// ✅ Sort by quality (best first)
