@@ -15,7 +15,7 @@ export type ExtractorType =
 	| 'QUARRY'
 	| 'MINE'
 	| 'FISHING_DOCK'
-	| 'HUNTERS_LODGE'
+	| 'HUNTING_LODGE'
 	| 'HERB_GARDEN'
 	| null;
 export type BuildingType =

@@ -36,7 +36,7 @@
 		QUARRY: { resourceType: 'stone', icon: '🪨', produces: 'Stone' },
 		MINE: { resourceType: 'ore', icon: '⛏️', produces: 'Ore' },
 		FISHING_DOCK: { resourceType: 'food', icon: '🎣', produces: 'Food' },
-		HUNTERS_LODGE: { resourceType: 'food', icon: '🏹', produces: 'Food' },
+		HUNTING_LODGE: { resourceType: 'food', icon: '🏹', produces: 'Food' },
 		HERB_GARDEN: { resourceType: 'food', icon: '🌿', produces: 'Herbs' }
 	};
 

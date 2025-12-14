@@ -79,7 +79,7 @@
 			QUARRY: { icon: '🪨', color: 'text-surface-500', name: 'Stone' },
 			MINE: { icon: '⛏️', color: 'text-warning-500', name: 'Ore' },
 			FISHING_DOCK: { icon: '🎣', color: 'text-primary-400', name: 'Food' },
-			HUNTERS_LODGE: { icon: '🏹', color: 'text-error-500', name: 'Food' },
+			HUNTING_LODGE: { icon: '🏹', color: 'text-error-500', name: 'Food' },
 			HERB_GARDEN: { icon: '🌿', color: 'text-tertiary-500', name: 'Herbs' }
 		};
 		return (

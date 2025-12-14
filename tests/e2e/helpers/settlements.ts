@@ -209,7 +209,9 @@ export async function assertStartingResources(
 		}
 
 		const actualAmount = Number.parseInt(match[1], 10);
-		const tolerance = 10; // Allow ±10 for production that may have occurred
+		// Allow ±50 tolerance for game loop production (resources tick every second)
+		// E2E tests have ~10-15s setup time, so production can accumulate
+		const tolerance = 50;
 		const min = amount - tolerance;
 		const max = amount + tolerance;
 

@@ -42,6 +42,16 @@
 
 	let { buildings = [], settlementId, onBuild, onUpgrade, onRepair, onDemolish }: Props = $props();
 
+	// ✅ DEBUG: Log when component renders and receives buildings
+	$effect(() => {
+		console.log('[BuildingsListPanel] ==== COMPONENT RENDER ====');
+		console.log('[BuildingsListPanel] Buildings.length:', buildings.length);
+		if (buildings.length > 0) {
+			console.log('[BuildingsListPanel] Building names:', buildings.map((b) => b.name).join(', '));
+		}
+		console.log('[BuildingsListPanel] ================');
+	});
+
 	// Expanded building IDs for showing modifiers
 	let expandedBuildings = $state<Set<string>>(new Set());
 

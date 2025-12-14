@@ -236,10 +236,31 @@
 
 	// ✅ DEBUG: Log tile and extractor data
 	$effect(() => {
-		console.log('[Dashboard] Tile data:', tile);
-		console.log('[Dashboard] Extractors:', extractors);
-		console.log('[Dashboard] Tile is truthy:', !!tile);
-		console.log('[Dashboard] Extractors count:', extractors.length);
+		console.log('[Dashboard] ==== RENDER UPDATE ====');
+		console.log('[Dashboard] settlementStructures.length:', settlementStructures.length);
+		console.log('[Dashboard] Buildings.length:', buildings.length);
+		console.log('[Dashboard] Extractors.length:', extractors.length);
+
+		if (settlementStructures.length > 0) {
+			console.log(
+				'[Dashboard] First structure:',
+				settlementStructures[0].name,
+				settlementStructures[0].category
+			);
+		}
+
+		// Check which panels are visible
+		const structuresPanel = currentLayout.panels.find((p) => p.id === 'structures');
+		console.log(
+			'[Dashboard] Structures panel - visible:',
+			structuresPanel?.visible,
+			'collapsed:',
+			structuresPanel?.collapsed,
+			'column:',
+			structuresPanel?.column
+		);
+		console.log('[Dashboard] Current viewport:', viewport);
+		console.log('[Dashboard] ====================');
 	});
 
 	// ✅ NEW: Group extractors by tile for grid display

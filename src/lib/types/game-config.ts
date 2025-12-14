@@ -29,7 +29,7 @@ export const EXTRACTOR_TYPES = [
 	'QUARRY',
 	'MINE',
 	'FISHING_DOCK',
-	'HUNTERS_LODGE',
+	'HUNTING_LODGE',
 	'HERB_GARDEN'
 ] as const;
 
