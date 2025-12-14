@@ -63,11 +63,11 @@
 	// ✅ NEW: Filter extractors from structure metadata
 	const extractorStructures = $derived(
 		structures
-			.filter((s) => s.category === 'EXTRACTOR' && s.type)
+			.filter((s) => s.category === 'EXTRACTOR' && s.extractorType)
 			.map((structure) => {
-				const config = EXTRACTOR_CONFIG[structure.type];
+				const config = EXTRACTOR_CONFIG[structure.extractorType];
 				if (!config) {
-					console.warn(`Unknown extractor type: ${structure.type}`);
+					console.warn(`Unknown extractor type: ${structure.extractorType}`);
 					return null;
 				}
 
@@ -75,6 +75,7 @@
 				return {
 					...structure,
 					...config,
+					type: structure.extractorType, // Add type field for compatibility
 					quality,
 					qualityColor: getQualityColor(quality),
 					qualityLabel: getQualityLabel(quality)

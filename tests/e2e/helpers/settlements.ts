@@ -315,43 +315,45 @@ export async function buildStructure(
 }
 
 /**
- * Build an EXTRACTOR via ExtractorBuildModal (clicking on a plot square)
+ * Build an EXTRACTOR via ExtractorBuildModal (clicking on a plot slot button)
  * @param page - Playwright Page
  * @param extractorType - Type of extractor (e.g., 'BASIC_FARM', 'BASIC_WELL')
- * @param tileIndex - Which tile to click (defaults to 0 for first available tile)
+ * @param slotPosition - Which slot position to use (defaults to 0 for first slot)
  */
 export async function buildExtractor(
 	page: Page,
 	extractorType: string,
-	tileIndex: number = 0
+	slotPosition: number = 0
 ): Promise<void> {
-	console.log(`[E2E Helper] Building extractor: ${extractorType} on tile index: ${tileIndex}`);
+	console.log(
+		`[E2E Helper] Building extractor: ${extractorType} in slot position: ${slotPosition}`
+	);
 
-	// Step 1: Find and click a plot square to open ExtractorBuildModal
-	// Look for tiles with available slots (not fully built)
-	const plotSquares = page.locator('[data-testid^="plot-square-"]');
-	const plotSquare = plotSquares.nth(tileIndex);
+	// Step 1: Find and click an empty plot slot to open ExtractorBuildModal
+	// TilePlotsPanel uses aria-label="Build extractor in slot {slotPosition}"
+	const buildSlotButton = page.locator(
+		`button[aria-label="Build extractor in slot ${slotPosition}"]`
+	);
 
-	await plotSquare.waitFor({ state: 'visible', timeout: 5000 });
-	await plotSquare.click();
+	await buildSlotButton.waitFor({ state: 'visible', timeout: 5000 });
+	await buildSlotButton.click();
 
-	// Step 2: Wait for the ExtractorBuildModal to open
-	await page.waitForSelector('text=Build Extractor', { state: 'visible', timeout: 5000 });
+	// Step 2: Wait for the ExtractorTypeSelector modal to open
+	await page.waitForSelector('text=Select Extractor Type', { state: 'visible', timeout: 5000 });
 
 	// Step 3: Click the extractor option button
-	// The modal uses extractorType as part of button identification
-	const extractorButton = page
-		.locator(`button:has-text("${extractorType.replace('BASIC_', '').replace('_', ' ')}"):visible`)
-		.first();
+	// The modal uses data-structure-type attribute (e.g., "FARM", "WELL")
+	// Strip "BASIC_" prefix from extractorType parameter
+	const structureType = extractorType.replace('BASIC_', '');
+	const extractorButton = page.locator(
+		`button[data-testid="extractor-option"][data-structure-type="${structureType}"]`
+	);
 	await extractorButton.waitFor({ state: 'visible', timeout: 5000 });
 	await extractorButton.click();
 
-	// Step 4: Click the "Build Extractor" button to confirm
-	const buildButton = page.locator('button:has-text("Build Extractor")');
-	await buildButton.click();
-
-	// Step 5: Wait for modal to close
-	await page.waitForSelector('text=Build Extractor', { state: 'hidden', timeout: 5000 });
+	// Step 4: The modal closes automatically on selection (no confirm button)
+	// Wait for modal to close
+	await page.waitForSelector('text=Select Extractor Type', { state: 'hidden', timeout: 5000 });
 
 	console.log(`[E2E Helper] Extractor built successfully: ${extractorType}`);
 }

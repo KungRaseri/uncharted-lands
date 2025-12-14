@@ -33,6 +33,8 @@ export interface StructureMetadata {
 	description: string;
 	category: string;
 	type: string; // ExtractorType or BuildingType (from database enum)
+	extractorType?: string;
+	buildingType?: string;
 
 	// Build costs (from StructureRequirements table)
 	costs: {

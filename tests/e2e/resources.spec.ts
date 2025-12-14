@@ -19,7 +19,7 @@ import {
 	getPopulationCapacity,
 	getHappiness,
 	countStructures,
-	assertStructureExists,
+	// assertStructureExists,
 	assertGameLoopRunning,
 	joinWorldRoom,
 	waitForSocketConnection,
