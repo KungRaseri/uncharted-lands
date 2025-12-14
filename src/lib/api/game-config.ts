@@ -137,3 +137,56 @@ function getFallbackConfig(): GameConfig {
 		}
 	};
 }
+
+/**
+ * Production Base Rates Interface
+ * Simplified interface for just the base production rates
+ */
+export interface ProductionBaseRates {
+	food: number;
+	water: number;
+	wood: number;
+	stone: number;
+	ore: number;
+	clay?: number;
+	herbs?: number;
+	pelts?: number;
+	gems?: number;
+	exotic_wood?: number;
+}
+
+/**
+ * Get production rates from server API
+ * Server handles caching (5 minutes), client just fetches
+ * Falls back to hardcoded values if fetch fails
+ */
+export async function getProductionRates(): Promise<ProductionBaseRates> {
+	try {
+		const response = await fetch('/api/config/production-rates');
+		if (!response.ok) {
+			throw new Error(`Failed to fetch production rates: ${response.statusText}`);
+		}
+
+		const result = await response.json();
+		if (!result.success || !result.data?.baseRates) {
+			throw new Error('Invalid production rates response format');
+		}
+
+		return result.data.baseRates;
+	} catch (error) {
+		console.error('Error fetching production rates, using fallback:', error);
+		// Fallback to current hardcoded values (matches current production-calculator.ts)
+		return {
+			food: 10,
+			water: 15,
+			wood: 8,
+			stone: 6,
+			ore: 4,
+			clay: 3,
+			herbs: 5,
+			pelts: 4,
+			gems: 1,
+			exotic_wood: 2
+		};
+	}
+}
