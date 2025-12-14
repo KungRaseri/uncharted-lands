@@ -3,6 +3,19 @@
 
 	import Header from '$lib/components/app/Header.svelte';
 	import Footer from '$lib/components/app/Footer.svelte';
+	import { onMount } from 'svelte';
+	import { getProductionRates } from '$lib/api/game-config';
+
+	// Pre-load production rates on app initialization
+	onMount(async () => {
+		try {
+			await getProductionRates();
+			console.log('[App] Production rates pre-loaded successfully');
+		} catch (error) {
+			console.error('[App] Failed to pre-load production rates:', error);
+			// Non-critical: Calculator will load on demand with fallback
+		}
+	});
 </script>
 
 <div class="flex flex-col h-screen">

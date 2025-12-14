@@ -419,10 +419,16 @@
 		});
 	});
 
-	// ✅ REAL: Calculate production from real structures and tiles
-	const realProduction = $derived.by(() => {
-		// Note: Tile data not currently available, quality modifiers won't be applied
-		return calculateProduction(settlementStructures, undefined);
+	// ✅ REAL: Calculate production from real structures and tiles (async)
+	let realProduction = $state<Awaited<ReturnType<typeof calculateProduction>> | undefined>(
+		undefined
+	);
+
+	$effect(() => {
+		// Recalculate when structures change
+		calculateProduction(settlementStructures, undefined).then((result) => {
+			realProduction = result;
+		});
 	});
 
 	// ✅ REAL: Use settlement data from server

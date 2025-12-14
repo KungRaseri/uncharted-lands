@@ -4,12 +4,29 @@
  * Calculates production rates and extractor details from real settlement structures
  */
 
+import { getProductionRates, type ProductionBaseRates } from '../api/game-config';
+
 export interface ProductionRates {
 	food: number;
 	water: number;
 	wood: number;
 	stone: number;
 	ore: number;
+}
+
+/**
+ * Module-level cache for production base rates
+ * Fetched once from API on first use
+ */
+let cachedBaseRates: ProductionBaseRates | null = null;
+
+/**
+ * Ensure base rates are loaded from API
+ * Uses module-level cache to avoid repeated fetches
+ */
+async function ensureBaseRates(): Promise<ProductionBaseRates> {
+	cachedBaseRates ??= await getProductionRates();
+	return cachedBaseRates;
 }
 
 export interface ExtractorInfo {
@@ -84,19 +101,13 @@ function getTileQuality(tile: Tile | undefined, resourceType: keyof ProductionRa
  * Calculate production rate for an extractor
  * Based on GDD formula: Production = BaseRate × Quality × Level × Health
  */
-function calculateExtractorProduction(
+async function calculateExtractorProduction(
 	structure: SettlementStructure,
 	tile: Tile | undefined,
 	resourceType: keyof ProductionRates
-): number {
-	// Base production rates (per hour) from GDD
-	const baseRates: Record<keyof ProductionRates, number> = {
-		food: 10,
-		water: 15,
-		wood: 8,
-		stone: 6,
-		ore: 4
-	};
+): Promise<number> {
+	// Get base production rates from API (cached after first call)
+	const baseRates = await ensureBaseRates();
 
 	const baseRate = baseRates[resourceType];
 	const quality = getTileQuality(tile, resourceType) / 100; // Convert to 0-1 scale
@@ -109,10 +120,10 @@ function calculateExtractorProduction(
 /**
  * Calculate production data from settlement structures
  */
-export function calculateProduction(
+export async function calculateProduction(
 	structures: SettlementStructure[],
 	tiles?: Map<string, Tile>
-): ProductionData {
+): Promise<ProductionData> {
 	const rates: ProductionRates = {
 		food: 0,
 		water: 0,
@@ -132,7 +143,7 @@ export function calculateProduction(
 
 		const tile = structure.tileId && tiles ? tiles.get(structure.tileId) : undefined;
 		const quality = getTileQuality(tile, resourceType);
-		const production = calculateExtractorProduction(structure, tile, resourceType);
+		const production = await calculateExtractorProduction(structure, tile, resourceType);
 
 		// Add to total production rate
 		rates[resourceType] += production;
