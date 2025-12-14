@@ -5,7 +5,11 @@ import { TimeSpan } from '$lib/timespan';
 import { logger } from '$lib/utils/logger';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (locals.account) throw redirect(302, '/');
+	// If user is already logged in, redirect them to the game (same as login success)
+	if (locals.account) {
+		const redirectTo = url.searchParams.get('redirectTo');
+		throw redirect(302, redirectTo || '/game');
+	}
 
 	return {
 		redirectTo: url.searchParams.get('redirectTo') ?? '/'

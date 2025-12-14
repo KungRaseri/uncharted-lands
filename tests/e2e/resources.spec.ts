@@ -279,7 +279,7 @@ test.describe('Resource Production Flow', () => {
 		console.log('[E2E DEBUG] Page state after navigation:', pageData);
 	});
 
-	test.afterAll(async ({ request }) => {
+	test.afterEach(async ({ request }) => {
 		// Clean up test settlements
 		if (testSettlementId && sessionCookieValue) {
 			await request.delete(`${apiUrl}/settlements/${testSettlementId}`, {
@@ -304,7 +304,7 @@ test.describe('Resource Production Flow', () => {
 			});
 		}
 
-		// Clean up test user (this endpoint might not need auth since it's for test cleanup)
+		// Clean up test user immediately after THIS test completes
 		if (testUserEmail) {
 			await cleanupTestUser(request, testUserEmail);
 		}

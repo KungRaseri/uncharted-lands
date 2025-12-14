@@ -232,18 +232,22 @@ test.describe('Authentication Flow', () => {
 		let userEmail: string;
 		let userPassword: string;
 
-		test.beforeAll(async ({ browser }) => {
+		test.beforeEach(async ({ browser }) => {
 			userEmail = generateUniqueEmail('concurrent');
 			userPassword = TEST_USERS.VALID.password;
 
 			const page = await browser.newPage();
 			await registerUser(page, userEmail, userPassword);
 			// registerUser already waits for /game/getting-started - no additional wait needed
+
+			// Logout the user so concurrent session tests can test fresh login flow
+			await logoutUser(page);
+
 			await page.close();
 		});
 
-		test.afterAll(async ({ request }) => {
-			// Cleanup the test user
+		test.afterEach(async ({ request }) => {
+			// Cleanup the test user created in beforeEach
 			await cleanupTestUser(request, userEmail);
 		});
 

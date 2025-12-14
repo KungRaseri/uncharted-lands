@@ -83,13 +83,13 @@ export async function registerUser(page: Page, email: string, password: string):
 }
 
 /**
- * Login a user via the UI
+ * Attempt to login (without waiting for redirect - for testing invalid logins)
  * @param page - Playwright page object
  * @param email - User email
  * @param password - User password
  * @param rememberMe - Whether to check "Remember me" checkbox
  */
-export async function loginUser(
+export async function attemptLogin(
 	page: Page,
 	email: string,
 	password: string,
@@ -105,10 +105,28 @@ export async function loginUser(
 		await page.check('input[name="remember_me"]');
 	}
 
-	// Click login and wait for redirect to complete
-	// Login redirects to /game on success
+	// Click login button but don't wait for navigation (test will verify behavior)
 	await page.click('button:has-text("Login")');
-	await page.waitForURL('/game', { waitUntil: 'networkidle' });
+	// Wait for form submission to process
+	await page.waitForLoadState('networkidle');
+}
+
+/**
+ * Login a user via the UI
+ * @param page - Playwright page object
+ * @param email - User email
+ * @param password - User password
+ * @param rememberMe - Whether to check "Remember me" checkbox
+ */
+export async function loginUser(
+	page: Page,
+	email: string,
+	password: string,
+	rememberMe: boolean = false
+): Promise<void> {
+	await attemptLogin(page, email, password, rememberMe);
+	// Wait for successful redirect to game area
+	await page.waitForURL(/\/game/, { waitUntil: 'networkidle' });
 }
 
 /**
@@ -132,12 +150,13 @@ export async function isAuthenticated(page: Page): Promise<boolean> {
 }
 
 /**
- * Assert that user is redirected to home page after successful auth
+ * Assert that user is redirected to game area after successful auth
  * @param page - Playwright page object
  */
 export async function assertRedirectedToHome(page: Page): Promise<void> {
-	await page.waitForURL('/game', { timeout: 5000 });
-	await expect(page).toHaveURL('/game');
+	// User should be redirected to /game or a subpath like /game/getting-started
+	await page.waitForURL(/\/game/, { timeout: 5000 });
+	await expect(page).toHaveURL(/\/game/);
 }
 
 /**

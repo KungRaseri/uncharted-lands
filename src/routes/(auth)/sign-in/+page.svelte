@@ -37,7 +37,9 @@
 					type="email"
 					autocomplete="email"
 					required
-					class="input {form?.email ? 'input-error' : ''}"
+					class="input {form?.incorrect || form?.invalid || form?.missingFields
+						? 'input-error'
+						: ''}"
 				/>
 			</label>
 
@@ -49,7 +51,9 @@
 					type="password"
 					autocomplete="current-password"
 					required
-					class="input {form?.email ? 'input-error' : ''}"
+					class="input {form?.incorrect || form?.invalid || form?.missingFields
+						? 'input-error'
+						: ''}"
 				/>
 			</label>
 

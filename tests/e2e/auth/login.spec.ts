@@ -13,6 +13,7 @@ import { test, expect } from '@playwright/test';
 import {
 	TEST_USERS,
 	loginUser,
+	attemptLogin,
 	registerUser,
 	assertRedirectedToHome,
 	assertErrorMessage,
@@ -24,23 +25,27 @@ import {
 } from './auth.helpers';
 
 test.describe('Login', () => {
-	// Setup: Create a test user before login tests
+	// Setup: Create a test user before EACH login test
 	let testUserEmail: string;
 	let testUserPassword: string;
 
-	test.beforeAll(async ({ browser }) => {
-		// Create a persistent test user for login tests
+	test.beforeEach(async ({ browser }) => {
+		// Create a unique test user for this test
 		testUserEmail = generateUniqueEmail('login-test');
 		testUserPassword = TEST_USERS.VALID.password;
 
 		const page = await browser.newPage();
 		await registerUser(page, testUserEmail, testUserPassword);
 		// registerUser already waits for /game/getting-started - no additional wait needed
+
+		// Logout the user so login tests can test fresh login flow
+		await logoutUser(page);
+
 		await page.close();
 	});
 
-	test.afterAll(async ({ request }) => {
-		// Cleanup the test user created in beforeAll
+	test.afterEach(async ({ request }) => {
+		// Cleanup the test user created in beforeEach
 		await cleanupTestUser(request, testUserEmail);
 	});
 
@@ -86,10 +91,10 @@ test.describe('Login', () => {
 		test('should show error for non-existent user', async ({ page }) => {
 			const fakeEmail = generateUniqueEmail('nonexistent');
 
-			await loginUser(page, fakeEmail, TEST_USERS.VALID.password);
+			await attemptLogin(page, fakeEmail, TEST_USERS.VALID.password);
 
 			// Should show incorrect credentials error
-			await assertErrorMessage(page, 'Information is incorrect');
+			await assertErrorMessage(page, 'email or password you entered is incorrect');
 
 			// Should remain on login page
 			await expect(page).toHaveURL(/\/sign-in/);
@@ -100,10 +105,10 @@ test.describe('Login', () => {
 		});
 
 		test('should show error for incorrect password', async ({ page }) => {
-			await loginUser(page, testUserEmail, 'WrongPassword123456789!');
+			await attemptLogin(page, testUserEmail, 'WrongPassword123456789!');
 
 			// Should show incorrect credentials error
-			await assertErrorMessage(page, 'Information is incorrect');
+			await assertErrorMessage(page, 'email or password you entered is incorrect');
 
 			// Should remain on login page
 			await expect(page).toHaveURL(/\/sign-in/);
@@ -144,7 +149,7 @@ test.describe('Login', () => {
 		});
 
 		test('should highlight inputs with error styling after failed login', async ({ page }) => {
-			await loginUser(page, testUserEmail, 'WrongPassword123456789!');
+			await attemptLogin(page, testUserEmail, 'WrongPassword123456789!');
 
 			// Wait for error state
 			await page.waitForSelector('.input-error', { timeout: 5000 });
@@ -156,7 +161,7 @@ test.describe('Login', () => {
 	test.describe('Remember Me Functionality', () => {
 		test('should set longer session with remember me checked', async ({ page }) => {
 			await loginUser(page, testUserEmail, testUserPassword, true);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game redirect
 
 			const cookies = await page.context().cookies();
 			const sessionCookie = cookies.find((c) => c.name === 'session');
@@ -172,7 +177,7 @@ test.describe('Login', () => {
 
 		test('should set shorter session without remember me', async ({ page }) => {
 			await loginUser(page, testUserEmail, testUserPassword, false);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game redirect
 
 			const cookies = await page.context().cookies();
 			const sessionCookie = cookies.find((c) => c.name === 'session');
@@ -280,11 +285,11 @@ test.describe('Login', () => {
 	});
 
 	test.describe('Navigation and Redirects', () => {
-		test('should redirect to home after successful login', async ({ page }) => {
+		test('should redirect to game area after successful login', async ({ page }) => {
 			await loginUser(page, testUserEmail, testUserPassword);
+			// loginUser already waits for /game redirect
 
-			await page.waitForURL('/', { timeout: 5000 });
-			await expect(page).toHaveURL('/');
+			await expect(page).toHaveURL(/\/game/);
 		});
 
 		test('should redirect to requested page after login', async ({ page }) => {
@@ -292,7 +297,9 @@ test.describe('Login', () => {
 			await page.goto('/game/world');
 
 			// Should be redirected to sign-in with redirectTo parameter
-			await page.waitForURL(/sign-in\?redirectTo=/);
+			// Allow for URL encoding variations
+			await page.waitForURL(/sign-in/);
+			expect(page.url()).toMatch(/redirectTo/);
 
 			// Login
 			await page.fill('input[name="email"]', testUserEmail);
@@ -303,17 +310,17 @@ test.describe('Login', () => {
 			await page.waitForURL(/\/game/, { timeout: 5000 });
 		});
 
-		test('should redirect to home if already authenticated', async ({ page }) => {
+		test('should redirect to game if already authenticated', async ({ page }) => {
 			// First login
 			await loginUser(page, testUserEmail, testUserPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game redirect
 
 			// Try to access login page while authenticated
 			await page.goto('/sign-in');
 
-			// Should redirect to home
-			await page.waitForURL('/', { timeout: 5000 });
-			await expect(page).toHaveURL('/');
+			// Should redirect to game area
+			await page.waitForURL(/\/game/, { timeout: 5000 });
+			await expect(page).toHaveURL(/\/game/);
 		});
 
 		test('forgot password link should navigate correctly', async ({ page }) => {
@@ -348,7 +355,7 @@ test.describe('Login', () => {
 
 		test('should clear sensitive data after logout', async ({ page }) => {
 			await loginUser(page, testUserEmail, testUserPassword);
-			await page.waitForURL('/', { timeout: 5000 });
+			// loginUser already waits for /game redirect
 
 			// Logout
 			await logoutUser(page);

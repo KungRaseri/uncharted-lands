@@ -63,11 +63,11 @@
 	// ✅ NEW: Filter extractors from structure metadata
 	const extractorStructures = $derived(
 		structures
-			.filter((s) => s.category === 'EXTRACTOR' && s.extractorType)
+			.filter((s) => s.category === 'EXTRACTOR' && s.type)
 			.map((structure) => {
-				const config = EXTRACTOR_CONFIG[structure.extractorType!];
+				const config = EXTRACTOR_CONFIG[structure.type];
 				if (!config) {
-					console.warn(`Unknown extractor type: ${structure.extractorType}`);
+					console.warn(`Unknown extractor type: ${structure.type}`);
 					return null;
 				}
 
@@ -168,6 +168,8 @@
 				{#each sortedExtractors as extractor (extractor.id)}
 					<button
 						type="button"
+						data-structure-type={extractor.type}
+						data-testid="extractor-option"
 						class="p-4 text-left rounded-lg border-2 border-surface-300 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
 						onclick={() => handleBuild(extractor.id)}
 						onkeydown={(e) => handleKeydown(e, () => handleBuild(extractor.id))}
@@ -202,18 +204,17 @@
 						>
 							<span>Cost:</span>
 							<div class="flex items-center gap-1.5">
-								{#if extractor.requirements.wood}
-									<span>🪵 {extractor.requirements.wood}</span>
+								{#if extractor.costs.wood}
+									<span>🪵 {extractor.costs.wood}</span>
 								{/if}
-								{#if extractor.requirements.stone}
-									<span>🪨 {extractor.requirements.stone}</span>
+								{#if extractor.costs.stone}
+									<span>🪨 {extractor.costs.stone}</span>
 								{/if}
-								{#if extractor.requirements.ore}
-									<span>⛏️ {extractor.requirements.ore}</span>
+								{#if extractor.costs.ore}
+									<span>⛏️ {extractor.costs.ore}</span>
 								{/if}
 							</div>
 						</div>
-
 						<!-- Produces -->
 						<div class="flex items-center gap-2 text-xs">
 							<span class="text-surface-500 dark:text-surface-400">Produces:</span>
