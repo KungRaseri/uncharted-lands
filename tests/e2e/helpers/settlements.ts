@@ -258,6 +258,105 @@ export async function getCurrentResources(page: Page): Promise<{
 }
 
 // ============================================================================
+// STRUCTURE BUILDING
+// ============================================================================
+
+/**
+ * Build a BUILDING structure via MobileBuildMenu UI
+ * NOTE: Extractors are built via ExtractorBuildModal (clicking plot squares), not this menu
+ * @param page - Playwright Page
+ * @param structureName - Name of structure to build (e.g., 'House', 'Warehouse')
+ * @param category - Optional category to select first (defaults to 'BUILDING')
+ */
+export async function buildStructure(
+	page: Page,
+	structureName: string,
+	category: string = 'BUILDING'
+): Promise<void> {
+	console.log(`[E2E Helper] Building structure: ${structureName} in category: ${category}`);
+	console.log(
+		'[E2E Helper] NOTE: This only builds BUILDING category (extractors use ExtractorBuildModal)'
+	);
+
+	// Step 1: Click the build button to open the menu
+	await page.click('[data-testid="build-structure-btn"]');
+
+	// Step 2: Wait for the build menu to open (use a BUILDING structure as indicator)
+	await page.waitForSelector('[data-testid="build-structure-house"]', {
+		state: 'visible',
+		timeout: 5000
+	});
+
+	// Step 3: Select the category tab if needed (BUILDING is default now)
+	if (category !== 'BUILDING') {
+		const categoryButton = page.locator(`button[role="tab"]:has-text("${category}")`);
+		await categoryButton.click();
+		await page.waitForTimeout(200); // Wait for tab switch animation
+	}
+
+	// Step 4: Click the structure button using data-testid
+	const structureButton = page.locator(
+		`[data-testid="build-structure-${structureName.toLowerCase()}"]`
+	);
+
+	// Wait for the button to be visible and enabled
+	await structureButton.waitFor({ state: 'visible', timeout: 5000 });
+
+	// Click the structure
+	await structureButton.click();
+
+	// Step 5: Wait for the build menu to close (indicates structure was built)
+	await page.waitForSelector(`[data-testid="build-structure-${structureName.toLowerCase()}"]`, {
+		state: 'hidden',
+		timeout: 5000
+	});
+
+	console.log(`[E2E Helper] Structure built successfully: ${structureName}`);
+}
+
+/**
+ * Build an EXTRACTOR via ExtractorBuildModal (clicking on a plot square)
+ * @param page - Playwright Page
+ * @param extractorType - Type of extractor (e.g., 'BASIC_FARM', 'BASIC_WELL')
+ * @param tileIndex - Which tile to click (defaults to 0 for first available tile)
+ */
+export async function buildExtractor(
+	page: Page,
+	extractorType: string,
+	tileIndex: number = 0
+): Promise<void> {
+	console.log(`[E2E Helper] Building extractor: ${extractorType} on tile index: ${tileIndex}`);
+
+	// Step 1: Find and click a plot square to open ExtractorBuildModal
+	// Look for tiles with available slots (not fully built)
+	const plotSquares = page.locator('[data-testid^="plot-square-"]');
+	const plotSquare = plotSquares.nth(tileIndex);
+
+	await plotSquare.waitFor({ state: 'visible', timeout: 5000 });
+	await plotSquare.click();
+
+	// Step 2: Wait for the ExtractorBuildModal to open
+	await page.waitForSelector('text=Build Extractor', { state: 'visible', timeout: 5000 });
+
+	// Step 3: Click the extractor option button
+	// The modal uses extractorType as part of button identification
+	const extractorButton = page
+		.locator(`button:has-text("${extractorType.replace('BASIC_', '').replace('_', ' ')}"):visible`)
+		.first();
+	await extractorButton.waitFor({ state: 'visible', timeout: 5000 });
+	await extractorButton.click();
+
+	// Step 4: Click the "Build Extractor" button to confirm
+	const buildButton = page.locator('button:has-text("Build Extractor")');
+	await buildButton.click();
+
+	// Step 5: Wait for modal to close
+	await page.waitForSelector('text=Build Extractor', { state: 'hidden', timeout: 5000 });
+
+	console.log(`[E2E Helper] Extractor built successfully: ${extractorType}`);
+}
+
+// ============================================================================
 // SETTLEMENT CLEANUP
 // ============================================================================
 

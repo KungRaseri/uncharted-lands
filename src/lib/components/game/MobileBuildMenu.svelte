@@ -21,21 +21,24 @@
 		console.log('  - onClose exists:', !!onClose);
 	});
 
-	// Group structures by category
+	// Filter to only show BUILDING category structures (extractors are built via ExtractorBuildModal)
 	const structuresByCategory = $derived.by(() => {
 		const categories: Record<string, StructureMetadata[]> = {};
 
 		for (const structure of structures) {
 			const category = structure.category || 'Other';
-			if (!categories[category]) {
-				categories[category] = [];
+			// Only include non-EXTRACTOR categories
+			if (category !== 'EXTRACTOR') {
+				if (!categories[category]) {
+					categories[category] = [];
+				}
+				categories[category].push(structure);
 			}
-			categories[category].push(structure);
 		}
 		return categories;
 	});
 
-	let selectedCategory = $state<string>('EXTRACTOR');
+	let selectedCategory = $state<string>('BUILDING');
 
 	async function handleBuild(structure: StructureMetadata) {
 		console.log('Building:', structure.displayName, 'at settlement:', settlementId);
