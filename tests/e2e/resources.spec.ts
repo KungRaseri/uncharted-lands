@@ -328,7 +328,7 @@ test.describe('Resource Production Flow', () => {
 
 			// Wait for food production to increase
 			await page.waitForTimeout(1000);
-			const productionOccurred = await waitForResourceProduction(page, 'food', 10000);
+			const productionOccurred = await waitForResourceProduction(page, 'food', 30000);
 			expect(productionOccurred).toBeTruthy();
 		});
 
@@ -336,11 +336,14 @@ test.describe('Resource Production Flow', () => {
 			// Build a farm using ExtractorBuildModal
 			await buildExtractor(page, 'BASIC_FARM');
 
-			// Note: Extractors don't appear in structure list the same way buildings do
-			// Production validation is sufficient
+			// Wait for production to start before measuring rate
+			const productionStarted = await waitForResourceProduction(page, 'food', 30000);
+			expect(productionStarted).toBeTruthy();
 
 			// Verify production rate is at least 0.5 food/second (30/minute)
-			await assertProductionRate(page, 'food', 0.5, 5);
+			// Use 20s duration to ensure we capture Socket.IO resource-update event
+			// (events arrive approximately every 15 seconds)
+			await assertProductionRate(page, 'food', 0.5, 20);
 		});
 	});
 
@@ -518,7 +521,7 @@ test.describe('Resource Production Flow', () => {
 			await assertGameLoopRunning(page, 5000);
 
 			// 7. Verify resource production occurs
-			const productionOccurred = await waitForResourceProduction(page, 'food', 10000);
+			const productionOccurred = await waitForResourceProduction(page, 'food', 30000);
 			expect(productionOccurred).toBeTruthy();
 		});
 	});
