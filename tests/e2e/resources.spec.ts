@@ -365,6 +365,11 @@ test.describe('Resource Production Flow', () => {
 		});
 
 		test('should increase capacity when building houses', async ({ page }) => {
+			// Wait for initial population-state event to ensure DOM has real calculated capacity
+			// (DOM might show stale/default value before game loop first tick)
+			// Note: POPULATION_INTERVAL_SEC=10 in dev/test environments (10 second ticks)
+			await waitForSocketEvent(page, 'population-state', 15000);
+
 			const initialCapacity = await getPopulationCapacity(page);
 
 			// Get initial structure count (all structures visible on page)
@@ -384,19 +389,26 @@ test.describe('Resource Production Flow', () => {
 			// Click the House structure button by its display name
 			await page.click('button:has-text("House")');
 
-			// Wait for structure:built Socket.IO event to ensure modifiers are recalculated
+			// Wait for structure:built Socket.IO event
 			await waitForSocketEvent(page, 'structure:built', 10000);
 
-			// Give UI a moment to update after event
-			await page.waitForTimeout(500);
+			// Wait for TWO population-state events after building (to ensure structures are refreshed)
+			// First event: Might be from tick that started before structure was built
+			// Second event: Guaranteed to include new structure in capacity calculation
+			await waitForSocketEvent(page, 'population-state', 15000);
+			await waitForSocketEvent(page, 'population-state', 15000);
 
-			// ⚠️ WORKAROUND (Root Cause #8): Server creates "Tent" instead of "House"
-			// Verify structure count increased instead of checking structure name
+			// Verify structure count increased
 			const newStructureCount = await page.locator('[data-testid="structure"]').count();
 			expect(newStructureCount).toBe(initialStructureCount + 1);
 
+			// Verify capacity increased after building house
 			const newCapacity = await getPopulationCapacity(page);
 			expect(newCapacity).toBeGreaterThan(initialCapacity);
+
+			// Verify House structure is visible in the UI
+			const houseStructure = page.locator('[data-testid="structure"]:has-text("House")');
+			await expect(houseStructure).toBeVisible();
 		});
 	});
 
