@@ -372,6 +372,9 @@ test.describe('Resource Production Flow', () => {
 
 			const initialCapacity = await getPopulationCapacity(page);
 
+			// Verify starting capacity is correct (10 base + 2 TENT = 12)
+			expect(initialCapacity).toBe(12);
+
 			// Get initial structure count (all structures visible on page)
 			const initialStructureCount = await page.locator('[data-testid="structure"]').count();
 
@@ -392,19 +395,17 @@ test.describe('Resource Production Flow', () => {
 			// Wait for structure:built Socket.IO event
 			await waitForSocketEvent(page, 'structure:built', 10000);
 
-			// Wait for TWO population-state events after building (to ensure structures are refreshed)
-			// First event: Might be from tick that started before structure was built
-			// Second event: Guaranteed to include new structure in capacity calculation
-			await waitForSocketEvent(page, 'population-state', 15000);
+			// Wait for ONE population-state event after building
+			// (Now that modifiers work correctly, capacity updates immediately)
 			await waitForSocketEvent(page, 'population-state', 15000);
 
 			// Verify structure count increased
 			const newStructureCount = await page.locator('[data-testid="structure"]').count();
 			expect(newStructureCount).toBe(initialStructureCount + 1);
 
-			// Verify capacity increased after building house
+			// Verify capacity increased after building house (12 + 15 = 27)
 			const newCapacity = await getPopulationCapacity(page);
-			expect(newCapacity).toBeGreaterThan(initialCapacity);
+			expect(newCapacity).toBe(27);
 
 			// Verify House structure is visible in the UI
 			const houseStructure = page.locator('[data-testid="structure"]:has-text("House")');
