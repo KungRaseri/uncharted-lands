@@ -32,6 +32,18 @@
 	let isPaused = $state(false);
 	let hoveredAlertId = $state<string | null>(null);
 
+	alerts.push({
+		id: '1',
+		severity: 'critical',
+		title: 'Fire in Settlement Alpha',
+		message: 'A large fire has broken out in Settlement Alpha. Immediate action required.',
+		timestamp: new Date(Date.now() - 5 * 60000), // 5 minutes ago
+		location: 'Settlement Alpha',
+		actionLabel: 'View Details',
+		actionHref: '/settlements/alpha#alert-1',
+		dismissed: false
+	});
+
 	// Filter non-dismissed alerts and sort by severity
 	const activeAlerts = $derived(
 		alerts
@@ -87,7 +99,7 @@
 
 <!-- Single-row alert ticker/banner -->
 <section
-	class="rounded-lg bg-surface-50 dark:bg-surface-900 shadow-md border border-surface-200 dark:border-surface-700 overflow-hidden"
+	class="rounded-b-lg bg-surface-50 dark:bg-surface-900 shadow-md border border-surface-200 dark:border-surface-700 overflow-hidden"
 	aria-labelledby="alerts-heading"
 	aria-live="polite"
 >
@@ -100,7 +112,7 @@
 		{/if}
 	</h2>
 
-	<div class="relative h-16 flex items-center">
+	<div class="relative h-10 flex items-center">
 		{#if activeAlerts.length === 0}
 			<!-- No alerts: centered static message -->
 			<div class="w-full flex items-center justify-center h-full" role="status">
@@ -143,7 +155,7 @@
 							<div
 								role="button"
 								tabindex="0"
-								class="flex-none flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer min-w-80 max-w-96 {alert.severity ===
+								class="flex-none flex items-center gap-2 px-2 py-1 rounded-lg transition-all duration-200 cursor-pointer min-w-80 max-w-96 {alert.severity ===
 								'critical'
 									? 'bg-error-100 dark:bg-error-950 border border-error-300 dark:border-error-700 hover:bg-error-200 dark:hover:bg-error-900'
 									: alert.severity === 'warning'
@@ -176,27 +188,6 @@
 
 								<!-- Content -->
 								<div class="flex-1 min-w-0 text-left">
-									<div class="flex items-center gap-2 mb-1">
-										<p
-											class="font-semibold text-sm truncate {alert.severity === 'critical'
-												? 'text-error-900 dark:text-error-100'
-												: alert.severity === 'warning'
-													? 'text-warning-900 dark:text-warning-100'
-													: 'text-primary-900 dark:text-primary-100'}"
-										>
-											{alert.title}
-										</p>
-										<span
-											class="text-xs {alert.severity === 'critical'
-												? 'text-error-700 dark:text-error-300'
-												: alert.severity === 'warning'
-													? 'text-warning-700 dark:text-warning-300'
-													: 'text-primary-700 dark:text-primary-300'}"
-										>
-											{formatTime(alert.timestamp)}
-										</span>
-									</div>
-
 									<!-- Show more details on hover -->
 									{#if hoveredAlertId === alert.id}
 										<p
@@ -208,19 +199,30 @@
 										>
 											{alert.message}
 											{#if alert.location}
-												<span class="font-medium">• {alert.location}</span>
+												<span class="font-">• {alert.location}</span>
 											{/if}
 										</p>
 									{:else}
-										<p
-											class="text-xs truncate {alert.severity === 'critical'
-												? 'text-error-700 dark:text-error-300'
-												: alert.severity === 'warning'
-													? 'text-warning-700 dark:text-warning-300'
-													: 'text-primary-700 dark:text-primary-300'}"
-										>
-											{alert.location || alert.message}
-										</p>
+										<div class="flex items-center gap-2">
+											<p
+												class="font-semibold text-sm truncate {alert.severity === 'critical'
+													? 'text-error-900 dark:text-error-100'
+													: alert.severity === 'warning'
+														? 'text-warning-900 dark:text-warning-100'
+														: 'text-primary-900 dark:text-primary-100'}"
+											>
+												{alert.title}
+											</p>
+											<span
+												class="text-xs {alert.severity === 'critical'
+													? 'text-error-700 dark:text-error-300'
+													: alert.severity === 'warning'
+														? 'text-warning-700 dark:text-warning-300'
+														: 'text-primary-700 dark:text-primary-300'}"
+											>
+												{formatTime(alert.timestamp)}
+											</span>
+										</div>
 									{/if}
 								</div>
 							</div>

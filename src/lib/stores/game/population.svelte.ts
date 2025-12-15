@@ -57,6 +57,7 @@ function initializeListeners() {
 			timestamp: number;
 		}) => {
 			console.log('[POPULATION] State update:', data);
+			console.log('[POPULATION] DEBUG - Capacity value:', data.capacity, typeof data.capacity);
 
 			state.settlements.set(data.settlementId, {
 				settlementId: data.settlementId,

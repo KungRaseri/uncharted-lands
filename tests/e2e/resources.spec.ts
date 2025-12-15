@@ -403,11 +403,10 @@ test.describe('Resource Production Flow', () => {
 			const newStructureCount = await page.locator('[data-testid="structure"]').count();
 			expect(newStructureCount).toBe(initialStructureCount + 1);
 
-			// Verify capacity increased after building house (12 + 15 = 27)
+			// Verify capacity increased after building house (12 + 5 = 17)
+			// GDD specifies: HOUSE provides +5 population capacity (not +15)
 			const newCapacity = await getPopulationCapacity(page);
-			expect(newCapacity).toBe(27);
-
-			// Verify House structure is visible in the UI
+			expect(newCapacity).toBe(17); // Verify House structure is visible in the UI
 			const houseStructure = page.locator('[data-testid="structure"]:has-text("House")');
 			await expect(houseStructure).toBeVisible();
 		});

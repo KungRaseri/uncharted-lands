@@ -6,6 +6,14 @@ import {
 	type StructureMetadata
 } from '../../../src/lib/api/structures';
 
+// Import MODIFIER_NAMES from shared constants
+// TODO: Move to shared package when refactoring (see BLOCKER-3 docs)
+const MODIFIER_NAMES = {
+	POPULATION_CAPACITY: 'population_capacity',
+	FOOD_PRODUCTION: 'food_production',
+	STORAGE_CAPACITY: 'storage_capacity'
+} as const;
+
 describe('Structures API Wrapper', () => {
 	// Mock fetch function
 	let mockFetch: ReturnType<typeof vi.fn>;
@@ -28,7 +36,7 @@ describe('Structures API Wrapper', () => {
 						modifiers: [
 							{
 								type: 'LINEAR',
-								name: 'Food Production',
+								name: MODIFIER_NAMES.FOOD_PRODUCTION,
 								description: 'Increases food production',
 								value: 10
 							}
@@ -47,7 +55,7 @@ describe('Structures API Wrapper', () => {
 						modifiers: [
 							{
 								type: 'LINEAR',
-								name: 'Housing Capacity',
+								name: MODIFIER_NAMES.POPULATION_CAPACITY,
 								description: 'Provides housing for population',
 								value: 5
 							}
@@ -491,7 +499,12 @@ describe('Structures API Wrapper', () => {
 						type: 'HOUSE',
 						costs: { food: 0, water: 0, wood: 30, stone: 10, ore: 0 },
 						modifiers: [
-							{ type: 'LINEAR', name: 'Housing Capacity', description: 'Adds capacity', value: 5 }
+							{
+								type: 'LINEAR',
+								name: MODIFIER_NAMES.POPULATION_CAPACITY,
+								description: 'Adds capacity',
+								value: 5
+							}
 						],
 						prerequisites: [],
 						constructionTime: 600,
@@ -521,7 +534,12 @@ describe('Structures API Wrapper', () => {
 						type: 'HOUSE',
 						costs: { food: 0, water: 0, wood: 30, stone: 10, ore: 0 },
 						modifiers: [
-							{ type: 'LINEAR', name: 'Housing Capacity', description: 'Adds capacity', value: 5 }
+							{
+								type: 'LINEAR',
+								name: MODIFIER_NAMES.POPULATION_CAPACITY,
+								description: 'Adds capacity',
+								value: 5
+							}
 						],
 						prerequisites: [],
 						constructionTime: 600,
