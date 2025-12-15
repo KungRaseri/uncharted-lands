@@ -452,7 +452,9 @@ export async function waitForSocketEvent(
 				socket.once(event, (data: unknown) => {
 					clearTimeout(timer);
 					console.log('[E2E DEBUG] Target event received:', event, 'Data:', data);
-					resolve(data);
+					// Resolve with a serializable value instead of the raw data
+					// (Socket.IO event data may contain JSHandles that can't cross page.evaluate boundary)
+					resolve(true);
 				});
 			});
 		},
