@@ -1,9 +1,13 @@
 /**
  * Region tile tooltip utilities
  * Used for displaying detailed tile information in region map previews
+ *
+ * ARCHITECTURAL DECISION: Import types from central repository
+ * RegionStats imported from $lib/types/game (single source of truth)
  */
 
 import { getTerrainType } from './tile-colors';
+import type { RegionStats } from '$lib/types/game';
 
 export interface TileData {
 	elevation: number;
@@ -14,14 +18,6 @@ export interface TileData {
 	settlementId?: string | null; // If tile is claimed by a settlement
 	Biome?: { name: string } | null;
 	Settlement?: { id: string; name: string } | null;
-}
-
-export interface RegionStats {
-	avgElevation: number;
-	minElevation: number;
-	maxElevation: number;
-	landTiles: number;
-	oceanTiles: number;
 }
 
 /**

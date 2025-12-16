@@ -1,7 +1,6 @@
 <script lang="ts">
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import type { StructureMetadata } from '$lib/api/structures';
-	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 
 	interface Props {
 		open: boolean;
@@ -49,27 +48,27 @@
 				structureId: structure.id
 			});
 
-			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/create`, {
+			// ✅ FIX: Use SvelteKit form action instead of direct API call
+			// This avoids cross-origin cookie issues with session authentication
+			const formData = new FormData();
+			formData.append('structureId', structure.id);
+
+			const response = await fetch('?/buildStructure', {
 				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					settlementId,
-					structureId: structure.id // Send database CUID
-				})
+				body: formData,
+				credentials: 'include' // Include session cookie
 			});
+
 			console.log('[MobileBuildMenu] Response status:', response.status, response.statusText);
 
-			if (!response.ok) {
-				const error = await response.json();
-				console.error('[MobileBuildMenu] API Error Response:', JSON.stringify(error, null, 2));
-				alert(error.error || error.message || 'Failed to create structure');
+			const result = await response.json();
+
+			if (!result.success && result.success !== undefined) {
+				console.error('[MobileBuildMenu] API Error Response:', JSON.stringify(result, null, 2));
+				alert(result.message || 'Failed to create structure');
 				return;
 			}
 
-			const result = await response.json();
 			console.log('[MobileBuildMenu] Structure created successfully:', result);
 
 			onClose();

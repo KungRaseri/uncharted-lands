@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-	getRegionStats,
-	formatRegionTileTooltip,
-	type RegionStats
-} from '../../../src/lib/utils/region-stats';
+import { getRegionStats, formatRegionTileTooltip } from '../../../src/lib/utils/region-stats';
+import type { RegionStats } from '../../../src/lib/types/game';
 
 describe('Region Statistics Utilities', () => {
 	describe('getRegionStats', () => {
@@ -144,7 +141,9 @@ describe('Region Statistics Utilities', () => {
 		const baseStats: RegionStats = {
 			avgElevation: 0.456,
 			minElevation: -0.2,
-			maxElevation: 0.8
+			maxElevation: 0.8,
+			landTiles: 0,
+			oceanTiles: 0
 		};
 
 		it('should format complete tooltip with all information', () => {
@@ -176,7 +175,7 @@ describe('Region Statistics Utilities', () => {
 				tileCol: 0,
 				elevation: 0,
 				terrainType: 'Ocean',
-				stats: { avgElevation: 0, minElevation: 0, maxElevation: 0 }
+				stats: { avgElevation: 0, minElevation: 0, maxElevation: 0, landTiles: 0, oceanTiles: 0 }
 			});
 
 			expect(tooltip).toContain('Region: Unknown (0, 0)');
@@ -194,7 +193,9 @@ describe('Region Statistics Utilities', () => {
 				stats: {
 					avgElevation: 0.987654321,
 					minElevation: -0.555555555,
-					maxElevation: 1.111111111
+					maxElevation: 1.111111111,
+					landTiles: 0,
+					oceanTiles: 0
 				}
 			});
 
@@ -221,7 +222,9 @@ describe('Region Statistics Utilities', () => {
 				stats: {
 					avgElevation: -0.3,
 					minElevation: -0.8,
-					maxElevation: -0.1
+					maxElevation: -0.1,
+					landTiles: 0,
+					oceanTiles: 0
 				}
 			});
 
@@ -242,7 +245,9 @@ describe('Region Statistics Utilities', () => {
 				stats: {
 					avgElevation: 0,
 					minElevation: 0,
-					maxElevation: 0
+					maxElevation: 0,
+					landTiles: 0,
+					oceanTiles: 0
 				}
 			});
 

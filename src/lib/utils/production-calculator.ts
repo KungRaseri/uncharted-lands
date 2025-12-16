@@ -2,16 +2,38 @@
  * Production Calculator
  *
  * Calculates production rates and extractor details from real settlement structures
+ *
+ * ARCHITECTURAL DECISION: Import types from central repository
+ * ProductionRates imported from $lib/types/resources (single source of truth)
+ * ExtractorDetailsForUI is calculation-specific (differs from generic ExtractorInfo)
+ * ProductionDetailsForUI is calculation-specific (differs from generic ProductionData)
  */
 
 import { getProductionRates, type ProductionBaseRates } from '../api/game-config';
+import type { ProductionRates } from '../types/resources';
 
-export interface ProductionRates {
-	food: number;
-	water: number;
-	wood: number;
-	stone: number;
-	ore: number;
+/**
+ * Detailed extractor information for UI display
+ * Extends base ExtractorInfo with UI-specific fields (id, name, location, production)
+ */
+export interface ExtractorDetailsForUI {
+	id: string;
+	type: 'FARM' | 'WELL' | 'LUMBER_MILL' | 'QUARRY' | 'MINE';
+	name: string;
+	level: number;
+	health: number;
+	quality: number;
+	production: number;
+	location: { x: number; y: number };
+}
+
+/**
+ * Production calculation result for UI display
+ * Combines aggregated rates with detailed extractor information
+ */
+export interface ProductionDetailsForUI {
+	rates: ProductionRates;
+	extractors: ExtractorDetailsForUI[];
 }
 
 /**
@@ -27,22 +49,6 @@ let cachedBaseRates: ProductionBaseRates | null = null;
 async function ensureBaseRates(): Promise<ProductionBaseRates> {
 	cachedBaseRates ??= await getProductionRates();
 	return cachedBaseRates;
-}
-
-export interface ExtractorInfo {
-	id: string;
-	type: 'FARM' | 'WELL' | 'LUMBER_MILL' | 'QUARRY' | 'MINE';
-	name: string;
-	level: number;
-	health: number;
-	quality: number;
-	production: number;
-	location: { x: number; y: number };
-}
-
-export interface ProductionData {
-	rates: ProductionRates;
-	extractors: ExtractorInfo[];
 }
 
 interface SettlementStructure {
@@ -123,7 +129,7 @@ async function calculateExtractorProduction(
 export async function calculateProduction(
 	structures: SettlementStructure[],
 	tiles?: Map<string, Tile>
-): Promise<ProductionData> {
+): Promise<ProductionDetailsForUI> {
 	const rates: ProductionRates = {
 		food: 0,
 		water: 0,
@@ -132,7 +138,7 @@ export async function calculateProduction(
 		ore: 0
 	};
 
-	const extractors: ExtractorInfo[] = [];
+	const extractors: ExtractorDetailsForUI[] = [];
 
 	// Filter to extractors only
 	const extractorStructures = structures.filter((s) => s.category === 'EXTRACTOR');
@@ -151,7 +157,7 @@ export async function calculateProduction(
 		// Add to extractor list
 		extractors.push({
 			id: structure.id,
-			type: structure.structureId as ExtractorInfo['type'],
+			type: structure.structureId as ExtractorDetailsForUI['type'],
 			name: structure.name || structure.structureId,
 			level: structure.level,
 			health: structure.health,

@@ -11,6 +11,7 @@
 	import { createGameRefreshInterval } from '$lib/stores/game/gameState.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
+	import { structuresStore } from '$lib/stores/game/structures.svelte';
 	import { socketStore } from '$lib/stores/game/socket';
 	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -71,6 +72,17 @@
 				});
 			} else {
 				console.warn('[SETTLEMENT PAGE] No population data available in settlement');
+			}
+
+			// ✅ NEW: Initialize structures store from structures data
+			if (data.settlement.structures) {
+				console.log(
+					'[SETTLEMENT PAGE] Initializing structures:',
+					data.settlement.structures.length
+				);
+				structuresStore.initializeStructures(data.settlement.id, data.settlement.structures);
+			} else {
+				console.warn('[SETTLEMENT PAGE] No structures data available in settlement');
 			}
 		} else {
 			console.error('[SETTLEMENT PAGE] No settlement data available!');
@@ -153,7 +165,6 @@
 		settlementName={data.settlement.name}
 		settlement={data.settlement}
 		structures={data.structures}
-		settlementStructures={data.settlementStructures}
 		tile={tileData}
 		onOpenBuildMenu={handleOpenBuildMenu}
 	/>

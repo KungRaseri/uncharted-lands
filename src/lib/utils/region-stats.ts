@@ -1,27 +1,29 @@
 /**
  * Region statistics utilities
  * Calculates statistical information about regions and their elevation maps
+ *
+ * ARCHITECTURAL DECISION: Import types from central repository
+ * RegionStats imported from $lib/types/game (single source of truth)
  */
 
-/**
- * Region statistics result
- */
-export type RegionStats = {
-	avgElevation: number;
-	minElevation: number;
-	maxElevation: number;
-};
+import type { RegionStats } from '$lib/types/game';
 
 /**
  * Calculate average, minimum, and maximum elevation for a region
  *
  * @param elevationMap - 2D array of elevation values for the region
- * @returns Object containing average, minimum, and maximum elevation
+ * @returns Object containing average, minimum, and maximum elevation (landTiles and oceanTiles set to 0)
  */
 export function getRegionStats(elevationMap: number[][] | null | undefined): RegionStats {
 	// Handle invalid or empty elevation map
 	if (!elevationMap || !Array.isArray(elevationMap) || elevationMap.length === 0) {
-		return { avgElevation: 0, minElevation: 0, maxElevation: 0 };
+		return {
+			avgElevation: 0,
+			minElevation: 0,
+			maxElevation: 0,
+			landTiles: 0,
+			oceanTiles: 0
+		};
 	}
 
 	// Flatten the 2D array and filter out any non-numeric values
@@ -31,7 +33,13 @@ export function getRegionStats(elevationMap: number[][] | null | undefined): Reg
 
 	// Handle empty array after filtering
 	if (allValues.length === 0) {
-		return { avgElevation: 0, minElevation: 0, maxElevation: 0 };
+		return {
+			avgElevation: 0,
+			minElevation: 0,
+			maxElevation: 0,
+			landTiles: 0,
+			oceanTiles: 0
+		};
 	}
 
 	const sum = allValues.reduce((a, b) => a + b, 0);
@@ -42,7 +50,9 @@ export function getRegionStats(elevationMap: number[][] | null | undefined): Reg
 	return {
 		avgElevation: avg,
 		minElevation: min,
-		maxElevation: max
+		maxElevation: max,
+		landTiles: 0, // This function doesn't calculate tile counts
+		oceanTiles: 0 // This function doesn't calculate tile counts
 	};
 }
 

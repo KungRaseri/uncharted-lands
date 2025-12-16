@@ -3,6 +3,9 @@
  * Consolidated color mapping for biomes, terrain, and elevation
  * Supports multiple visualization modes: satellite, topographical, political, etc.
  *
+ * ARCHITECTURAL DECISION: Import types from central repository
+ * TileType and BiomeType imported from $lib/types/game (single source of truth)
+ *
  * IMPORTANT: Elevation values are generated using fractal noise with:
  * - Base amplitude: 1.0
  * - Octaves: 4
@@ -13,6 +16,8 @@
  *
  * In practice, values can exceed 2.0 in rare cases.
  */
+
+import type { TileType } from '$lib/types/game';
 
 /**
  * Map visualization mode
@@ -40,11 +45,6 @@ export type BiomeType =
 	| 'GRASSLAND_TEMPERATE'
 	| 'DESERT_COLD'
 	| 'DESERT_SUBTROPICAL';
-
-/**
- * Tile type
- */
-export type TileType = 'OCEAN' | 'LAND';
 
 /**
  * Biome color mapping

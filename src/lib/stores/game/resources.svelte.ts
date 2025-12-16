@@ -1,21 +1,16 @@
 /**
  * Resources Store
  * Manages settlement resource state with real-time Socket.IO updates
+ *
+ * ARCHITECTURAL DECISION: Import types from central repository
+ * Resource interfaces imported from $lib/types/resources (single source of truth)
  */
 
 import { browser } from '$app/environment';
 import { socketStore } from './socket';
+import type { ResourceType, ResourceData, Resource } from '$lib/types/resources';
 
-// Types
-export type ResourceType = 'food' | 'water' | 'wood' | 'stone' | 'ore';
-
-export interface ResourceData {
-	current: number;
-	capacity: number;
-	productionRate: number; // per hour
-	consumptionRate: number; // per hour
-}
-
+// Store-specific types
 export interface ResourcesState {
 	settlementId: string;
 	food: ResourceData;
@@ -30,13 +25,8 @@ interface ResourcesStore {
 	resources: Map<string, ResourcesState>; // settlementId → resources
 }
 
-export interface Resource {
-	type: ResourceType;
-	current: number;
-	capacity: number;
-	productionRate: number;
-	consumptionRate: number;
-}
+// Re-export for backward compatibility
+export type { ResourceType, ResourceData, Resource } from '$lib/types/resources';
 
 // State with Svelte 5 runes
 let state = $state<ResourcesStore>({
@@ -234,6 +224,115 @@ function initializeListeners() {
 			} else {
 				console.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for capacity change`
+				);
+			}
+		}
+	);
+
+	/**
+	 * Structure built - deduct resources from storage
+	 * Handles resource deduction when structures are constructed
+	 */
+	socket.on(
+		'structure:built',
+		(data: {
+			settlementId: string;
+			structure: unknown;
+			category: string;
+			structureName: string;
+			resourcesDeducted?: {
+				wood: number;
+				stone: number;
+				ore: number;
+			};
+		}) => {
+			console.log('[ResourcesStore] Received structure:built:', data);
+
+			if (!data.settlementId) {
+				console.error('[ResourcesStore] Missing settlementId in structure:built');
+				return;
+			}
+
+			const existing = state.resources.get(data.settlementId);
+			if (existing && data.resourcesDeducted) {
+				// Deduct resources from current amounts
+				existing.wood.current = Math.max(0, existing.wood.current - data.resourcesDeducted.wood);
+				existing.stone.current = Math.max(0, existing.stone.current - data.resourcesDeducted.stone);
+				existing.ore.current = Math.max(0, existing.ore.current - data.resourcesDeducted.ore);
+
+				existing.lastUpdate = Date.now();
+
+				// Trigger reactivity
+				state.resources = new Map(state.resources);
+
+				console.log(
+					`[ResourcesStore] Deducted construction costs for ${data.structureName}:`,
+					data.resourcesDeducted,
+					'New resources:',
+					{
+						wood: existing.wood.current,
+						stone: existing.stone.current,
+						ore: existing.ore.current
+					}
+				);
+			} else if (!existing) {
+				console.warn(
+					`[ResourcesStore] Settlement ${data.settlementId} not found for structure:built update`
+				);
+			}
+		}
+	);
+
+	/**
+	 * Structure upgraded - deduct upgrade costs from storage
+	 * Handles resource deduction when structures are upgraded
+	 */
+	socket.on(
+		'structure:upgraded',
+		(data: {
+			settlementId: string;
+			structureId: string;
+			level: number;
+			category: string;
+			structureName: string;
+			resourcesDeducted?: {
+				wood: number;
+				stone: number;
+				ore: number;
+			};
+		}) => {
+			console.log('[ResourcesStore] Received structure:upgraded:', data);
+
+			if (!data.settlementId) {
+				console.error('[ResourcesStore] Missing settlementId in structure:upgraded');
+				return;
+			}
+
+			const existing = state.resources.get(data.settlementId);
+			if (existing && data.resourcesDeducted) {
+				// Deduct upgrade costs from current amounts
+				existing.wood.current = Math.max(0, existing.wood.current - data.resourcesDeducted.wood);
+				existing.stone.current = Math.max(0, existing.stone.current - data.resourcesDeducted.stone);
+				existing.ore.current = Math.max(0, existing.ore.current - data.resourcesDeducted.ore);
+
+				existing.lastUpdate = Date.now();
+
+				// Trigger reactivity
+				state.resources = new Map(state.resources);
+
+				console.log(
+					`[ResourcesStore] Deducted upgrade costs for ${data.structureName} to level ${data.level}:`,
+					data.resourcesDeducted,
+					'New resources:',
+					{
+						wood: existing.wood.current,
+						stone: existing.stone.current,
+						ore: existing.ore.current
+					}
+				);
+			} else if (!existing) {
+				console.warn(
+					`[ResourcesStore] Settlement ${data.settlementId} not found for structure:upgraded update`
 				);
 			}
 		}

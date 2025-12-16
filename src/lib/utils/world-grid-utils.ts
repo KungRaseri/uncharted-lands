@@ -1,6 +1,12 @@
 /**
  * Utility functions for world map grid calculations and layout
+ *
+ * ARCHITECTURAL DECISION: Import types from central repository
+ * RegionBase imported from $lib/types/game (single source of truth)
+ * GridDimensions is calculation-specific utility type (kept local)
  */
+
+import type { RegionBase } from '$lib/types/game';
 
 export interface GridDimensions {
 	cols: number;
@@ -9,12 +15,6 @@ export interface GridDimensions {
 	maxX: number;
 	minY: number;
 	maxY: number;
-}
-
-export interface Region {
-	xCoord: number;
-	yCoord: number;
-	[key: string]: unknown;
 }
 
 export interface WorldStats {
@@ -30,7 +30,7 @@ export interface WorldStats {
  * @returns Grid dimensions with column/row counts and coordinate bounds
  */
 export function calculateGridDimensions(
-	regions: Region[] | null | undefined,
+	regions: RegionBase[] | null | undefined,
 	lazyLoadEnabled: boolean = false
 ): GridDimensions {
 	if (!regions || regions.length === 0) {
@@ -161,7 +161,7 @@ export function calculateRegionStats(
  * @param regions - Array of regions to sort
  * @returns New sorted array (does not mutate original)
  */
-export function sortRegionsByCoordinates<T extends Region>(regions: T[]): T[] {
+export function sortRegionsByCoordinates<T extends RegionBase>(regions: T[]): T[] {
 	return [...regions].sort((a, b) => {
 		if (a.xCoord !== b.xCoord) return a.xCoord - b.xCoord;
 		return a.yCoord - b.yCoord;

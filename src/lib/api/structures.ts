@@ -8,56 +8,16 @@
  * - Decision 1: Modifiers calculated dynamically by server (no caching)
  * - Decision 2: Area/solar/wind deprecated (removed)
  * - Server Authority: All game data fetched from database per request
+ * - Types: Import from central $lib/types/structures (single source of truth)
  *
  * Endpoint: GET /api/structures/metadata (SvelteKit proxy)
  * Backend: server/src/api/routes/structures-metadata.ts
  */
 
-/**
- * Structure modifier (calculated dynamically by server)
- */
-export interface StructureModifier {
-	type: string; // Required by Decision 1 (LINEAR, EXPONENTIAL, DIMINISHING)
-	name: string;
-	description: string;
-	value: number;
-}
+import type { StructureMetadata } from '$lib/types/structures';
 
-/**
- * Structure metadata from the API (matches server response format)
- */
-export interface StructureMetadata {
-	id: string;
-	name: string;
-	displayName: string;
-	description: string;
-	category: string;
-	type: string; // ExtractorType or BuildingType (from database enum)
-	extractorType?: string;
-	buildingType?: string;
-
-	// Build costs (from StructureRequirements table)
-	costs: {
-		food: number;
-		water: number;
-		wood: number;
-		stone: number;
-		ore: number;
-	};
-
-	// Prerequisites (from StructurePrerequisites table)
-	prerequisites?: {
-		structureId: string;
-		minLevel: number;
-	}[];
-
-	// Construction info
-	constructionTime: number; // seconds
-	populationRequired: number;
-
-	// Dynamically calculated modifiers (Decision 1: calculated per request)
-	modifiers: StructureModifier[];
-}
+// Re-export for backward compatibility with existing imports
+export type { StructureMetadata, StructureModifier } from '$lib/types/structures';
 
 /**
  * API response format

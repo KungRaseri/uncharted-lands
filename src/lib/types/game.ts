@@ -111,6 +111,22 @@ export interface RegionWithTiles extends RegionBase {
 }
 
 // ============================================================================
+// Region Statistics
+// ============================================================================
+
+/**
+ * Region statistics for elevation and tile composition
+ * Used for region analysis and tooltips
+ */
+export interface RegionStats {
+	avgElevation: number;
+	minElevation: number;
+	maxElevation: number;
+	landTiles: number;
+	oceanTiles: number;
+}
+
+// ============================================================================
 // World Types
 // ============================================================================
 

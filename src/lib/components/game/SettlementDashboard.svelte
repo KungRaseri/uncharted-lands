@@ -35,6 +35,7 @@
 	import { alertsStore } from '$lib/stores/game/alerts.svelte';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
+	import { structuresStore } from '$lib/stores/game/structures.svelte';
 	import { generateSuggestions } from '$lib/utils/settlement-suggestions';
 	import { calculateProduction } from '$lib/utils/production-calculator';
 	import type { StructureMetadata } from '$lib/api/structures';
@@ -95,7 +96,6 @@
 		settlementName: string;
 		onOpenBuildMenu?: () => void; // Handler to open build menu
 		structures?: StructureMetadata[];
-		settlementStructures?: SettlementStructure[]; // ✅ NEW: Optional for backward compatibility
 		settlement?: Settlement;
 		tile?: Tile | null; // ✅ NEW: Add tile data
 	}
@@ -105,10 +105,12 @@
 		settlementName,
 		onOpenBuildMenu,
 		structures = [],
-		settlementStructures = [],
 		settlement,
 		tile = null
 	}: Props = $props();
+
+	// ✅ REACTIVE: Get structures from store with real-time Socket.IO updates
+	const settlementStructures = $derived(structuresStore.getStructures(settlementId));
 
 	// Settings modal state
 	let settingsOpen = $state(false);
@@ -230,9 +232,43 @@
 	});
 
 	// ✅ NEW: Split structures into buildings and extractors
-	const buildings = $derived(settlementStructures.filter((s) => s.category === 'BUILDING'));
+	// Map to panel-specific types that match BuildingsListPanel and ExtractorsGridPanel interfaces
+	const buildings = $derived(
+		settlementStructures
+			.filter((s) => s.category === 'BUILDING')
+			.map((s) => ({
+				id: s.id,
+				structureId: s.structureId,
+				name: s.name,
+				description: s.description,
+				level: s.level,
+				maxLevel: s.maxLevel,
+				health: s.health,
+				extractorType: s.extractorType,
+				buildingType: s.buildingType,
+				category: s.category,
+				modifiers: s.modifiers
+			}))
+	);
 
-	const extractors = $derived(settlementStructures.filter((s) => s.category === 'EXTRACTOR'));
+	const extractors = $derived(
+		settlementStructures
+			.filter((s) => s.category === 'EXTRACTOR')
+			.map((s) => ({
+				id: s.id,
+				structureId: s.structureId,
+				name: s.name,
+				description: s.description,
+				level: s.level,
+				maxLevel: s.maxLevel,
+				health: s.health,
+				tileId: s.tileId,
+				slotPosition: s.slotPosition,
+				extractorType: s.extractorType,
+				buildingType: s.buildingType,
+				category: s.category
+			}))
+	);
 
 	// ✅ DEBUG: Log tile and extractor data
 	$effect(() => {
@@ -264,6 +300,7 @@
 	});
 
 	// ✅ NEW: Group extractors by tile for grid display
+	// Map to panel-specific Extractor type
 	const extractorsByTile = $derived(
 		extractors.reduce(
 			(acc, extractor) => {
@@ -274,7 +311,23 @@
 				acc[extractor.tileId].push(extractor);
 				return acc;
 			},
-			{} as Record<string, SettlementStructure[]>
+			{} as Record<
+				string,
+				Array<{
+					id: string;
+					structureId: string;
+					name: string;
+					description: string;
+					level: number;
+					maxLevel: number;
+					health: number;
+					tileId: string | null;
+					slotPosition: number | null;
+					extractorType: string | null;
+					buildingType: string | null;
+					category: string;
+				}>
+			>
 		)
 	);
 
@@ -286,9 +339,9 @@
 
 			const response = await fetch('?/upgradeStructure', {
 				method: 'POST',
-				body: formData
+				body: formData,
+				credentials: 'include' // ✅ FIX: Include cookies for authentication
 			});
-
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
@@ -312,9 +365,9 @@
 
 			const response = await fetch('?/repairStructure', {
 				method: 'POST',
-				body: formData
+				body: formData,
+				credentials: 'include' // ✅ FIX: Include cookies for authentication
 			});
-
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
@@ -343,9 +396,9 @@
 
 			const response = await fetch('?/demolishStructure', {
 				method: 'POST',
-				body: formData
+				body: formData,
+				credentials: 'include' // ✅ FIX: Include cookies for authentication
 			});
-
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
@@ -389,9 +442,9 @@
 			// Submit to the current page's buildStructure action
 			const response = await fetch('?/buildStructure', {
 				method: 'POST',
-				body: formData
+				body: formData,
+				credentials: 'include' // ✅ FIX: Include cookies for authentication
 			});
-
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
