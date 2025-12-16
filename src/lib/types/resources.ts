@@ -49,6 +49,14 @@ export interface ResourceData {
 	consumptionRate: number; // per hour
 }
 
+/**
+ * Resource with type identifier for display in components
+ * Extends ResourceData with the resource type
+ */
+export interface ResourceWithType extends ResourceData {
+	type: ResourceType;
+}
+
 // ===== STORAGE MODELS =====
 
 /**

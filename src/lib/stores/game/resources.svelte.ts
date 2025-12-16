@@ -8,7 +8,7 @@
 
 import { browser } from '$app/environment';
 import { socketStore } from './socket';
-import type { ResourceType, ResourceData, Resource } from '$lib/types/resources';
+import type { ResourceType, ResourceData, ResourceWithType } from '$lib/types/resources';
 
 // Store-specific types
 export interface ResourcesState {
@@ -26,7 +26,7 @@ interface ResourcesStore {
 }
 
 // Re-export for backward compatibility
-export type { ResourceType, ResourceData, Resource } from '$lib/types/resources';
+export type { ResourceType, ResourceData, ResourceWithType } from '$lib/types/resources';
 
 // State with Svelte 5 runes
 let state = $state<ResourcesStore>({
@@ -357,7 +357,7 @@ export const resourcesStore = {
 	/**
 	 * Get all resources for a settlement as an array (for ResourcePanel)
 	 */
-	getResources(settlementId: string): Resource[] | undefined {
+	getResources(settlementId: string): ResourceWithType[] | undefined {
 		const resourcesState = state.resources.get(settlementId);
 		if (!resourcesState) {
 			return undefined;
@@ -377,7 +377,7 @@ export const resourcesStore = {
 	/**
 	 * Get a specific resource for a settlement
 	 */
-	getResource(settlementId: string, type: ResourceType): Resource | undefined {
+	getResource(settlementId: string, type: ResourceType): ResourceData | undefined {
 		const resourcesState = state.resources.get(settlementId);
 		if (!resourcesState) {
 			return undefined;
@@ -388,13 +388,7 @@ export const resourcesStore = {
 			return undefined;
 		}
 
-		return {
-			type,
-			current: resourceData.current,
-			capacity: resourceData.capacity,
-			productionRate: resourceData.productionRate,
-			consumptionRate: resourceData.consumptionRate
-		};
+		return resourceData;
 	},
 
 	/**

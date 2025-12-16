@@ -13,6 +13,8 @@ interface Extractor {
 	tileId: string | null;
 	slotPosition: number | null;
 	buildingType: string | null;
+	extractorType: string;
+	category: string;
 }
 
 interface Props {
@@ -37,7 +39,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 100,
 			tileId: 'tile_abc123',
 			slotPosition: 0,
-			buildingType: 'FARM'
+			buildingType: 'FARM',
+			extractorType: 'FARM',
+			category: 'EXTRACTOR'
 		},
 		{
 			id: 'ext_2',
@@ -49,7 +53,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 85,
 			tileId: 'tile_abc123',
 			slotPosition: 1,
-			buildingType: 'WELL'
+			buildingType: 'WELL',
+			extractorType: 'WELL',
+			category: 'EXTRACTOR'
 		},
 		{
 			id: 'ext_3',
@@ -61,7 +67,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 65,
 			tileId: 'tile_abc123',
 			slotPosition: 2,
-			buildingType: 'LUMBER_MILL'
+			buildingType: 'LUMBER_MILL',
+			extractorType: 'LUMBER_MILL',
+			category: 'EXTRACTOR'
 		},
 		{
 			id: 'ext_4',
@@ -73,7 +81,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 42,
 			tileId: 'tile_abc123',
 			slotPosition: 3,
-			buildingType: 'QUARRY'
+			buildingType: 'QUARRY',
+			extractorType: 'QUARRY',
+			category: 'EXTRACTOR'
 		}
 	],
 	tile_def456: [
@@ -87,7 +97,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 20,
 			tileId: 'tile_def456',
 			slotPosition: 0,
-			buildingType: 'MINE'
+			buildingType: 'MINE',
+			extractorType: 'MINE',
+			category: 'EXTRACTOR'
 		},
 		{
 			id: 'ext_6',
@@ -99,7 +111,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 0,
 			tileId: 'tile_def456',
 			slotPosition: 1,
-			buildingType: 'FARM'
+			buildingType: 'FARM',
+			extractorType: 'FARM',
+			category: 'EXTRACTOR'
 		}
 	],
 	tile_ghi789: [
@@ -113,7 +127,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 95,
 			tileId: 'tile_ghi789',
 			slotPosition: 0,
-			buildingType: 'WELL'
+			buildingType: 'WELL',
+			extractorType: 'WELL',
+			category: 'EXTRACTOR'
 		},
 		{
 			id: 'ext_8',
@@ -125,7 +141,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 78,
 			tileId: 'tile_ghi789',
 			slotPosition: 1,
-			buildingType: 'LUMBER_MILL'
+			buildingType: 'LUMBER_MILL',
+			extractorType: 'LUMBER_MILL',
+			category: 'EXTRACTOR'
 		},
 		{
 			id: 'ext_9',
@@ -137,7 +155,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 55,
 			tileId: 'tile_ghi789',
 			slotPosition: 2,
-			buildingType: 'QUARRY'
+			buildingType: 'QUARRY',
+			extractorType: 'QUARRY',
+			category: 'EXTRACTOR'
 		},
 		{
 			id: 'ext_10',
@@ -149,7 +169,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 33,
 			tileId: 'tile_ghi789',
 			slotPosition: 3,
-			buildingType: 'MINE'
+			buildingType: 'MINE',
+			extractorType: 'MINE',
+			category: 'EXTRACTOR'
 		},
 		{
 			id: 'ext_11',
@@ -161,7 +183,9 @@ const mockExtractorsByTile: Record<string, Extractor[]> = {
 			health: 12,
 			tileId: 'tile_ghi789',
 			slotPosition: 4,
-			buildingType: 'FARM'
+			buildingType: 'FARM',
+			extractorType: 'FARM',
+			category: 'EXTRACTOR'
 		}
 	]
 };

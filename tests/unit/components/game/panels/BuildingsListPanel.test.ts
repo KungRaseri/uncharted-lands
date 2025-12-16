@@ -15,6 +15,8 @@ describe('BuildingsListPanel', () => {
 			maxLevel: 5,
 			health: 100,
 			buildingType: 'HOUSING',
+			extractorType: null,
+			category: 'BUILDING',
 			modifiers: [
 				{
 					id: 'mod-1',
@@ -33,6 +35,8 @@ describe('BuildingsListPanel', () => {
 			maxLevel: 5,
 			health: 75,
 			buildingType: 'STORAGE',
+			extractorType: null,
+			category: 'BUILDING',
 			modifiers: []
 		},
 		{
@@ -44,6 +48,8 @@ describe('BuildingsListPanel', () => {
 			maxLevel: 5,
 			health: 50,
 			buildingType: 'PRODUCTION',
+			extractorType: null,
+			category: 'BUILDING',
 			modifiers: []
 		}
 	];
