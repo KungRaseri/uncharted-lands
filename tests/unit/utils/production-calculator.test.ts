@@ -52,17 +52,12 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm'
 				}
 			];
 
@@ -71,30 +66,13 @@ describe('Production Calculator (API Integration)', () => {
 					'tile-1',
 					{
 						id: 'tile-1',
-						worldId: 'world-1',
-						regionId: 'region-1',
-						biomeId: 'GRASSLAND',
-						x: 0,
-						y: 0,
-						tileType: 'LAND',
-						elevation: 50,
-						precipitation: 50,
-						temperature: 50,
+						xCoord: 0,
+						yCoord: 0,
 						foodQuality: 80,
 						waterQuality: 70,
 						woodQuality: 60,
 						stoneQuality: 50,
-						oreQuality: 40,
-						clayQuality: 30,
-						herbsQuality: 20,
-						peltsQuality: 10,
-						gemsQuality: 5,
-						exoticWoodQuality: 0,
-						settlementId: null,
-						plotSlots: 5,
-						baseProductionModifier: 1.0,
-						createdAt: new Date(),
-						updatedAt: new Date()
+						oreQuality: 40
 					}
 				]
 			]);
@@ -116,17 +94,12 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm'
 				}
 			];
 
@@ -158,17 +131,12 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm'
 				}
 			];
 
@@ -189,17 +157,12 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm'
 				}
 			];
 
@@ -208,30 +171,13 @@ describe('Production Calculator (API Integration)', () => {
 					'tile-1',
 					{
 						id: 'tile-1',
-						worldId: 'world-1',
-						regionId: 'region-1',
-						biomeId: 'GRASSLAND',
-						x: 0,
-						y: 0,
-						tileType: 'LAND',
-						elevation: 50,
-						precipitation: 50,
-						temperature: 50,
+						xCoord: 0,
+						yCoord: 0,
 						foodQuality: 100, // Perfect quality
 						waterQuality: 100,
 						woodQuality: 100,
 						stoneQuality: 100,
-						oreQuality: 100,
-						clayQuality: 100,
-						herbsQuality: 100,
-						peltsQuality: 100,
-						gemsQuality: 100,
-						exoticWoodQuality: 100,
-						settlementId: null,
-						plotSlots: 5,
-						baseProductionModifier: 1.0,
-						createdAt: new Date(),
-						updatedAt: new Date()
+						oreQuality: 100
 					}
 				]
 			]);
@@ -248,17 +194,12 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'WELL',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Well',
-					description: 'Produces water',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Well'
 				}
 			];
 
@@ -267,30 +208,13 @@ describe('Production Calculator (API Integration)', () => {
 					'tile-1',
 					{
 						id: 'tile-1',
-						worldId: 'world-1',
-						regionId: 'region-1',
-						biomeId: 'GRASSLAND',
-						x: 0,
-						y: 0,
-						tileType: 'LAND',
-						elevation: 50,
-						precipitation: 50,
-						temperature: 50,
+						xCoord: 0,
+						yCoord: 0,
 						foodQuality: 100,
 						waterQuality: 100, // Perfect quality
 						woodQuality: 100,
 						stoneQuality: 100,
-						oreQuality: 100,
-						clayQuality: 100,
-						herbsQuality: 100,
-						peltsQuality: 100,
-						gemsQuality: 100,
-						exoticWoodQuality: 100,
-						settlementId: null,
-						plotSlots: 5,
-						baseProductionModifier: 1.0,
-						createdAt: new Date(),
-						updatedAt: new Date()
+						oreQuality: 100
 					}
 				]
 			]);
@@ -307,17 +231,12 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm'
 				}
 			];
 
@@ -326,30 +245,13 @@ describe('Production Calculator (API Integration)', () => {
 					'tile-1',
 					{
 						id: 'tile-1',
-						worldId: 'world-1',
-						regionId: 'region-1',
-						biomeId: 'GRASSLAND',
-						x: 0,
-						y: 0,
-						tileType: 'LAND',
-						elevation: 50,
-						precipitation: 50,
-						temperature: 50,
+						xCoord: 0,
+						yCoord: 0,
 						foodQuality: 50, // 50% quality
 						waterQuality: 50,
 						woodQuality: 50,
 						stoneQuality: 50,
-						oreQuality: 50,
-						clayQuality: 50,
-						herbsQuality: 50,
-						peltsQuality: 50,
-						gemsQuality: 50,
-						exoticWoodQuality: 50,
-						settlementId: null,
-						plotSlots: 5,
-						baseProductionModifier: 1.0,
-						createdAt: new Date(),
-						updatedAt: new Date()
+						oreQuality: 50
 					}
 				]
 			]);
@@ -364,17 +266,12 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 3, // Level 3 extractor
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm'
 				}
 			];
 
@@ -383,30 +280,13 @@ describe('Production Calculator (API Integration)', () => {
 					'tile-1',
 					{
 						id: 'tile-1',
-						worldId: 'world-1',
-						regionId: 'region-1',
-						biomeId: 'GRASSLAND',
-						x: 0,
-						y: 0,
-						tileType: 'LAND',
-						elevation: 50,
-						precipitation: 50,
-						temperature: 50,
+						xCoord: 0,
+						yCoord: 0,
 						foodQuality: 100,
 						waterQuality: 100,
 						woodQuality: 100,
 						stoneQuality: 100,
-						oreQuality: 100,
-						clayQuality: 100,
-						herbsQuality: 100,
-						peltsQuality: 100,
-						gemsQuality: 100,
-						exoticWoodQuality: 100,
-						settlementId: null,
-						plotSlots: 5,
-						baseProductionModifier: 1.0,
-						createdAt: new Date(),
-						updatedAt: new Date()
+						oreQuality: 100
 					}
 				]
 			]);
@@ -421,17 +301,12 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 50, // 50% health (damaged)
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm'
 				}
 			];
 
@@ -440,30 +315,13 @@ describe('Production Calculator (API Integration)', () => {
 					'tile-1',
 					{
 						id: 'tile-1',
-						worldId: 'world-1',
-						regionId: 'region-1',
-						biomeId: 'GRASSLAND',
-						x: 0,
-						y: 0,
-						tileType: 'LAND',
-						elevation: 50,
-						precipitation: 50,
-						temperature: 50,
+						xCoord: 0,
+						yCoord: 0,
 						foodQuality: 100,
 						waterQuality: 100,
 						woodQuality: 100,
 						stoneQuality: 100,
-						oreQuality: 100,
-						clayQuality: 100,
-						herbsQuality: 100,
-						peltsQuality: 100,
-						gemsQuality: 100,
-						exoticWoodQuality: 100,
-						settlementId: null,
-						plotSlots: 5,
-						baseProductionModifier: 1.0,
-						createdAt: new Date(),
-						updatedAt: new Date()
+						oreQuality: 100
 					}
 				]
 			]);
@@ -478,31 +336,21 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm 1',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm 1'
 				},
 				{
 					id: 'struct-2',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 2,
 					health: 100,
 					tileId: 'tile-2',
-					slotPosition: 0,
-					name: 'Farm 2',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm 2'
 				}
 			];
 
@@ -511,60 +359,26 @@ describe('Production Calculator (API Integration)', () => {
 					'tile-1',
 					{
 						id: 'tile-1',
-						worldId: 'world-1',
-						regionId: 'region-1',
-						biomeId: 'GRASSLAND',
-						x: 0,
-						y: 0,
-						tileType: 'LAND',
-						elevation: 50,
-						precipitation: 50,
-						temperature: 50,
+						xCoord: 0,
+						yCoord: 0,
 						foodQuality: 100,
 						waterQuality: 100,
 						woodQuality: 100,
 						stoneQuality: 100,
-						oreQuality: 100,
-						clayQuality: 100,
-						herbsQuality: 100,
-						peltsQuality: 100,
-						gemsQuality: 100,
-						exoticWoodQuality: 100,
-						settlementId: null,
-						plotSlots: 5,
-						baseProductionModifier: 1.0,
-						createdAt: new Date(),
-						updatedAt: new Date()
+						oreQuality: 100
 					}
 				],
 				[
 					'tile-2',
 					{
 						id: 'tile-2',
-						worldId: 'world-1',
-						regionId: 'region-1',
-						biomeId: 'GRASSLAND',
-						x: 1,
-						y: 0,
-						tileType: 'LAND',
-						elevation: 50,
-						precipitation: 50,
-						temperature: 50,
+						xCoord: 1,
+						yCoord: 0,
 						foodQuality: 100,
 						waterQuality: 100,
 						woodQuality: 100,
 						stoneQuality: 100,
-						oreQuality: 100,
-						clayQuality: 100,
-						herbsQuality: 100,
-						peltsQuality: 100,
-						gemsQuality: 100,
-						exoticWoodQuality: 100,
-						settlementId: null,
-						plotSlots: 5,
-						baseProductionModifier: 1.0,
-						createdAt: new Date(),
-						updatedAt: new Date()
+						oreQuality: 100
 					}
 				]
 			]);
@@ -595,21 +409,16 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'HOUSE',
 					category: 'BUILDING', // Not an extractor
 					level: 1,
 					health: 100,
 					tileId: null,
-					slotPosition: null,
-					name: 'House',
-					description: 'Provides housing',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'House'
 				}
 			];
 
-			const result = await calculateProduction(structures, undefined);
+			const result = await calculateProduction(structures);
 
 			// Should skip non-extractors
 			expect(result.rates.food).toBe(0);
@@ -620,22 +429,17 @@ describe('Production Calculator (API Integration)', () => {
 			const structures: SettlementStructure[] = [
 				{
 					id: 'struct-1',
-					settlementId: 'settlement-1',
 					structureId: 'FARM',
 					category: 'EXTRACTOR',
 					level: 1,
 					health: 100,
 					tileId: 'tile-1',
-					slotPosition: 0,
-					name: 'Farm',
-					description: 'Produces food',
-					createdAt: new Date(),
-					updatedAt: new Date()
+					name: 'Farm'
 				}
 			];
 
 			// No tiles provided - should use fallback quality (50%)
-			const result = await calculateProduction(structures, undefined);
+			const result = await calculateProduction(structures);
 
 			// Should use 50% quality fallback
 			// baseRate: 10 (from mock), quality: 50%, level: 1, health: 100%

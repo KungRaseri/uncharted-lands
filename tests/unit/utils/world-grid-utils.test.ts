@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
+import type { RegionBase } from '$lib/types/game';
 import {
 	calculateGridDimensions,
 	getGridColsClass,
 	getGridRowsClass,
 	calculatePreviewStats,
 	calculateRegionStats,
-	sortRegionsByCoordinates,
-	type Region
+	sortRegionsByCoordinates
 } from '$lib/utils/world-grid-utils';
 
 describe('world-grid-utils', () => {
@@ -46,8 +46,8 @@ describe('world-grid-utils', () => {
 
 		it('should return 10x10 when lazy load disabled', () => {
 			const regions = [
-				{ xCoord: 0, yCoord: 0 },
-				{ xCoord: 2, yCoord: 2 }
+				{ id: 'region-1', name: 'Region 1', worldId: 'world-1', xCoord: 0, yCoord: 0 },
+				{ id: 'region-2', name: 'Region 2', worldId: 'world-1', xCoord: 2, yCoord: 2 }
 			];
 			expect(calculateGridDimensions(regions, false)).toEqual({
 				cols: 10,
@@ -61,8 +61,8 @@ describe('world-grid-utils', () => {
 
 		it('should calculate actual bounds when lazy load enabled', () => {
 			const regions = [
-				{ xCoord: 0, yCoord: 0 },
-				{ xCoord: 2, yCoord: 2 }
+				{ id: 'region-1', name: 'Region 1', worldId: 'world-1', xCoord: 0, yCoord: 0 },
+				{ id: 'region-2', name: 'Region 2', worldId: 'world-1', xCoord: 2, yCoord: 2 }
 			];
 			expect(calculateGridDimensions(regions, true)).toEqual({
 				cols: 3,
@@ -76,8 +76,8 @@ describe('world-grid-utils', () => {
 
 		it('should handle non-zero starting coordinates', () => {
 			const regions = [
-				{ xCoord: 5, yCoord: 5 },
-				{ xCoord: 7, yCoord: 9 }
+				{ id: 'region-1', name: 'Region 1', worldId: 'world-1', xCoord: 5, yCoord: 5 },
+				{ id: 'region-2', name: 'Region 2', worldId: 'world-1', xCoord: 7, yCoord: 9 }
 			];
 			expect(calculateGridDimensions(regions, true)).toEqual({
 				cols: 5,
@@ -90,7 +90,9 @@ describe('world-grid-utils', () => {
 		});
 
 		it('should handle single region', () => {
-			const regions = [{ xCoord: 3, yCoord: 4 }];
+			const regions = [
+				{ id: 'region-1', name: 'Region 1', worldId: 'world-1', xCoord: 3, yCoord: 4 }
+			];
 			expect(calculateGridDimensions(regions, true)).toEqual({
 				cols: 1,
 				rows: 1,
@@ -102,10 +104,16 @@ describe('world-grid-utils', () => {
 		});
 
 		it('should handle full 10x10 grid', () => {
-			const regions: Region[] = [];
+			const regions: RegionBase[] = [];
 			for (let x = 0; x < 10; x++) {
 				for (let y = 0; y < 10; y++) {
-					regions.push({ xCoord: x, yCoord: y });
+					regions.push({
+						id: `region-${x}-${y}`,
+						name: `Region ${x},${y}`,
+						worldId: 'world-1',
+						xCoord: x,
+						yCoord: y
+					});
 				}
 			}
 			expect(calculateGridDimensions(regions, true)).toEqual({
@@ -356,10 +364,10 @@ describe('world-grid-utils', () => {
 	describe('sortRegionsByCoordinates', () => {
 		it('should sort regions in row-major order', () => {
 			const regions = [
-				{ xCoord: 1, yCoord: 1, name: 'B' },
-				{ xCoord: 0, yCoord: 0, name: 'A' },
-				{ xCoord: 1, yCoord: 0, name: 'C' },
-				{ xCoord: 0, yCoord: 1, name: 'D' }
+				{ id: 'region-b', name: 'B', worldId: 'world-1', xCoord: 1, yCoord: 1 },
+				{ id: 'region-a', name: 'A', worldId: 'world-1', xCoord: 0, yCoord: 0 },
+				{ id: 'region-c', name: 'C', worldId: 'world-1', xCoord: 1, yCoord: 0 },
+				{ id: 'region-d', name: 'D', worldId: 'world-1', xCoord: 0, yCoord: 1 }
 			];
 
 			const sorted = sortRegionsByCoordinates(regions);
@@ -369,8 +377,8 @@ describe('world-grid-utils', () => {
 
 		it('should not mutate original array', () => {
 			const regions = [
-				{ xCoord: 1, yCoord: 0 },
-				{ xCoord: 0, yCoord: 0 }
+				{ id: 'region-1', name: 'Region 1', worldId: 'world-1', xCoord: 1, yCoord: 0 },
+				{ id: 'region-2', name: 'Region 2', worldId: 'world-1', xCoord: 0, yCoord: 0 }
 			];
 			const original = [...regions];
 
@@ -385,51 +393,107 @@ describe('world-grid-utils', () => {
 		});
 
 		it('should handle single region', () => {
-			const regions = [{ xCoord: 5, yCoord: 5 }];
+			const regions = [
+				{ id: 'region-1', name: 'Region 1', worldId: 'world-1', xCoord: 5, yCoord: 5 }
+			];
 			const sorted = sortRegionsByCoordinates(regions);
 			expect(sorted).toEqual(regions);
 		});
 
 		it('should sort by x first, then y', () => {
 			const regions = [
-				{ xCoord: 2, yCoord: 0 },
-				{ xCoord: 1, yCoord: 9 },
-				{ xCoord: 1, yCoord: 0 },
-				{ xCoord: 0, yCoord: 5 }
+				{ id: 'region-1', name: 'Region 1', worldId: 'world-1', xCoord: 2, yCoord: 0 },
+				{ id: 'region-2', name: 'Region 2', worldId: 'world-1', xCoord: 1, yCoord: 9 },
+				{ id: 'region-3', name: 'Region 3', worldId: 'world-1', xCoord: 1, yCoord: 0 },
+				{ id: 'region-4', name: 'Region 4', worldId: 'world-1', xCoord: 0, yCoord: 5 }
 			];
 
 			const sorted = sortRegionsByCoordinates(regions);
 
-			expect(sorted[0]).toEqual({ xCoord: 0, yCoord: 5 });
-			expect(sorted[1]).toEqual({ xCoord: 1, yCoord: 0 });
-			expect(sorted[2]).toEqual({ xCoord: 1, yCoord: 9 });
-			expect(sorted[3]).toEqual({ xCoord: 2, yCoord: 0 });
+			expect(sorted[0]).toEqual({
+				id: 'region-4',
+				name: 'Region 4',
+				worldId: 'world-1',
+				xCoord: 0,
+				yCoord: 5
+			});
+			expect(sorted[1]).toEqual({
+				id: 'region-3',
+				name: 'Region 3',
+				worldId: 'world-1',
+				xCoord: 1,
+				yCoord: 0
+			});
+			expect(sorted[2]).toEqual({
+				id: 'region-2',
+				name: 'Region 2',
+				worldId: 'world-1',
+				xCoord: 1,
+				yCoord: 9
+			});
+			expect(sorted[3]).toEqual({
+				id: 'region-1',
+				name: 'Region 1',
+				worldId: 'world-1',
+				xCoord: 2,
+				yCoord: 0
+			});
 		});
 
 		it('should handle negative coordinates', () => {
 			const regions = [
-				{ xCoord: 0, yCoord: 0 },
-				{ xCoord: -1, yCoord: -1 },
-				{ xCoord: -1, yCoord: 0 }
+				{ id: 'region-1', name: 'Region 1', worldId: 'world-1', xCoord: 0, yCoord: 0 },
+				{ id: 'region-2', name: 'Region 2', worldId: 'world-1', xCoord: -1, yCoord: -1 },
+				{ id: 'region-3', name: 'Region 3', worldId: 'world-1', xCoord: -1, yCoord: 0 }
 			];
 
 			const sorted = sortRegionsByCoordinates(regions);
 
-			expect(sorted[0]).toEqual({ xCoord: -1, yCoord: -1 });
-			expect(sorted[1]).toEqual({ xCoord: -1, yCoord: 0 });
-			expect(sorted[2]).toEqual({ xCoord: 0, yCoord: 0 });
+			expect(sorted[0]).toEqual({
+				id: 'region-2',
+				name: 'Region 2',
+				worldId: 'world-1',
+				xCoord: -1,
+				yCoord: -1
+			});
+			expect(sorted[1]).toEqual({
+				id: 'region-3',
+				name: 'Region 3',
+				worldId: 'world-1',
+				xCoord: -1,
+				yCoord: 0
+			});
+			expect(sorted[2]).toEqual({
+				id: 'region-1',
+				name: 'Region 1',
+				worldId: 'world-1',
+				xCoord: 0,
+				yCoord: 0
+			});
 		});
 
 		it('should preserve extra properties', () => {
 			const regions = [
-				{ xCoord: 1, yCoord: 0, id: '2', name: 'Region 2' },
-				{ xCoord: 0, yCoord: 0, id: '1', name: 'Region 1' }
+				{ xCoord: 1, yCoord: 0, id: '2', name: 'Region 2', worldId: 'world-1' },
+				{ xCoord: 0, yCoord: 0, id: '1', name: 'Region 1', worldId: 'world-1' }
 			];
 
 			const sorted = sortRegionsByCoordinates(regions);
 
-			expect(sorted[0]).toEqual({ xCoord: 0, yCoord: 0, id: '1', name: 'Region 1' });
-			expect(sorted[1]).toEqual({ xCoord: 1, yCoord: 0, id: '2', name: 'Region 2' });
+			expect(sorted[0]).toEqual({
+				xCoord: 0,
+				yCoord: 0,
+				id: '1',
+				name: 'Region 1',
+				worldId: 'world-1'
+			});
+			expect(sorted[1]).toEqual({
+				xCoord: 1,
+				yCoord: 0,
+				id: '2',
+				name: 'Region 2',
+				worldId: 'world-1'
+			});
 		});
 	});
 });

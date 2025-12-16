@@ -135,7 +135,7 @@
 			}
 
 			unsubscribe();
-			gameRefreshCleanup();
+			gameRefreshCleanup?.();
 		};
 	});
 </script>

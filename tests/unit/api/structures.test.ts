@@ -29,6 +29,7 @@ describe('Structures API Wrapper', () => {
 					{
 						id: 'FARM',
 						name: 'Farm',
+						displayName: 'Farm',
 						description: 'Produces food',
 						category: 'EXTRACTOR',
 						type: 'FARM',
@@ -48,6 +49,7 @@ describe('Structures API Wrapper', () => {
 					{
 						id: 'HOUSE',
 						name: 'House',
+						displayName: 'House',
 						description: 'Provides housing',
 						category: 'BUILDING',
 						type: 'HOUSE',
@@ -85,6 +87,7 @@ describe('Structures API Wrapper', () => {
 					{
 						id: 'FARM',
 						name: 'Farm',
+						displayName: 'Farm',
 						description: 'Produces food',
 						category: 'EXTRACTOR',
 						type: 'FARM',
@@ -121,6 +124,7 @@ describe('Structures API Wrapper', () => {
 					{
 						id: 'TEST',
 						name: 'Test Structure',
+						displayName: 'Test Structure',
 						description: 'Test',
 						category: 'BUILDING',
 						type: 'TEST',
@@ -128,7 +132,7 @@ describe('Structures API Wrapper', () => {
 						modifiers: [
 							{ type: 'LINEAR', name: 'Test Modifier', description: 'Test description', value: 1 }
 						],
-						prerequisites: [{ structureId: 'PREREQ1', minLevel: 1 }],
+						prerequisites: [{ structureId: 'PREREQ1', minimumLevel: 1 }],
 						constructionTime: 0,
 						populationRequired: 0
 					}
@@ -445,6 +449,7 @@ describe('Structures API Wrapper', () => {
 				{
 					id: 'FARM',
 					name: 'Farm',
+					displayName: 'Farm',
 					description: 'Produces food',
 					category: 'EXTRACTOR',
 					type: 'FARM',
@@ -480,6 +485,7 @@ describe('Structures API Wrapper', () => {
 					{
 						id: 'FARM',
 						name: 'Farm',
+						displayName: 'Farm',
 						description: 'Produces food',
 						category: 'EXTRACTOR',
 						type: 'FARM',
@@ -494,6 +500,7 @@ describe('Structures API Wrapper', () => {
 					{
 						id: 'HOUSE',
 						name: 'House',
+						displayName: 'House',
 						description: 'Provides housing',
 						category: 'BUILDING',
 						type: 'HOUSE',
@@ -529,6 +536,7 @@ describe('Structures API Wrapper', () => {
 					{
 						id: 'HOUSE',
 						name: 'House',
+						displayName: 'House',
 						description: 'Provides housing',
 						category: 'BUILDING',
 						type: 'HOUSE',
@@ -585,6 +593,7 @@ describe('Structures API Wrapper', () => {
 				const structure: StructureMetadata = {
 					id: 'FARM',
 					name: 'Farm',
+					displayName: 'Farm',
 					description: 'Produces food',
 					category: 'EXTRACTOR',
 					type: 'FARM',
@@ -619,6 +628,7 @@ describe('Structures API Wrapper', () => {
 				const structure: StructureMetadata = {
 					id: 'FARM',
 					name: 'Farm',
+					displayName: 'Farm',
 					description: 'Produces food',
 					category: 'EXTRACTOR',
 					type: 'FARM',
@@ -653,6 +663,7 @@ describe('Structures API Wrapper', () => {
 				const structure: StructureMetadata = {
 					id: 'FARM',
 					name: 'Farm',
+					displayName: 'Farm',
 					description: 'Produces food',
 					category: 'EXTRACTOR',
 					type: 'FARM',
@@ -687,6 +698,7 @@ describe('Structures API Wrapper', () => {
 				const structure: StructureMetadata = {
 					id: 'FARM',
 					name: 'Farm',
+					displayName: 'Farm',
 					description: 'Produces food',
 					category: 'EXTRACTOR',
 					type: 'FARM',
@@ -721,6 +733,7 @@ describe('Structures API Wrapper', () => {
 				const structure: StructureMetadata = {
 					id: 'FARM',
 					name: 'Farm',
+					displayName: 'Farm',
 					description: 'Produces food',
 					category: 'EXTRACTOR',
 					type: 'FARM',
@@ -755,6 +768,7 @@ describe('Structures API Wrapper', () => {
 				const structure: StructureMetadata = {
 					id: 'FREE_STRUCTURE',
 					name: 'Free Structure',
+					displayName: 'Free Structure',
 					description: 'No costs',
 					category: 'BUILDING',
 					type: 'FREE',

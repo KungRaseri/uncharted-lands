@@ -121,6 +121,7 @@ function getFallbackConfig(): GameConfig {
 			{ type: 'TOWN_HALL', name: 'Town Hall' },
 			{ type: 'WALL', name: 'Wall' }
 		],
+		biomeDisplay: {},
 		qualityDisplay: [
 			{ threshold: 20, rating: 'Very Poor', color: 'text-red-600', multiplier: 0.5 },
 			{ threshold: 40, rating: 'Poor', color: 'text-orange-600', multiplier: 0.75 },

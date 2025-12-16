@@ -12,6 +12,7 @@
 	import { browser } from '$app/environment';
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import { layoutStore } from '$lib/stores/ui/dashboard-layout.svelte';
+	import type { PanelId } from '$lib/stores/ui/dashboard-layout.svelte';
 	import LayoutPresetSelector from '../LayoutPresetSelector.svelte';
 	import DraggablePanelList from '../DraggablePanelList.svelte';
 
@@ -60,15 +61,15 @@
 		const panel = panels.find((p) => p.id === panelId);
 		if (panel) {
 			if (panel.visible) {
-				layoutStore.hidePanel(panelId);
+				layoutStore.hidePanel(panelId as PanelId);
 			} else {
-				layoutStore.showPanel(panelId);
+				layoutStore.showPanel(panelId as PanelId);
 			}
 		}
 	}
 
 	function handlePanelReorder(panelId: string, newPosition: number) {
-		layoutStore.reorderPanels(panelId, newPosition);
+		layoutStore.reorderPanel(panelId as PanelId, newPosition);
 	}
 
 	function handleReset() {

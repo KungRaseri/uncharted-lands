@@ -489,6 +489,7 @@ test.describe('Resource Production Flow', () => {
 			// Trigger a minor earthquake with warning
 			const disasterId = await triggerDisaster(
 				request,
+				sessionCookieValue,
 				testWorldId,
 				TEST_DISASTERS.EARTHQUAKE_MINOR
 			);
@@ -501,7 +502,12 @@ test.describe('Resource Production Flow', () => {
 
 		test('should track disaster impact and verify casualties', async ({ page, request }) => {
 			// Trigger a moderate flood
-			await triggerDisaster(request, testWorldId, TEST_DISASTERS.FLOOD_MODERATE);
+			await triggerDisaster(
+				request,
+				sessionCookieValue,
+				testWorldId,
+				TEST_DISASTERS.FLOOD_MODERATE
+			);
 
 			// Wait for impact phase
 			await assertImpactBannerVisible(page);

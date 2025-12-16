@@ -34,11 +34,16 @@ export interface Structure {
 	structureId: string; // Reference to StructureDefinition.id
 	name: string;
 	displayName: string;
+	description: string;
 	category: string;
 	level: number;
+	maxLevel: number;
 	health: number;
 	tileId?: string | null;
 	slotPosition?: number | null;
+	extractorType?: string | null;
+	buildingType?: string | null;
+	modifiers?: StructureModifier[];
 	createdAt: string;
 	updatedAt: string;
 }
@@ -82,11 +87,35 @@ export interface StructureMetadata {
 		ore: number;
 	};
 
+	// Additional metadata
+	baseCost?: {
+		food: number;
+		water: number;
+		wood: number;
+		stone: number;
+		ore: number;
+	};
+	enabled?: boolean;
+	constructionTime?: number; // in seconds
+	populationRequired?: number;
+
 	// Prerequisites (from StructurePrerequisites table)
 	prerequisites?: {
 		structureId: string;
 		minimumLevel?: number;
 	}[];
+
+	// Requirements (area, solar, wind, etc.)
+	requirements?: {
+		area?: number;
+		solar?: number;
+		wind?: number;
+		food?: number;
+		water?: number;
+		wood?: number;
+		stone?: number;
+		ore?: number;
+	};
 
 	// Modifiers (from StructureModifier table, dynamically calculated)
 	modifiers?: StructureModifier[];

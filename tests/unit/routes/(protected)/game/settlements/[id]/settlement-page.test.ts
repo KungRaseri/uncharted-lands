@@ -17,6 +17,8 @@ describe('Settlement Page - API Metadata Integration', () => {
 		{
 			id: 'tent',
 			name: 'Tent',
+			displayName: 'Tent',
+			type: 'TENT',
 			description: 'Basic housing',
 			category: 'housing',
 			costs: {
@@ -37,6 +39,8 @@ describe('Settlement Page - API Metadata Integration', () => {
 		{
 			id: 'farm',
 			name: 'Farm',
+			displayName: 'Farm',
+			type: 'FARM',
 			description: 'Produces food',
 			category: 'production',
 			costs: {
@@ -56,13 +60,16 @@ describe('Settlement Page - API Metadata Integration', () => {
 				{
 					name: 'Food Production',
 					description: '+10 food per tick',
-					value: 10
+					value: 10,
+					type: 'PRODUCTION_MULTIPLIER'
 				}
 			]
 		},
 		{
 			id: 'warehouse',
 			name: 'Warehouse',
+			displayName: 'Warehouse',
+			type: 'WAREHOUSE',
 			description: 'Increases storage',
 			category: 'storage',
 			costs: {
@@ -144,6 +151,8 @@ describe('Settlement Page - API Metadata Integration', () => {
 				{
 					id: 'house',
 					name: 'House',
+					displayName: 'House',
+					type: 'HOUSE',
 					description: 'Better housing',
 					category: 'housing',
 					costs: {
@@ -266,6 +275,9 @@ describe('Settlement Page - API Metadata Integration', () => {
 			const expensiveStructure: StructureMetadata = {
 				id: 'expensive',
 				name: 'Expensive Structure',
+				displayName: 'Expensive Structure',
+				category: 'production',
+				type: 'EXPENSIVE',
 				description: 'Needs everything',
 				costs: {
 					food: 200,

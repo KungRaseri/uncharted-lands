@@ -24,10 +24,10 @@
 	let { panels, renderPanel }: Props = $props();
 
 	// Sort all visible panels by order (mobile ignores column, just stacks vertically)
-	// If mobileColumn is 'hidden', panel is hidden on mobile
+	// If mobileColumn is undefined, panel is hidden on mobile
 	const sortedPanels = $derived(
 		panels
-			.filter((p) => p.visible && p.mobileColumn !== 'hidden')
+			.filter((p) => p.visible && p.mobileColumn !== undefined)
 			.toSorted((a, b) => a.order - b.order)
 	);
 
