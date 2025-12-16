@@ -36,7 +36,9 @@
 		health: number;
 		tileId: string | null;
 		slotPosition: number | null;
+		extractorType: string | null; // ✅ Flattened from structure.extractorType
 		buildingType: string | null;
+		category: string; // ✅ Added from API response
 	}
 
 	interface Props {
@@ -298,6 +300,7 @@
 						{#each extractorsByTile[tileId] as extractor (extractor.id)}
 							<div
 								data-testid="structure"
+								data-structure-type={extractor.extractorType}
 								class="card variant-ghost p-3 space-y-2"
 								transition:fade={{ duration: 200 }}
 							>

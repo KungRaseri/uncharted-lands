@@ -27,7 +27,9 @@
 		level: number;
 		maxLevel: number;
 		health: number;
-		buildingType: string | null;
+		extractorType: string | null; // ✅ Flattened from structure.extractorType
+		buildingType: string | null; // ✅ Flattened from structure.buildingType
+		category: string; // ✅ Added from API response
 		modifiers: StructureModifier[];
 	}
 
@@ -123,6 +125,7 @@
 			{#each buildings as building (building.id)}
 				<li
 					data-testid="structure"
+					data-structure-type={building.buildingType}
 					class="card variant-soft p-4 space-y-2"
 					transition:slide={{ duration: 300, easing: quintOut }}
 				>

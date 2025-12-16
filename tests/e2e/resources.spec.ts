@@ -472,8 +472,8 @@ test.describe('Resource Production Flow', () => {
 			// Build a farm using ExtractorBuildModal
 			await buildExtractor(page, 'BASIC_FARM');
 
-			// Note: This test may need adjustment based on how extractors are counted
-			// vs buildings in the structure list
+			// Wait for component to re-render after structure:built event
+			await page.waitForTimeout(500);
 
 			const newFarms = await countStructures(page, 'FARM');
 			expect(newFarms).toBe(initialFarms + 1);
