@@ -41,16 +41,23 @@ export const TEST_DISASTERS = {
 /**
  * Trigger a disaster via API (for testing)
  * @param request - Playwright API request context
+ * @param sessionCookie - Session cookie value for authentication
  * @param worldId - World ID to trigger disaster in
  * @param disasterConfig - Disaster configuration
+ * @param apiUrl - Base API URL (optional, defaults to http://localhost:3001/api)
  * @returns Disaster event ID
  */
 export async function triggerDisaster(
 	request: APIRequestContext,
+	sessionCookie: string,
 	worldId: string,
-	disasterConfig: (typeof TEST_DISASTERS)[keyof typeof TEST_DISASTERS]
+	disasterConfig: (typeof TEST_DISASTERS)[keyof typeof TEST_DISASTERS],
+	apiUrl: string = 'http://localhost:3001/api'
 ): Promise<string> {
-	const response = await request.post(`/api/admin/disasters/trigger`, {
+	const response = await request.post(`${apiUrl}/admin/disasters/trigger`, {
+		headers: {
+			Cookie: `session=${sessionCookie}`
+		},
 		data: {
 			worldId,
 			type: disasterConfig.type,
@@ -59,7 +66,12 @@ export async function triggerDisaster(
 		}
 	});
 
-	expect(response.ok()).toBeTruthy();
+	if (!response.ok()) {
+		const errorText = await response.text();
+		throw new Error(
+			`Failed to trigger disaster: ${response.status()} ${response.statusText()} - ${errorText}`
+		);
+	}
 
 	const data = await response.json();
 	return data.disasterId;
@@ -96,6 +108,44 @@ export async function triggerDisasterWarning(
 // ============================================================================
 // WARNING PHASE VERIFICATION
 // ============================================================================
+
+/**
+ * Wait for disaster-warning Socket.IO event
+ * @param page - Playwright page object
+ * @param timeoutMs - Maximum time to wait
+ * @returns Warning data from event
+ */
+export async function waitForDisasterWarning(page: Page, timeoutMs: number = 65000): Promise<any> {
+	// Set up event listener before waiting
+	await page.evaluate(() => {
+		if (!(window as any).__disasterWarningPromise) {
+			(window as any).__disasterWarningPromise = new Promise((resolve) => {
+				const socket = (window as any).socket;
+				if (socket) {
+					socket.once('disaster-warning', (data: any) => {
+						console.log('[E2E] Received disaster-warning event:', data);
+						resolve(data);
+					});
+				}
+			});
+		}
+	});
+
+	// Wait for the promise with timeout
+	const result = await page.evaluate((timeout) => {
+		return Promise.race([
+			(window as any).__disasterWarningPromise,
+			new Promise((_, reject) =>
+				setTimeout(
+					() => reject(new Error(`Timeout waiting for disaster-warning after ${timeout}ms`)),
+					timeout
+				)
+			)
+		]);
+	}, timeoutMs);
+
+	return result;
+}
 
 /**
  * Verify disaster warning banner is visible

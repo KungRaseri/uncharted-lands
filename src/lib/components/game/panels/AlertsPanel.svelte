@@ -32,18 +32,6 @@
 	let isPaused = $state(false);
 	let hoveredAlertId = $state<string | null>(null);
 
-	alerts.push({
-		id: '1',
-		severity: 'critical',
-		title: 'Fire in Settlement Alpha',
-		message: 'A large fire has broken out in Settlement Alpha. Immediate action required.',
-		timestamp: new Date(Date.now() - 5 * 60000), // 5 minutes ago
-		location: 'Settlement Alpha',
-		actionLabel: 'View Details',
-		actionHref: '/settlements/alpha#alert-1',
-		dismissed: false
-	});
-
 	// Filter non-dismissed alerts and sort by severity
 	const activeAlerts = $derived(
 		alerts
