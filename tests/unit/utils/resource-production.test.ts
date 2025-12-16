@@ -78,7 +78,11 @@ const mockConfig: GameConfig = {
 		tier2Multiplier: 0.25,
 		tier2Hours: 72,
 		maxHours: 96
-	}
+	},
+	biomeDisplay: {} as Record<
+		string,
+		{ icon: string; color: string; name: string; description: string }
+	>
 };
 
 describe('Resource Production Utilities', () => {
