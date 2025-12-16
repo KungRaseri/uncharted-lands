@@ -255,7 +255,7 @@ class ClientLogger {
 			contextStr = inlineStr + (hasRest ? ` ${JSON.stringify(rest)}` : '');
 		}
 
-		return [`%c[${timestamp}] [${level}]%c ${message}${contextStr || ''}`, levelStyle, msgStyle];
+		return [`[${timestamp}] [${level}] ${message}${contextStr || ''}`, levelStyle, msgStyle];
 	}
 
 	/**
