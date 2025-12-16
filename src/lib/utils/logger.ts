@@ -7,6 +7,9 @@
 
 import { isDevelopment as envIsDevelopment } from './environment';
 import { browser } from '$app/environment';
+// Import Node.js modules conditionally (will be tree-shaken in browser builds)
+import fs from 'node:fs';
+import path from 'node:path';
 
 export enum LogLevel {
 	DEBUG = 0,
@@ -37,8 +40,6 @@ class ClientLogger {
 	private readonly logDir: string;
 	private currentLogFile: string | null = null;
 	private logStartTime: string | null = null;
-	private fs: typeof import('fs') | null = null;
-	private path: typeof import('path') | null = null;
 
 	constructor() {
 		// Detect environment using centralized utility
@@ -67,15 +68,9 @@ class ClientLogger {
 	 */
 	private initializeFileLogging(): void {
 		try {
-			// Dynamic import for Node.js modules (server-side only)
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			this.fs = require('node:fs');
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			this.path = require('node:path');
-
 			// Create logs directory if it doesn't exist
-			if (this.fs && !this.fs.existsSync(this.logDir)) {
-				this.fs.mkdirSync(this.logDir, { recursive: true });
+			if (!fs.existsSync(this.logDir)) {
+				fs.mkdirSync(this.logDir, { recursive: true });
 			}
 
 			// Rotate any existing .latest.log files
@@ -95,19 +90,17 @@ class ClientLogger {
 	 * Rotate any existing .latest.log files from previous runs
 	 */
 	private rotateExistingLatestLogs(): void {
-		if (!this.fs || !this.path) return;
-
 		try {
-			const files = this.fs.readdirSync(this.logDir);
+			const files = fs.readdirSync(this.logDir);
 			const latestLogFiles = files.filter((f) => f.endsWith('.latest.log'));
 
 			for (const file of latestLogFiles) {
-				const oldPath = this.path.join(this.logDir, file);
-				const newPath = this.path.join(this.logDir, file.replace('.latest.log', '.log'));
+				const oldPath = path.join(this.logDir, file);
+				const newPath = path.join(this.logDir, file.replace('.latest.log', '.log'));
 
 				try {
-					this.fs.renameSync(oldPath, newPath);
-					console.log(`[LOGGER] Rotated previous log: ${file} → ${this.path.basename(newPath)}`);
+					fs.renameSync(oldPath, newPath);
+					console.log(`[LOGGER] Rotated previous log: ${file} → ${path.basename(newPath)}`);
 				} catch (err) {
 					console.error(`[LOGGER] Failed to rotate ${file}:`, err);
 				}
@@ -124,27 +117,26 @@ class ClientLogger {
 	 * Clean up old log files, keeping only the most recent maxLogFiles
 	 */
 	private cleanupOldLogs(): void {
-		if (!this.fs || !this.path) return;
-
 		try {
-			const files = this.fs.readdirSync(this.logDir);
+			const files = fs.readdirSync(this.logDir);
 			const logFiles = files
 				.filter(
-					(f) => f.endsWith('.log') && !f.endsWith('.latest.log') && !f.endsWith('.error.log')
+					(f: string) =>
+						f.endsWith('.log') && !f.endsWith('.latest.log') && !f.endsWith('.error.log')
 				)
-				.map((f) => ({
+				.map((f: string) => ({
 					name: f,
-					path: this.path!.join(this.logDir, f),
-					time: this.fs!.statSync(this.path!.join(this.logDir, f)).mtime.getTime()
+					path: path.join(this.logDir, f),
+					time: fs.statSync(path.join(this.logDir, f)).mtime.getTime()
 				}))
-				.sort((a, b) => b.time - a.time);
+				.sort((a: { time: number }, b: { time: number }) => b.time - a.time);
 
 			// Keep only the most recent maxLogFiles
 			const logsToDelete = logFiles.slice(this.maxLogFiles);
 
 			for (const log of logsToDelete) {
 				try {
-					this.fs.unlinkSync(log.path);
+					fs.unlinkSync(log.path);
 					console.log(`[LOGGER] Deleted old log: ${log.name}`);
 				} catch (err) {
 					console.error(`[LOGGER] Failed to delete ${log.name}:`, err);
@@ -163,11 +155,8 @@ class ClientLogger {
 		const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
 		const time = now.toISOString().split('T')[1].replaceAll(':', '-').split('.')[0]; // HH-MM-SS
 		this.logStartTime = `${date}-${time}`;
-
-		if (this.path) {
-			this.currentLogFile = this.path.join(this.logDir, `${this.logStartTime}.latest.log`);
-			console.log(`[LOGGER] Started new log file: ${this.path.basename(this.currentLogFile)}`);
-		}
+		this.currentLogFile = path.join(this.logDir, `${this.logStartTime}.latest.log`);
+		console.log(`[LOGGER] Started new log file: ${path.basename(this.currentLogFile)}`);
 	}
 
 	/**
@@ -177,11 +166,11 @@ class ClientLogger {
 		if (browser) return;
 
 		const renameLatestLog = () => {
-			if (this.currentLogFile && this.fs?.existsSync(this.currentLogFile)) {
+			if (this.currentLogFile && fs.existsSync(this.currentLogFile)) {
 				const finalPath = this.currentLogFile.replace('.latest.log', '.log');
 				try {
-					this.fs.renameSync(this.currentLogFile, finalPath);
-					console.log(`[LOGGER] Finalized log: ${this.path?.basename(finalPath)}`);
+					fs.renameSync(this.currentLogFile, finalPath);
+					console.log(`[LOGGER] Finalized log: ${path.basename(finalPath)}`);
 				} catch (err) {
 					console.error('[LOGGER] Failed to rename .latest.log on shutdown:', err);
 				}
@@ -273,7 +262,7 @@ class ClientLogger {
 	 * Write log to file (server-side only)
 	 */
 	private writeToFile(level: string, message: string, context?: LogContext): void {
-		if (!this.logToFile || !this.currentLogFile || !this.fs || !this.path || browser) return;
+		if (!this.logToFile || !this.currentLogFile || browser) return;
 
 		try {
 			const timestamp = this.timestamp();
@@ -283,12 +272,12 @@ class ClientLogger {
 				context ? ' ' + JSON.stringify(context) : ''
 			}\n`;
 
-			this.fs.appendFileSync(this.currentLogFile, logEntry, 'utf8');
+			fs.appendFileSync(this.currentLogFile, logEntry, 'utf8');
 
 			// Also write errors to separate timestamped error log
 			if (level === 'ERROR' && this.logStartTime) {
-				const errorFile = this.path.join(this.logDir, `${this.logStartTime}.error.log`);
-				this.fs.appendFileSync(errorFile, logEntry, 'utf8');
+				const errorFile = path.join(this.logDir, `${this.logStartTime}.error.log`);
+				fs.appendFileSync(errorFile, logEntry, 'utf8');
 			}
 		} catch (err) {
 			// Don't crash if file writing fails
