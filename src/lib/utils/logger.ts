@@ -1,10 +1,12 @@
 /**
  * Client-Side Logger Utility
  *
- * Centralized logging for the client application with different levels and structured output
+ * Centralized logging for the SvelteKit application with different levels and structured output
+ * Writes logs to files on the server-side (SSR) for debugging and supports log rotation
  */
 
 import { isDevelopment as envIsDevelopment } from './environment';
+import { browser } from '$app/environment';
 
 export enum LogLevel {
 	DEBUG = 0,
@@ -15,40 +17,216 @@ export enum LogLevel {
 
 interface LogContext {
 	[key: string]: unknown;
+	requestId?: string;
+	userId?: string;
+	duration?: number;
+	statusCode?: number;
+}
+
+interface PerformanceTimer {
+	start: number;
+	label: string;
 }
 
 class ClientLogger {
 	private readonly minLevel: LogLevel;
 	private readonly isDevelopment: boolean;
+	private readonly timers: Map<string, PerformanceTimer> = new Map();
+	private readonly logToFile: boolean;
+	private readonly maxLogFiles = 10;
+	private readonly logDir: string;
+	private currentLogFile: string | null = null;
+	private logStartTime: string | null = null;
+	private fs: typeof import('fs') | null = null;
+	private path: typeof import('path') | null = null;
 
 	constructor() {
 		// Detect environment using centralized utility
 		this.isDevelopment = envIsDevelopment;
 
-		// Allow override via localStorage for production debugging
-		const storedLevel =
-			typeof window !== 'undefined' ? localStorage.getItem('LOG_LEVEL')?.toUpperCase() : null;
-
-		// Set log level from localStorage, environment, or default
-		const envLevel = storedLevel || import.meta.env.VITE_LOG_LEVEL?.toUpperCase();
+		// Set log level from environment or default
+		const envLevel = import.meta.env.VITE_LOG_LEVEL?.toUpperCase();
 		if (envLevel && envLevel in LogLevel) {
 			this.minLevel = LogLevel[envLevel as keyof typeof LogLevel];
 		} else {
 			this.minLevel = this.isDevelopment ? LogLevel.DEBUG : LogLevel.WARN;
 		}
+
+		// File logging configuration (only on server-side)
+		this.logToFile = browser ? false : this.isDevelopment;
+		this.logDir = browser ? '' : './logs';
+
+		// Initialize file logging (server-side only)
+		if (this.logToFile && !browser) {
+			this.initializeFileLogging();
+		}
+	}
+
+	/**
+	 * Initialize file logging system (server-side only)
+	 */
+	private initializeFileLogging(): void {
+		try {
+			// Dynamic import for Node.js modules (server-side only)
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			this.fs = require('node:fs');
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			this.path = require('node:path');
+
+			// Create logs directory if it doesn't exist
+			if (this.fs && !this.fs.existsSync(this.logDir)) {
+				this.fs.mkdirSync(this.logDir, { recursive: true });
+			}
+
+			// Rotate any existing .latest.log files
+			this.rotateExistingLatestLogs();
+
+			// Initialize new log file
+			this.initializeLogFile();
+
+			// Register shutdown handlers
+			this.registerShutdownHandlers();
+		} catch (err) {
+			console.error('[LOGGER] Failed to initialize file logging:', err);
+		}
+	}
+
+	/**
+	 * Rotate any existing .latest.log files from previous runs
+	 */
+	private rotateExistingLatestLogs(): void {
+		if (!this.fs || !this.path) return;
+
+		try {
+			const files = this.fs.readdirSync(this.logDir);
+			const latestLogFiles = files.filter((f) => f.endsWith('.latest.log'));
+
+			for (const file of latestLogFiles) {
+				const oldPath = this.path.join(this.logDir, file);
+				const newPath = this.path.join(this.logDir, file.replace('.latest.log', '.log'));
+
+				try {
+					this.fs.renameSync(oldPath, newPath);
+					console.log(`[LOGGER] Rotated previous log: ${file} → ${this.path.basename(newPath)}`);
+				} catch (err) {
+					console.error(`[LOGGER] Failed to rotate ${file}:`, err);
+				}
+			}
+
+			// Clean up old logs
+			this.cleanupOldLogs();
+		} catch (err) {
+			console.error('[LOGGER] Failed to rotate existing latest logs:', err);
+		}
+	}
+
+	/**
+	 * Clean up old log files, keeping only the most recent maxLogFiles
+	 */
+	private cleanupOldLogs(): void {
+		if (!this.fs || !this.path) return;
+
+		try {
+			const files = this.fs.readdirSync(this.logDir);
+			const logFiles = files
+				.filter(
+					(f) => f.endsWith('.log') && !f.endsWith('.latest.log') && !f.endsWith('.error.log')
+				)
+				.map((f) => ({
+					name: f,
+					path: this.path!.join(this.logDir, f),
+					time: this.fs!.statSync(this.path!.join(this.logDir, f)).mtime.getTime()
+				}))
+				.sort((a, b) => b.time - a.time);
+
+			// Keep only the most recent maxLogFiles
+			const logsToDelete = logFiles.slice(this.maxLogFiles);
+
+			for (const log of logsToDelete) {
+				try {
+					this.fs.unlinkSync(log.path);
+					console.log(`[LOGGER] Deleted old log: ${log.name}`);
+				} catch (err) {
+					console.error(`[LOGGER] Failed to delete ${log.name}:`, err);
+				}
+			}
+		} catch (err) {
+			console.error('[LOGGER] Failed to cleanup old logs:', err);
+		}
+	}
+
+	/**
+	 * Initialize new timestamped .latest.log file
+	 */
+	private initializeLogFile(): void {
+		const now = new Date();
+		const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
+		const time = now.toISOString().split('T')[1].replaceAll(':', '-').split('.')[0]; // HH-MM-SS
+		this.logStartTime = `${date}-${time}`;
+
+		if (this.path) {
+			this.currentLogFile = this.path.join(this.logDir, `${this.logStartTime}.latest.log`);
+			console.log(`[LOGGER] Started new log file: ${this.path.basename(this.currentLogFile)}`);
+		}
+	}
+
+	/**
+	 * Register handlers to rename .latest.log on shutdown
+	 */
+	private registerShutdownHandlers(): void {
+		if (browser) return;
+
+		const renameLatestLog = () => {
+			if (this.currentLogFile && this.fs?.existsSync(this.currentLogFile)) {
+				const finalPath = this.currentLogFile.replace('.latest.log', '.log');
+				try {
+					this.fs.renameSync(this.currentLogFile, finalPath);
+					console.log(`[LOGGER] Finalized log: ${this.path?.basename(finalPath)}`);
+				} catch (err) {
+					console.error('[LOGGER] Failed to rename .latest.log on shutdown:', err);
+				}
+			}
+		};
+
+		// Handle various shutdown signals
+		process.on('SIGINT', () => {
+			renameLatestLog();
+			process.exit(0);
+		});
+
+		process.on('SIGTERM', () => {
+			renameLatestLog();
+			process.exit(0);
+		});
+
+		process.on('exit', () => {
+			renameLatestLog();
+		});
+
+		// Handle uncaught exceptions
+		process.on('uncaughtException', (err) => {
+			console.error('[LOGGER] Uncaught exception:', err);
+			renameLatestLog();
+			process.exit(1);
+		});
 	}
 
 	/**
 	 * Format timestamp for logs
 	 */
 	private timestamp(): string {
-		return new Date().toISOString().split('T')[1].replace('Z', '');
+		return new Date().toISOString();
 	}
 
 	/**
 	 * Get styled console method based on level
 	 */
 	private getConsoleStyle(level: string): string[] {
+		if (!browser) {
+			// No colors in server logs
+			return ['', ''];
+		}
+
 		const styles: Record<string, string[]> = {
 			DEBUG: ['color: #00bcd4; font-weight: bold', 'color: #666'],
 			INFO: ['color: #4caf50; font-weight: bold', 'color: #333'],
@@ -69,13 +247,53 @@ class ClientLogger {
 		const timestamp = this.timestamp();
 		const [levelStyle, msgStyle] = this.getConsoleStyle(level);
 
-		// Build context string
+		// Build context string for inline display
 		let contextStr: string | undefined;
 		if (context && Object.keys(context).length > 0) {
-			contextStr = JSON.stringify(context, null, this.isDevelopment ? 2 : 0);
+			// Extract special fields for inline display
+			const { requestId, userId, duration, statusCode, ...rest } = context;
+
+			const inline: string[] = [];
+			if (requestId) inline.push(`req=${requestId}`);
+			if (userId) inline.push(`user=${userId}`);
+			if (statusCode) inline.push(`status=${statusCode}`);
+			if (duration !== undefined) inline.push(`${duration}ms`);
+
+			const inlineStr = inline.length > 0 ? ` [${inline.join(' ')}]` : '';
+
+			// Add remaining context as JSON if present
+			const hasRest = Object.keys(rest).length > 0;
+			contextStr = inlineStr + (hasRest ? ` ${JSON.stringify(rest)}` : '');
 		}
 
-		return [`%c[${timestamp}] [${level}]%c ${message}`, levelStyle, msgStyle, contextStr];
+		return [`%c[${timestamp}] [${level}]%c ${message}${contextStr || ''}`, levelStyle, msgStyle];
+	}
+
+	/**
+	 * Write log to file (server-side only)
+	 */
+	private writeToFile(level: string, message: string, context?: LogContext): void {
+		if (!this.logToFile || !this.currentLogFile || !this.fs || !this.path || browser) return;
+
+		try {
+			const timestamp = this.timestamp();
+
+			// Write to the current .latest.log file
+			const logEntry = `[${timestamp}] [${level.padEnd(5)}] ${message}${
+				context ? ' ' + JSON.stringify(context) : ''
+			}\n`;
+
+			this.fs.appendFileSync(this.currentLogFile, logEntry, 'utf8');
+
+			// Also write errors to separate timestamped error log
+			if (level === 'ERROR' && this.logStartTime) {
+				const errorFile = this.path.join(this.logDir, `${this.logStartTime}.error.log`);
+				this.fs.appendFileSync(errorFile, logEntry, 'utf8');
+			}
+		} catch (err) {
+			// Don't crash if file writing fails
+			console.error('[LOGGER] Failed to write log to file:', err);
+		}
 	}
 
 	/**
@@ -85,40 +303,44 @@ class ClientLogger {
 		if (this.minLevel <= LogLevel.DEBUG) {
 			const [msg, ...args] = this.format('DEBUG', message, context);
 			console.debug(msg, ...args.filter(Boolean));
+			this.writeToFile('DEBUG', message, context);
 		}
 	}
 
 	/**
-	 * Log info messages
+	 * Log info messages (normal operations)
 	 */
 	info(message: string, context?: LogContext): void {
 		if (this.minLevel <= LogLevel.INFO) {
 			const [msg, ...args] = this.format('INFO', message, context);
 			console.log(msg, ...args.filter(Boolean));
+			this.writeToFile('INFO', message, context);
 		}
 	}
 
 	/**
-	 * Log warning messages
+	 * Log warning messages (potential issues)
 	 */
 	warn(message: string, context?: LogContext): void {
 		if (this.minLevel <= LogLevel.WARN) {
 			const [msg, ...args] = this.format('WARN', message, context);
 			console.warn(msg, ...args.filter(Boolean));
+			this.writeToFile('WARN', message, context);
 		}
 	}
 
 	/**
-	 * Log error messages
+	 * Log error messages with stack traces
 	 */
 	error(message: string, error?: unknown, context?: LogContext): void {
 		if (this.minLevel <= LogLevel.ERROR) {
 			const errorContext: LogContext = { ...context };
+
 			if (error instanceof Error) {
 				errorContext.error = {
 					name: error.name,
 					message: error.message,
-					stack: this.isDevelopment ? error.stack : undefined
+					stack: this.isDevelopment ? error.stack?.split('\n').slice(0, 5).join('\n') : undefined
 				};
 			} else if (error) {
 				errorContext.error = error;
@@ -126,18 +348,22 @@ class ClientLogger {
 
 			const [msg, ...args] = this.format('ERROR', message, errorContext);
 			console.error(msg, ...args.filter(Boolean));
+			this.writeToFile('ERROR', message, errorContext);
 		}
 	}
 
 	/**
-	 * Group related log messages
+	 * Start a log group
 	 */
-	group(label: string, collapsed = false): void {
-		if (collapsed) {
-			console.groupCollapsed(`📦 ${label}`);
-		} else {
-			console.group(`📦 ${label}`);
-		}
+	group(label: string): void {
+		console.group(`📦 ${label}`);
+	}
+
+	/**
+	 * Start a collapsed log group
+	 */
+	groupCollapsed(label: string): void {
+		console.groupCollapsed(`📦 ${label}`);
 	}
 
 	/**
@@ -164,12 +390,19 @@ class ClientLogger {
 		duration?: number,
 		context?: LogContext
 	): void {
-		const emoji = status >= 500 ? '❌' : status >= 400 ? '⚠️' : '✓';
+		let emoji: string;
+		if (status >= 500) {
+			emoji = '❌';
+		} else if (status >= 400) {
+			emoji = '⚠️';
+		} else {
+			emoji = '✓';
+		}
 		const level = status >= 400 ? 'warn' : 'debug';
 		this[level](`${emoji} ${method} ${url}`, {
 			...context,
 			status,
-			...(duration ? { duration: `${duration}ms` } : {})
+			...(duration === undefined ? {} : { duration })
 		});
 	}
 
@@ -207,7 +440,7 @@ class ClientLogger {
 				const measure = performance.getEntriesByName(label)[0];
 				this.debug(`⏱️ ${label}`, {
 					...context,
-					duration: `${measure.duration.toFixed(2)}ms`
+					duration: Number.parseFloat(measure.duration.toFixed(2))
 				});
 				performance.clearMarks(`${label}-start`);
 				performance.clearMarks(`${label}-end`);
@@ -257,9 +490,9 @@ class ClientLogger {
 export const logger = new ClientLogger();
 
 // Make debug controls available globally in browser
-if (typeof window !== 'undefined') {
-	(window as unknown as Record<string, unknown>).enableDebugLogs = ClientLogger.enableDebug;
-	(window as unknown as Record<string, unknown>).disableDebugLogs = ClientLogger.disableDebug;
+if (globalThis.window !== undefined) {
+	(globalThis as unknown as Record<string, unknown>).enableDebugLogs = ClientLogger.enableDebug;
+	(globalThis as unknown as Record<string, unknown>).disableDebugLogs = ClientLogger.disableDebug;
 
 	// Log current log level on load (development only)
 	if (logger.isDev()) {
