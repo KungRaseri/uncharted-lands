@@ -120,7 +120,8 @@ jobs:
           rm -rf node_modules/rollup node_modules/@rollup
           rm -rf node_modules/lightningcss node_modules/lightningcss-*
           rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
-          npm install --no-save rollup lightningcss @tailwindcss/oxide
+          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
 
       - name: Type check client
         run: npm run check:client
@@ -185,7 +186,8 @@ jobs:
           rm -rf node_modules/rollup node_modules/@rollup
           rm -rf node_modules/lightningcss node_modules/lightningcss-*
           rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
-          npm install --no-save rollup lightningcss @tailwindcss/oxide
+          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
 
       - name: Run client unit tests with coverage
         run: npm run test:client
