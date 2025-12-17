@@ -5,23 +5,8 @@
  * and other time-based game mechanics
  *
  * DISASTER SYSTEM INTEGRATION (November 2025 - Phase 4):
- * - Hourly disaster checks at tick % (TICK_RATE * 3600)   // ===== DEBUG LOGGING FOR PRODUCTION TICKS =====
-  // Log timing state every second (every 60 ticks) to help diagnose issues
-  if (currentTick % 60 === 0) {
-    logger.debug('[GAME LOOP] ⏰ Timing Check', {
-      tick: currentTick,
-      secondsSinceEpoch,
-      isResourceProductionTime,
-      isPopulationUpdateTime,
-      shouldEmitProjection,
-      resourceIntervalSec: RESOURCE_INTERVAL_SEC,
-      populationIntervalSec: POPULATION_INTERVAL_SEC,
-      ticksSinceLastResource,
-      ticksSinceLastPopulation,
-      nextResourceTick: RESOURCE_TICKS_INTERVAL - ticksSinceLastResource,
-      nextPopulationTick: POPULATION_TICKS_INTERVAL - ticksSinceLastPopulation,
-    });
-  }ster event processing at 10Hz (every 6 ticks)
+ * - Hourly disaster checks at tick % (TICK_RATE * 3600)
+ * - 10Hz disaster event processing at 10Hz (every 6 ticks)
  */
 
 import type { Server as SocketIOServer } from 'socket.io';
@@ -78,6 +63,7 @@ const SOCKET_EMIT_INTERVAL_SEC = Number.parseInt(process.env.SOCKET_EMIT_INTERVA
 const POPULATION_INTERVAL_SEC = Number.parseInt(process.env.POPULATION_INTERVAL_SEC || '1800', 10); // Default: 30 minutes (half-hour offset)
 
 // Track active game loop
+/* eslint-disable-next-line no-undef */
 let gameLoopInterval: NodeJS.Timeout | null = null;
 let currentTick = 0;
 let isRunning = false;

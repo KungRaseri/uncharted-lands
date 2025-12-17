@@ -145,39 +145,40 @@ describe('EmptyState.svelte', () => {
 			expect(wrapper).toBeTruthy();
 		});
 
-	it('should have title with proper font styling', () => {
-		render(EmptyState, { props: baseProps });
-		const title = screen.getByText('No Data Available');
-		expect(title.classList.contains('text-xl')).toBe(true);
-		expect(title.classList.contains('font-semibold')).toBe(true);
-	});
+		it('should have title with proper font styling', () => {
+			render(EmptyState, { props: baseProps });
+			const title = screen.getByText('No Data Available');
+			expect(title.classList.contains('text-xl')).toBe(true);
+			expect(title.classList.contains('font-semibold')).toBe(true);
+		});
 
-	it('should have title with bottom margin', () => {
-		render(EmptyState, { props: baseProps });
-		const title = screen.getByText('No Data Available');
-		expect(title.classList.contains('mb-2')).toBe(true);
-	});
+		it('should have title with bottom margin', () => {
+			render(EmptyState, { props: baseProps });
+			const title = screen.getByText('No Data Available');
+			expect(title.classList.contains('mb-2')).toBe(true);
+		});
 
-	it('should have message with proper text color', () => {
-		render(EmptyState, { props: baseProps });
-		const message = screen.getByText('There are no items to display at this time.');
-		const hasTextColors =
-			message.className.includes('text-surface-600') &&
-			message.className.includes('dark:text-surface-400');
-		expect(hasTextColors).toBe(true);
-	});
+		it('should have message with proper text color', () => {
+			render(EmptyState, { props: baseProps });
+			const message = screen.getByText('There are no items to display at this time.');
+			const hasTextColors =
+				message.className.includes('text-surface-600') &&
+				message.className.includes('dark:text-surface-400');
+			expect(hasTextColors).toBe(true);
+		});
 
-	it('should have message with bottom margin', () => {
-		render(EmptyState, { props: baseProps });
-		const message = screen.getByText('There are no items to display at this time.');
-		expect(message.classList.contains('mb-4')).toBe(true);
-	});
+		it('should have message with bottom margin', () => {
+			render(EmptyState, { props: baseProps });
+			const message = screen.getByText('There are no items to display at this time.');
+			expect(message.classList.contains('mb-4')).toBe(true);
+		});
 
-	it('should center icon horizontally', () => {
-		const { container } = render(EmptyState, { props: baseProps });
-		const svg = container.querySelector('svg');
-		expect(svg?.classList.contains('mx-auto')).toBe(true);
-	});		it('should have icon with bottom margin', () => {
+		it('should center icon horizontally', () => {
+			const { container } = render(EmptyState, { props: baseProps });
+			const svg = container.querySelector('svg');
+			expect(svg?.classList.contains('mx-auto')).toBe(true);
+		});
+		it('should have icon with bottom margin', () => {
 			const { container } = render(EmptyState, { props: baseProps });
 			const svg = container.querySelector('svg');
 			expect(svg?.classList.contains('mb-4')).toBe(true);
