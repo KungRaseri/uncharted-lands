@@ -1,0 +1,55 @@
+# Fix Structure Modifier Types
+# Replaces hardcoded string literals with MODIFIER_NAMES constants
+
+$filePath = "c:\code\uncharted-lands\server\src\config\structure-modifiers.ts"
+$content = Get-Content $filePath -Raw
+
+# Mapping of hardcoded strings to MODIFIER_NAMES constants
+$replacements = @{
+    "type: 'FOOD_PRODUCTION'" = "type: MODIFIER_NAMES.FOOD_PRODUCTION"
+    "type: 'WATER_PRODUCTION'" = "type: MODIFIER_NAMES.WATER_PRODUCTION"
+    "type: 'WOOD_PRODUCTION'" = "type: MODIFIER_NAMES.WOOD_PRODUCTION"
+    "type: 'STONE_PRODUCTION'" = "type: MODIFIER_NAMES.STONE_PRODUCTION"
+    "type: 'ORE_PRODUCTION'" = "type: MODIFIER_NAMES.ORE_PRODUCTION"
+    "type: 'HERB_PRODUCTION'" = "type: MODIFIER_NAMES.HERB_PRODUCTION"
+    "type: 'PELT_PRODUCTION'" = "type: MODIFIER_NAMES.PELT_PRODUCTION"
+    "type: 'POPULATION_CAPACITY'" = "type: MODIFIER_NAMES.POPULATION_CAPACITY"
+    "type: 'HAPPINESS'" = "type: MODIFIER_NAMES.HAPPINESS_BONUS"
+    "type: 'STORAGE_CAPACITY'" = "type: MODIFIER_NAMES.STORAGE_CAPACITY"
+    "type: 'PRODUCTION_EFFICIENCY'" = "type: MODIFIER_NAMES.PRODUCTION_EFFICIENCY"
+    "type: 'UPGRADE_SPEED'" = "type: MODIFIER_NAMES.UPGRADE_SPEED"
+    "type: 'CONSTRUCTION_SPEED'" = "type: MODIFIER_NAMES.CONSTRUCTION_SPEED"
+    "type: 'TRADE_DISCOUNT'" = "type: MODIFIER_NAMES.TRADE_DISCOUNT"
+    "type: 'RESEARCH_SPEED'" = "type: MODIFIER_NAMES.RESEARCH_SPEED"
+    "type: 'POPULATION_PROTECTION'" = "type: MODIFIER_NAMES.POPULATION_PROTECTION"
+    "type: 'DISASTER_WARNING_TIME'" = "type: MODIFIER_NAMES.DISASTER_WARNING_TIME"
+    "type: 'CASUALTY_REDUCTION'" = "type: MODIFIER_NAMES.CASUALTY_REDUCTION"
+    "type: 'HAPPINESS_RECOVERY'" = "type: MODIFIER_NAMES.HAPPINESS_RECOVERY"
+    "type: 'EARTHQUAKE_WARNING'" = "type: MODIFIER_NAMES.EARTHQUAKE_WARNING"
+    "type: 'WEATHER_WARNING'" = "type: MODIFIER_NAMES.WEATHER_WARNING"
+    "type: 'DISASTER_COORDINATION'" = "type: MODIFIER_NAMES.DISASTER_COORDINATION"
+    "type: 'NPC_RELATIONSHIP_GAIN'" = "type: MODIFIER_NAMES.NPC_RELATIONSHIP_GAIN"
+    "type: 'CARAVAN_FREQUENCY'" = "type: MODIFIER_NAMES.CARAVAN_FREQUENCY"
+    "type: 'NPC_GUEST_CAPACITY'" = "type: MODIFIER_NAMES.NPC_GUEST_CAPACITY"
+    "type: 'GUILD_STORAGE'" = "type: MODIFIER_NAMES.GUILD_STORAGE_CAPACITY"
+    "type: 'GUILD_MEMBER_LIMIT'" = "type: MODIFIER_NAMES.GUILD_MEMBER_LIMIT"
+    "type: 'PROJECT_CONTRIBUTION_SPEED'" = "type: MODIFIER_NAMES.PROJECT_CONTRIBUTION_SPEED"
+    "type: 'GUILD_PROJECT_SPEED'" = "type: MODIFIER_NAMES.GUILD_PROJECT_SPEED"
+    "type: 'GUILD_REPUTATION'" = "type: MODIFIER_NAMES.GUILD_REPUTATION"
+    "type: 'ALLIANCE_LIMIT'" = "type: MODIFIER_NAMES.ALLIANCE_LIMIT"
+    "type: 'DROUGHT_RESISTANCE'" = "type: MODIFIER_NAMES.DROUGHT_RESISTANCE"
+    "type: 'ALL_DISASTER_RESISTANCE'" = "type: MODIFIER_NAMES.ALL_DISASTER_RESISTANCE"
+    "type: 'STRUCTURE_DURABILITY'" = "type: MODIFIER_NAMES.STRUCTURE_DURABILITY"
+    "type: 'RESEARCH_COST_REDUCTION'" = "type: MODIFIER_NAMES.RESEARCH_COST_REDUCTION"
+    "type: 'WATER_STORAGE'" = "type: MODIFIER_NAMES.WATER_STORAGE"
+}
+
+foreach ($key in $replacements.Keys) {
+    $value = $replacements[$key]
+    $content = $content -replace [regex]::Escape($key), $value
+}
+
+Set-Content -Path $filePath -Value $content -NoNewline
+
+Write-Host "✅ Fixed modifier types in structure-modifiers.ts" -ForegroundColor Green
+Write-Host "Run 'npm run check' to verify" -ForegroundColor Cyan

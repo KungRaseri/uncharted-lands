@@ -67,7 +67,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	LUMBER_MILL: [
 		{
-			type: 'WOOD_PRODUCTION',
+			type: MODIFIER_NAMES.WOOD_PRODUCTION,
 			name: 'Wood Production',
 			description: 'Increases wood production per tick',
 			baseValue: 8,
@@ -77,7 +77,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	QUARRY: [
 		{
-			type: 'STONE_PRODUCTION',
+			type: MODIFIER_NAMES.STONE_PRODUCTION,
 			name: 'Stone Production',
 			description: 'Increases stone production per tick',
 			baseValue: 6,
@@ -87,7 +87,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	MINE: [
 		{
-			type: 'ORE_PRODUCTION',
+			type: MODIFIER_NAMES.ORE_PRODUCTION,
 			name: 'Ore Production',
 			description: 'Increases ore production per tick',
 			baseValue: 4,
@@ -97,7 +97,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	FISHING_DOCK: [
 		{
-			type: 'FOOD_PRODUCTION',
+			type: MODIFIER_NAMES.FOOD_PRODUCTION,
 			name: 'Food Production',
 			description: 'Increases food production per tick from fishing',
 			baseValue: 8,
@@ -107,14 +107,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	HUNTING_LODGE: [
 		{
-			type: 'FOOD_PRODUCTION',
+			type: MODIFIER_NAMES.FOOD_PRODUCTION,
 			name: 'Food Production',
 			description: 'Increases food production per tick from hunting',
 			baseValue: 6,
 			formula: 'LINEAR',
 		},
 		{
-			type: 'PELT_PRODUCTION',
+			type: MODIFIER_NAMES.PELT_PRODUCTION,
 			name: 'Pelt Production',
 			description: 'Produces pelts for trade',
 			baseValue: 2,
@@ -124,7 +124,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	HERB_GARDEN: [
 		{
-			type: 'HERB_PRODUCTION',
+			type: MODIFIER_NAMES.HERB_PRODUCTION,
 			name: 'Herb Production',
 			description: 'Produces medicinal herbs',
 			baseValue: 3,
@@ -146,14 +146,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	HOUSE: [
 		{
-			type: 'POPULATION_CAPACITY',
+			type: MODIFIER_NAMES.POPULATION_CAPACITY,
 			name: 'Population Capacity',
 			description: 'Increases maximum population',
 			baseValue: 5,
 			formula: 'LINEAR',
 		},
 		{
-			type: 'HAPPINESS',
+			type: MODIFIER_NAMES.HAPPINESS_BONUS,
 			name: 'Happiness Bonus',
 			description: 'Provides happiness from good housing',
 			baseValue: 1,
@@ -163,7 +163,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	STORAGE: [
 		{
-			type: 'STORAGE_CAPACITY',
+			type: MODIFIER_NAMES.STORAGE_CAPACITY,
 			name: 'Storage Capacity',
 			description: 'Increases resource storage capacity',
 			baseValue: 500,
@@ -173,14 +173,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	TOWN_HALL: [
 		{
-			type: 'HAPPINESS',
+			type: MODIFIER_NAMES.HAPPINESS_BONUS,
 			name: 'Happiness Bonus',
 			description: 'Provides happiness from good governance',
 			baseValue: 5,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'PRODUCTION_EFFICIENCY',
+			type: MODIFIER_NAMES.PRODUCTION_EFFICIENCY,
 			name: 'Production Efficiency',
 			description: 'Increases overall settlement production efficiency',
 			baseValue: 2,
@@ -190,14 +190,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	WORKSHOP: [
 		{
-			type: 'UPGRADE_SPEED',
+			type: MODIFIER_NAMES.UPGRADE_SPEED,
 			name: 'Upgrade Speed',
 			description: 'Reduces upgrade time for structures (percentage)',
 			baseValue: 5,
 			formula: 'EXPONENTIAL',
 		},
 		{
-			type: 'CONSTRUCTION_SPEED',
+			type: MODIFIER_NAMES.CONSTRUCTION_SPEED,
 			name: 'Construction Speed',
 			description: 'Reduces construction time for structures (percentage)',
 			baseValue: 3,
@@ -207,14 +207,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	MARKETPLACE: [
 		{
-			type: 'TRADE_DISCOUNT',
+			type: MODIFIER_NAMES.TRADE_DISCOUNT,
 			name: 'Trade Discount',
 			description: 'Reduces trade costs (percentage)',
 			baseValue: 5,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'HAPPINESS',
+			type: MODIFIER_NAMES.HAPPINESS_BONUS,
 			name: 'Happiness Bonus',
 			description: 'Provides happiness from trade opportunities',
 			baseValue: 3,
@@ -226,7 +226,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	RESEARCH_LAB: [
 		{
-			type: 'RESEARCH_SPEED',
+			type: MODIFIER_NAMES.RESEARCH_SPEED,
 			name: 'Research Speed',
 			description: 'Increases technology research speed (percentage)',
 			baseValue: 10,
@@ -236,14 +236,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	LIBRARY: [
 		{
-			type: 'RESEARCH_SPEED',
+			type: MODIFIER_NAMES.RESEARCH_SPEED,
 			name: 'Research Speed Bonus',
 			description: 'Additional research speed bonus (percentage)',
 			baseValue: 5,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'HAPPINESS',
+			type: MODIFIER_NAMES.HAPPINESS_BONUS,
 			name: 'Happiness Bonus',
 			description: 'Provides happiness from knowledge',
 			baseValue: 2,
@@ -255,7 +255,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	EMERGENCY_SHELTER: [
 		{
-			type: 'POPULATION_PROTECTION',
+			type: MODIFIER_NAMES.POPULATION_PROTECTION,
 			name: 'Population Protection',
 			description: 'Protects population during disasters',
 			baseValue: 50,
@@ -265,7 +265,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	WATCHTOWER: [
 		{
-			type: 'DISASTER_WARNING_TIME',
+			type: MODIFIER_NAMES.DISASTER_WARNING_TIME,
 			name: 'Disaster Warning Time',
 			description: 'Provides advance warning of disasters (minutes)',
 			baseValue: 30,
@@ -275,14 +275,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	HOSPITAL: [
 		{
-			type: 'CASUALTY_REDUCTION',
+			type: MODIFIER_NAMES.CASUALTY_REDUCTION,
 			name: 'Casualty Reduction',
 			description: 'Reduces casualties from disasters (percentage)',
 			baseValue: 50,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'HAPPINESS',
+			type: MODIFIER_NAMES.HAPPINESS_BONUS,
 			name: 'Happiness Bonus',
 			description: 'Provides happiness from healthcare',
 			baseValue: 3,
@@ -292,7 +292,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	RELIEF_CENTER: [
 		{
-			type: 'HAPPINESS_RECOVERY',
+			type: MODIFIER_NAMES.HAPPINESS_RECOVERY,
 			name: 'Happiness Recovery',
 			description: 'Speeds up happiness recovery after disasters (percentage)',
 			baseValue: 20,
@@ -302,7 +302,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	SEISMOLOGY_STATION: [
 		{
-			type: 'EARTHQUAKE_WARNING',
+			type: MODIFIER_NAMES.EARTHQUAKE_WARNING_TIME,
 			name: 'Earthquake Warning Time',
 			description: 'Provides advance warning of earthquakes (minutes)',
 			baseValue: 60,
@@ -312,7 +312,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	METEOROLOGY_CENTER: [
 		{
-			type: 'WEATHER_WARNING',
+			type: MODIFIER_NAMES.WEATHER_WARNING_TIME,
 			name: 'Weather Warning Time',
 			description: 'Provides advance warning of weather disasters (minutes)',
 			baseValue: 120,
@@ -322,7 +322,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	DISASTER_COMMAND_CENTER: [
 		{
-			type: 'DISASTER_COORDINATION',
+			type: MODIFIER_NAMES.DISASTER_COORDINATION,
 			name: 'Disaster Coordination Bonus',
 			description: 'Improves overall disaster response efficiency (percentage)',
 			baseValue: 15,
@@ -334,14 +334,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	NPC_EMBASSY: [
 		{
-			type: 'NPC_RELATIONSHIP_GAIN',
+			type: MODIFIER_NAMES.NPC_RELATIONSHIP_GAIN,
 			name: 'NPC Relationship Gain',
 			description: 'Increases NPC relationship growth rate (percentage)',
 			baseValue: 10,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'TRADE_DISCOUNT',
+			type: MODIFIER_NAMES.TRADE_DISCOUNT,
 			name: 'NPC Trade Discount',
 			description: 'Reduces costs for NPC trades (percentage)',
 			baseValue: 5,
@@ -351,14 +351,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	TRADE_CARAVAN_STATION: [
 		{
-			type: 'CARAVAN_FREQUENCY',
+			type: MODIFIER_NAMES.CARAVAN_FREQUENCY,
 			name: 'Caravan Frequency',
 			description: 'Increases NPC caravan visit frequency (percentage)',
 			baseValue: 10,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'TRADE_DISCOUNT',
+			type: MODIFIER_NAMES.TRADE_DISCOUNT,
 			name: 'Caravan Trade Discount',
 			description: 'Additional discount for caravan trades (percentage)',
 			baseValue: 5,
@@ -368,7 +368,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	NPC_GUEST_QUARTERS: [
 		{
-			type: 'NPC_GUEST_CAPACITY',
+			type: MODIFIER_NAMES.NPC_GUEST_CAPACITY,
 			name: 'NPC Guest Capacity',
 			description: 'Number of NPC guests that can be hosted',
 			baseValue: 3,
@@ -380,14 +380,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	GUILD_HEADQUARTERS: [
 		{
-			type: 'GUILD_STORAGE',
+			type: MODIFIER_NAMES.GUILD_STORAGE_CAPACITY,
 			name: 'Guild Storage Capacity',
 			description: 'Shared guild storage capacity',
 			baseValue: 10000,
 			formula: 'LINEAR',
 		},
 		{
-			type: 'GUILD_MEMBER_LIMIT',
+			type: MODIFIER_NAMES.GUILD_MEMBER_LIMIT,
 			name: 'Guild Member Limit',
 			description: 'Maximum guild members',
 			baseValue: 50,
@@ -397,14 +397,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	GUILD_OUTPOST: [
 		{
-			type: 'GUILD_STORAGE',
+			type: MODIFIER_NAMES.GUILD_STORAGE_CAPACITY,
 			name: 'Local Guild Storage',
 			description: 'Local shared storage capacity',
 			baseValue: 500,
 			formula: 'LINEAR',
 		},
 		{
-			type: 'PROJECT_CONTRIBUTION_SPEED',
+			type: MODIFIER_NAMES.PROJECT_CONTRIBUTION_SPEED,
 			name: 'Project Contribution Bonus',
 			description: 'Speeds up guild project contributions (percentage)',
 			baseValue: 10,
@@ -414,7 +414,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	GUILD_WORKSHOP: [
 		{
-			type: 'GUILD_PROJECT_SPEED',
+			type: MODIFIER_NAMES.GUILD_PROJECT_SPEED,
 			name: 'Guild Project Speed',
 			description: 'Speeds up cooperative guild projects (percentage)',
 			baseValue: 20,
@@ -424,7 +424,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	GUILD_MONUMENT: [
 		{
-			type: 'GUILD_REPUTATION',
+			type: MODIFIER_NAMES.GUILD_REPUTATION,
 			name: 'Guild Reputation',
 			description: 'Increases guild reputation permanently',
 			baseValue: 500,
@@ -436,14 +436,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	ALLIANCE_PAVILION: [
 		{
-			type: 'ALLIANCE_LIMIT',
+			type: MODIFIER_NAMES.ALLIANCE_LIMIT,
 			name: 'Alliance Limit',
 			description: 'Number of permanent alliances allowed',
 			baseValue: 3,
 			formula: 'LINEAR',
 		},
 		{
-			type: 'TRADE_DISCOUNT',
+			type: MODIFIER_NAMES.TRADE_DISCOUNT,
 			name: 'Alliance Trade Discount',
 			description: 'Trade discount with allies (percentage)',
 			baseValue: 10,
@@ -455,21 +455,21 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	ADVANCED_GREENHOUSE: [
 		{
-			type: 'FOOD_PRODUCTION',
+			type: MODIFIER_NAMES.FOOD_PRODUCTION,
 			name: 'Settlement Food Production',
 			description: 'Increases ALL farm production in settlement (percentage)',
 			baseValue: 50,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'HERB_PRODUCTION',
+			type: MODIFIER_NAMES.HERB_PRODUCTION,
 			name: 'Settlement Herb Production',
 			description: 'Increases herb production in settlement (percentage)',
 			baseValue: 40,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'DROUGHT_RESISTANCE',
+			type: MODIFIER_NAMES.DROUGHT_RESISTANCE,
 			name: 'Drought Resistance',
 			description: 'Reduces drought damage (percentage)',
 			baseValue: 30,
@@ -479,21 +479,21 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	DEEP_MINING_COMPLEX: [
 		{
-			type: 'ORE_PRODUCTION',
+			type: MODIFIER_NAMES.ORE_PRODUCTION,
 			name: 'Settlement Ore Production',
 			description: 'Increases ALL mine production in settlement (percentage)',
 			baseValue: 60,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'STONE_PRODUCTION',
+			type: MODIFIER_NAMES.STONE_PRODUCTION,
 			name: 'Settlement Stone Production',
 			description: 'Increases quarry production in settlement (percentage)',
 			baseValue: 40,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'EARTHQUAKE_WARNING',
+			type: MODIFIER_NAMES.EARTHQUAKE_WARNING_TIME,
 			name: 'Earthquake Detection',
 			description: 'Provides earthquake warning (minutes)',
 			baseValue: 60,
@@ -503,21 +503,21 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	FORTRESS: [
 		{
-			type: 'ALL_DISASTER_RESISTANCE',
+			type: MODIFIER_NAMES.DISASTER_RESISTANCE,
 			name: 'All Disaster Resistance',
 			description: 'Reduces damage from all disasters (percentage)',
 			baseValue: 30,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'POPULATION_PROTECTION',
+			type: MODIFIER_NAMES.POPULATION_PROTECTION,
 			name: 'Fortress Population Protection',
 			description: 'Additional protected population capacity',
 			baseValue: 100,
 			formula: 'LINEAR',
 		},
 		{
-			type: 'STRUCTURE_DURABILITY',
+			type: MODIFIER_NAMES.STRUCTURE_DURABILITY,
 			name: 'Structure Durability',
 			description: 'Increases structure health (percentage)',
 			baseValue: 40,
@@ -527,21 +527,21 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	GRAND_MARKET: [
 		{
-			type: 'TRADE_DISCOUNT',
+			type: MODIFIER_NAMES.TRADE_DISCOUNT,
 			name: 'Grand Market Discount',
 			description: 'Major trade discount (percentage)',
 			baseValue: 25,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'NPC_RELATIONSHIP_GAIN',
+			type: MODIFIER_NAMES.NPC_RELATIONSHIP_GAIN,
 			name: 'NPC Relationship Bonus',
 			description: 'Increased NPC relationship growth (percentage)',
 			baseValue: 40,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'CARAVAN_FREQUENCY',
+			type: MODIFIER_NAMES.CARAVAN_FREQUENCY,
 			name: 'Caravan Attraction',
 			description: 'Increases caravan visit frequency (percentage)',
 			baseValue: 100,
@@ -551,21 +551,21 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	ADVANCED_ACADEMY: [
 		{
-			type: 'RESEARCH_SPEED',
+			type: MODIFIER_NAMES.RESEARCH_SPEED,
 			name: 'Advanced Research Speed',
 			description: 'Major research speed bonus (percentage)',
 			baseValue: 50,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'RESEARCH_COST_REDUCTION',
+			type: MODIFIER_NAMES.RESEARCH_COST_REDUCTION,
 			name: 'Research Cost Reduction',
 			description: 'Reduces research costs (percentage)',
 			baseValue: 20,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'HAPPINESS',
+			type: MODIFIER_NAMES.HAPPINESS_BONUS,
 			name: 'Knowledge Happiness',
 			description: 'Provides happiness from advanced knowledge',
 			baseValue: 5,
@@ -575,21 +575,21 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	IRRIGATION_NETWORK: [
 		{
-			type: 'FOOD_PRODUCTION',
+			type: MODIFIER_NAMES.FOOD_PRODUCTION,
 			name: 'Irrigation Bonus',
 			description: 'Additional food production bonus (stacks with Greenhouse)',
 			baseValue: 30,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'DROUGHT_RESISTANCE',
+			type: MODIFIER_NAMES.DROUGHT_RESISTANCE,
 			name: 'Drought Mitigation',
 			description: 'Additional drought resistance (percentage)',
 			baseValue: 40,
 			formula: 'DIMINISHING',
 		},
 		{
-			type: 'WATER_STORAGE',
+			type: MODIFIER_NAMES.WATER_STORAGE,
 			name: 'Water Storage',
 			description: 'Additional water storage capacity',
 			baseValue: 5000,
