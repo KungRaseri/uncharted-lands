@@ -19,6 +19,8 @@ jobs:
   # ============================================
   shared:
     name: Shared Package
+    permissions:
+        contents: read    
     runs-on: ubuntu-latest
 
     strategy:
@@ -72,6 +74,11 @@ jobs:
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PUBLIC_CLIENT_API_URL: http://localhost:3001/api
+      PUBLIC_WS_URL: http://localhost:3001
+      PUBLIC_SENTRY_DSN: disabled
+      SERVER_API_URL: http://localhost:3001/api
+      NODE_ENV: production
 
     strategy:
       matrix:
@@ -111,6 +118,8 @@ jobs:
           npm ci
           # Force reinstall Rollup optional dependencies (fix for GHSA CI issue)
           npm install --no-save --force rollup
+          # Force rebuild lightningcss for Linux CI environment
+          npm rebuild lightningcss --force || true
 
       - name: Type check client
         run: npm run check:client
@@ -130,6 +139,8 @@ jobs:
       PUBLIC_SENTRY_DSN: disabled
       PUBLIC_API_URL: http://localhost:3001
       PUBLIC_WS_URL: ws://localhost:3001
+      PUBLIC_CLIENT_API_URL: http://localhost:3001/api
+      SERVER_API_URL: http://localhost:3001/api
       NODE_ENV: test
 
     strategy:
@@ -170,6 +181,8 @@ jobs:
           npm ci
           # Force reinstall Rollup optional dependencies (fix for GHSA CI issue)
           npm install --no-save --force rollup
+          # Force rebuild lightningcss for Linux CI environment
+          npm rebuild lightningcss --force || true
 
       - name: Run client unit tests with coverage
         run: npm run test:client
