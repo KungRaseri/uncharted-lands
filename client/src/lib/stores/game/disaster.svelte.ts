@@ -17,7 +17,7 @@ import type {
 	StructureDamagedData,
 	StructureDestroyedData,
 	CasualtiesReportData
-} from '$lib/types/socket-events';
+} from '@uncharted-lands/shared';
 
 interface DisasterEvent {
 	id: string;

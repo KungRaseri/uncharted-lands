@@ -7,3 +7,11 @@
 
 // Export all game configuration types and constants
 export * from './types/game-config.js';
+
+// Export Socket.IO event types
+export * from './types/socket-events.js';
+
+// Export domain types
+export * from './types/disaster.js';
+export * from './types/game.js';
+export * from './types/structure.js';

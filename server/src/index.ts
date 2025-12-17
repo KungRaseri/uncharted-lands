@@ -19,7 +19,7 @@ import type {
 	ServerToClientEvents,
 	InterServerEvents,
 	SocketData,
-} from './types/socket-events.js';
+} from '@uncharted-lands/shared';
 import { registerEventHandlers } from './events/handlers.js';
 import {
 	authenticationMiddleware,
