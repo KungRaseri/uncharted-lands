@@ -332,7 +332,7 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        run: npm run db:push
+        run: echo "yes" | npm run db:push
 
       - name: Run server tests
         run: npm run test:server
