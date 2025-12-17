@@ -78,7 +78,6 @@ jobs:
       PUBLIC_WS_URL: http://localhost:3001
       PUBLIC_SENTRY_DSN: disabled
       SERVER_API_URL: http://localhost:3001/api
-      NODE_ENV: production
 
     strategy:
       matrix:
