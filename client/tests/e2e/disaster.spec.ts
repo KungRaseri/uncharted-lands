@@ -260,7 +260,7 @@ test.describe('Disaster Lifecycle Flow', () => {
 
 		// DEBUG: Check if page data is loaded
 		const pageData = await page.evaluate(() => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 			const win = globalThis as any;
 			return {
 				hasWindowSocket: win.__socket !== undefined,

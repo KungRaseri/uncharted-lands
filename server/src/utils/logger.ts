@@ -316,17 +316,22 @@ class Logger {
 			// Send to Sentry in production or if explicitly enabled
 			if (this.isProd) {
 				try {
-					const { captureException, addBreadcrumb } = require('./sentry.js');
+					// Dynamic import to avoid circular dependencies
+					import('./sentry.js')
+						.then(({ captureException, addBreadcrumb }) => {
+							// Add breadcrumb for context
+							addBreadcrumb(message, 'error', context);
 
-					// Add breadcrumb for context
-					addBreadcrumb(message, 'error', context);
-
-					// Capture exception
-					if (error instanceof Error) {
-						captureException(error, context);
-					} else if (error) {
-						captureException(new Error(message), { ...context, originalError: error });
-					}
+							// Capture exception
+							if (error instanceof Error) {
+								captureException(error, context);
+							} else if (error) {
+								captureException(new Error(message), { ...context, originalError: error });
+							}
+						})
+						.catch(() => {
+							// Silently fail if Sentry import fails
+						});
 				} catch {
 					// Ignore sentry errors to prevent logging infinite loops
 				}

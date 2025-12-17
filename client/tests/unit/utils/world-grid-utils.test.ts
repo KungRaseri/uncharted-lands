@@ -270,7 +270,7 @@ describe('world-grid-utils', () => {
 		});
 
 		it('should handle non-array elevation map', () => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 			const regions = [{ elevationMap: 'not an array' as any }];
 			const stats = calculatePreviewStats(regions);
 			expect(stats).toEqual({

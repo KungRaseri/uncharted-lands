@@ -6,7 +6,7 @@ import type { Tile, Biome, TileBase, TileType } from '@uncharted-lands/shared';
 
 // Helper function to fix TypeScript issues with Svelte 5 runes and testing-library
 // See: https://github.com/testing-library/svelte-testing-library/issues/360
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function renderComponent(component: any, options: any) {
 	return render(component, options);
 }

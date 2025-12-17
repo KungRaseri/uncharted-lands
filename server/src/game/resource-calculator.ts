@@ -112,8 +112,17 @@ export interface Resources {
 
 /**
  * Production rates per tick (1/60th of a second)
+ * Extends Resources interface to maintain same structure
  */
-export interface ProductionRates extends Resources {}
+export interface ProductionRates {
+	wood: number;
+	stone: number;
+	food: number;
+	water: number;
+	gold: number;
+	iron: number;
+	ore: number;
+}
 
 /**
  * Extended structure info with category and type information

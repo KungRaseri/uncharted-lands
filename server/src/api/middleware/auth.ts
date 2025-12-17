@@ -15,17 +15,15 @@ import { setUserContext } from '../../utils/sentry.js';
 type AccountRole = 'MEMBER' | 'SUPPORT' | 'ADMINISTRATOR';
 
 // Extend Express Request to include authenticated user
-declare global {
-	namespace Express {
-		interface Request {
-			user?: {
-				id: string;
-				profileId: string;
-				email: string;
-				username: string;
-				role: AccountRole;
-			};
-		}
+declare module 'express-serve-static-core' {
+	interface Request {
+		user?: {
+			id: string;
+			profileId: string;
+			email: string;
+			username: string;
+			role: AccountRole;
+		};
 	}
 }
 

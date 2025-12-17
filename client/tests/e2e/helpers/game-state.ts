@@ -51,7 +51,7 @@ export async function waitForSocketConnection(
 	while (Date.now() - startTime < timeoutMs) {
 		const debugInfo = await page.evaluate(() => {
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				 
 				const w = globalThis as any;
 				const socket = w.socket || w.__socket || w.io?.sockets?.[0];
 
@@ -118,7 +118,7 @@ export async function joinWorldRoom(page: Page, worldId: string, playerId: strin
 		({ worldId, playerId }) => {
 			return new Promise((resolve) => {
 				try {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					 
 					const w = globalThis as any;
 					const socket = w.socket || w.__socket || w.io?.sockets?.[0];
 
@@ -168,7 +168,7 @@ export async function joinWorldRoom(page: Page, worldId: string, playerId: strin
 
 	console.log('[E2E] joinWorldRoom result:', result);
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const typedResult = result as any;
 	if (!typedResult.success) {
 		throw new Error(`Failed to join world room: ${typedResult.error}`);
@@ -424,7 +424,7 @@ export async function waitForSocketEvent(
 				}, timeout);
 
 				// Try to find socket in various locations
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				 
 				const w = globalThis as any;
 				const socket = w.socket || w.__socket || w.io?.sockets?.[0];
 
@@ -448,7 +448,7 @@ export async function waitForSocketEvent(
 
 				// Capture all events (Socket.IO internal method)
 				const originalOnevent = socket.onevent;
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				 
 				socket.onevent = function (packet: any) {
 					const eventName = packet.data?.[0];
 					if (eventName) {

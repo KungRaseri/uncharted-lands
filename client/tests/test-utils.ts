@@ -114,7 +114,7 @@ export function setupMockSocket(): MockSocket {
 /**
  * Enhanced render function with common setup
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function render(component: any, options?: any) {
 	// Setup mocks
 	const mockLocalStorage = setupMockLocalStorage();

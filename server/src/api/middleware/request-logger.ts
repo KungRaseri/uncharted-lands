@@ -9,13 +9,11 @@ import { randomUUID } from 'node:crypto';
 import { logger } from '../../utils/logger.js';
 
 // Extend Express Request to include request ID and logger
-declare global {
-	namespace Express {
-		interface Request {
-			id: string;
-			logger: ReturnType<typeof logger.child>;
-			startTime: number;
-		}
+declare module 'express-serve-static-core' {
+	interface Request {
+		id: string;
+		logger: ReturnType<typeof logger.child>;
+		startTime: number;
 	}
 }
 

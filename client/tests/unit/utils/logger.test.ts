@@ -8,13 +8,13 @@ describe('Client Logger', () => {
 	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {}) as any;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {}) as any;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {}) as any;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {}) as any;
 	});
 
