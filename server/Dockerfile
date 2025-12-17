@@ -2,55 +2,65 @@
 
 # Stage 1: Build shared package
 FROM node:22-alpine AS shared-builder
-WORKDIR /app/shared
+WORKDIR /app
+
+# Copy root package files for workspace setup
+COPY package.json package-lock.json ./
 
 # Copy shared package files
-COPY shared/package*.json ./
+COPY shared/package.json ./shared/
+
+# Install all workspace dependencies
 RUN npm ci
 
 # Copy shared source and build
-COPY shared/ ./
-RUN npm run build
+COPY shared/ ./shared/
+RUN npm run build:shared
 
 # Stage 2: Server dependencies
 FROM node:22-alpine AS deps
-WORKDIR /app/server
+WORKDIR /app
 
-# Copy server package files
-COPY server/package*.json ./
+# Copy root package files for workspace setup
+COPY package.json package-lock.json ./
 
-# Copy built shared package for installation
-COPY --from=shared-builder /app/shared /app/shared
+# Copy server and shared package files
+COPY server/package.json ./server/
+COPY --from=shared-builder /app/shared/package.json ./shared/
+COPY --from=shared-builder /app/shared/dist ./shared/dist/
 
-# Install dependencies (including dev dependencies for build stage)
+# Install all workspace dependencies (including dev dependencies for build stage)
 RUN npm ci
 
 # Stage 3: Builder
 FROM node:22-alpine AS builder
-WORKDIR /app/server
+WORKDIR /app
 
 # Copy dependencies from deps stage
-COPY --from=deps /app/server/node_modules ./node_modules
-COPY --from=shared-builder /app/shared /app/shared
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/shared ./shared
 
-# Copy source code and config files
-COPY server/ ./
+# Copy server source code and config files
+COPY server/ ./server/
 
 # Build TypeScript to JavaScript
+WORKDIR /app/server
 RUN npm run build
 
 # Stage 4: Production dependencies
 FROM node:22-alpine AS prod-deps
-WORKDIR /app/server
+WORKDIR /app
 
-# Copy package files
-COPY server/package*.json ./
+# Copy root package files for workspace setup
+COPY package.json package-lock.json ./
 
-# Copy built shared package for production installation
-COPY --from=shared-builder /app/shared /app/shared
+# Copy server and shared package files
+COPY server/package.json ./server/
+COPY --from=shared-builder /app/shared/package.json ./shared/
+COPY --from=shared-builder /app/shared/dist ./shared/dist/
 
 # Install only production dependencies
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Stage 5: Runner
 FROM node:22-alpine AS runner
@@ -60,17 +70,17 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 serveruser
 
-# Copy production dependencies
-COPY --from=prod-deps /app/server/node_modules ./node_modules
+# Copy production dependencies (entire node_modules with workspace structure)
+COPY --from=prod-deps /app/node_modules ./node_modules
 
-# Copy built shared package for runtime
+# Copy built shared package
 COPY --from=shared-builder /app/shared/dist ./node_modules/@uncharted-lands/shared/dist
 COPY --from=shared-builder /app/shared/package.json ./node_modules/@uncharted-lands/shared/
 
-# Copy built application
+# Copy built server application
 COPY --from=builder /app/server/dist ./dist
 
-# Copy package.json for metadata
+# Copy server package.json for metadata
 COPY server/package.json ./
 
 # Set ownership to non-root user
