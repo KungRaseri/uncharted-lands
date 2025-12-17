@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy root package files for workspace setup
 COPY package.json package-lock.json ./
 
+# Copy base TypeScript config (shared tsconfig extends this)
+COPY tsconfig.base.json ./
+
 # Copy shared package files
 COPY shared/package.json ./shared/
 
