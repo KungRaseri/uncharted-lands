@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "sveltekit",
-  "installCommand": "cd .. && npm ci && npm run build:shared && cd client && npm install",
+  "installCommand": "cd .. && npm ci && npm run build:shared && cd client && rm -rf node_modules && npm install --legacy-peer-deps",
   "buildCommand": "npm run build"
 }
