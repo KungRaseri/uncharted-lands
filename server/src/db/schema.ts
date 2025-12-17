@@ -372,7 +372,9 @@ export const tiles = pgTable(
 		specialResource: specialResourceEnum('specialResource'),
 		// Settlement ownership
 		// @ts-expect-error - Circular reference
-		settlementId: text('settlementId').references(() => settlements.id, { onDelete: 'set null' }),
+		settlementId: text('settlementId').references(() => settlements.id, {
+			onDelete: 'set null',
+		}),
 		plotSlots: integer('plotSlots').notNull().default(5),
 		// Base production modifier for disaster impacts (Type 2: resource depletion)
 		// Default 1.0 = normal production, 0.4 = 60% drought, etc.
@@ -397,7 +399,9 @@ export const settlementStorage = pgTable(
 	{
 		id: text('id').primaryKey(),
 		// @ts-expect-error - Circular reference to settlements table
-		settlementId: text('settlementId').references(() => settlements.id, { onDelete: 'cascade' }),
+		settlementId: text('settlementId').references(() => settlements.id, {
+			onDelete: 'cascade',
+		}),
 		food: integer('food').notNull(),
 		water: integer('water').notNull(),
 		wood: integer('wood').notNull(),

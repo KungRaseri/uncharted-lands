@@ -207,7 +207,10 @@ export async function aggregateSettlementModifiers(
 						logger.error('[SETTLEMENT_MODIFIER_AGGREGATOR] Failed to update modifier', {
 							settlementId,
 							modifierType,
-							error: updateError instanceof Error ? updateError.message : 'Unknown error',
+							error:
+								updateError instanceof Error
+									? updateError.message
+									: 'Unknown error',
 							stack: updateError instanceof Error ? updateError.stack : undefined,
 						});
 						throw updateError;
@@ -223,14 +226,20 @@ export async function aggregateSettlementModifiers(
 							contributingStructures: data.contributingStructures,
 						};
 
-						logger.info('[SETTLEMENT_MODIFIER_AGGREGATOR] About to insert new modifier', {
-							settlementId,
-							modifierType,
-							totalValue,
-							sourceCount: data.sourceCount,
-						});
+						logger.info(
+							'[SETTLEMENT_MODIFIER_AGGREGATOR] About to insert new modifier',
+							{
+								settlementId,
+								modifierType,
+								totalValue,
+								sourceCount: data.sourceCount,
+							}
+						);
 
-						const [inserted] = await tx.insert(settlementModifiers).values(newModifier).returning();
+						const [inserted] = await tx
+							.insert(settlementModifiers)
+							.values(newModifier)
+							.returning();
 
 						results.push(inserted);
 
@@ -244,7 +253,10 @@ export async function aggregateSettlementModifiers(
 						logger.error('[SETTLEMENT_MODIFIER_AGGREGATOR] Failed to insert modifier', {
 							settlementId,
 							modifierType,
-							error: insertError instanceof Error ? insertError.message : 'Unknown error',
+							error:
+								insertError instanceof Error
+									? insertError.message
+									: 'Unknown error',
 							stack: insertError instanceof Error ? insertError.stack : undefined,
 						});
 						throw insertError;

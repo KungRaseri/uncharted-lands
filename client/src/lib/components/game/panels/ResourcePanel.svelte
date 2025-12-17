@@ -30,7 +30,12 @@
 		tiles?: TileWithRelations[];
 	}
 
-	let { settlementId, settlementName = 'Settlement', resources = [], tiles = [] }: Props = $props();
+	let {
+		settlementId,
+		settlementName = 'Settlement',
+		resources = [],
+		tiles = []
+	}: Props = $props();
 
 	// Local state for toggling between compact and expanded
 	let isExpanded = $state(false);
@@ -150,7 +155,9 @@
 								role="listitem"
 							>
 								<!-- Icon -->
-								<span class="text-xl leading-none" aria-hidden="true">{config.icon}</span>
+								<span class="text-xl leading-none" aria-hidden="true"
+									>{config.icon}</span
+								>
 
 								<!-- Name + Values -->
 								<div class="flex flex-col gap-0.5 min-w-0">
@@ -165,8 +172,13 @@
 										>
 											{formatNumber(resource.current)}
 										</span>
-										<span class="text-[10px] text-surface-500 dark:text-surface-500">/</span>
-										<span class="text-[10px] text-surface-600 dark:text-surface-400 tabular-nums">
+										<span
+											class="text-[10px] text-surface-500 dark:text-surface-500"
+											>/</span
+										>
+										<span
+											class="text-[10px] text-surface-600 dark:text-surface-400 tabular-nums"
+										>
 											{formatNumber(resource.capacity)}
 										</span>
 									</div>
@@ -184,7 +196,9 @@
 										{formatRate(netRate)}
 									</span>
 									{#if warningLevel === 'critical'}
-										<span class="text-[10px] font-bold text-error-700 dark:text-error-300">
+										<span
+											class="text-[10px] font-bold text-error-700 dark:text-error-300"
+										>
 											⚠️ Critical
 										</span>
 									{/if}
@@ -198,8 +212,12 @@
 									class="card bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3 w-64"
 								>
 									<div class="flex items-center gap-2 mb-2">
-										<span class="text-2xl" aria-hidden="true">{config.icon}</span>
-										<h3 class="text-sm font-semibold text-surface-100 m-0">{config.label}</h3>
+										<span class="text-2xl" aria-hidden="true"
+											>{config.icon}</span
+										>
+										<h3 class="text-sm font-semibold text-surface-100 m-0">
+											{config.label}
+										</h3>
 									</div>
 
 									<!-- Storage Info -->
@@ -207,7 +225,9 @@
 										<div class="flex justify-between text-xs mb-1">
 											<span class="text-surface-300">Storage:</span>
 											<span class="text-surface-100 font-semibold">
-												{formatNumber(resource.current)} / {formatNumber(resource.capacity)}
+												{formatNumber(resource.current)} / {formatNumber(
+													resource.capacity
+												)}
 											</span>
 										</div>
 										<div
@@ -216,7 +236,9 @@
 											aria-valuenow={percentage}
 											aria-valuemin="0"
 											aria-valuemax="100"
-											aria-label="{config.label} storage at {percentage.toFixed(0)}%"
+											aria-label="{config.label} storage at {percentage.toFixed(
+												0
+											)}%"
 										>
 											<div
 												class="h-full rounded-full"
@@ -230,7 +252,9 @@
 									<div class="space-y-1.5 text-xs">
 										<div class="flex justify-between">
 											<span class="text-surface-400">Production:</span>
-											<span class="text-success-400 font-semibold tabular-nums">
+											<span
+												class="text-success-400 font-semibold tabular-nums"
+											>
 												{formatRate(resource.productionRate)}
 											</span>
 										</div>
@@ -287,7 +311,9 @@
 							>
 								<!-- Icon + Label -->
 								<div class="flex items-center gap-1.5">
-									<span class="text-lg leading-none" aria-hidden="true">{config.icon}</span>
+									<span class="text-lg leading-none" aria-hidden="true"
+										>{config.icon}</span
+									>
 									<h3
 										class="text-xs font-semibold text-surface-900 dark:text-surface-100 m-0 truncate"
 									>
@@ -300,7 +326,9 @@
 									class="text-xs font-semibold text-surface-800 dark:text-surface-200 tabular-nums"
 								>
 									<span>{formatNumber(resource.current)}</span>
-									<span class="text-surface-400 dark:text-surface-600 mx-0.5">/</span>
+									<span class="text-surface-400 dark:text-surface-600 mx-0.5"
+										>/</span
+									>
 									<span class="text-surface-600 dark:text-surface-400"
 										>{formatNumber(resource.capacity)}</span
 									>
@@ -328,18 +356,24 @@
 								<!-- Production & Consumption Rates -->
 								<div class="space-y-0.5 text-[10px]">
 									<div class="flex items-center justify-between">
-										<span class="text-surface-600 dark:text-surface-400 font-medium"
+										<span
+											class="text-surface-600 dark:text-surface-400 font-medium"
 											>Production:</span
 										>
-										<span class="text-success-600 dark:text-success-400 font-semibold tabular-nums">
+										<span
+											class="text-success-600 dark:text-success-400 font-semibold tabular-nums"
+										>
 											{formatRate(resource.productionRate)}
 										</span>
 									</div>
 									<div class="flex items-center justify-between">
-										<span class="text-surface-600 dark:text-surface-400 font-medium"
+										<span
+											class="text-surface-600 dark:text-surface-400 font-medium"
 											>Consumption:</span
 										>
-										<span class="text-error-600 dark:text-error-400 font-semibold tabular-nums">
+										<span
+											class="text-error-600 dark:text-error-400 font-semibold tabular-nums"
+										>
 											{formatRate(-resource.consumptionRate)}
 										</span>
 									</div>
@@ -349,7 +383,10 @@
 								<div
 									class="flex items-center justify-between text-[10px] pt-1 border-t border-surface-200 dark:border-surface-700"
 								>
-									<span class="text-surface-700 dark:text-surface-300 font-semibold">Net:</span>
+									<span
+										class="text-surface-700 dark:text-surface-300 font-semibold"
+										>Net:</span
+									>
 									<span
 										class="font-bold tabular-nums {netRate > 0
 											? 'text-success-600 dark:text-success-400'
@@ -379,8 +416,12 @@
 									class="card bg-surface-800 dark:bg-surface-950 border border-surface-700 dark:border-surface-600 rounded-lg shadow-xl p-3 w-64"
 								>
 									<div class="flex items-center gap-2 mb-2">
-										<span class="text-2xl" aria-hidden="true">{config.icon}</span>
-										<h3 class="text-sm font-semibold text-surface-100 m-0">{config.label}</h3>
+										<span class="text-2xl" aria-hidden="true"
+											>{config.icon}</span
+										>
+										<h3 class="text-sm font-semibold text-surface-100 m-0">
+											{config.label}
+										</h3>
 									</div>
 
 									<!-- Storage Info -->
@@ -388,7 +429,9 @@
 										<div class="flex justify-between text-xs mb-1">
 											<span class="text-surface-300">Storage:</span>
 											<span class="text-surface-100 font-semibold">
-												{formatNumber(resource.current)} / {formatNumber(resource.capacity)}
+												{formatNumber(resource.current)} / {formatNumber(
+													resource.capacity
+												)}
 											</span>
 										</div>
 										<div
@@ -397,7 +440,9 @@
 											aria-valuenow={percentage}
 											aria-valuemin="0"
 											aria-valuemax="100"
-											aria-label="{config.label} storage at {percentage.toFixed(0)}%"
+											aria-label="{config.label} storage at {percentage.toFixed(
+												0
+											)}%"
 										>
 											<div
 												class="h-full rounded-full"
@@ -411,7 +456,9 @@
 									<div class="space-y-1.5 text-xs">
 										<div class="flex justify-between">
 											<span class="text-surface-400">Production:</span>
-											<span class="text-success-400 font-semibold tabular-nums">
+											<span
+												class="text-success-400 font-semibold tabular-nums"
+											>
 												{formatRate(resource.productionRate)}
 											</span>
 										</div>

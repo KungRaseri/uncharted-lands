@@ -30,13 +30,22 @@
 		>
 			<label for="email" class="label">
 				<span>Email address</span>
-				<input id="email" name="email" type="email" autocomplete="email" required class="input" />
+				<input
+					id="email"
+					name="email"
+					type="email"
+					autocomplete="email"
+					required
+					class="input"
+				/>
 			</label>
 
 			<div class="space-y-1">
 				{#if form?.invalid}
 					<div transition:slide>
-						<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
+						<div
+							class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5"
+						>
 							<div class="alert-message text-primary-50">
 								<Info size={24} />
 								<div class="grid grid-cols-1">Form information is invalid</div>
@@ -45,7 +54,9 @@
 					</div>
 				{/if}
 			</div>
-			<button class="w-full p-2 btn btn-base preset-outlined-primary-500">Reset Password</button>
+			<button class="w-full p-2 btn btn-base preset-outlined-primary-500"
+				>Reset Password</button
+			>
 		</form>
 	</div>
 </div>

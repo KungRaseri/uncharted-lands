@@ -88,7 +88,9 @@ class Logger {
 
 				try {
 					fs.renameSync(oldPath, newPath);
-					console.log(`[LOGGER] Rotated previous log: ${file} → ${path.basename(newPath)}`);
+					console.log(
+						`[LOGGER] Rotated previous log: ${file} → ${path.basename(newPath)}`
+					);
 				} catch (err) {
 					console.error(`[LOGGER] Failed to rotate ${file}:`, err);
 				}
@@ -300,7 +302,9 @@ class Logger {
 				errorContext.error = {
 					name: error.name,
 					message: error.message,
-					stack: this.isProd ? undefined : error.stack?.split('\n').slice(0, 5).join('\n'),
+					stack: this.isProd
+						? undefined
+						: error.stack?.split('\n').slice(0, 5).join('\n'),
 				};
 			} else if (error) {
 				errorContext.error = error;

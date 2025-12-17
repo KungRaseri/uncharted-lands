@@ -99,7 +99,11 @@ describe('resource-generator', () => {
 		});
 
 		it('should handle mountain tiles with high elevation', () => {
-			const mountainTile = createMockTile({ elevation: 30, temperature: 5, precipitation: 100 });
+			const mountainTile = createMockTile({
+				elevation: 30,
+				temperature: 5,
+				precipitation: 100
+			});
 			const biome = createMockBiome();
 
 			const resources = generatePlotResources(mountainTile, biome);

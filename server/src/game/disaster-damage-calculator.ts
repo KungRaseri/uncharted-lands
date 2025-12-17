@@ -177,7 +177,12 @@ const DISASTER_PRODUCTION_PENALTIES: Record<
  * // result.resourceModifiers.food = 0.5 × 0.8 = 0.4 (40% production)
  */
 export function calculateAllDisasterModifiers(
-	activeDisasters: Array<{ type: string; status: string; impactEndedAt?: Date; resolvedAt?: Date }>,
+	activeDisasters: Array<{
+		type: string;
+		status: string;
+		impactEndedAt?: Date;
+		resolvedAt?: Date;
+	}>,
 	settlement: unknown, // For future use (biome-specific modifiers)
 	currentTime: number
 ): {
@@ -251,7 +256,8 @@ export function calculateAllDisasterModifiers(
 
 	// Calculate average penalty across all resources
 	const totalPenalty =
-		1 - (modifiers.food + modifiers.water + modifiers.wood + modifiers.stone + modifiers.ore) / 5;
+		1 -
+		(modifiers.food + modifiers.water + modifiers.wood + modifiers.stone + modifiers.ore) / 5;
 
 	return { resourceModifiers: modifiers, totalPenalty };
 }
@@ -364,7 +370,10 @@ async function calculatePreparedness(
 	});
 
 	if (population && population.currentPopulation > 0) {
-		const coveragePercent = Math.min(100, (shelterCapacity / population.currentPopulation) * 100);
+		const coveragePercent = Math.min(
+			100,
+			(shelterCapacity / population.currentPopulation) * 100
+		);
 		preparednessScore += (coveragePercent / 100) * 30;
 	}
 
@@ -615,7 +624,12 @@ async function calculateResourceLoss(
 	settlementId: string,
 	structureDamage: {
 		damaged: Array<{ structureId: string; name: string; oldHealth: number; newHealth: number }>;
-		destroyed: Array<{ structureId: string; name: string; oldHealth: number; newHealth: number }>;
+		destroyed: Array<{
+			structureId: string;
+			name: string;
+			oldHealth: number;
+			newHealth: number;
+		}>;
 	}
 ): Promise<{ food: number; water: number; wood: number; stone: number; ore: number }> {
 	const resourcesLost = { food: 0, water: 0, wood: 0, stone: 0, ore: 0 };

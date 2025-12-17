@@ -137,7 +137,10 @@ export async function waitForDisasterWarning(page: Page, timeoutMs: number = 650
 			(window as any).__disasterWarningPromise,
 			new Promise((_, reject) =>
 				setTimeout(
-					() => reject(new Error(`Timeout waiting for disaster-warning after ${timeout}ms`)),
+					() =>
+						reject(
+							new Error(`Timeout waiting for disaster-warning after ${timeout}ms`)
+						),
 					timeout
 				)
 			)

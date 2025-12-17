@@ -58,7 +58,8 @@ export const strictLimiter = rateLimit({
 		res.status(429).json({
 			error: 'Too Many Requests',
 			code: 'RATE_LIMIT_EXCEEDED',
-			message: 'Too many modification requests from this IP, please try again after 15 minutes',
+			message:
+				'Too many modification requests from this IP, please try again after 15 minutes',
 		});
 	},
 });

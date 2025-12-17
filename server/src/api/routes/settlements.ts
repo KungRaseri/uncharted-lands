@@ -97,10 +97,12 @@ router.get('/:id', async (req, res) => {
 		}
 
 		// Ensure each structure has a modifiers array
-		settlement.structures = settlement.structures.map((structure: { modifiers?: unknown[] }) => ({
-			...structure,
-			modifiers: structure.modifiers || [],
-		}));
+		settlement.structures = settlement.structures.map(
+			(structure: { modifiers?: unknown[] }) => ({
+				...structure,
+				modifiers: structure.modifiers || [],
+			})
+		);
 
 		res.json(settlement);
 	} catch (error) {
@@ -277,11 +279,15 @@ router.post('/', authenticate, async (req, res) => {
 				(tile.waterQuality ?? 0) >= 40 // Good water access
 		);
 
-		logger.info(`[SETTLEMENT CREATE] Found ${viableTiles.length} ideal tiles (worldId=${worldId})`);
+		logger.info(
+			`[SETTLEMENT CREATE] Found ${viableTiles.length} ideal tiles (worldId=${worldId})`
+		);
 
 		// Fallback if no ideal tiles
 		if (viableTiles.length === 0) {
-			logger.warn('[SETTLEMENT CREATE] No ideal tiles, using relaxed criteria (food/water >= 20)');
+			logger.warn(
+				'[SETTLEMENT CREATE] No ideal tiles, using relaxed criteria (food/water >= 20)'
+			);
 			viableTiles = suitableTiles.filter(
 				(tile) =>
 					(tile.elevation ?? -101) > 0 && // Must still be land (elevation > 0)
@@ -339,7 +345,8 @@ router.post('/', authenticate, async (req, res) => {
 				id: profileId,
 				username,
 				picture:
-					picture || `https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,
+					picture ||
+					`https://via.placeholder.com/128x128?text=${username.charAt(0).toUpperCase()}`,
 				accountId,
 			});
 			logger.info(`[SETTLEMENT CREATE] Created new profile ${profileId} for ${username}`);
@@ -523,7 +530,8 @@ router.get('/:id/modifiers', async (req, res) => {
 		const { id } = req.params;
 
 		// Import aggregator function
-		const { getSettlementModifiers } = await import('../../game/settlement-modifier-aggregator.js');
+		const { getSettlementModifiers } =
+			await import('../../game/settlement-modifier-aggregator.js');
 
 		// Get aggregated modifiers
 		const modifiers = await getSettlementModifiers(id);
@@ -568,9 +576,8 @@ router.post('/:id/modifiers/recalculate', async (req, res) => {
 		}
 
 		// Import aggregator function
-		const { aggregateSettlementModifiers } = await import(
-			'../../game/settlement-modifier-aggregator.js'
-		);
+		const { aggregateSettlementModifiers } =
+			await import('../../game/settlement-modifier-aggregator.js');
 
 		// Recalculate modifiers
 		const modifiers = await aggregateSettlementModifiers(id);

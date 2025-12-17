@@ -97,7 +97,10 @@ function initializeListeners(socket: Socket) {
 
 			const existing = state.structures.get(data.settlementId);
 			if (!existing) {
-				console.warn('[StructuresStore] No structures found for settlement:', data.settlementId);
+				console.warn(
+					'[StructuresStore] No structures found for settlement:',
+					data.settlementId
+				);
 				return;
 			}
 
@@ -134,7 +137,10 @@ function initializeListeners(socket: Socket) {
 
 		const existing = state.structures.get(data.settlementId);
 		if (!existing) {
-			console.warn('[StructuresStore] No structures found for settlement:', data.settlementId);
+			console.warn(
+				'[StructuresStore] No structures found for settlement:',
+				data.settlementId
+			);
 			return;
 		}
 

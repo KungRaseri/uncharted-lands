@@ -311,7 +311,9 @@
 				{#if data.error}
 					<span>{data.error}</span>
 				{:else}
-					<span>No servers available. Please create a server first before creating a world.</span>
+					<span
+						>No servers available. Please create a server first before creating a world.</span
+					>
 				{/if}
 			</div>
 		</div>
@@ -357,8 +359,12 @@
 						}}
 					>
 						<div class="flex items-center justify-between mb-2">
-							<Slider.Label class="text-sm font-medium">Terrain Roughness</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<Slider.Label class="text-sm font-medium"
+								>Terrain Roughness</Slider.Label
+							>
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{terrainRoughness < 25
 									? 'Smooth'
 									: terrainRoughness < 50
@@ -383,8 +389,8 @@
 						</Slider.Control>
 					</Slider>
 					<p class="text-xs text-surface-600 dark:text-surface-400">
-						How varied the terrain is. Smooth creates gentle landscapes, while rugged creates
-						complex terrain.
+						How varied the terrain is. Smooth creates gentle landscapes, while rugged
+						creates complex terrain.
 					</p>
 				</div>
 
@@ -400,7 +406,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Mountain Height</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{mountainHeight < 25
 									? 'Flat'
 									: mountainHeight < 50
@@ -425,8 +433,8 @@
 						</Slider.Control>
 					</Slider>
 					<p class="text-xs text-surface-600 dark:text-surface-400">
-						Maximum elevation of terrain features. Flat creates plains, while extreme peaks creates
-						tall mountains.
+						Maximum elevation of terrain features. Flat creates plains, while extreme
+						peaks creates tall mountains.
 					</p>
 				</div>
 
@@ -442,7 +450,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Land vs Water</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{waterLevel < 25
 									? 'Ocean World'
 									: waterLevel < 50
@@ -467,8 +477,8 @@
 						</Slider.Control>
 					</Slider>
 					<p class="text-xs text-surface-600 dark:text-surface-400">
-						Ratio of water to land. Lower values create more oceans and islands, higher values
-						create large continents.
+						Ratio of water to land. Lower values create more oceans and islands, higher
+						values create large continents.
 					</p>
 				</div>
 
@@ -483,8 +493,12 @@
 						}}
 					>
 						<div class="flex items-center justify-between mb-2">
-							<Slider.Label class="text-sm font-medium">Climate Variation</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<Slider.Label class="text-sm font-medium"
+								>Climate Variation</Slider.Label
+							>
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{climateVariation < 25
 									? 'Uniform'
 									: climateVariation < 50
@@ -509,8 +523,8 @@
 						</Slider.Control>
 					</Slider>
 					<p class="text-xs text-surface-600 dark:text-surface-400">
-						How much temperature and precipitation vary across the world. Uniform creates similar
-						biomes, extreme creates diverse climates.
+						How much temperature and precipitation vary across the world. Uniform
+						creates similar biomes, extreme creates diverse climates.
 					</p>
 				</div>
 			</div>
@@ -545,7 +559,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{elevationOptions.octaves}
 							</span>
 						</div>
@@ -577,7 +593,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{elevationOptions.amplitude}
 							</span>
 						</div>
@@ -609,7 +627,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{elevationOptions.frequency}
 							</span>
 						</div>
@@ -641,7 +661,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{elevationOptions.persistence}
 							</span>
 						</div>
@@ -680,7 +702,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Scale</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{precipitationOptions.scale}
 							</span>
 						</div>
@@ -711,7 +735,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{precipitationOptions.octaves}
 							</span>
 						</div>
@@ -742,7 +768,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{precipitationOptions.amplitude}
 							</span>
 						</div>
@@ -773,7 +801,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{precipitationOptions.frequency}
 							</span>
 						</div>
@@ -804,7 +834,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{precipitationOptions.persistence}
 							</span>
 						</div>
@@ -843,7 +875,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Scale</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{temperatureOptions.scale}
 							</span>
 						</div>
@@ -874,7 +908,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Octaves</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{temperatureOptions.octaves}
 							</span>
 						</div>
@@ -905,7 +941,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Amplitude</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{temperatureOptions.amplitude}
 							</span>
 						</div>
@@ -936,7 +974,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Frequency</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{temperatureOptions.frequency}
 							</span>
 						</div>
@@ -967,7 +1007,9 @@
 					>
 						<div class="flex items-center justify-between mb-2">
 							<Slider.Label class="text-sm font-medium">Persistence</Slider.Label>
-							<span class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2">
+							<span
+								class="text-sm rounded-md bg-surface-300 dark:bg-surface-600 py-0.5 px-2"
+							>
 								{temperatureOptions.persistence}
 							</span>
 						</div>
@@ -1004,7 +1046,8 @@
 				{/if}
 			</button>
 			<p class="text-xs text-surface-600 dark:text-surface-400 mt-2">
-				Preview generation is optional. The world will be generated on the server when you save.
+				Preview generation is optional. The world will be generated on the server when you
+				save.
 			</p>
 		</div>
 
@@ -1018,8 +1061,8 @@
 						<p class="text-sm">
 							Generating a {mapOptions.width}×{mapOptions.height} world ({(
 								mapOptions.width * mapOptions.height
-							).toLocaleString()} tiles) may take 2-5 minutes. Please be patient and do not close this
-							page.
+							).toLocaleString()} tiles) may take 2-5 minutes. Please be patient and do
+							not close this page.
 						</p>
 					</div>
 				</div>
@@ -1061,9 +1104,9 @@
 		<div class="card p-4 rounded-md">
 			<h2 class="text-xl font-semibold mb-4">World Preview</h2>
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-				This is a client-side preview. The actual world will be generated on the server when you
-				save. Use the view mode selector to see different aspects of your world (Satellite,
-				Topographical, Temperature, Precipitation, Political).
+				This is a client-side preview. The actual world will be generated on the server when
+				you save. Use the view mode selector to see different aspects of your world
+				(Satellite, Topographical, Temperature, Precipitation, Political).
 			</p>
 			<WorldMap
 				previewRegions={regions}

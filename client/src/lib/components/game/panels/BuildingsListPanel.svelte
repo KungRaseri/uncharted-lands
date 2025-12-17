@@ -42,14 +42,24 @@
 		onDemolish?: (buildingId: string) => void;
 	}
 
-	let { buildings = [], settlementId, onBuild, onUpgrade, onRepair, onDemolish }: Props = $props();
+	let {
+		buildings = [],
+		settlementId,
+		onBuild,
+		onUpgrade,
+		onRepair,
+		onDemolish
+	}: Props = $props();
 
 	// ✅ DEBUG: Log when component renders and receives buildings
 	$effect(() => {
 		console.log('[BuildingsListPanel] ==== COMPONENT RENDER ====');
 		console.log('[BuildingsListPanel] Buildings.length:', buildings.length);
 		if (buildings.length > 0) {
-			console.log('[BuildingsListPanel] Building names:', buildings.map((b) => b.name).join(', '));
+			console.log(
+				'[BuildingsListPanel] Building names:',
+				buildings.map((b) => b.name).join(', ')
+			);
 		}
 		console.log('[BuildingsListPanel] ================');
 	});
@@ -184,7 +194,9 @@
 						>
 							<span>Modifiers ({building.modifiers.length})</span>
 							<span
-								class="transition-transform duration-200 {expandedBuildings.has(building.id)
+								class="transition-transform duration-200 {expandedBuildings.has(
+									building.id
+								)
 									? 'rotate-180'
 									: ''}"
 							>
@@ -229,7 +241,9 @@
 								Upgrade to Level {building.level + 1}
 							</button>
 						{:else if building.level === building.maxLevel}
-							<span class="text-sm text-surface-500-400-token"> Max level reached </span>
+							<span class="text-sm text-surface-500-400-token">
+								Max level reached
+							</span>
 						{/if}
 
 						{#if needsRepair(building)}
@@ -237,7 +251,8 @@
 								type="button"
 								class="btn btn-sm variant-filled-warning"
 								onclick={() => onRepair?.(building.id)}
-								aria-label="Repair {building.name} ({100 - building.health}% damage)"
+								aria-label="Repair {building.name} ({100 -
+									building.health}% damage)"
 							>
 								Repair ({100 - building.health}% damage)
 							</button>

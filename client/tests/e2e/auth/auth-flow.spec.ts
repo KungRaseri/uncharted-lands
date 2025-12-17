@@ -287,7 +287,10 @@ test.describe('Authentication Flow', () => {
 	});
 
 	test.describe('Error Recovery', () => {
-		test('should recover from network errors during registration', async ({ page, context }) => {
+		test('should recover from network errors during registration', async ({
+			page,
+			context
+		}) => {
 			const email = generateUniqueEmail('network-error');
 			createdEmails.push(email);
 			const password = TEST_USERS.VALID.password;

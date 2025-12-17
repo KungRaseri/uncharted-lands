@@ -23,7 +23,8 @@ const resetPassword: Action = async ({ request }) => {
 	// 2. Email system to send reset tokens
 	// 3. Token validation
 	return fail(501, {
-		message: 'Password reset functionality not yet implemented. Please contact an administrator.'
+		message:
+			'Password reset functionality not yet implemented. Please contact an administrator.'
 	});
 };
 

@@ -108,6 +108,8 @@
 	</div>
 
 	{#if isLoading}
-		<p class="text-xs text-surface-600 dark:text-surface-400 animate-pulse">Loading regions...</p>
+		<p class="text-xs text-surface-600 dark:text-surface-400 animate-pulse">
+			Loading regions...
+		</p>
 	{/if}
 </div>

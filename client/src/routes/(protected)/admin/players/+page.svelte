@@ -33,7 +33,8 @@
 				account.id.toLowerCase().includes(search) ||
 				account.email.toLowerCase().includes(search) ||
 				account.role.toLowerCase().includes(search) ||
-				(account.profile?.username && account.profile.username.toLowerCase().includes(search))
+				(account.profile?.username &&
+					account.profile.username.toLowerCase().includes(search))
 			);
 		})
 	);
@@ -158,13 +159,16 @@
 											<div class="relative w-10 h-10">
 												<img
 													src={account.profile.picture}
-													alt="{account.profile.username || 'User'} avatar"
+													alt="{account.profile.username ||
+														'User'} avatar"
 													class="w-10 h-10 rounded-full object-cover"
 													onerror={(e) => {
 														// If image fails to load, replace with icon
-														const parent = e.currentTarget.parentElement;
+														const parent =
+															e.currentTarget.parentElement;
 														e.currentTarget.remove();
-														const fallback = document.createElement('div');
+														const fallback =
+															document.createElement('div');
 														fallback.className =
 															'w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center';
 														const svg = document.createElementNS(
@@ -177,7 +181,10 @@
 														svg.setAttribute('fill', 'none');
 														svg.setAttribute('stroke', 'currentColor');
 														svg.setAttribute('stroke-width', '2');
-														svg.setAttribute('class', 'text-primary-500');
+														svg.setAttribute(
+															'class',
+															'text-primary-500'
+														);
 														svg.innerHTML =
 															'<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"></path><circle cx=\"12\" cy=\"7\" r=\"4\"></circle>';
 														fallback.appendChild(svg);
@@ -196,7 +203,9 @@
 											<p class="font-semibold">
 												{account.profile?.username || 'No Username'}
 											</p>
-											<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">
+											<p
+												class="text-xs text-surface-600 dark:text-surface-400 font-mono"
+											>
 												{account.id}
 											</p>
 										</div>
@@ -216,7 +225,11 @@
 								<td>
 									<div class="flex items-center gap-2 text-sm">
 										<Calendar size={14} class="text-surface-400" />
-										<span>{new Date(account.createdAt).toLocaleDateString()}</span>
+										<span
+											>{new Date(
+												account.createdAt
+											).toLocaleDateString()}</span
+										>
 									</div>
 								</td>
 								<td class="text-right">
@@ -248,9 +261,12 @@
 																<button
 																	type="button"
 																	class="list-option w-full text-left"
-																	onclick={() => openEditModal(account)}
+																	onclick={() =>
+																		openEditModal(account)}
 																>
-																	<span class="flex items-center gap-2">
+																	<span
+																		class="flex items-center gap-2"
+																	>
 																		<UserCog size={16} />
 																		<span>Edit Role</span>
 																	</span>
@@ -260,9 +276,12 @@
 																<button
 																	type="button"
 																	class="list-option w-full text-left"
-																	onclick={() => openBanModal(account)}
+																	onclick={() =>
+																		openBanModal(account)}
 																>
-																	<span class="flex items-center gap-2">
+																	<span
+																		class="flex items-center gap-2"
+																	>
 																		<Ban size={16} />
 																		<span>Ban Player</span>
 																	</span>
@@ -272,9 +291,12 @@
 																<button
 																	type="button"
 																	class="list-option w-full text-left text-error-500"
-																	onclick={() => openDeleteModal(account)}
+																	onclick={() =>
+																		openDeleteModal(account)}
 																>
-																	<span class="flex items-center gap-2">
+																	<span
+																		class="flex items-center gap-2"
+																	>
 																		<Trash2 size={16} />
 																		<span>Delete Account</span>
 																	</span>
@@ -292,7 +314,10 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<td colspan="5" class="text-center text-sm text-surface-600 dark:text-surface-400">
+							<td
+								colspan="5"
+								class="text-center text-sm text-surface-600 dark:text-surface-400"
+							>
 								Total Players: {filteredAccounts.length}
 								{#if searchTerm}
 									(filtered from {data.accounts.length})
@@ -345,8 +370,12 @@
 						<span class="font-medium">Player</span>
 					</p>
 					<div class="card preset-tonal-surface-500 p-3">
-						<p class="font-semibold">{selectedAccount.profile?.username || 'No Username'}</p>
-						<p class="text-sm text-surface-600 dark:text-surface-400">{selectedAccount.email}</p>
+						<p class="font-semibold">
+							{selectedAccount.profile?.username || 'No Username'}
+						</p>
+						<p class="text-sm text-surface-600 dark:text-surface-400">
+							{selectedAccount.email}
+						</p>
 					</div>
 				</div>
 
@@ -354,7 +383,13 @@
 					<label for="role-select" class="label mb-2">
 						<span class="font-medium">Role</span>
 					</label>
-					<select id="role-select" name="role" bind:value={editRole} class="select" required>
+					<select
+						id="role-select"
+						name="role"
+						bind:value={editRole}
+						class="select"
+						required
+					>
 						<option value="MEMBER">Member</option>
 						<option value="SUPPORT">Support</option>
 						<option value="ADMINISTRATOR">Administrator</option>
@@ -409,19 +444,25 @@
 					This feature is coming soon!
 				</p>
 				<p class="text-sm text-surface-700 dark:text-surface-300">
-					Player banning functionality will be implemented in a future update. This will allow you
-					to temporarily or permanently restrict player access.
+					Player banning functionality will be implemented in a future update. This will
+					allow you to temporarily or permanently restrict player access.
 				</p>
 			</div>
 
 			<div class="card preset-tonal-surface-500 p-3">
 				<p class="font-semibold">{selectedAccount.profile?.username || 'No Username'}</p>
-				<p class="text-sm text-surface-600 dark:text-surface-400">{selectedAccount.email}</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400">
+					{selectedAccount.email}
+				</p>
 			</div>
 		</div>
 
 		<footer class="flex justify-end gap-2 mt-6">
-			<button type="button" class="btn preset-tonal-surface-500 rounded-md" onclick={closeModals}>
+			<button
+				type="button"
+				class="btn preset-tonal-surface-500 rounded-md"
+				onclick={closeModals}
+			>
 				Close
 			</button>
 		</footer>
@@ -467,14 +508,18 @@
 						⚠️ This action cannot be undone!
 					</p>
 					<p class="text-sm text-surface-700 dark:text-surface-300">
-						Deleting this account will permanently remove all associated data including profile,
-						settlements, and game progress.
+						Deleting this account will permanently remove all associated data including
+						profile, settlements, and game progress.
 					</p>
 				</div>
 
 				<div class="card preset-tonal-surface-500 p-3">
-					<p class="font-semibold">{selectedAccount.profile?.username || 'No Username'}</p>
-					<p class="text-sm text-surface-600 dark:text-surface-400">{selectedAccount.email}</p>
+					<p class="font-semibold">
+						{selectedAccount.profile?.username || 'No Username'}
+					</p>
+					<p class="text-sm text-surface-600 dark:text-surface-400">
+						{selectedAccount.email}
+					</p>
 					<p class="text-xs text-surface-500 dark:text-surface-500 mt-1 font-mono">
 						ID: {selectedAccount.id}
 					</p>

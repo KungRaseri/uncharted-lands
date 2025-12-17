@@ -30,7 +30,8 @@
 			<div>
 				<h3 class="text-lg font-bold mb-2">Coming Soon</h3>
 				<p class="mb-3">
-					The Wardens system is currently under development. This feature will allow you to:
+					The Wardens system is currently under development. This feature will allow you
+					to:
 				</p>
 				<ul class="list-disc list-inside space-y-1">
 					<li>To be determined.</li>
@@ -48,8 +49,12 @@
 					<Shield size={24} class="text-success-500" />
 				</div>
 				<div>
-					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">Defense Status</h3>
-					<p class="text-sm text-surface-600 dark:text-surface-400">Overall security level</p>
+					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">
+						Defense Status
+					</h3>
+					<p class="text-sm text-surface-600 dark:text-surface-400">
+						Overall security level
+					</p>
 				</div>
 			</div>
 			<div class="text-center py-4">
@@ -65,7 +70,9 @@
 					<Users size={24} class="text-primary-500" />
 				</div>
 				<div>
-					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">Active Units</h3>
+					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">
+						Active Units
+					</h3>
 					<p class="text-sm text-surface-600 dark:text-surface-400">Wardens on duty</p>
 				</div>
 			</div>
@@ -82,8 +89,12 @@
 					<AlertTriangle size={24} class="text-warning-500" />
 				</div>
 				<div>
-					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">Threat Level</h3>
-					<p class="text-sm text-surface-600 dark:text-surface-400">Current danger assessment</p>
+					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">
+						Threat Level
+					</h3>
+					<p class="text-sm text-surface-600 dark:text-surface-400">
+						Current danger assessment
+					</p>
 				</div>
 			</div>
 			<div class="text-center py-4">
@@ -95,6 +106,8 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
+			← Back to Game Overview
+		</a>
 	</div>
 </div>

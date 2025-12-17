@@ -91,7 +91,10 @@ router.delete('/cleanup/users/pattern', requireTestEnvironment, async (req, res)
 		logger.info(`[TEST CLEANUP] Cleaning up test users with pattern: ${pattern}`);
 
 		// Find all matching accounts
-		const matchingAccounts = await db.select().from(accounts).where(like(accounts.email, pattern));
+		const matchingAccounts = await db
+			.select()
+			.from(accounts)
+			.where(like(accounts.email, pattern));
 
 		if (matchingAccounts.length === 0) {
 			return res.json({

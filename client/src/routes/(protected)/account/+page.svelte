@@ -12,7 +12,9 @@
 	<div class="card bg-surface-400 dark:bg-surface-500 p-0 rounded-none sm:rounded-3xl">
 		<header class="w-full p-4 card-header flex border-b border-b-surface-50 justify-between">
 			<h2 class="text-primary-900 dark:text-primary-50">Account</h2>
-			<button type="button" class="btn btn-small preset-tonal-primary-500" disabled>Edit</button>
+			<button type="button" class="btn btn-small preset-tonal-primary-500" disabled
+				>Edit</button
+			>
 		</header>
 		<div class="m-3 pb-5">
 			<dl class="grid grid-cols-1">
@@ -21,7 +23,9 @@
 					<dd class="text-md font-medium">{data.account?.id}</dd>
 				</div>
 				<div class="my-1 border-b border-surface-500 dark:border-surface-400 border-dotted">
-					<dt class="text-primary-900 dark:text-primary-50 text-md font-bold">Email address</dt>
+					<dt class="text-primary-900 dark:text-primary-50 text-md font-bold">
+						Email address
+					</dt>
 					<dd class="text-md font-medium">{data.account?.email}</dd>
 				</div>
 				<div class="my-1 border-b border-surface-500 dark:border-surface-400 border-dotted">

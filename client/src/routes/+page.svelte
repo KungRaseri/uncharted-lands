@@ -14,8 +14,8 @@
 			</div>
 			<h1 class="text-5xl md:text-6xl font-bold">Uncharted Lands</h1>
 			<p class="text-xl max-w-[600px]">
-				Utilize the resources around you to build a strong community and ward against the dangers of
-				wildlife and the environment
+				Utilize the resources around you to build a strong community and ward against the
+				dangers of wildlife and the environment
 			</p>
 			<div class="flex gap-4 flex-wrap justify-center">
 				<a href="/game/getting-started" class="btn preset-filled-primary-500">

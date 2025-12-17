@@ -267,7 +267,9 @@
 	<div class="filters card variant-ghost-surface p-3 space-y-2">
 		<div class="flex items-center justify-between">
 			<h4 class="h4 text-sm">Filters</h4>
-			<button class="btn btn-sm variant-ghost-primary" onclick={resetFilters}> Clear All </button>
+			<button class="btn btn-sm variant-ghost-primary" onclick={resetFilters}>
+				Clear All
+			</button>
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
@@ -338,7 +340,9 @@
 			Casualties {sort.by === 'casualties' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}
 		</button>
 		<button
-			class="btn btn-sm {sort.by === 'type' ? 'variant-filled-primary' : 'variant-ghost-surface'}"
+			class="btn btn-sm {sort.by === 'type'
+				? 'variant-filled-primary'
+				: 'variant-ghost-surface'}"
 			onclick={() => changeSort('type')}
 		>
 			Type {sort.by === 'type' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}
@@ -360,7 +364,9 @@
 		<div class="error card variant-filled-error p-4 text-center space-y-2">
 			<p class="font-semibold">❌ Error Loading History</p>
 			<p class="text-sm">{error}</p>
-			<button class="btn variant-ghost-surface" onclick={fetchDisasterHistory}> Try Again </button>
+			<button class="btn variant-ghost-surface" onclick={fetchDisasterHistory}>
+				Try Again
+			</button>
 		</div>
 	{/if}
 
@@ -384,7 +390,8 @@
 	{#if !loading && !error && filteredDisasters().length > 0}
 		<div class="disaster-list space-y-3">
 			<p class="text-sm opacity-70">
-				Showing {filteredDisasters().length} of {disasters.length} disaster{disasters.length === 1
+				Showing {filteredDisasters().length} of {disasters.length} disaster{disasters.length ===
+				1
 					? ''
 					: 's'}
 			</p>
@@ -405,7 +412,9 @@
 						<div class="card-header p-3 flex items-start justify-between gap-3">
 							<!-- Left: Icon + Type + Time -->
 							<div class="flex items-start gap-2 flex-1 min-w-0">
-								<span class="text-2xl shrink-0">{getDisasterEmoji(disaster.type)}</span>
+								<span class="text-2xl shrink-0"
+									>{getDisasterEmoji(disaster.type)}</span
+								>
 								<div class="flex-1 min-w-0">
 									<h4 class="h4 text-sm font-semibold truncate">
 										{formatDisasterType(disaster.type)}
@@ -414,38 +423,51 @@
 										class="text-xs opacity-70"
 										title={format(new Date(disaster.timestamp), 'PPpp')}
 									>
-										{formatDistanceToNow(new Date(disaster.timestamp), { addSuffix: true })}
+										{formatDistanceToNow(new Date(disaster.timestamp), {
+											addSuffix: true
+										})}
 									</p>
 								</div>
 							</div>
 
 							<!-- Right: Severity Badge -->
 							<div class="shrink-0">
-								<span class="badge {getSeverityColor(disaster.severityLevel)} text-xs">
+								<span
+									class="badge {getSeverityColor(disaster.severityLevel)} text-xs"
+								>
 									{disaster.severityLevel}
 								</span>
 							</div>
 						</div>
 
 						<!-- Card Body (Compact Stats - Always Visible) -->
-						<div class="card-body p-3 pt-0 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+						<div
+							class="card-body p-3 pt-0 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"
+						>
 							<div class="stat">
 								<span class="opacity-70">Casualties:</span>
-								<span class="font-semibold text-error-500">{disaster.casualties}</span>
+								<span class="font-semibold text-error-500"
+									>{disaster.casualties}</span
+								>
 							</div>
 							<div class="stat">
 								<span class="opacity-70">Structures:</span>
 								<span class="font-semibold text-warning-500"
-									>{disaster.structuresDamaged + disaster.structuresDestroyed}</span
+									>{disaster.structuresDamaged +
+										disaster.structuresDestroyed}</span
 								>
 							</div>
 							<div class="stat">
 								<span class="opacity-70">Resources:</span>
-								<span class="font-semibold text-primary-500">{getTotalResourceLoss(disaster)}</span>
+								<span class="font-semibold text-primary-500"
+									>{getTotalResourceLoss(disaster)}</span
+								>
 							</div>
 							<div class="stat">
 								<span class="opacity-70">Resilience:</span>
-								<span class="font-semibold text-success-500">+{disaster.resilienceGained}</span>
+								<span class="font-semibold text-success-500"
+									>+{disaster.resilienceGained}</span
+								>
 							</div>
 						</div>
 
@@ -459,11 +481,16 @@
 									<div>
 										<div class="flex justify-between text-xs mb-1">
 											<span>Severity</span>
-											<span class="font-semibold">{disaster.severity}/100</span>
+											<span class="font-semibold"
+												>{disaster.severity}/100</span
+											>
 										</div>
-										<div class="w-full bg-surface-300-600-token rounded-full h-2">
+										<div
+											class="w-full bg-surface-300-600-token rounded-full h-2"
+										>
 											<div
-												class="h-2 rounded-full transition-all {disaster.severity >= 75
+												class="h-2 rounded-full transition-all {disaster.severity >=
+												75
 													? 'bg-error-500'
 													: disaster.severity >= 50
 														? 'bg-warning-500'
@@ -479,16 +506,22 @@
 									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 										<!-- Population Impact -->
 										<div class="impact-section space-y-1">
-											<h5 class="font-semibold text-xs">👥 Population Impact</h5>
+											<h5 class="font-semibold text-xs">
+												👥 Population Impact
+											</h5>
 											<p class="text-xs">
 												<span class="opacity-70">Casualties:</span>
-												<span class="text-error-500 font-semibold">{disaster.casualties}</span>
+												<span class="text-error-500 font-semibold"
+													>{disaster.casualties}</span
+												>
 											</p>
 										</div>
 
 										<!-- Structure Impact -->
 										<div class="impact-section space-y-1">
-											<h5 class="font-semibold text-xs">🏗️ Structure Impact</h5>
+											<h5 class="font-semibold text-xs">
+												🏗️ Structure Impact
+											</h5>
 											<p class="text-xs">
 												<span class="opacity-70">Damaged:</span>
 												<span class="text-warning-500 font-semibold"
@@ -507,19 +540,29 @@
 										<div class="impact-section space-y-1">
 											<h5 class="font-semibold text-xs">📦 Resources Lost</h5>
 											{#if disaster.resourcesLost.food}
-												<p class="text-xs">🌾 Food: {disaster.resourcesLost.food}</p>
+												<p class="text-xs">
+													🌾 Food: {disaster.resourcesLost.food}
+												</p>
 											{/if}
 											{#if disaster.resourcesLost.water}
-												<p class="text-xs">💧 Water: {disaster.resourcesLost.water}</p>
+												<p class="text-xs">
+													💧 Water: {disaster.resourcesLost.water}
+												</p>
 											{/if}
 											{#if disaster.resourcesLost.wood}
-												<p class="text-xs">🪵 Wood: {disaster.resourcesLost.wood}</p>
+												<p class="text-xs">
+													🪵 Wood: {disaster.resourcesLost.wood}
+												</p>
 											{/if}
 											{#if disaster.resourcesLost.stone}
-												<p class="text-xs">🪨 Stone: {disaster.resourcesLost.stone}</p>
+												<p class="text-xs">
+													🪨 Stone: {disaster.resourcesLost.stone}
+												</p>
 											{/if}
 											{#if disaster.resourcesLost.ore}
-												<p class="text-xs">⛏️ Ore: {disaster.resourcesLost.ore}</p>
+												<p class="text-xs">
+													⛏️ Ore: {disaster.resourcesLost.ore}
+												</p>
 											{/if}
 											{#if getTotalResourceLoss(disaster) === 0}
 												<p class="text-xs opacity-50">No resources lost</p>
@@ -536,13 +579,18 @@
 												>
 											</p>
 											<p class="text-xs opacity-70">
-												Survived: {format(new Date(disaster.timestamp), 'PP')}
+												Survived: {format(
+													new Date(disaster.timestamp),
+													'PP'
+												)}
 											</p>
 										</div>
 									</div>
 
 									<!-- Click to Collapse -->
-									<p class="text-xs text-center opacity-50 italic">Click to collapse</p>
+									<p class="text-xs text-center opacity-50 italic">
+										Click to collapse
+									</p>
 								</div>
 							</div>
 						{/if}

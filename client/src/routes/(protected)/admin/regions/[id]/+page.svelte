@@ -29,8 +29,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Worlds</a
+		<a
+			href="/admin/worlds"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Worlds</a
 		>
 		<span class="text-surface-400">/</span>
 		<a
@@ -61,7 +62,10 @@
 
 				<div class="flex items-center gap-2">
 					<Globe size={16} class="text-surface-400" />
-					<a href="/admin/worlds/{data.region.worldId}" class="text-primary-500 hover:underline">
+					<a
+						href="/admin/worlds/{data.region.worldId}"
+						class="text-primary-500 hover:underline"
+					>
 						{data.region.world.name}
 					</a>
 				</div>
@@ -89,7 +93,9 @@
 				<Layers size={24} />
 				Tiles ({data.region.tiles.length})
 			</h2>
-			<div class="text-sm text-surface-600 dark:text-surface-400">Click a tile to view details</div>
+			<div class="text-sm text-surface-600 dark:text-surface-400">
+				Click a tile to view details
+			</div>
 		</div>
 
 		{#if data.region.tiles.length === 0}
@@ -116,7 +122,8 @@
 					<tbody>
 						{#each data.region.tiles as tile}
 							{@const hasSettlement = tile.settlement}
-							{@const tileColor = tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
+							{@const tileColor =
+								tile.type === 'OCEAN' ? 'text-primary-500' : 'text-success-500'}
 							<tr
 								class="border-b border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
 							>
@@ -135,7 +142,9 @@
 															: '#757575'}"
 											title="Elevation: {tile.elevation.toFixed(3)}"
 										></div>
-										<p class="font-mono text-xs">{tile.id.substring(0, 8)}...</p>
+										<p class="font-mono text-xs">
+											{tile.id.substring(0, 8)}...
+										</p>
 									</div>
 								</td>
 								<td class="p-3 text-center">
@@ -151,19 +160,25 @@
 								<td class="p-3 text-center">
 									<div class="flex items-center justify-center gap-1">
 										<Mountain size={14} class="text-surface-400" />
-										<span class="font-mono text-sm">{tile.elevation.toFixed(3)}</span>
+										<span class="font-mono text-sm"
+											>{tile.elevation.toFixed(3)}</span
+										>
 									</div>
 								</td>
 								<td class="p-3 text-center">
 									<div class="flex items-center justify-center gap-1">
 										<Droplets size={14} class="text-surface-400" />
-										<span class="font-mono text-sm">{tile.precipitation.toFixed(3)}</span>
+										<span class="font-mono text-sm"
+											>{tile.precipitation.toFixed(3)}</span
+										>
 									</div>
 								</td>
 								<td class="p-3 text-center">
 									<div class="flex items-center justify-center gap-1">
 										<Thermometer size={14} class="text-surface-400" />
-										<span class="font-mono text-sm">{tile.temperature.toFixed(3)}</span>
+										<span class="font-mono text-sm"
+											>{tile.temperature.toFixed(3)}</span
+										>
 									</div>
 								</td>
 								<td class="p-3 text-center">
@@ -199,7 +214,8 @@
 				<p class="text-xs text-surface-600 dark:text-surface-400 text-center">
 					Showing {data.region.tiles.length} tiles
 					{#if data.region.tiles.some((t: TileWithRelations) => t.settlement)}
-						• {data.region.tiles.filter((t: TileWithRelations) => t.settlement).length} with settlements
+						• {data.region.tiles.filter((t: TileWithRelations) => t.settlement).length} with
+						settlements
 					{/if}
 				</p>
 			</div>
@@ -208,7 +224,10 @@
 
 	<!-- Back Button -->
 	<div>
-		<a href="/admin/worlds/{data.region.worldId}" class="btn preset-tonal-surface-500 rounded-md">
+		<a
+			href="/admin/worlds/{data.region.worldId}"
+			class="btn preset-tonal-surface-500 rounded-md"
+		>
 			<ArrowLeft size={20} />
 			<span>Back to {data.region.world.name}</span>
 		</a>

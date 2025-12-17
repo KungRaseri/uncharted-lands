@@ -130,7 +130,12 @@ describe('Structures API Wrapper', () => {
 						type: 'TEST',
 						costs: { food: 0, water: 0, wood: 0, stone: 0, ore: 0 },
 						modifiers: [
-							{ type: 'LINEAR', name: 'Test Modifier', description: 'Test description', value: 1 }
+							{
+								type: 'LINEAR',
+								name: 'Test Modifier',
+								description: 'Test description',
+								value: 1
+							}
 						],
 						prerequisites: [{ structureId: 'PREREQ1', minimumLevel: 1 }],
 						constructionTime: 0,
@@ -390,7 +395,9 @@ describe('Structures API Wrapper', () => {
 			it('should throw Error on network failure', async () => {
 				mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-				await expect(fetchStructureMetadata(mockFetch as any)).rejects.toThrow('Network error');
+				await expect(fetchStructureMetadata(mockFetch as any)).rejects.toThrow(
+					'Network error'
+				);
 			});
 
 			it('should throw Error on non-200 response status', async () => {
@@ -428,7 +435,9 @@ describe('Structures API Wrapper', () => {
 					}
 				});
 
-				await expect(fetchStructureMetadata(mockFetch as any)).rejects.toThrow('Invalid JSON');
+				await expect(fetchStructureMetadata(mockFetch as any)).rejects.toThrow(
+					'Invalid JSON'
+				);
 			});
 
 			it('should throw Error if response missing data field', async () => {
@@ -438,7 +447,9 @@ describe('Structures API Wrapper', () => {
 					json: async () => ({}) // Missing 'success' field
 				});
 
-				await expect(fetchStructureMetadata(mockFetch as any)).rejects.toThrow('Unknown error');
+				await expect(fetchStructureMetadata(mockFetch as any)).rejects.toThrow(
+					'Unknown error'
+				);
 			});
 		});
 	});
@@ -491,7 +502,12 @@ describe('Structures API Wrapper', () => {
 						type: 'FARM',
 						costs: { food: 0, water: 0, wood: 50, stone: 20, ore: 10 },
 						modifiers: [
-							{ type: 'LINEAR', name: 'Food Production', description: 'Increases food', value: 10 }
+							{
+								type: 'LINEAR',
+								name: 'Food Production',
+								description: 'Increases food',
+								value: 10
+							}
 						],
 						prerequisites: [],
 						constructionTime: 180,
@@ -774,7 +790,12 @@ describe('Structures API Wrapper', () => {
 					type: 'FREE',
 					costs: { food: 0, water: 0, wood: 0, stone: 0, ore: 0 }, // No costs
 					modifiers: [
-						{ type: 'LINEAR', name: 'Test Modifier', description: 'Test description', value: 1 }
+						{
+							type: 'LINEAR',
+							name: 'Test Modifier',
+							description: 'Test description',
+							value: 1
+						}
 					],
 					prerequisites: [],
 					constructionTime: 0,

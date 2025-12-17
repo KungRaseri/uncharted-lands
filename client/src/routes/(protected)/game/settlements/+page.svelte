@@ -49,7 +49,9 @@
 				<Building2 size={32} />
 				Settlements
 			</h1>
-			<p class="text-surface-600 dark:text-surface-400">Manage and monitor all your settlements</p>
+			<p class="text-surface-600 dark:text-surface-400">
+				Manage and monitor all your settlements
+			</p>
 		</div>
 		<button
 			onclick={handleManualRefresh}
@@ -66,7 +68,10 @@
 	<div class="card preset-filled-surface-100-900 p-4">
 		<div class="flex items-center gap-4">
 			<div class="relative flex-1">
-				<Search size={20} class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" />
+				<Search
+					size={20}
+					class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400"
+				/>
 				<input
 					bind:value={searchTerm}
 					type="search"
@@ -95,7 +100,9 @@
 		</div>
 		{#if searchTerm}
 			<p class="text-sm text-surface-600 dark:text-surface-400 mt-2">
-				Found {filteredSettlements.length} settlement{filteredSettlements.length === 1 ? '' : 's'}
+				Found {filteredSettlements.length} settlement{filteredSettlements.length === 1
+					? ''
+					: 's'}
 			</p>
 		{/if}
 	</div>
@@ -155,7 +162,8 @@
 						>
 							<Home size={14} />
 							<span
-								>{settlement.structures?.length || 0} Structure{settlement.structures?.length === 1
+								>{settlement.structures?.length || 0} Structure{settlement
+									.structures?.length === 1
 									? ''
 									: 's'}</span
 							>
@@ -175,7 +183,9 @@
 								<div
 									class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1"
 								>
-									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">
+									<p
+										class="text-surface-500 dark:text-surface-500 group-hover:text-white/60"
+									>
 										Food
 									</p>
 									<p
@@ -187,7 +197,9 @@
 								<div
 									class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1"
 								>
-									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">
+									<p
+										class="text-surface-500 dark:text-surface-500 group-hover:text-white/60"
+									>
 										Water
 									</p>
 									<p
@@ -199,7 +211,9 @@
 								<div
 									class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1"
 								>
-									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">
+									<p
+										class="text-surface-500 dark:text-surface-500 group-hover:text-white/60"
+									>
 										Wood
 									</p>
 									<p
@@ -211,7 +225,9 @@
 								<div
 									class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1"
 								>
-									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">
+									<p
+										class="text-surface-500 dark:text-surface-500 group-hover:text-white/60"
+									>
 										Stone
 									</p>
 									<p
@@ -223,7 +239,9 @@
 								<div
 									class="bg-surface-200 dark:bg-surface-700 group-hover:bg-white/10 rounded px-2 py-1"
 								>
-									<p class="text-surface-500 dark:text-surface-500 group-hover:text-white/60">
+									<p
+										class="text-surface-500 dark:text-surface-500 group-hover:text-white/60"
+									>
 										Ore
 									</p>
 									<p
@@ -265,7 +283,9 @@
 									>
 										{settlement.name}
 									</a>
-									<p class="text-xs text-surface-500 font-mono">{settlement.id.slice(0, 12)}...</p>
+									<p class="text-xs text-surface-500 font-mono">
+										{settlement.id.slice(0, 12)}...
+									</p>
 								</td>
 								<td class="text-sm">
 									<div class="flex items-center gap-2">
@@ -274,17 +294,30 @@
 									</div>
 								</td>
 								<td>{settlement.structures?.length || 0}</td>
-								<td class="text-center font-semibold">{settlement.storage?.food || 0}</td>
-								<td class="text-center font-semibold">{settlement.storage?.water || 0}</td>
-								<td class="text-center font-semibold">{settlement.storage?.wood || 0}</td>
-								<td class="text-center font-semibold">{settlement.storage?.stone || 0}</td>
-								<td class="text-center font-semibold">{settlement.storage?.ore || 0}</td>
+								<td class="text-center font-semibold"
+									>{settlement.storage?.food || 0}</td
+								>
+								<td class="text-center font-semibold"
+									>{settlement.storage?.water || 0}</td
+								>
+								<td class="text-center font-semibold"
+									>{settlement.storage?.wood || 0}</td
+								>
+								<td class="text-center font-semibold"
+									>{settlement.storage?.stone || 0}</td
+								>
+								<td class="text-center font-semibold"
+									>{settlement.storage?.ore || 0}</td
+								>
 							</tr>
 						{/each}
 					</tbody>
 					<tfoot>
 						<tr>
-							<td colspan="8" class="text-center text-sm text-surface-600 dark:text-surface-400">
+							<td
+								colspan="8"
+								class="text-center text-sm text-surface-600 dark:text-surface-400"
+							>
 								Total Settlements: {filteredSettlements.length}
 								{#if searchTerm}
 									(filtered from {data.settlements.length})

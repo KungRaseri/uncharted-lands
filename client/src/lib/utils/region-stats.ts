@@ -77,7 +77,8 @@ export type RegionTileTooltipOptions = {
  * @returns Formatted tooltip string with newlines
  */
 export function formatRegionTileTooltip(options: RegionTileTooltipOptions): string {
-	const { regionName, regionX, regionY, tileRow, tileCol, elevation, terrainType, stats } = options;
+	const { regionName, regionX, regionY, tileRow, tileCol, elevation, terrainType, stats } =
+		options;
 
 	return `Region: ${regionName || 'Unknown'} (${regionX}, ${regionY})
 Region Avg Elevation: ${stats.avgElevation.toFixed(3)}

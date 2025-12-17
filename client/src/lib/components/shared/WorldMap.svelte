@@ -238,7 +238,8 @@
 		class="flex flex-wrap gap-2 justify-center p-2 bg-surface-100 dark:bg-surface-800 rounded-md"
 	>
 		<button
-			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'satellite'
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode ===
+			'satellite'
 				? 'bg-primary-500 text-white'
 				: 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
 			onclick={() => (mapViewMode = 'satellite')}
@@ -273,7 +274,8 @@
 			Precipitation
 		</button>
 		<button
-			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode === 'political'
+			class="px-3 py-1.5 rounded text-sm font-medium transition-colors {mapViewMode ===
+			'political'
 				? 'bg-primary-500 text-white'
 				: 'bg-surface-300 dark:bg-surface-700 hover:bg-surface-400 dark:hover:bg-surface-600'}"
 			onclick={() => (mapViewMode = 'political')}
@@ -298,7 +300,9 @@
 					<div class="text-center">
 						<p class="text-xs text-surface-600 dark:text-surface-400">Range</p>
 						<p class="font-semibold text-xs">
-							{data.stats.minElevation.toFixed(2)} to {data.stats.maxElevation.toFixed(2)}
+							{data.stats.minElevation.toFixed(2)} to {data.stats.maxElevation.toFixed(
+								2
+							)}
 						</p>
 					</div>
 					<div class="text-center">
@@ -350,14 +354,17 @@
 						{#each data.grid as row, rowIndex}
 							{#each row as tile, colIndex}
 								{#if tile}
-									{@const isHighlighted = highlightedTileId && tile.id === highlightedTileId}
+									{@const isHighlighted =
+										highlightedTileId && tile.id === highlightedTileId}
 									<div
 										class="aspect-square cursor-help
 										hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.8)]
 										dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
 										transition-shadow duration-150
 										{isHighlighted ? 'ring-4 ring-warning-500' : ''}"
-										style="background-color: {getElevationColor(tile.elevation)}"
+										style="background-color: {getElevationColor(
+											tile.elevation
+										)}"
 										title={getRegionTileTooltip(tile, rowIndex, colIndex)}
 									></div>
 								{:else}
@@ -376,16 +383,26 @@
 					{#if isPreviewMode && previewRegions}
 						<!-- Preview Mode (World Creation): Show biome-based colors to match tile view -->
 						{#each previewRegions as region}
-							<div class="border border-surface-400 dark:border-surface-600 p-0 aspect-square">
+							<div
+								class="border border-surface-400 dark:border-surface-600 p-0 aspect-square"
+							>
 								<div class="grid grid-cols-10 gap-0 h-full w-full">
 									{#if region.elevationMap && Array.isArray(region.elevationMap)}
 										{#each region.elevationMap as row, rowIndex}
 											{#if Array.isArray(row)}
 												{#each row as elevation, colIndex}
-													{@const elevationValue = typeof elevation === 'number' ? elevation : 0}
+													{@const elevationValue =
+														typeof elevation === 'number'
+															? elevation
+															: 0}
 													{@const precipValue =
-														region.precipitationMap?.[rowIndex]?.[colIndex] ?? 0}
-													{@const tempValue = region.temperatureMap?.[rowIndex]?.[colIndex] ?? 0}
+														region.precipitationMap?.[rowIndex]?.[
+															colIndex
+														] ?? 0}
+													{@const tempValue =
+														region.temperatureMap?.[rowIndex]?.[
+															colIndex
+														] ?? 0}
 													{@const biomeName = getBiomeNameForPreview(
 														elevationValue,
 														precipValue,
@@ -435,7 +452,12 @@
 								style="grid-row: {gridRow}; grid-column: {gridCol};"
 								title="Region {region.name} ({region.xCoord}, {region.yCoord}) -> Grid ({gridRow}, {gridCol})"
 							>
-								<RegionComponent {region} {mode} {currentPlayerProfileId} {mapViewMode} />
+								<RegionComponent
+									{region}
+									{mode}
+									{currentPlayerProfileId}
+									{mapViewMode}
+								/>
 							</div>
 						{/each}
 					{/if}

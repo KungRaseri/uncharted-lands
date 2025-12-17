@@ -38,7 +38,8 @@
 							{disaster.type.replace(/_/g, ' ')} IN PROGRESS - DO NOT PANIC
 						</h2>
 						<p class="text-sm opacity-90">
-							Duration: {Math.floor(disaster.duration / 60000)} minutes remaining | Current Damage: {damageCount}
+							Duration: {Math.floor(disaster.duration / 60000)} minutes remaining | Current
+							Damage: {damageCount}
 							structures affected
 						</p>
 					</div>
@@ -75,7 +76,9 @@
 		<div
 			class="fixed top-20 right-4 z-40 bg-surface-100-800-token rounded-lg shadow-xl w-96 max-h-96 overflow-hidden"
 		>
-			<div class="p-4 border-b border-surface-300-600-token flex justify-between items-center">
+			<div
+				class="p-4 border-b border-surface-300-600-token flex justify-between items-center"
+			>
 				<h3 class="h4">Disaster Impact Feed</h3>
 				<button
 					type="button"

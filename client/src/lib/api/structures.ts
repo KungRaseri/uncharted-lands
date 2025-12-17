@@ -86,7 +86,9 @@ export async function fetchStructureMetadata(
 		};
 		const costs = structure.costs as ResourceCosts;
 		if (costs.area !== undefined || costs.solar !== undefined || costs.wind !== undefined) {
-			throw new Error(`Invalid structure: contains deprecated area/solar/wind fields (Decision 2)`);
+			throw new Error(
+				`Invalid structure: contains deprecated area/solar/wind fields (Decision 2)`
+			);
 		}
 	}
 

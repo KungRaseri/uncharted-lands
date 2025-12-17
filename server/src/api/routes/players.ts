@@ -93,7 +93,10 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
 
 		// Validate role
 		if (role && !['MEMBER', 'SUPPORT', 'ADMINISTRATOR'].includes(role)) {
-			return sendBadRequestError(res, 'Invalid role. Must be MEMBER, SUPPORT, or ADMINISTRATOR');
+			return sendBadRequestError(
+				res,
+				'Invalid role. Must be MEMBER, SUPPORT, or ADMINISTRATOR'
+			);
 		}
 
 		// Update account

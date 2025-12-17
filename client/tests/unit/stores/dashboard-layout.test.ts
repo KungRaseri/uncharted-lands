@@ -97,8 +97,12 @@ describe('dashboard-layout store', () => {
 			const layout: DashboardLayout = layoutStore.getCurrentLayout();
 
 			for (const panel of layout.panels) {
-				expect(typeof panel.visible, `${panel.id} visible should be boolean`).toBe('boolean');
-				expect(typeof panel.collapsed, `${panel.id} collapsed should be boolean`).toBe('boolean');
+				expect(typeof panel.visible, `${panel.id} visible should be boolean`).toBe(
+					'boolean'
+				);
+				expect(typeof panel.collapsed, `${panel.id} collapsed should be boolean`).toBe(
+					'boolean'
+				);
 			}
 		});
 
@@ -126,7 +130,9 @@ describe('dashboard-layout store', () => {
 
 			// Default layout should have alerts and resource-header visible
 			const alerts = layout.panels.find((p: { id: string }) => p.id === 'alerts');
-			const resourceHeader = layout.panels.find((p: { id: string }) => p.id === 'resource-header');
+			const resourceHeader = layout.panels.find(
+				(p: { id: string }) => p.id === 'resource-header'
+			);
 			const population = layout.panels.find((p: { id: string }) => p.id === 'population');
 
 			expect(alerts?.visible, 'alerts should be visible').toBe(true);
@@ -345,13 +351,17 @@ describe('dashboard-layout store', () => {
 		it('should restore layout from localStorage', () => {
 			// Make changes and save
 			layoutStore.loadLayout('default');
-			const originalPanel = layoutStore.getCurrentLayout().panels.find((p) => p.id === 'alerts');
+			const originalPanel = layoutStore
+				.getCurrentLayout()
+				.panels.find((p) => p.id === 'alerts');
 			const originalCollapsed = originalPanel?.collapsed;
 
 			layoutStore.togglePanel('alerts');
 			layoutStore.saveLayout();
 
-			const modifiedPanel = layoutStore.getCurrentLayout().panels.find((p) => p.id === 'alerts');
+			const modifiedPanel = layoutStore
+				.getCurrentLayout()
+				.panels.find((p) => p.id === 'alerts');
 			expect(modifiedPanel?.collapsed).toBe(!originalCollapsed);
 
 			// Reset to default preset

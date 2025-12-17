@@ -43,8 +43,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/settings" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Settings</a
+		<a
+			href="/admin/settings"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Settings</a
 		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">Structure Templates</span>
@@ -73,8 +74,8 @@
 				</p>
 				<p class="text-warning-800 dark:text-warning-200">
 					Current structures are defined in the database schema as enums. To add or modify
-					structures, update the PostgreSQL enum definitions and run migrations. Dynamic structure
-					management will be added in a future update.
+					structures, update the PostgreSQL enum definitions and run migrations. Dynamic
+					structure management will be added in a future update.
 				</p>
 			</div>
 		</div>
@@ -116,7 +117,9 @@
 			>
 				<div class="flex items-start justify-between mb-4">
 					<div class="flex items-center gap-3">
-						<div class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center">
+						<div
+							class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center"
+						>
 							{#if selectedCategory === 'extractors'}
 								<Hammer size={24} class="text-primary-500" />
 							{:else}
@@ -125,7 +128,9 @@
 						</div>
 						<div>
 							<h3 class="text-lg font-bold">{structure.name}</h3>
-							<span class="badge preset-tonal-primary-500 text-xs">{structure.id}</span>
+							<span class="badge preset-tonal-primary-500 text-xs"
+								>{structure.id}</span
+							>
 						</div>
 					</div>
 					<ChevronRight
@@ -143,9 +148,7 @@
 						<div>
 							<span class="text-surface-600 dark:text-surface-400">Production:</span>
 							<span class="font-mono text-xs ml-2"
-								>{formatResources(
-									structure.baseProduction as Record<string, number | undefined>
-								)}</span
+								>{formatResources(structure.baseProduction as Record)}</span
 							>
 						</div>
 					{/if}
@@ -157,7 +160,9 @@
 					{/if}
 					{#if 'storageBonus' in structure && structure.storageBonus}
 						<div>
-							<span class="text-surface-600 dark:text-surface-400">Storage Bonus:</span>
+							<span class="text-surface-600 dark:text-surface-400"
+								>Storage Bonus:</span
+							>
 							<span class="font-semibold ml-2">+{structure.storageBonus}</span>
 						</div>
 					{/if}
@@ -171,7 +176,7 @@
 						<span class="text-surface-600 dark:text-surface-400">Cost:</span>
 						<span class="font-mono text-xs ml-2"
 							>{formatResources(
-								(structure.baseCost || structure.costs) as Record<string, number | undefined>
+								(structure.baseCost || structure.costs) as Record
 							)}</span
 						>
 					</div>
@@ -195,11 +200,17 @@
 {#if showDetailModal && selectedStructure}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleBackdropKeydown}></div>
+	<div
+		class="modal-backdrop"
+		onclick={handleBackdropClick}
+		onkeydown={handleBackdropKeydown}
+	></div>
 	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-2xl shadow-xl">
 		<header class="mb-6">
 			<div class="flex items-center gap-3 mb-2">
-				<div class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center">
+				<div
+					class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center"
+				>
 					{#if selectedStructure.category === 'EXTRACTOR'}
 						<Hammer size={24} class="text-primary-500" />
 					{:else}
@@ -208,7 +219,9 @@
 				</div>
 				<div>
 					<h3 class="text-2xl font-bold">{selectedStructure.name}</h3>
-					<span class="badge preset-tonal-primary-500 text-xs">{selectedStructure.id}</span>
+					<span class="badge preset-tonal-primary-500 text-xs"
+						>{selectedStructure.id}</span
+					>
 				</div>
 			</div>
 			<p class="text-sm text-surface-600 dark:text-surface-400">
@@ -224,12 +237,16 @@
 				</h4>
 				<div class="grid grid-cols-2 gap-4">
 					<div class="card preset-tonal-surface-500 p-4">
-						<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">Category</div>
+						<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+							Category
+						</div>
 						<div class="font-semibold">{selectedStructure.category}</div>
 					</div>
 					{#if 'baseProduction' in selectedStructure && selectedStructure.baseProduction}
 						<div class="card preset-tonal-success-500 p-4">
-							<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">Production</div>
+							<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+								Production
+							</div>
 							<div class="font-mono text-sm">
 								{formatResources(selectedStructure.baseProduction)}
 							</div>
@@ -237,19 +254,25 @@
 					{/if}
 					{#if 'capacity' in selectedStructure && selectedStructure.capacity}
 						<div class="card preset-tonal-primary-500 p-4">
-							<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">Capacity</div>
+							<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+								Capacity
+							</div>
 							<div class="font-semibold">{selectedStructure.capacity} units</div>
 						</div>
 					{/if}
 					{#if 'storageBonus' in selectedStructure && selectedStructure.storageBonus}
 						<div class="card preset-tonal-primary-500 p-4">
-							<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">Storage Bonus</div>
+							<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+								Storage Bonus
+							</div>
 							<div class="font-semibold">+{selectedStructure.storageBonus}</div>
 						</div>
 					{/if}
 					{#if 'defenseBonus' in selectedStructure && selectedStructure.defenseBonus}
 						<div class="card preset-tonal-warning-500 p-4">
-							<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">Defense Bonus</div>
+							<div class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+								Defense Bonus
+							</div>
 							<div class="font-semibold">+{selectedStructure.defenseBonus}</div>
 						</div>
 					{/if}
@@ -265,7 +288,9 @@
 					<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 						{#each Object.entries(selectedStructure.baseCost) as [resource, amount]}
 							<div>
-								<div class="text-xs text-surface-600 dark:text-surface-400">{resource}</div>
+								<div class="text-xs text-surface-600 dark:text-surface-400">
+									{resource}
+								</div>
 								<div class="font-bold text-lg">{amount}</div>
 							</div>
 						{/each}
@@ -282,7 +307,11 @@
 					<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 						{#each Object.entries(selectedStructure.requirements) as [req, value]}
 							<div>
-								<div class="text-xs text-surface-600 dark:text-surface-400 capitalize">{req}</div>
+								<div
+									class="text-xs text-surface-600 dark:text-surface-400 capitalize"
+								>
+									{req}
+								</div>
 								<div class="font-bold text-lg">{value}</div>
 							</div>
 						{/each}
@@ -315,7 +344,11 @@
 		<footer
 			class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-300 dark:border-surface-700"
 		>
-			<button type="button" class="btn preset-tonal-surface-500 rounded-md" onclick={closeModal}>
+			<button
+				type="button"
+				class="btn preset-tonal-surface-500 rounded-md"
+				onclick={closeModal}
+			>
 				Close
 			</button>
 		</footer>

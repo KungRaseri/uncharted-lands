@@ -297,7 +297,8 @@ async function processTick(io: SocketIOServer): Promise<void> {
 			resourceIntervalSec: RESOURCE_INTERVAL_SEC,
 			populationIntervalSec: POPULATION_INTERVAL_SEC,
 			nextResourceTick: RESOURCE_INTERVAL_SEC - (secondsSinceEpoch % RESOURCE_INTERVAL_SEC),
-			nextPopulationTick: POPULATION_INTERVAL_SEC - (secondsSinceEpoch % POPULATION_INTERVAL_SEC),
+			nextPopulationTick:
+				POPULATION_INTERVAL_SEC - (secondsSinceEpoch % POPULATION_INTERVAL_SEC),
 		});
 	}
 
@@ -583,9 +584,12 @@ async function processSettlementWorldBased(
 						value: row.modifiers.value,
 					});
 				} else {
-					logger.debug(`[TRANSFORM DEBUG] Skipped duplicate modifier for ${structure.name}:`, {
-						name: row.modifiers.name,
-					});
+					logger.debug(
+						`[TRANSFORM DEBUG] Skipped duplicate modifier for ${structure.name}:`,
+						{
+							name: row.modifiers.name,
+						}
+					);
 				}
 			} else {
 				logger.debug(`[TRANSFORM DEBUG] Row ${structureData.indexOf(row)} has no modifier`);
@@ -615,7 +619,8 @@ async function processSettlementWorldBased(
 		// Filter extractors on this specific tile
 		const extractors = structureData
 			.filter(
-				(row) => row.structure.tileId === tile.id && row.structureDef?.category === 'EXTRACTOR'
+				(row) =>
+					row.structure.tileId === tile.id && row.structureDef?.category === 'EXTRACTOR'
 			)
 			.map((row) => ({
 				...row.structure,
@@ -642,7 +647,10 @@ async function processSettlementWorldBased(
 
 		// Run auto-assignment algorithm (only on production ticks, not projections)
 		if (timing.isResourceProductionTime) {
-			const assignmentResult = autoAssignPopulation(totalPopulation, allStructuresForAssignment);
+			const assignmentResult = autoAssignPopulation(
+				totalPopulation,
+				allStructuresForAssignment
+			);
 
 			// Update database with new assignments
 			for (const [structureId, assigned] of assignmentResult.assignments) {
@@ -821,7 +829,13 @@ async function processSettlementWorldBased(
 			}
 
 			// Broadcast waste event if any resources were wasted
-			if (waste.food > 0 || waste.water > 0 || waste.wood > 0 || waste.stone > 0 || waste.ore > 0) {
+			if (
+				waste.food > 0 ||
+				waste.water > 0 ||
+				waste.wood > 0 ||
+				waste.stone > 0 ||
+				waste.ore > 0
+			) {
 				if (roomSize > 0) {
 					io.to(`world:${worldId}`).emit('resource-waste', {
 						settlementId,
@@ -852,7 +866,11 @@ async function processSettlementWorldBased(
 			}
 
 			// Check if settlement has enough resources for population (1 hour buffer)
-			const hasResources = hasResourcesForPopulation(population, structureCount, finalResources);
+			const hasResources = hasResourcesForPopulation(
+				population,
+				structureCount,
+				finalResources
+			);
 
 			if (!hasResources && population > 0 && roomSize > 0) {
 				io.to(`world:${worldId}`).emit('resource-shortage', {
@@ -1054,7 +1072,10 @@ async function processPopulation(
 		);
 
 		// Update database only if population changed
-		if (finalPopulation !== popData.currentPopulation || popState.happiness !== popData.happiness) {
+		if (
+			finalPopulation !== popData.currentPopulation ||
+			popState.happiness !== popData.happiness
+		) {
 			logger.debug('[GAME LOOP] 💾 Updating population in database', {
 				settlementId,
 				before: popData.currentPopulation,

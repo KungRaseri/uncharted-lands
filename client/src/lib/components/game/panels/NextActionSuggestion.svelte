@@ -174,7 +174,10 @@
 	<div class="flex-1 overflow-y-auto p-3 md:p-4 flex flex-col gap-6">
 		{#if sortedSuggestions.length === 0}
 			<!-- Empty State -->
-			<div class="flex flex-col items-center justify-center p-12 md:p-16 text-center" role="status">
+			<div
+				class="flex flex-col items-center justify-center p-12 md:p-16 text-center"
+				role="status"
+			>
 				<span class="text-6xl leading-none mb-4" aria-hidden="true">✅</span>
 				<p class="text-lg font-semibold text-surface-700 dark:text-surface-300 m-0 mb-2">
 					All caught up!
@@ -217,14 +220,17 @@
 
 					<div class="flex flex-col gap-3">
 						<div class="text-2xl leading-none">
-							<span aria-hidden="true">{getCategoryIcon(topSuggestion.category)}</span>
+							<span aria-hidden="true">{getCategoryIcon(topSuggestion.category)}</span
+							>
 							<span class="sr-only">Category: {topSuggestion.category}</span>
 						</div>
 
 						<h3 class="text-xl font-bold text-surface-900 dark:text-surface-100 m-0">
 							{topSuggestion.title}
 						</h3>
-						<p class="text-base leading-relaxed text-surface-700 dark:text-surface-300 m-0">
+						<p
+							class="text-base leading-relaxed text-surface-700 dark:text-surface-300 m-0"
+						>
 							{topSuggestion.reasoning}
 						</p>
 
@@ -234,7 +240,9 @@
 									<span
 										class="flex items-center gap-1.5 text-sm text-surface-600 dark:text-surface-400"
 									>
-										<span class="text-base leading-none" aria-hidden="true">⏱️</span>
+										<span class="text-base leading-none" aria-hidden="true"
+											>⏱️</span
+										>
 										<span>{topSuggestion.estimatedTime}</span>
 									</span>
 								{/if}
@@ -242,7 +250,9 @@
 									<span
 										class="flex items-center gap-1.5 text-sm text-surface-600 dark:text-surface-400"
 									>
-										<span class="text-base leading-none" aria-hidden="true">📈</span>
+										<span class="text-base leading-none" aria-hidden="true"
+											>📈</span
+										>
 										<span>{topSuggestion.impact}</span>
 									</span>
 								{/if}
@@ -292,13 +302,17 @@
 										<span class="text-base leading-none" aria-hidden="true"
 											>{getPriorityIcon(suggestion.priority)}</span
 										>
-										<span class="sr-only">{getPriorityLabel(suggestion.priority)}</span>
+										<span class="sr-only"
+											>{getPriorityLabel(suggestion.priority)}</span
+										>
 									</div>
 									<div class="flex items-center gap-2 flex-1 w-full md:w-auto">
 										<span class="text-sm leading-none" aria-hidden="true"
 											>{getCategoryIcon(suggestion.category)}</span
 										>
-										<h4 class="text-base font-semibold text-surface-900 dark:text-surface-100 m-0">
+										<h4
+											class="text-base font-semibold text-surface-900 dark:text-surface-100 m-0"
+										>
 											{suggestion.title}
 										</h4>
 									</div>
@@ -312,7 +326,9 @@
 									</button>
 								</div>
 
-								<p class="text-sm leading-relaxed text-surface-700 dark:text-surface-300 m-0">
+								<p
+									class="text-sm leading-relaxed text-surface-700 dark:text-surface-300 m-0"
+								>
 									{suggestion.reasoning}
 								</p>
 

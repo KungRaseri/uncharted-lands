@@ -113,7 +113,9 @@
 	);
 
 	// ✅ Sort by quality (best first)
-	const sortedExtractors = $derived([...extractorStructures].sort((a, b) => b.quality - a.quality));
+	const sortedExtractors = $derived(
+		[...extractorStructures].sort((a, b) => b.quality - a.quality)
+	);
 
 	// Get quality color based on resource quality (heatmap: green > yellow > red)
 	function getQualityColor(quality: number): string {
@@ -213,7 +215,9 @@
 								<h4 class="font-semibold text-surface-900 dark:text-surface-100">
 									{extractor.name}
 								</h4>
-								<p class="text-xs text-surface-600 dark:text-surface-400 line-clamp-2">
+								<p
+									class="text-xs text-surface-600 dark:text-surface-400 line-clamp-2"
+								>
 									{extractor.description}
 								</p>
 							</div>
@@ -221,7 +225,9 @@
 
 						<!-- Quality Badge -->
 						<div class="flex items-center gap-2 mb-2">
-							<span class="text-xs text-surface-500 dark:text-surface-400">Quality:</span>
+							<span class="text-xs text-surface-500 dark:text-surface-400"
+								>Quality:</span
+							>
 							<span class={`text-sm font-semibold ${extractor.qualityColor}`}>
 								{extractor.quality}% ({extractor.qualityLabel})
 							</span>
@@ -259,7 +265,9 @@
 			<footer
 				class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-300 dark:border-surface-600"
 			>
-				<button type="button" class="btn variant-ghost-surface" onclick={onClose}>Cancel</button>
+				<button type="button" class="btn variant-ghost-surface" onclick={onClose}
+					>Cancel</button
+				>
 			</footer>
 		</div>
 	</div>

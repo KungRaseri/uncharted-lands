@@ -1,7 +1,15 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import type { PageData } from './$types';
-	import { User, Mail, Shield, Calendar, ArrowLeft, ExternalLink, Building2 } from 'lucide-svelte';
+	import {
+		User,
+		Mail,
+		Shield,
+		Calendar,
+		ArrowLeft,
+		ExternalLink,
+		Building2
+	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -26,8 +34,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/players" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Players</a
+		<a
+			href="/admin/players"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Players</a
 		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">{profile?.username || data.account.email}</span>
@@ -95,7 +104,9 @@
 
 				{#if profile?.username}
 					<div>
-						<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">
+						<div
+							class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1"
+						>
 							Username
 						</div>
 						<p class="font-semibold">{profile.username}</p>
@@ -113,7 +124,9 @@
 
 			<div class="space-y-4">
 				<div>
-					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Role</div>
+					<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">
+						Role
+					</div>
 					<p class="font-semibold">{data.account.role}</p>
 				</div>
 
@@ -194,30 +207,56 @@
 									</div>
 									<div class="flex-1 min-w-0">
 										<p class="font-semibold text-lg mb-1">{settlement.name}</p>
-										<p class="text-xs text-surface-600 dark:text-surface-400 font-mono mb-3">
+										<p
+											class="text-xs text-surface-600 dark:text-surface-400 font-mono mb-3"
+										>
 											ID: {settlement.id}
 										</p>
 
 										<!-- Quick Overview -->
 										<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 											<div>
-												<div class="text-xs text-surface-500 dark:text-surface-400">Structures</div>
-												<div class="font-semibold">{settlement.structures?.length || 0}</div>
-											</div>
-											<div>
-												<div class="text-xs text-surface-500 dark:text-surface-400">Plots</div>
-												<div class="font-semibold">{settlement.plot?.length || 0}</div>
-											</div>
-											<div>
-												<div class="text-xs text-surface-500 dark:text-surface-400">Resources</div>
+												<div
+													class="text-xs text-surface-500 dark:text-surface-400"
+												>
+													Structures
+												</div>
 												<div class="font-semibold">
-													{settlement.storage ? Object.keys(settlement.storage).length : 0}
+													{settlement.structures?.length || 0}
 												</div>
 											</div>
 											<div>
-												<div class="text-xs text-surface-500 dark:text-surface-400">Created</div>
+												<div
+													class="text-xs text-surface-500 dark:text-surface-400"
+												>
+													Plots
+												</div>
+												<div class="font-semibold">
+													{settlement.plot?.length || 0}
+												</div>
+											</div>
+											<div>
+												<div
+													class="text-xs text-surface-500 dark:text-surface-400"
+												>
+													Resources
+												</div>
+												<div class="font-semibold">
+													{settlement.storage
+														? Object.keys(settlement.storage).length
+														: 0}
+												</div>
+											</div>
+											<div>
+												<div
+													class="text-xs text-surface-500 dark:text-surface-400"
+												>
+													Created
+												</div>
 												<div class="font-semibold text-xs">
-													{new Date(settlement.createdAt).toLocaleDateString()}
+													{new Date(
+														settlement.createdAt
+													).toLocaleDateString()}
 												</div>
 											</div>
 										</div>

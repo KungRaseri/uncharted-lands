@@ -18,11 +18,14 @@ export const load = (async ({ params, depends, cookies, fetch: eventFetch }) => 
 
 	// ✅ Use native fetch for external Express API calls
 	// Fetch settlement data (external Express API - requires explicit Cookie header)
-	const settlementResponse = await globalThis.fetch(`${SERVER_API_URL}/settlements/${params.id}`, {
-		headers: {
-			Cookie: `session=${sessionToken}`
+	const settlementResponse = await globalThis.fetch(
+		`${SERVER_API_URL}/settlements/${params.id}`,
+		{
+			headers: {
+				Cookie: `session=${sessionToken}`
+			}
 		}
-	});
+	);
 
 	if (!settlementResponse.ok) {
 		logger.error('[SETTLEMENT DETAIL] Failed to fetch settlement', {

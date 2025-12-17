@@ -119,7 +119,8 @@ async function completeConstruction(
 			settlementId: settlement.id,
 			structureId: newStructure[0].id,
 			structureType: construction.structureType,
-			constructionTime: construction.completesAt!.getTime() - construction.startedAt!.getTime(),
+			constructionTime:
+				construction.completesAt!.getTime() - construction.startedAt!.getTime(),
 			timestamp: currentTime,
 		});
 

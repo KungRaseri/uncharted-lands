@@ -378,7 +378,8 @@ describe('TimeSpan', () => {
 			timespan.minutes = 30;
 			timespan.seconds = 45;
 
-			const expected = 1 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000 + 30 * 60 * 1000 + 45 * 1000;
+			const expected =
+				1 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000 + 30 * 60 * 1000 + 45 * 1000;
 
 			expect(timespan.totalMilliSeconds).toBe(expected);
 		});

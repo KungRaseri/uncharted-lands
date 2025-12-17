@@ -29,8 +29,8 @@
 			Welcome to Uncharted Lands
 		</h1>
 		<p class="text-xl text-surface-600 dark:text-surface-400 max-w-3xl mx-auto">
-			A settlement-building game where you must overcome extreme weather, scarce resources, and
-			hostile creatures while expanding your community and advancing your technology.
+			A settlement-building game where you must overcome extreme weather, scarce resources,
+			and hostile creatures while expanding your community and advancing your technology.
 		</p>
 		<div class="flex gap-4 justify-center flex-wrap">
 			<a href="/game/getting-started" class="btn preset-filled-primary-500">
@@ -59,8 +59,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Construct various structures from basic tents to advanced buildings. Each structure
-					provides unique benefits to help your settlement thrive.
+					Construct various structures from basic tents to advanced buildings. Each
+					structure provides unique benefits to help your settlement thrive.
 				</p>
 			</div>
 
@@ -75,8 +75,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Gather and manage five essential resources: food, water, wood, stone, and ore. Balance
-					production and consumption to keep your settlement running.
+					Gather and manage five essential resources: food, water, wood, stone, and ore.
+					Balance production and consumption to keep your settlement running.
 				</p>
 			</div>
 
@@ -91,8 +91,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Expand your population by building housing structures. More settlers mean more potential,
-					but also greater resource demands.
+					Expand your population by building housing structures. More settlers mean more
+					potential, but also greater resource demands.
 				</p>
 			</div>
 
@@ -102,11 +102,13 @@
 					<div class="text-primary-500">
 						<Zap size={32} />
 					</div>
-					<h3 class="text-xl font-bold text-surface-900 dark:text-surface-100">Energy Systems</h3>
+					<h3 class="text-xl font-bold text-surface-900 dark:text-surface-100">
+						Energy Systems
+					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Harness solar and wind energy to power advanced structures. Manage your tile's energy
-					capacity to support growing infrastructure.
+					Harness solar and wind energy to power advanced structures. Manage your tile's
+					energy capacity to support growing infrastructure.
 				</p>
 			</div>
 
@@ -121,8 +123,8 @@
 					</h3>
 				</div>
 				<p class="text-surface-600 dark:text-surface-400">
-					Build defensive structures like palisades and watchtowers to protect your settlement from
-					hostile creatures and environmental hazards.
+					Build defensive structures like palisades and watchtowers to protect your
+					settlement from hostile creatures and environmental hazards.
 				</p>
 			</div>
 
@@ -156,8 +158,9 @@
 						Every World is Unique
 					</h3>
 					<p class="text-surface-600 dark:text-surface-400">
-						Each game takes place in a procedurally generated world with unique terrain, climate,
-						and resource distribution. Adapt your strategy to the environment you're given.
+						Each game takes place in a procedurally generated world with unique terrain,
+						climate, and resource distribution. Adapt your strategy to the environment
+						you're given.
 					</p>
 					<div class="space-y-3">
 						<div class="flex items-center gap-3">
@@ -226,7 +229,8 @@
 				</div>
 				<h3 class="text-xl font-bold">Scarce Resources</h3>
 				<p class="text-sm">
-					Make strategic decisions about resource allocation in a world where nothing is abundant.
+					Make strategic decisions about resource allocation in a world where nothing is
+					abundant.
 				</p>
 			</div>
 		</div>
@@ -236,8 +240,8 @@
 	<section class="card preset-filled-primary-500 p-8 text-center space-y-6">
 		<h2 class="text-3xl font-bold">Ready to Begin?</h2>
 		<p class="text-lg max-w-2xl mx-auto">
-			Create your first settlement and start your journey in the uncharted lands. Every decision
-			matters. Every resource counts. Can you build a thriving community?
+			Create your first settlement and start your journey in the uncharted lands. Every
+			decision matters. Every resource counts. Can you build a thriving community?
 		</p>
 		<div class="flex gap-4 justify-center flex-wrap">
 			<a href="/game/getting-started" class="btn preset-filled-surface-50-950">

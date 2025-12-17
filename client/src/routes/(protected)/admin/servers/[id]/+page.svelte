@@ -55,8 +55,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/servers" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Servers</a
+		<a
+			href="/admin/servers"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Servers</a
 		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">{data.server.name}</span>
@@ -73,7 +74,9 @@
 					</div>
 					<div>
 						<h1 class="text-3xl font-bold">{data.server.name}</h1>
-						<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">{data.server.id}</p>
+						<p class="text-sm text-surface-600 dark:text-surface-400 font-mono">
+							{data.server.id}
+						</p>
 					</div>
 				</div>
 				<div class="flex items-center gap-2">
@@ -84,7 +87,10 @@
 					>
 						{data.server.status}
 					</span>
-					<button onclick={startEdit} class="btn btn-sm preset-filled-primary-500 rounded-md">
+					<button
+						onclick={startEdit}
+						class="btn btn-sm preset-filled-primary-500 rounded-md"
+					>
 						<Edit size={16} />
 						<span>Edit</span>
 					</button>
@@ -110,7 +116,9 @@
 				</div>
 				<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
 					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Created</p>
-					<p class="font-semibold">{new Date(data.server.createdAt).toLocaleDateString()}</p>
+					<p class="font-semibold">
+						{new Date(data.server.createdAt).toLocaleDateString()}
+					</p>
 				</div>
 			</div>
 
@@ -122,7 +130,9 @@
 					{form.message}
 				</div>
 			{:else if form?.message}
-				<div class="mt-4 p-4 bg-error-500/10 border border-error-500 rounded-lg text-error-500">
+				<div
+					class="mt-4 p-4 bg-error-500/10 border border-error-500 rounded-lg text-error-500"
+				>
 					{form.message}
 				</div>
 			{/if}
@@ -151,7 +161,10 @@
 						</div>
 					</div>
 					<div class="flex items-center gap-2">
-						<button type="submit" class="btn btn-sm preset-filled-success-500 rounded-md">
+						<button
+							type="submit"
+							class="btn btn-sm preset-filled-success-500 rounded-md"
+						>
 							<Save size={16} />
 							<span>Save</span>
 						</button>
@@ -229,7 +242,9 @@
 					Are you sure you want to delete <strong>{data.server.name}</strong>?
 				</p>
 				{#if data.server.worlds.length > 0}
-					<div class="mb-4 p-3 bg-error-500/10 border border-error-500 rounded-lg text-error-500">
+					<div
+						class="mb-4 p-3 bg-error-500/10 border border-error-500 rounded-lg text-error-500"
+					>
 						<p class="font-semibold">Cannot delete this server!</p>
 						<p class="text-sm mt-1">
 							This server has {data.server.worlds.length} world(s). Delete all worlds first.
@@ -237,7 +252,8 @@
 					</div>
 				{:else}
 					<p class="mb-6 text-sm text-error-500">
-						This action cannot be undone. All associated data will be permanently deleted.
+						This action cannot be undone. All associated data will be permanently
+						deleted.
 					</p>
 				{/if}
 
@@ -306,11 +322,17 @@
 						class="card preset-filled-surface-200-700 p-4 hover:preset-tonal-primary-500 transition-colors"
 					>
 						<h3 class="font-bold text-lg mb-2">{world.name}</h3>
-						<p class="text-xs text-surface-600 dark:text-surface-400 font-mono mb-3">{world.id}</p>
+						<p class="text-xs text-surface-600 dark:text-surface-400 font-mono mb-3">
+							{world.id}
+						</p>
 						<div class="space-y-1 text-sm">
-							<div class="flex items-center gap-2 text-surface-600 dark:text-surface-400">
+							<div
+								class="flex items-center gap-2 text-surface-600 dark:text-surface-400"
+							>
 								<Calendar size={14} />
-								<span>Created: {new Date(world.createdAt).toLocaleDateString()}</span>
+								<span
+									>Created: {new Date(world.createdAt).toLocaleDateString()}</span
+								>
 							</div>
 						</div>
 					</a>
@@ -354,7 +376,9 @@
 							</div>
 							<div class="flex-1 min-w-0">
 								<p class="font-semibold truncate">{player.profile.username}</p>
-								<p class="text-xs text-surface-600 dark:text-surface-400 font-mono truncate">
+								<p
+									class="text-xs text-surface-600 dark:text-surface-400 font-mono truncate"
+								>
 									{player.profileId}
 								</p>
 							</div>

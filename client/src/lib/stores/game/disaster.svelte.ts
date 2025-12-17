@@ -132,7 +132,8 @@ class DisasterStore {
 			console.log('[DISASTER] Structure damaged:', data);
 
 			// Calculate damage dealt
-			const oldHealth = this.damageUpdates.length > 0 ? this.damageUpdates.at(-1)!.newHealth : 100;
+			const oldHealth =
+				this.damageUpdates.length > 0 ? this.damageUpdates.at(-1)!.newHealth : 100;
 			const damageDealt = Math.max(0, oldHealth - data.health);
 
 			const update: DamageUpdate = {
@@ -246,7 +247,10 @@ class DisasterStore {
 			}
 
 			// Update emergency repair countdown
-			if (this.emergencyRepairTimeRemaining !== null && this.emergencyRepairTimeRemaining > 0) {
+			if (
+				this.emergencyRepairTimeRemaining !== null &&
+				this.emergencyRepairTimeRemaining > 0
+			) {
 				this.emergencyRepairTimeRemaining -= 1000;
 
 				if (this.emergencyRepairTimeRemaining <= 0) {

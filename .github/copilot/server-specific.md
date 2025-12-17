@@ -151,7 +151,7 @@ const [structure] = await db.transaction(async (tx) => {
   await tx.update(settlementStorage)
     .set({ wood: settlement.wood - cost.wood, stone: settlement.stone - cost.stone })
     .where(eq(settlementStorage.id, settlement.storageId));
-  
+
   // Create structure
   return tx.insert(structures)
     .values({ settlementId, type: structureType })

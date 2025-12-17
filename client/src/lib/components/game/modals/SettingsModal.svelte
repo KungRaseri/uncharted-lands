@@ -127,7 +127,8 @@
 								aria-label={`Toggle ${PANEL_NAMES[panel.id]} panel`}
 								class="w-5 h-5 cursor-pointer m-0"
 							/>
-							<span class="text-[0.9375rem] text-surface-900 dark:text-surface-50 flex-1"
+							<span
+								class="text-[0.9375rem] text-surface-900 dark:text-surface-50 flex-1"
 								>{PANEL_NAMES[panel.id]}</span
 							>
 						</label>
@@ -137,11 +138,17 @@
 
 			<!-- Panel Order Section -->
 			<section class="flex flex-col gap-3">
-				<h3 class="text-lg font-semibold text-surface-900 dark:text-surface-50 m-0">Panel Order</h3>
+				<h3 class="text-lg font-semibold text-surface-900 dark:text-surface-50 m-0">
+					Panel Order
+				</h3>
 				<p class="text-sm text-surface-600 dark:text-surface-400 m-0">
 					Drag to reorder panels, or use Up/Down arrow keys.
 				</p>
-				<DraggablePanelList {panels} panelNames={PANEL_NAMES} onReorder={handlePanelReorder} />
+				<DraggablePanelList
+					{panels}
+					panelNames={PANEL_NAMES}
+					onReorder={handlePanelReorder}
+				/>
 			</section>
 
 			<!-- Actions Section -->
@@ -213,7 +220,9 @@
 					<div class="flex flex-col gap-8 p-4">
 						<!-- Preset Selector Section -->
 						<section class="flex flex-col gap-3">
-							<h3 class="text-lg font-semibold text-surface-900 dark:text-surface-50 m-0">
+							<h3
+								class="text-lg font-semibold text-surface-900 dark:text-surface-50 m-0"
+							>
 								Layout Preset
 							</h3>
 							<p class="text-sm text-surface-600 dark:text-surface-400 m-0">
@@ -227,7 +236,9 @@
 
 						<!-- Panel Visibility Section -->
 						<section class="flex flex-col gap-3">
-							<h3 class="text-lg font-semibold text-surface-900 dark:text-surface-50 m-0">
+							<h3
+								class="text-lg font-semibold text-surface-900 dark:text-surface-50 m-0"
+							>
 								Panel Visibility
 							</h3>
 							<p class="text-sm text-surface-600 dark:text-surface-400 m-0">
@@ -245,7 +256,8 @@
 											onchange={() => handlePanelVisibilityToggle(panel.id)}
 											aria-label={`Toggle ${PANEL_NAMES[panel.id]} panel`}
 										/>
-										<span class="text-[0.9375rem] text-surface-900 dark:text-surface-50 flex-1"
+										<span
+											class="text-[0.9375rem] text-surface-900 dark:text-surface-50 flex-1"
 											>{PANEL_NAMES[panel.id]}</span
 										>
 									</label>
@@ -255,7 +267,9 @@
 
 						<!-- Panel Order Section -->
 						<section class="flex flex-col gap-3">
-							<h3 class="text-lg font-semibold text-surface-900 dark:text-surface-50 m-0">
+							<h3
+								class="text-lg font-semibold text-surface-900 dark:text-surface-50 m-0"
+							>
 								Panel Order
 							</h3>
 							<p class="text-sm text-surface-600 dark:text-surface-400 m-0">

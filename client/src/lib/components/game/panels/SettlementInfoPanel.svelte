@@ -73,7 +73,12 @@
 			viewBox="0 0 24 24"
 			aria-hidden="true"
 		>
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M19 9l-7 7-7-7"
+			/>
 		</svg>
 	</button>
 
@@ -85,7 +90,13 @@
 				class="flex flex-col items-center justify-center h-full text-surface-500 dark:text-surface-400"
 			>
 				<svg class="w-8 h-8 mb-2 animate-spin" fill="none" viewBox="0 0 24 24">
-					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+					<circle
+						class="opacity-25"
+						cx="12"
+						cy="12"
+						r="10"
+						stroke="currentColor"
+						stroke-width="4"
 					></circle>
 					<path
 						class="opacity-75"
@@ -136,7 +147,8 @@
 
 			<!-- Founded Date -->
 			<div class="space-y-1">
-				<span class="block text-sm font-medium text-surface-700 dark:text-surface-300">Founded</span
+				<span class="block text-sm font-medium text-surface-700 dark:text-surface-300"
+					>Founded</span
 				>
 				<p class="text-sm text-surface-600 dark:text-surface-400 m-0">
 					{formatDaysAgo(settlement.createdAt)}
@@ -154,7 +166,9 @@
 							{settlement.resilience}%
 						</span>
 					</div>
-					<div class="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2 overflow-hidden">
+					<div
+						class="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2 overflow-hidden"
+					>
 						<div
 							class="h-full bg-secondary-500 dark:bg-secondary-400 transition-all duration-300"
 							style="width: {settlement.resilience}%"

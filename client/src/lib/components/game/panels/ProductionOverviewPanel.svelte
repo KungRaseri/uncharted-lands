@@ -196,10 +196,14 @@
 								</div>
 							</div>
 							<div class="text-right">
-								<p class="m-0 text-lg font-bold text-primary-600 dark:text-primary-400">
+								<p
+									class="m-0 text-lg font-bold text-primary-600 dark:text-primary-400"
+								>
 									+{formatNumber(hourlyRate)}
 								</p>
-								<p class="m-0 text-xs text-surface-600 dark:text-surface-400">per hour</p>
+								<p class="m-0 text-xs text-surface-600 dark:text-surface-400">
+									per hour
+								</p>
 							</div>
 						</div>
 					{/each}
@@ -218,7 +222,9 @@
 					<!-- Group by type -->
 					{#each Object.entries(extractorsByType) as [type, extractors]}
 						<div class="mb-4">
-							<h4 class="m-0 mb-2 text-xs font-semibold text-surface-600 dark:text-surface-400">
+							<h4
+								class="m-0 mb-2 text-xs font-semibold text-surface-600 dark:text-surface-400"
+							>
 								{getExtractorTypeName(type)} ({extractors.length})
 							</h4>
 							<div class="space-y-2">
@@ -228,7 +234,9 @@
 									>
 										<div class="flex-1">
 											<div class="flex items-center gap-2">
-												<p class="m-0 text-sm font-medium text-surface-900 dark:text-surface-100">
+												<p
+													class="m-0 text-sm font-medium text-surface-900 dark:text-surface-100"
+												>
 													{extractor.name}
 												</p>
 												<span
@@ -238,30 +246,55 @@
 												</span>
 											</div>
 											{#if extractor.location}
-												<p class="m-0 mt-0.5 text-xs text-surface-600 dark:text-surface-400">
-													Location: ({extractor.location.x}, {extractor.location.y})
+												<p
+													class="m-0 mt-0.5 text-xs text-surface-600 dark:text-surface-400"
+												>
+													Location: ({extractor.location.x}, {extractor
+														.location.y})
 												</p>
 											{/if}
 										</div>
 										<div class="flex items-center gap-4">
 											<!-- Health -->
 											<div class="text-center">
-												<p class="m-0 text-xs text-surface-600 dark:text-surface-400">Health</p>
-												<p class="m-0 text-sm font-semibold {getHealthColor(extractor.health)}">
+												<p
+													class="m-0 text-xs text-surface-600 dark:text-surface-400"
+												>
+													Health
+												</p>
+												<p
+													class="m-0 text-sm font-semibold {getHealthColor(
+														extractor.health
+													)}"
+												>
 													{extractor.health}%
 												</p>
 											</div>
 											<!-- Quality -->
 											<div class="text-center">
-												<p class="m-0 text-xs text-surface-600 dark:text-surface-400">Quality</p>
-												<p class="m-0 text-sm font-semibold {getQualityColor(extractor.quality)}">
+												<p
+													class="m-0 text-xs text-surface-600 dark:text-surface-400"
+												>
+													Quality
+												</p>
+												<p
+													class="m-0 text-sm font-semibold {getQualityColor(
+														extractor.quality
+													)}"
+												>
 													{extractor.quality}%
 												</p>
 											</div>
 											<!-- Production -->
 											<div class="text-center">
-												<p class="m-0 text-xs text-surface-600 dark:text-surface-400">Output</p>
-												<p class="m-0 text-sm font-semibold text-success-600 dark:text-success-400">
+												<p
+													class="m-0 text-xs text-surface-600 dark:text-surface-400"
+												>
+													Output
+												</p>
+												<p
+													class="m-0 text-sm font-semibold text-success-600 dark:text-success-400"
+												>
 													+{formatNumber(extractor.production)}/hr
 												</p>
 											</div>

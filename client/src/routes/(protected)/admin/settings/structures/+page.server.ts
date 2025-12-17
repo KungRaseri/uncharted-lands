@@ -79,8 +79,7 @@ export const actions: Actions = {
 		console.log('Update structure:', structureId, enabled);
 
 		return fail(400, {
-			error:
-				'Structure modification requires database implementation. This feature will be added when structure templates are moved to the database.'
+			error: 'Structure modification requires database implementation. This feature will be added when structure templates are moved to the database.'
 		});
 	}
 };

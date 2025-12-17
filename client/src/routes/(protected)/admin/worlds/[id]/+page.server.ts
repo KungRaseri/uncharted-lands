@@ -59,7 +59,12 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 
 		// Use stats from API response (_count property added by server)
 		const worldWithCounts = world as WorldWithRelations & {
-			_count?: { landTiles?: number; oceanTiles?: number; settlements?: number; regions?: number };
+			_count?: {
+				landTiles?: number;
+				oceanTiles?: number;
+				settlements?: number;
+				regions?: number;
+			};
 		};
 		const worldInfo = {
 			landTiles: worldWithCounts._count?.landTiles || 0,
@@ -215,7 +220,9 @@ const generate: Action = async ({ request, params, cookies }) => {
 		});
 
 		if (!response.ok) {
-			const error = await response.json().catch(() => ({ error: 'Failed to start generation' }));
+			const error = await response
+				.json()
+				.catch(() => ({ error: 'Failed to start generation' }));
 			logger.error('[ADMIN WORLD] Failed to start generation', {
 				worldId: params.id,
 				status: response.status,

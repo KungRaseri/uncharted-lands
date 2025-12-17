@@ -9,8 +9,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/settings" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Settings</a
+		<a
+			href="/admin/settings"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Settings</a
 		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">World Generation</span>
@@ -36,9 +37,9 @@
 		</div>
 		<h2 class="text-2xl font-bold mb-3">Coming Soon</h2>
 		<p class="text-surface-600 dark:text-surface-400 max-w-md mx-auto">
-			World generation presets will be available in a future update. This will allow you to create
-			and manage default world generation templates with predefined elevation, precipitation, and
-			temperature settings.
+			World generation presets will be available in a future update. This will allow you to
+			create and manage default world generation templates with predefined elevation,
+			precipitation, and temperature settings.
 		</p>
 	</div>
 </div>

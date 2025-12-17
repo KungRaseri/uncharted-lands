@@ -46,7 +46,8 @@
 		{#if world.regions}
 			<!-- Note: This component needs regions with tiles included in the query -->
 			<p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-				Map display requires detailed tile data. View full world details in the admin section.
+				Map display requires detailed tile data. View full world details in the admin
+				section.
 			</p>
 		{/if}
 	</section>

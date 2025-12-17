@@ -53,14 +53,20 @@
 
 				// Verify store was populated
 				const retrievedResources = resourcesStore.getResources(data.settlement.id);
-				console.log('[SETTLEMENT PAGE] Retrieved from store after init:', retrievedResources);
+				console.log(
+					'[SETTLEMENT PAGE] Retrieved from store after init:',
+					retrievedResources
+				);
 			} else {
 				console.warn('[SETTLEMENT PAGE] No storage data available in settlement');
 			}
 
 			// Initialize population store from population data
 			if (data.settlement.population) {
-				console.log('[SETTLEMENT PAGE] Initializing population:', data.settlement.population);
+				console.log(
+					'[SETTLEMENT PAGE] Initializing population:',
+					data.settlement.population
+				);
 				populationStore.initializeFromServerData(data.settlement.id, {
 					current: data.settlement.population.currentPopulation || 0,
 					capacity: 100, // TODO: Calculate from houses
@@ -80,7 +86,10 @@
 					'[SETTLEMENT PAGE] Initializing structures:',
 					data.settlement.structures.length
 				);
-				structuresStore.initializeStructures(data.settlement.id, data.settlement.structures);
+				structuresStore.initializeStructures(
+					data.settlement.id,
+					data.settlement.structures
+				);
 			} else {
 				console.warn('[SETTLEMENT PAGE] No structures data available in settlement');
 			}
@@ -94,7 +103,9 @@
 
 			// Check if the structure was built in this settlement
 			if (eventData.settlementId === data.settlement?.id) {
-				console.log('[SETTLEMENT PAGE] Structure built in current settlement, refreshing data...');
+				console.log(
+					'[SETTLEMENT PAGE] Structure built in current settlement, refreshing data...'
+				);
 
 				// Invalidate the page data to trigger a reload
 				invalidate('game:settlement');
@@ -115,7 +126,9 @@
 			});
 
 			if (socket && socket.connected && !listenerAttached) {
-				console.log('[SETTLEMENT PAGE] Socket connected, setting up structure:built listener');
+				console.log(
+					'[SETTLEMENT PAGE] Socket connected, setting up structure:built listener'
+				);
 				socket.on('structure:built', handleStructureBuilt);
 				listenerAttached = true;
 			}

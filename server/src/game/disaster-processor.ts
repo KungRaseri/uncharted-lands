@@ -598,7 +598,10 @@ function getRecommendedActions(disasterType: string, severity: string): string[]
 		],
 		DROUGHT: ['Stockpile water reserves immediately', 'Activate water conservation measures'],
 		HEATWAVE: ['Stockpile water reserves immediately', 'Activate water conservation measures'],
-		FLOOD: ['Move resources to higher ground if possible', 'Activate storm barriers if available'],
+		FLOOD: [
+			'Move resources to higher ground if possible',
+			'Activate storm barriers if available',
+		],
 		HURRICANE: [
 			'Move resources to higher ground if possible',
 			'Activate storm barriers if available',
@@ -612,7 +615,10 @@ function getRecommendedActions(disasterType: string, severity: string): string[]
 			'Use fire-resistant structures if available',
 		],
 		BLIZZARD: ['Stockpile fuel and heating resources', 'Ensure population shelter capacity'],
-		EXTREME_COLD: ['Stockpile fuel and heating resources', 'Ensure population shelter capacity'],
+		EXTREME_COLD: [
+			'Stockpile fuel and heating resources',
+			'Ensure population shelter capacity',
+		],
 		PLAGUE: [
 			'Stockpile medicinal herbs and medical supplies',
 			'Activate hospitals and medical facilities',

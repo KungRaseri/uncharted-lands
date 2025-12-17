@@ -197,7 +197,10 @@
 				buildingName: project.name,
 				buildingType: mapBuildingType(project.type),
 				progress: project.progress,
-				timeRemaining: Math.max(0, Math.floor((project.completionTime - Date.now()) / 1000)),
+				timeRemaining: Math.max(
+					0,
+					Math.floor((project.completionTime - Date.now()) / 1000)
+				),
 				resourceCosts: project.resources,
 				queuePosition: index + 1,
 				isActive: true
@@ -390,7 +393,9 @@
 
 	async function handleDemolishBuilding(buildingId: string) {
 		if (
-			!confirm('Are you sure you want to demolish this building? This action cannot be undone.')
+			!confirm(
+				'Are you sure you want to demolish this building? This action cannot be undone.'
+			)
 		) {
 			return;
 		}
@@ -421,7 +426,12 @@
 
 	// ✅ NEW: Handlers for plot slot interactions
 	function handleBuildExtractor(tileId: string, slotPosition: number) {
-		console.log('[Dashboard] Build extractor requested for tile:', tileId, 'slot:', slotPosition);
+		console.log(
+			'[Dashboard] Build extractor requested for tile:',
+			tileId,
+			'slot:',
+			slotPosition
+		);
 		selectedSlot = slotPosition;
 		extractorSelectorOpen = true;
 	}
@@ -529,7 +539,10 @@
 	// Keyboard shortcuts
 	function handleKeyboardShortcut(event: KeyboardEvent) {
 		// Don't trigger if user is typing in an input
-		if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+		if (
+			event.target instanceof HTMLInputElement ||
+			event.target instanceof HTMLTextAreaElement
+		) {
 			return;
 		}
 
@@ -635,7 +648,9 @@
 			class="p-4 bg-white dark:bg-surface-800 rounded-lg border-2 border-dashed border-surface-300 dark:border-surface-600"
 		>
 			<h3 class="m-0 mb-2 capitalize text-surface-900 dark:text-surface-100">{panel.id}</h3>
-			<p class="m-0 text-surface-600 dark:text-surface-400 text-sm">Panel content for {panel.id}</p>
+			<p class="m-0 text-surface-600 dark:text-surface-400 text-sm">
+				Panel content for {panel.id}
+			</p>
 			<p class="mt-1 text-surface-500 dark:text-surface-500 text-[0.8125rem] italic">
 				This panel is not yet implemented.
 			</p>
@@ -652,7 +667,11 @@
 	<!-- Main content with responsive layout -->
 	<div class="flex-1 overflow-hidden">
 		{#if viewport === 'desktop'}
-			<DesktopLayout panels={currentLayout.panels} {settlementId} renderPanel={panelContent} />
+			<DesktopLayout
+				panels={currentLayout.panels}
+				{settlementId}
+				renderPanel={panelContent}
+			/>
 		{:else if viewport === 'tablet'}
 			<TabletLayout panels={currentLayout.panels} {settlementId} renderPanel={panelContent} />
 		{:else}

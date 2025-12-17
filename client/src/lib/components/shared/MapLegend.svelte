@@ -147,7 +147,9 @@
 		<!-- Topographical View Legend (Elevation) -->
 		{#if viewMode === 'topographical'}
 			<div class="space-y-4">
-				<h3 class="text-sm font-semibold text-center mb-1">Topographical View - Elevation</h3>
+				<h3 class="text-sm font-semibold text-center mb-1">
+					Topographical View - Elevation
+				</h3>
 				<div class="text-center text-xs text-surface-600 dark:text-surface-400 mb-3">
 					Values range from ~-1.9 (abyssal depths) to ~2.0+ (extreme peaks)
 				</div>
@@ -160,7 +162,8 @@
 							style="background-color: {TERRAIN_COLORS.ABYSSAL_DEPTHS}"
 						></div>
 						<span class="flex-1"
-							>Abyssal Depths <span class="text-xs text-surface-500">&lt; -0.7</span></span
+							>Abyssal Depths <span class="text-xs text-surface-500">&lt; -0.7</span
+							></span
 						>
 					</div>
 					<div class="flex items-center gap-2">
@@ -178,7 +181,8 @@
 							style="background-color: {TERRAIN_COLORS.DEEP_OCEAN}"
 						></div>
 						<span class="flex-1"
-							>Deep Ocean <span class="text-xs text-surface-500">-0.5 to -0.3</span></span
+							>Deep Ocean <span class="text-xs text-surface-500">-0.5 to -0.3</span
+							></span
 						>
 					</div>
 					<div class="flex items-center gap-2">
@@ -186,7 +190,8 @@
 							class="w-5 h-5 rounded border border-surface-400"
 							style="background-color: {TERRAIN_COLORS.OCEAN}"
 						></div>
-						<span class="flex-1">Ocean <span class="text-xs text-surface-500">-0.3 to 0</span></span
+						<span class="flex-1"
+							>Ocean <span class="text-xs text-surface-500">-0.3 to 0</span></span
 						>
 					</div>
 
@@ -196,7 +201,9 @@
 							class="w-5 h-5 rounded border border-surface-400"
 							style="background-color: {TERRAIN_COLORS.BEACH}"
 						></div>
-						<span class="flex-1">Beach <span class="text-xs text-surface-500">0 to 0.1</span></span>
+						<span class="flex-1"
+							>Beach <span class="text-xs text-surface-500">0 to 0.1</span></span
+						>
 					</div>
 					<div class="flex items-center gap-2">
 						<div
@@ -235,7 +242,8 @@
 							style="background-color: {TERRAIN_COLORS.MOUNTAINS}"
 						></div>
 						<span class="flex-1"
-							>Mountains <span class="text-xs text-surface-500">0.65 to 0.8</span></span
+							>Mountains <span class="text-xs text-surface-500">0.65 to 0.8</span
+							></span
 						>
 					</div>
 					<div class="flex items-center gap-2">
@@ -244,7 +252,8 @@
 							style="background-color: {TERRAIN_COLORS.HIGH_MOUNTAINS}"
 						></div>
 						<span class="flex-1"
-							>High Mountains <span class="text-xs text-surface-500">0.8 to 1.0</span></span
+							>High Mountains <span class="text-xs text-surface-500">0.8 to 1.0</span
+							></span
 						>
 					</div>
 
@@ -255,7 +264,8 @@
 							style="background-color: {TERRAIN_COLORS.ALPINE_PEAKS}"
 						></div>
 						<span class="flex-1"
-							>Alpine Peaks <span class="text-xs text-surface-500">1.0 to 1.5</span></span
+							>Alpine Peaks <span class="text-xs text-surface-500">1.0 to 1.5</span
+							></span
 						>
 					</div>
 					<div class="flex items-center gap-2">
@@ -264,7 +274,8 @@
 							style="background-color: {TERRAIN_COLORS.EXTREME_PEAKS}"
 						></div>
 						<span class="flex-1"
-							>Extreme Peaks <span class="text-xs text-surface-500">&gt; 1.5</span></span
+							>Extreme Peaks <span class="text-xs text-surface-500">&gt; 1.5</span
+							></span
 						>
 					</div>
 				</div>

@@ -50,7 +50,10 @@ export const load = (async ({ locals, cookies, url }) => {
 			if (response.status === 404 && error.code === 'NO_WORLD') {
 				// Redirect admins to world creation, others to a waiting page
 				if (locals.account.role === 'ADMINISTRATOR') {
-					throw redirect(302, '/admin/worlds?message=Please create a world to enable the game map');
+					throw redirect(
+						302,
+						'/admin/worlds?message=Please create a world to enable the game map'
+					);
 				} else {
 					throw redirect(302, '/game?error=no-world');
 				}

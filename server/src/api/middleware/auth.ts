@@ -138,7 +138,8 @@ export const authenticateAdmin = async (
 			profileId: user.profile && !Array.isArray(user.profile) ? user.profile.id : '',
 			email: user.email,
 			username:
-				(user.profile && !Array.isArray(user.profile) ? user.profile.username : null) || user.email,
+				(user.profile && !Array.isArray(user.profile) ? user.profile.username : null) ||
+				user.email,
 			role: user.role,
 		};
 
@@ -210,7 +211,8 @@ export const authenticate = async (
 			profileId: user.profile && !Array.isArray(user.profile) ? user.profile.id : '',
 			email: user.email,
 			username:
-				(user.profile && !Array.isArray(user.profile) ? user.profile.username : null) || user.email,
+				(user.profile && !Array.isArray(user.profile) ? user.profile.username : null) ||
+				user.email,
 			role: user.role,
 		};
 

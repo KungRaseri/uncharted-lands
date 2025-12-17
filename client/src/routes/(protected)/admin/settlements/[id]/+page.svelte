@@ -45,7 +45,9 @@
 			<!-- Info -->
 			<div class="flex-1">
 				<h1 class="text-3xl font-bold mb-2">{settlement.name}</h1>
-				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{settlement.id}</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">
+					{settlement.id}
+				</p>
 
 				<div class="flex flex-wrap gap-3">
 					<span class="badge preset-tonal-secondary-500 text-sm px-3 py-1">
@@ -77,13 +79,17 @@
 			<div class="space-y-4">
 				{#if settlement.playerProfile}
 					<div>
-						<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">
+						<div
+							class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1"
+						>
 							Player
 						</div>
 						<p class="font-semibold">{settlement.playerProfile.username}</p>
 					</div>
 					<div>
-						<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">
+						<div
+							class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1"
+						>
 							Profile ID
 						</div>
 						<p class="font-mono text-sm">{settlement.playerProfile.id}</p>
@@ -98,7 +104,9 @@
 						</a>
 					</div>
 				{:else}
-					<p class="text-surface-600 dark:text-surface-400">No owner information available</p>
+					<p class="text-surface-600 dark:text-surface-400">
+						No owner information available
+					</p>
 				{/if}
 			</div>
 		</div>
@@ -139,7 +147,9 @@
 				{#each settlement.structures as structure}
 					<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-md">
 						<p class="font-semibold mb-1">{structure.type}</p>
-						<p class="text-xs text-surface-600 dark:text-surface-400">Level {structure.level}</p>
+						<p class="text-xs text-surface-600 dark:text-surface-400">
+							Level {structure.level}
+						</p>
 					</div>
 				{/each}
 			</div>
@@ -170,7 +180,9 @@
 
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
-				<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">Created</div>
+				<div class="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">
+					Created
+				</div>
 				<p class="font-semibold">
 					{new Date(settlement.createdAt).toLocaleString('en-US', {
 						year: 'numeric',

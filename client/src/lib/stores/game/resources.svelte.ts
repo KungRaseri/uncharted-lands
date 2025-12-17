@@ -76,7 +76,13 @@ function initializeListeners() {
 			resources: { food: number; water: number; wood: number; stone: number; ore: number };
 			production: { food: number; water: number; wood: number; stone: number; ore: number };
 			consumption: { food: number; water: number; wood: number; stone: number; ore: number };
-			netProduction: { food: number; water: number; wood: number; stone: number; ore: number };
+			netProduction: {
+				food: number;
+				water: number;
+				wood: number;
+				stone: number;
+				ore: number;
+			};
 			population: number;
 			timestamp: number;
 		}) => {
@@ -120,16 +126,20 @@ function initializeListeners() {
 				// Trigger reactivity
 				state.resources = new Map(state.resources);
 
-				console.log('[ResourcesStore] Updated all resources for settlement:', data.settlementId, {
-					resources: data.resources,
-					productionRates: {
-						food: existing.food.productionRate,
-						water: existing.water.productionRate,
-						wood: existing.wood.productionRate,
-						stone: existing.stone.productionRate,
-						ore: existing.ore.productionRate
+				console.log(
+					'[ResourcesStore] Updated all resources for settlement:',
+					data.settlementId,
+					{
+						resources: data.resources,
+						productionRates: {
+							food: existing.food.productionRate,
+							water: existing.water.productionRate,
+							wood: existing.wood.productionRate,
+							stone: existing.stone.productionRate,
+							ore: existing.ore.productionRate
+						}
 					}
-				});
+				);
 			} else {
 				console.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for resource update`
@@ -256,9 +266,18 @@ function initializeListeners() {
 			const existing = state.resources.get(data.settlementId);
 			if (existing && data.resourcesDeducted) {
 				// Deduct resources from current amounts
-				existing.wood.current = Math.max(0, existing.wood.current - data.resourcesDeducted.wood);
-				existing.stone.current = Math.max(0, existing.stone.current - data.resourcesDeducted.stone);
-				existing.ore.current = Math.max(0, existing.ore.current - data.resourcesDeducted.ore);
+				existing.wood.current = Math.max(
+					0,
+					existing.wood.current - data.resourcesDeducted.wood
+				);
+				existing.stone.current = Math.max(
+					0,
+					existing.stone.current - data.resourcesDeducted.stone
+				);
+				existing.ore.current = Math.max(
+					0,
+					existing.ore.current - data.resourcesDeducted.ore
+				);
 
 				existing.lastUpdate = Date.now();
 
@@ -311,9 +330,18 @@ function initializeListeners() {
 			const existing = state.resources.get(data.settlementId);
 			if (existing && data.resourcesDeducted) {
 				// Deduct upgrade costs from current amounts
-				existing.wood.current = Math.max(0, existing.wood.current - data.resourcesDeducted.wood);
-				existing.stone.current = Math.max(0, existing.stone.current - data.resourcesDeducted.stone);
-				existing.ore.current = Math.max(0, existing.ore.current - data.resourcesDeducted.ore);
+				existing.wood.current = Math.max(
+					0,
+					existing.wood.current - data.resourcesDeducted.wood
+				);
+				existing.stone.current = Math.max(
+					0,
+					existing.stone.current - data.resourcesDeducted.stone
+				);
+				existing.ore.current = Math.max(
+					0,
+					existing.ore.current - data.resourcesDeducted.ore
+				);
 
 				existing.lastUpdate = Date.now();
 

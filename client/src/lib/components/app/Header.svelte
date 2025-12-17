@@ -136,7 +136,10 @@
 									// If image fails to load, replace with User icon
 									const parent = e.currentTarget.parentElement;
 									e.currentTarget.remove();
-									const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+									const icon = document.createElementNS(
+										'http://www.w3.org/2000/svg',
+										'svg'
+									);
 									icon.setAttribute('width', '20');
 									icon.setAttribute('height', '20');
 									icon.setAttribute('viewBox', '0 0 24 24');
@@ -171,7 +174,9 @@
 												class="btn w-full justify-start rounded-md
 													{link.isActive ? 'preset-filled-primary-500' : 'hover:preset-tonal-surface-500'}
 												"
-												aria-current={page.route.id?.includes(link.route) ? 'page' : undefined}
+												aria-current={page.route.id?.includes(link.route)
+													? 'page'
+													: undefined}
 												onclick={() => {
 													userMenuOpen = false;
 												}}

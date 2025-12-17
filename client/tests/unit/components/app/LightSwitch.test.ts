@@ -133,7 +133,9 @@ describe('LightSwitch.svelte', () => {
 			await waitFor(() => {
 				expect(localStorage.getItem).toHaveBeenCalledWith('mode');
 				// Should default to light mode
-				const checkbox = document.querySelector('input[type="checkbox"]') as HTMLInputElement;
+				const checkbox = document.querySelector(
+					'input[type="checkbox"]'
+				) as HTMLInputElement;
 				// Component should render even without stored value
 				expect(checkbox || document.querySelector('label')).toBeTruthy();
 			});

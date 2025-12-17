@@ -28,7 +28,8 @@
 				Welcome to Uncharted Lands!
 			</h1>
 			<p class="text-surface-600 dark:text-surface-400">
-				Let's get you started on your journey. Choose your server, world, and create your profile.
+				Let's get you started on your journey. Choose your server, world, and create your
+				profile.
 			</p>
 		</div>
 
@@ -59,7 +60,9 @@
 			<!-- Server Selection -->
 			<div>
 				<label for="server" class="label mb-2">
-					<span class="label-text flex items-center gap-2 text-surface-900 dark:text-surface-100">
+					<span
+						class="label-text flex items-center gap-2 text-surface-900 dark:text-surface-100"
+					>
 						<Server size={18} />
 						Choose Server
 					</span>
@@ -84,7 +87,9 @@
 			<!-- World Selection -->
 			<div>
 				<label for="world" class="label mb-2">
-					<span class="label-text flex items-center gap-2 text-surface-900 dark:text-surface-100">
+					<span
+						class="label-text flex items-center gap-2 text-surface-900 dark:text-surface-100"
+					>
 						<Globe size={18} />
 						Choose World
 					</span>
@@ -106,8 +111,8 @@
 				</select>
 				<p class="text-xs text-surface-600 dark:text-surface-400 mt-1">
 					{#if selectedServer}
-						{availableWorlds.length} world{availableWorlds.length === 1 ? '' : 's'} available on this
-						server
+						{availableWorlds.length} world{availableWorlds.length === 1 ? '' : 's'} available
+						on this server
 					{:else}
 						Choose a server to see available worlds
 					{/if}
@@ -117,7 +122,9 @@
 			<!-- Username -->
 			<div>
 				<label for="username" class="label mb-2">
-					<span class="label-text flex items-center gap-2 text-surface-900 dark:text-surface-100">
+					<span
+						class="label-text flex items-center gap-2 text-surface-900 dark:text-surface-100"
+					>
 						<User size={18} />
 						Choose Username
 					</span>
@@ -154,7 +161,9 @@
 		<!-- Debug Info (remove in production) -->
 		{#if selectedServer || selectedWorld || username}
 			<div class="mt-6 p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
-				<p class="text-xs font-semibold text-surface-700 dark:text-surface-300 mb-2">Selection:</p>
+				<p class="text-xs font-semibold text-surface-700 dark:text-surface-300 mb-2">
+					Selection:
+				</p>
 				<div class="space-y-1 text-xs text-surface-600 dark:text-surface-400 font-mono">
 					{#if selectedServer}
 						<p>Server: {selectedServer}</p>

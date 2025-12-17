@@ -83,7 +83,11 @@
 			HERB_GARDEN: { icon: '🌿', color: 'text-tertiary-500', name: 'Herbs' }
 		};
 		return (
-			resourceMap[extractorType || ''] || { icon: '❓', color: 'text-surface-400', name: 'Unknown' }
+			resourceMap[extractorType || ''] || {
+				icon: '❓',
+				color: 'text-surface-400',
+				name: 'Unknown'
+			}
 		);
 	}
 
@@ -154,11 +158,14 @@
 						<!-- Level & Health -->
 						<div class="flex items-center gap-2 text-[10px]">
 							<span class="text-surface-600-300-token">Lv.{extractor.level}</span>
-							<span class={getHealthColor(extractor.health)}>{extractor.health}%</span>
+							<span class={getHealthColor(extractor.health)}>{extractor.health}%</span
+							>
 						</div>
 
 						<!-- Slot Number -->
-						<span class="text-[10px] text-surface-500-400-token">Slot {slotPosition}</span>
+						<span class="text-[10px] text-surface-500-400-token"
+							>Slot {slotPosition}</span
+						>
 					</div>
 				</button>
 			{:else}
@@ -167,19 +174,24 @@
 					type="button"
 					class="flex-1 card variant-ghost border-2 border-dashed border-surface-300-600-token p-3 hover:variant-soft-primary hover:border-primary-500 transition-all"
 					onclick={() => onBuildExtractor?.(tile.id, slotPosition)}
-					onkeydown={(e) => handleKeydown(e, () => onBuildExtractor?.(tile.id, slotPosition))}
+					onkeydown={(e) =>
+						handleKeydown(e, () => onBuildExtractor?.(tile.id, slotPosition))}
 					aria-label="Build extractor in slot {slotPosition}"
 					transition:fade={{ duration: 200 }}
 				>
 					<div class="flex flex-col items-center gap-1.5">
 						<!-- Plus Icon -->
-						<span class="text-4xl text-primary-500 font-light" aria-hidden="true">+</span>
+						<span class="text-4xl text-primary-500 font-light" aria-hidden="true"
+							>+</span
+						>
 
 						<!-- Label -->
 						<p class="text-xs text-surface-600-300-token">Build</p>
 
 						<!-- Slot Number -->
-						<span class="text-[10px] text-surface-500-400-token">Slot {slotPosition}</span>
+						<span class="text-[10px] text-surface-500-400-token"
+							>Slot {slotPosition}</span
+						>
 					</div>
 				</button>
 			{/if}

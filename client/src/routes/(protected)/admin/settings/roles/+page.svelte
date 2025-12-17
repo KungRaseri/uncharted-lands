@@ -48,8 +48,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/settings" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Settings</a
+		<a
+			href="/admin/settings"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Settings</a
 		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">Roles & Permissions</span>
@@ -87,9 +88,9 @@
 					System Roles (Read-Only)
 				</p>
 				<p class="text-warning-800 dark:text-warning-200">
-					Current roles are defined in the database schema. To modify these roles, you'll need to
-					update the PostgreSQL enum and run migrations. Custom role creation will be added in a
-					future update.
+					Current roles are defined in the database schema. To modify these roles, you'll
+					need to update the PostgreSQL enum and run migrations. Custom role creation will
+					be added in a future update.
 				</p>
 			</div>
 		</div>
@@ -101,12 +102,15 @@
 			<div class="card preset-filled-surface-100-900 p-6">
 				<div class="flex items-start justify-between mb-4">
 					<div class="flex items-center gap-3">
-						<div class="w-12 h-12 rounded-full bg-primary-500/10 flex items-center justify-center">
+						<div
+							class="w-12 h-12 rounded-full bg-primary-500/10 flex items-center justify-center"
+						>
 							<Shield size={24} class="text-primary-500" />
 						</div>
 						<div>
 							<h3 class="text-lg font-bold">{role.name}</h3>
-							<span class="badge {getRoleBadgeClass(role.id)} text-xs">{role.id}</span>
+							<span class="badge {getRoleBadgeClass(role.id)} text-xs">{role.id}</span
+							>
 						</div>
 					</div>
 					{#if role.isSystem}
@@ -153,7 +157,9 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			{#each data.availablePermissions as category}
 				<div>
-					<h3 class="font-bold text-sm text-surface-600 dark:text-surface-400 uppercase mb-3">
+					<h3
+						class="font-bold text-sm text-surface-600 dark:text-surface-400 uppercase mb-3"
+					>
 						{category.category}
 					</h3>
 					<div class="space-y-2">
@@ -179,7 +185,11 @@
 {#if showPermissionsModal && selectedRole}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={handleBackdropClick} onkeydown={handleBackdropKeydown}></div>
+	<div
+		class="modal-backdrop"
+		onclick={handleBackdropClick}
+		onkeydown={handleBackdropKeydown}
+	></div>
 	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-2xl shadow-xl">
 		<header class="mb-6">
 			<div class="flex items-center gap-3 mb-2">
@@ -207,10 +217,14 @@
 			{:else}
 				{#each data.availablePermissions as category}
 					{@const rolePerms = selectedRole.permissions}
-					{@const categoryPerms = category.permissions.filter((p) => rolePerms.includes(p.id))}
+					{@const categoryPerms = category.permissions.filter((p) =>
+						rolePerms.includes(p.id)
+					)}
 					{#if categoryPerms.length > 0}
 						<div>
-							<h4 class="font-bold text-sm text-surface-600 dark:text-surface-400 uppercase mb-3">
+							<h4
+								class="font-bold text-sm text-surface-600 dark:text-surface-400 uppercase mb-3"
+							>
 								{category.category}
 							</h4>
 							<div class="space-y-2">
@@ -220,11 +234,15 @@
 									>
 										<Check size={18} class="text-success-500 shrink-0 mt-0.5" />
 										<div class="flex-1 min-w-0">
-											<div class="font-semibold text-sm">{permission.name}</div>
+											<div class="font-semibold text-sm">
+												{permission.name}
+											</div>
 											<div class="font-mono text-xs text-primary-500 mb-1">
 												{permission.id}
 											</div>
-											<div class="text-xs text-surface-600 dark:text-surface-400">
+											<div
+												class="text-xs text-surface-600 dark:text-surface-400"
+											>
 												{permission.description}
 											</div>
 										</div>
@@ -240,7 +258,11 @@
 		<footer
 			class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-300 dark:border-surface-700"
 		>
-			<button type="button" class="btn preset-tonal-surface-500 rounded-md" onclick={closeModals}>
+			<button
+				type="button"
+				class="btn preset-tonal-surface-500 rounded-md"
+				onclick={closeModals}
+			>
 				Close
 			</button>
 		</footer>

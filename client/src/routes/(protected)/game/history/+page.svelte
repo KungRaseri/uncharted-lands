@@ -55,7 +55,9 @@
 					<span class="text-sm font-medium mb-2">Filter</span>
 					<select bind:value={filterType} class="select">
 						{#each activityTypes as type}
-							<option value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
+							<option value={type}
+								>{type.charAt(0).toUpperCase() + type.slice(1)}</option
+							>
 						{/each}
 					</select>
 				</label>
@@ -70,7 +72,8 @@
 			<div>
 				<h3 class="text-lg font-bold mb-2">Coming Soon</h3>
 				<p class="mb-3">
-					The Activity History system is currently under development. This feature will track:
+					The Activity History system is currently under development. This feature will
+					track:
 				</p>
 				<ul class="list-disc list-inside space-y-1">
 					<li>Settlement founding and development events</li>
@@ -86,17 +89,23 @@
 
 	<!-- Placeholder Timeline -->
 	<div class="card preset-filled-surface-100-900 p-6 opacity-50">
-		<h2 class="text-xl font-bold mb-4 text-surface-900 dark:text-surface-100">Recent Activity</h2>
+		<h2 class="text-xl font-bold mb-4 text-surface-900 dark:text-surface-100">
+			Recent Activity
+		</h2>
 		<div class="space-y-4">
 			{#each [1, 2, 3] as item}
-				<div class="flex gap-4 items-start p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex gap-4 items-start p-4 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div
 						class="w-10 h-10 rounded-full bg-surface-300 dark:bg-surface-600 flex items-center justify-center shrink-0"
 					>
 						<Clock size={20} class="text-surface-500" />
 					</div>
 					<div class="flex-1">
-						<div class="h-4 bg-surface-300 dark:bg-surface-600 rounded w-3/4 mb-2"></div>
+						<div
+							class="h-4 bg-surface-300 dark:bg-surface-600 rounded w-3/4 mb-2"
+						></div>
 						<div class="h-3 bg-surface-300 dark:bg-surface-600 rounded w-1/2"></div>
 					</div>
 				</div>
@@ -107,6 +116,8 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
+			← Back to Game Overview
+		</a>
 	</div>
 </div>

@@ -44,7 +44,11 @@ export default mergeConfig(
 				provider: 'v8',
 				all: false,
 				reporter: ['text', 'json', 'html', 'lcov'],
-				include: ['src/lib/game/**/*.{js,ts}', 'src/lib/utils/**/*.{js,ts}', 'src/lib/timespan.ts'],
+				include: [
+					'src/lib/game/**/*.{js,ts}',
+					'src/lib/utils/**/*.{js,ts}',
+					'src/lib/timespan.ts'
+				],
 				exclude: [
 					'**/*.test.{js,ts}',
 					'**/*.spec.{js,ts}',

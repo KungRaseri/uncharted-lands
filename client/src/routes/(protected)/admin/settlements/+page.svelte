@@ -47,7 +47,9 @@
 		</div>
 		{#if searchTerm}
 			<p class="text-sm text-surface-600 dark:text-surface-400 mt-2">
-				Found {filteredSettlements.length} settlement{filteredSettlements.length === 1 ? '' : 's'}
+				Found {filteredSettlements.length} settlement{filteredSettlements.length === 1
+					? ''
+					: 's'}
 			</p>
 		{/if}
 	</div>
@@ -91,7 +93,9 @@
 										</div>
 										<div>
 											<p class="font-semibold">{settlement.name}</p>
-											<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">
+											<p
+												class="text-xs text-surface-600 dark:text-surface-400 font-mono"
+											>
 												{settlement.id}
 											</p>
 										</div>
@@ -100,7 +104,9 @@
 								<td>
 									<div class="flex items-center gap-2">
 										<User size={14} class="text-surface-400" />
-										<span class="text-sm">{settlement.playerProfile?.username || 'Unknown'}</span>
+										<span class="text-sm"
+											>{settlement.playerProfile?.username || 'Unknown'}</span
+										>
 									</div>
 								</td>
 								<td>
@@ -116,7 +122,11 @@
 								<td>
 									<div class="flex items-center gap-2 text-sm">
 										<Calendar size={14} class="text-surface-400" />
-										<span>{new Date(settlement.createdAt).toLocaleDateString()}</span>
+										<span
+											>{new Date(
+												settlement.createdAt
+											).toLocaleDateString()}</span
+										>
 									</div>
 								</td>
 								<td class="text-right">
@@ -133,7 +143,10 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<td colspan="6" class="text-center text-sm text-surface-600 dark:text-surface-400">
+							<td
+								colspan="6"
+								class="text-center text-sm text-surface-600 dark:text-surface-400"
+							>
 								Total Settlements: {filteredSettlements.length}
 								{#if searchTerm}
 									(filtered from {data.settlements.length})

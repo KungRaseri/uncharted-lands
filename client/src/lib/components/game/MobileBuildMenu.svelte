@@ -64,7 +64,10 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error('[MobileBuildMenu] API Error Response:', JSON.stringify(result, null, 2));
+				console.error(
+					'[MobileBuildMenu] API Error Response:',
+					JSON.stringify(result, null, 2)
+				);
 				alert(result.message || 'Failed to create structure');
 				return;
 			}
@@ -135,11 +138,15 @@
 					<h3 class="text-base font-semibold mb-1 text-surface-900 dark:text-surface-100">
 						{structure.displayName}
 					</h3>
-					<p class="m-0 text-sm text-surface-600 dark:text-surface-400 flex flex-wrap gap-2">
+					<p
+						class="m-0 text-sm text-surface-600 dark:text-surface-400 flex flex-wrap gap-2"
+					>
 						{#if structure.costs}
 							{#each Object.entries(structure.costs) as [resource, amount]}
 								{#if amount > 0}
-									<span class="bg-surface-200 dark:bg-surface-700 px-2 py-0.5 rounded text-xs">
+									<span
+										class="bg-surface-200 dark:bg-surface-700 px-2 py-0.5 rounded text-xs"
+									>
 										{amount}
 										{resource}
 									</span>

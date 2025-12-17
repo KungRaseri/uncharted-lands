@@ -148,7 +148,8 @@
 				aria-label="Population capacity usage"
 			>
 				<div
-					class="h-full transition-all duration-300 rounded-md {capacityWarning === 'normal'
+					class="h-full transition-all duration-300 rounded-md {capacityWarning ===
+					'normal'
 						? 'bg-success-500 dark:bg-success-400'
 						: capacityWarning === 'warning'
 							? 'bg-warning-500 dark:bg-warning-400'
@@ -192,7 +193,8 @@
 				aria-label="{happinessLabel}, {population.happiness}%"
 			>
 				<span
-					class="text-3xl font-bold tabular-nums leading-none {happinessLevel === 'very-happy'
+					class="text-3xl font-bold tabular-nums leading-none {happinessLevel ===
+					'very-happy'
 						? 'text-success-600 dark:text-success-400'
 						: happinessLevel === 'happy'
 							? 'text-success-500 dark:text-success-400'
@@ -218,7 +220,8 @@
 				aria-label="Happiness level"
 			>
 				<div
-					class="h-full transition-all duration-300 rounded-md {happinessLevel === 'very-happy'
+					class="h-full transition-all duration-300 rounded-md {happinessLevel ===
+					'very-happy'
 						? 'bg-success-600 dark:bg-success-400'
 						: happinessLevel === 'happy'
 							? 'bg-success-500 dark:bg-success-400'
@@ -274,7 +277,9 @@
 						<span class="text-xs font-medium text-surface-600 dark:text-surface-400">
 							Immigrants
 						</span>
-						<span class="text-xl font-bold text-surface-900 dark:text-surface-100 tabular-nums">
+						<span
+							class="text-xl font-bold text-surface-900 dark:text-surface-100 tabular-nums"
+						>
 							{formatNumber(population.immigrants)}
 						</span>
 					</div>
@@ -285,9 +290,12 @@
 				>
 					<span class="text-xl leading-none" aria-hidden="true">⬅️</span>
 					<div class="flex flex-col gap-0.5">
-						<span class="text-xs font-medium text-surface-600 dark:text-surface-400">Emigrants</span
+						<span class="text-xs font-medium text-surface-600 dark:text-surface-400"
+							>Emigrants</span
 						>
-						<span class="text-xl font-bold text-surface-900 dark:text-surface-100 tabular-nums">
+						<span
+							class="text-xl font-bold text-surface-900 dark:text-surface-100 tabular-nums"
+						>
 							{formatNumber(population.emigrants)}
 						</span>
 					</div>

@@ -660,9 +660,8 @@ async function seedTiles(regionResult: { created: number; regions: RegionRecord[
 	// Dynamic import of utility functions (only loaded in development)
 	const { normalizeValue } = await import('../game/world-generator.js');
 	const { getAllBiomes, findBiome } = await import('./queries.js');
-	const { calculateResourceQuality, calculatePlotSlots, determineSpecialResource } = await import(
-		'../utils/resource-quality.js'
-	);
+	const { calculateResourceQuality, calculatePlotSlots, determineSpecialResource } =
+		await import('../utils/resource-quality.js');
 
 	// Load all biomes from database
 	const allBiomes = await getAllBiomes();
@@ -744,7 +743,9 @@ async function seedTiles(regionResult: { created: number; regions: RegionRecord[
 
 		processedRegions++;
 		if (processedRegions % 10 === 0) {
-			logger.info(`[SEED] Processed ${processedRegions}/${regionResult.regions.length} regions`);
+			logger.info(
+				`[SEED] Processed ${processedRegions}/${regionResult.regions.length} regions`
+			);
 		}
 	}
 
@@ -782,9 +783,8 @@ async function seedSettlementModifiers(settlementIds: string[]) {
 	logger.info('[SEED] Starting settlement modifier aggregation for test data...');
 
 	// Dynamic import to avoid loading in production when not needed
-	const { aggregateSettlementModifiers } = await import(
-		'../game/settlement-modifier-aggregator.js'
-	);
+	const { aggregateSettlementModifiers } =
+		await import('../game/settlement-modifier-aggregator.js');
 
 	let successCount = 0;
 	let errorCount = 0;

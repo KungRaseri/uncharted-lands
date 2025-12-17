@@ -90,7 +90,9 @@ test.describe('Resource Production Flow', () => {
 
 		if (!elevateResponse.ok()) {
 			const errorText = await elevateResponse.text();
-			throw new Error(`Failed to elevate user to admin: ${elevateResponse.status()} ${errorText}`);
+			throw new Error(
+				`Failed to elevate user to admin: ${elevateResponse.status()} ${errorText}`
+			);
 		}
 
 		const elevateData = await elevateResponse.json();

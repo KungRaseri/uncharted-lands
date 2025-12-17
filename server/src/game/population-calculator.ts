@@ -78,7 +78,9 @@ export function calculateMorale(structures: Structure[]): number {
 
 	for (const structure of structures) {
 		// Look for morale modifiers
-		const moraleModifier = structure.modifiers.find((m) => m.name === MODIFIER_NAMES.MORALE_BONUS);
+		const moraleModifier = structure.modifiers.find(
+			(m) => m.name === MODIFIER_NAMES.MORALE_BONUS
+		);
 
 		if (moraleModifier) {
 			morale += moraleModifier.value;
@@ -192,7 +194,8 @@ export function calculateDisasterPreparedness(
 
 	// Warning systems (up to 15 points)
 	const hasWatchtower = structures.some(
-		(s) => s.name.toLowerCase().includes('watchtower') || s.name.toLowerCase().includes('warning')
+		(s) =>
+			s.name.toLowerCase().includes('watchtower') || s.name.toLowerCase().includes('warning')
 	);
 	if (hasWatchtower) {
 		score += 15;
@@ -357,7 +360,8 @@ export function calculateImmigrationChance(
 	}
 
 	// Higher happiness = higher chance
-	const happinessFactor = (happiness - HAPPINESS_THRESHOLD_HIGH) / (100 - HAPPINESS_THRESHOLD_HIGH);
+	const happinessFactor =
+		(happiness - HAPPINESS_THRESHOLD_HIGH) / (100 - HAPPINESS_THRESHOLD_HIGH);
 
 	// Lower population relative to capacity = higher chance
 	const capacityFactor = 1 - currentPop / capacity;

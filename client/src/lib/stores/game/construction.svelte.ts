@@ -49,7 +49,10 @@ function initializeListeners(): void {
 	socket.on(
 		'construction-started',
 		(data: { settlementId: string; project: ConstructionProject }) => {
-			const currentState = state.construction.get(data.settlementId) || { active: [], queued: [] };
+			const currentState = state.construction.get(data.settlementId) || {
+				active: [],
+				queued: []
+			};
 
 			// Add to active projects
 			const updatedActive = [...currentState.active, data.project];
@@ -137,7 +140,10 @@ function initializeListeners(): void {
 	socket.on(
 		'construction-queued',
 		(data: { settlementId: string; project: ConstructionProject }) => {
-			const currentState = state.construction.get(data.settlementId) || { active: [], queued: [] };
+			const currentState = state.construction.get(data.settlementId) || {
+				active: [],
+				queued: []
+			};
 
 			// Add to queued projects
 			const updatedQueued = [...currentState.queued, data.project];

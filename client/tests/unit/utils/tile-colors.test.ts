@@ -115,7 +115,9 @@ describe('Tile Color Utilities', () => {
 			});
 
 			it('should not return beach color at boundary 0.05', () => {
-				expect(getTileColor(0.05, 'GRASSLAND_TEMPERATE', 'LAND')).not.toBe('rgb(244, 228, 193)');
+				expect(getTileColor(0.05, 'GRASSLAND_TEMPERATE', 'LAND')).not.toBe(
+					'rgb(244, 228, 193)'
+				);
 			});
 		});
 
@@ -184,7 +186,9 @@ describe('Tile Color Utilities', () => {
 				expect(getTileColor(0.05, 'GRASSLAND_TEMPERATE', 'LAND')).toBe(
 					BIOME_COLORS.GRASSLAND_TEMPERATE
 				);
-				expect(getTileColor(0.049, 'GRASSLAND_TEMPERATE', 'LAND')).toBe('rgb(244, 228, 193)');
+				expect(getTileColor(0.049, 'GRASSLAND_TEMPERATE', 'LAND')).toBe(
+					'rgb(244, 228, 193)'
+				);
 			});
 
 			it('should handle extreme elevation values', () => {
@@ -269,7 +273,9 @@ describe('Tile Color Utilities', () => {
 
 		it('should handle boundary values correctly', () => {
 			// At exact threshold, we're in the NEXT category (condition is <, not <=)
-			expect(getElevationColor(ELEVATION_THRESHOLDS.ABYSSAL_DEPTHS)).toBe(TERRAIN_COLORS.ABYSS);
+			expect(getElevationColor(ELEVATION_THRESHOLDS.ABYSSAL_DEPTHS)).toBe(
+				TERRAIN_COLORS.ABYSS
+			);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.ABYSS)).toBe(TERRAIN_COLORS.DEEP_OCEAN);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.DEEP_OCEAN)).toBe(TERRAIN_COLORS.OCEAN);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.OCEAN)).toBe(TERRAIN_COLORS.BEACH);
@@ -277,7 +283,9 @@ describe('Tile Color Utilities', () => {
 			expect(getElevationColor(ELEVATION_THRESHOLDS.PLAINS)).toBe(TERRAIN_COLORS.FOREST);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.FOREST)).toBe(TERRAIN_COLORS.HILLS);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.HILLS)).toBe(TERRAIN_COLORS.MOUNTAINS);
-			expect(getElevationColor(ELEVATION_THRESHOLDS.MOUNTAINS)).toBe(TERRAIN_COLORS.HIGH_MOUNTAINS);
+			expect(getElevationColor(ELEVATION_THRESHOLDS.MOUNTAINS)).toBe(
+				TERRAIN_COLORS.HIGH_MOUNTAINS
+			);
 			expect(getElevationColor(ELEVATION_THRESHOLDS.HIGH_MOUNTAINS)).toBe(
 				TERRAIN_COLORS.ALPINE_PEAKS
 			);
@@ -304,7 +312,9 @@ describe('Tile Color Utilities', () => {
 		});
 
 		it('should match elevation color categories', () => {
-			const testElevations = [-0.8, -0.6, -0.4, -0.1, 0.05, 0.2, 0.4, 0.6, 0.7, 0.9, 1.2, 1.8];
+			const testElevations = [
+				-0.8, -0.6, -0.4, -0.1, 0.05, 0.2, 0.4, 0.6, 0.7, 0.9, 1.2, 1.8
+			];
 			for (const elevation of testElevations) {
 				const type = getTerrainType(elevation);
 				const color = getElevationColor(elevation);
@@ -325,7 +335,9 @@ describe('Tile Color Utilities', () => {
 		});
 
 		it('should return consistent data across elevation ranges', () => {
-			const testElevations = [-0.8, -0.6, -0.4, -0.1, 0.05, 0.2, 0.4, 0.6, 0.7, 0.9, 1.2, 1.8];
+			const testElevations = [
+				-0.8, -0.6, -0.4, -0.1, 0.05, 0.2, 0.4, 0.6, 0.7, 0.9, 1.2, 1.8
+			];
 			for (const elevation of testElevations) {
 				const data = getTerrainData(elevation);
 				expect(data.color).toBe(getElevationColor(elevation));

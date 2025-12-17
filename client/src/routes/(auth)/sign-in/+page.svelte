@@ -69,7 +69,9 @@
 					<span>Remember me</span>
 				</label>
 
-				<a href="forgot-password" class="font-medium hover:underline">Forgot your password?</a>
+				<a href="forgot-password" class="font-medium hover:underline"
+					>Forgot your password?</a
+				>
 			</div>
 
 			{#if form?.email}
@@ -85,7 +87,9 @@
 								{:else if form?.missingFields}
 									<span>Please provide both email and password.</span>
 								{:else if form?.invalid}
-									<span>Login failed. Please check your credentials and try again.</span>
+									<span
+										>Login failed. Please check your credentials and try again.</span
+									>
 								{:else}
 									<span>An error occurred. Please try again.</span>
 								{/if}

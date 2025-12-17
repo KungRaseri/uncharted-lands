@@ -394,7 +394,9 @@ describe('BuildingsListPanel', () => {
 				}
 			});
 
-			const progressbar = screen.getByRole('progressbar', { name: /Structure health: 100%/i });
+			const progressbar = screen.getByRole('progressbar', {
+				name: /Structure health: 100%/i
+			});
 			expect(progressbar).toBeInTheDocument();
 			expect(progressbar).toHaveAttribute('aria-valuenow', '100');
 			expect(progressbar).toHaveAttribute('aria-valuemin', '0');

@@ -28,7 +28,11 @@
 		>
 			<div class="flex justify-between items-center mb-6">
 				<h2 class="h2">Disaster Aftermath Report</h2>
-				<button type="button" onclick={closeModal} class="btn btn-icon variant-filled-surface">
+				<button
+					type="button"
+					onclick={closeModal}
+					class="btn btn-icon variant-filled-surface"
+				>
 					✕
 				</button>
 			</div>
@@ -45,7 +49,9 @@
 				</div>
 				<div class="card p-4">
 					<p class="text-xs text-surface-600-300-token">Structures Destroyed</p>
-					<p class="text-2xl font-bold text-purple-600">{aftermathSummary.structuresDestroyed}</p>
+					<p class="text-2xl font-bold text-purple-600">
+						{aftermathSummary.structuresDestroyed}
+					</p>
 				</div>
 				<div class="card p-4">
 					<p class="text-xs text-surface-600-300-token">Casualties</p>
@@ -112,7 +118,8 @@
 				<h3 class="h4 mb-4">Additional Impact</h3>
 				<div class="space-y-2">
 					<p class="text-sm">
-						<span class="font-medium">Happiness Loss:</span> -{aftermathSummary.happinessLoss}
+						<span class="font-medium">Happiness Loss:</span>
+						-{aftermathSummary.happinessLoss}
 					</p>
 					<p class="text-sm">
 						<span class="font-medium">Emigration Increase:</span> +{(
@@ -131,7 +138,11 @@
 				<button type="button" onclick={repairAll} class="btn variant-filled-primary flex-1">
 					{emergencyRepairActive ? 'Repair All (Emergency)' : 'Repair All'}
 				</button>
-				<button type="button" onclick={requestAid} class="btn variant-filled-surface flex-1">
+				<button
+					type="button"
+					onclick={requestAid}
+					class="btn variant-filled-surface flex-1"
+				>
 					Request Aid from Allies
 				</button>
 				<button type="button" onclick={closeModal} class="btn variant-filled-surface">

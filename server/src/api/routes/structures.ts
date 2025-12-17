@@ -88,7 +88,9 @@ router.get('/metadata', async (req: Request, res: Response) => {
 				// Skip structures without proper type definition
 				const structureType = dbStructure.extractorType || dbStructure.buildingType;
 				if (!structureType) {
-					logger.warn(`[API] Structure missing type: ${dbStructure.name} (id: ${dbStructure.id})`);
+					logger.warn(
+						`[API] Structure missing type: ${dbStructure.name} (id: ${dbStructure.id})`
+					);
 					return null;
 				}
 
@@ -376,7 +378,11 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 		const result = await db.transaction(async (tx) => {
 			// ✅ Phase 4: Pass full Structure object (not string)
 			// Validate and deduct resources using the structureDefinition object
-			const validation = await validateAndDeductResources(tx, settlementId, structureDefinition);
+			const validation = await validateAndDeductResources(
+				tx,
+				settlementId,
+				structureDefinition
+			);
 
 			if (!validation.success) {
 				const error = new Error('INSUFFICIENT_RESOURCES') as Error & {
@@ -394,7 +400,8 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 					structureId: structureDefinition.id,
 					settlementId,
 					tileId: structureDefinition.category === 'EXTRACTOR' ? tileId : null,
-					slotPosition: structureDefinition.category === 'EXTRACTOR' ? slotPosition : null,
+					slotPosition:
+						structureDefinition.category === 'EXTRACTOR' ? slotPosition : null,
 					level: 1,
 				})
 				.returning();
@@ -453,9 +460,8 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 
 		// ✅ Phase 4: Trigger settlement modifier recalculation after structure creation
 		try {
-			const { aggregateSettlementModifiers } = await import(
-				'../../game/settlement-modifier-aggregator.js'
-			);
+			const { aggregateSettlementModifiers } =
+				await import('../../game/settlement-modifier-aggregator.js');
 			await aggregateSettlementModifiers(settlementId);
 			logger.debug('[API] Settlement modifiers recalculated after structure creation', {
 				settlementId,
@@ -463,11 +469,14 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			});
 		} catch (aggError) {
 			// Log error but don't fail the structure creation operation
-			logger.error('[API] Failed to recalculate settlement modifiers after structure creation', {
-				settlementId,
-				structureId: result.structure.id,
-				error: aggError instanceof Error ? aggError.message : 'Unknown error',
-			});
+			logger.error(
+				'[API] Failed to recalculate settlement modifiers after structure creation',
+				{
+					settlementId,
+					structureId: result.structure.id,
+					error: aggError instanceof Error ? aggError.message : 'Unknown error',
+				}
+			);
 		}
 
 		// ✅ IMMEDIATE CAPACITY UPDATE: Emit population-state event with updated capacity
@@ -528,7 +537,8 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				});
 
 				// Calculate updated population state with new capacity
-				const { calculatePopulationState } = await import('../../game/population-calculator.js');
+				const { calculatePopulationState } =
+					await import('../../game/population-calculator.js');
 				const popState = calculatePopulationState(
 					popData.currentPopulation,
 					mappedStructures,
@@ -662,9 +672,8 @@ router.post('/:id/upgrade', authenticate, async (req: Request, res: Response) =>
 
 		// ✅ Phase 4: Trigger settlement modifier recalculation after structure upgrade
 		try {
-			const { aggregateSettlementModifiers } = await import(
-				'../../game/settlement-modifier-aggregator.js'
-			);
+			const { aggregateSettlementModifiers } =
+				await import('../../game/settlement-modifier-aggregator.js');
 			await aggregateSettlementModifiers(settlementData.id);
 			logger.debug('[API] Settlement modifiers recalculated after structure upgrade', {
 				settlementId: settlementData.id,
@@ -673,11 +682,14 @@ router.post('/:id/upgrade', authenticate, async (req: Request, res: Response) =>
 			});
 		} catch (aggError) {
 			// Log error but don't fail the upgrade operation
-			logger.error('[API] Failed to recalculate settlement modifiers after structure upgrade', {
-				settlementId: settlementData.id,
-				structureId: id,
-				error: aggError instanceof Error ? aggError.message : 'Unknown error',
-			});
+			logger.error(
+				'[API] Failed to recalculate settlement modifiers after structure upgrade',
+				{
+					settlementId: settlementData.id,
+					structureId: id,
+					error: aggError instanceof Error ? aggError.message : 'Unknown error',
+				}
+			);
 		}
 
 		// Emit Socket.IO event for real-time updates
@@ -818,9 +830,8 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
 		// ✅ Phase 4: Trigger settlement modifier recalculation after structure deletion
 		try {
-			const { aggregateSettlementModifiers } = await import(
-				'../../game/settlement-modifier-aggregator.js'
-			);
+			const { aggregateSettlementModifiers } =
+				await import('../../game/settlement-modifier-aggregator.js');
 			await aggregateSettlementModifiers(structure.settlementId);
 			logger.debug('[API] Settlement modifiers recalculated after structure deletion', {
 				settlementId: structure.settlementId,
@@ -828,11 +839,14 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 			});
 		} catch (aggError) {
 			// Log error but don't fail the deletion operation
-			logger.error('[API] Failed to recalculate settlement modifiers after structure deletion', {
-				settlementId: structure.settlementId,
-				structureId: id,
-				error: aggError instanceof Error ? aggError.message : 'Unknown error',
-			});
+			logger.error(
+				'[API] Failed to recalculate settlement modifiers after structure deletion',
+				{
+					settlementId: structure.settlementId,
+					structureId: id,
+					error: aggError instanceof Error ? aggError.message : 'Unknown error',
+				}
+			);
 		}
 
 		return res.json({

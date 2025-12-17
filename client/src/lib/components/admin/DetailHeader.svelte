@@ -37,7 +37,9 @@
 		<div class="flex-1">
 			<h1 class="text-3xl font-bold mb-2">{title}</h1>
 			{#if subtitle}
-				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{subtitle}</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">
+					{subtitle}
+				</p>
 			{/if}
 
 			{#if metadata}

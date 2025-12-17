@@ -17,7 +17,10 @@
 			<span class="text-surface-400">/</span>
 		{/if}
 		{#if item.href}
-			<a href={item.href} class="text-surface-600 dark:text-surface-400 hover:text-primary-500">
+			<a
+				href={item.href}
+				class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
+			>
 				{item.label}
 			</a>
 		{:else}

@@ -58,11 +58,15 @@ describe('Navigation Utilities', () => {
 
 	describe('isActiveExcluding', () => {
 		it('should return true when active and not excluded', () => {
-			expect(isActiveExcluding('/game', '/game', ['/game/settlements', '/game/map'])).toBe(true);
+			expect(isActiveExcluding('/game', '/game', ['/game/settlements', '/game/map'])).toBe(
+				true
+			);
 		});
 
 		it('should return false when path matches excluded route', () => {
-			expect(isActiveExcluding('/game/settlements', '/game', ['/game/settlements'])).toBe(false);
+			expect(isActiveExcluding('/game/settlements', '/game', ['/game/settlements'])).toBe(
+				false
+			);
 
 			expect(isActiveExcluding('/game/settlements/123', '/game', ['/game/settlements'])).toBe(
 				false

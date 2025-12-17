@@ -21,7 +21,9 @@
 				<User size={32} class="text-primary-500" />
 				Player Profile
 			</h1>
-			<p class="text-surface-600 dark:text-surface-400">Your player information and statistics</p>
+			<p class="text-surface-600 dark:text-surface-400">
+				Your player information and statistics
+			</p>
 		</div>
 	</div>
 
@@ -82,7 +84,9 @@
 					<MapPin size={24} class="text-primary-500" />
 				</div>
 				<div>
-					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">Settlements</h3>
+					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">
+						Settlements
+					</h3>
 					<p class="text-sm text-surface-600 dark:text-surface-400">Founded</p>
 				</div>
 			</div>
@@ -98,7 +102,9 @@
 					<Award size={24} class="text-warning-500" />
 				</div>
 				<div>
-					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">Achievements</h3>
+					<h3 class="text-lg font-bold text-surface-900 dark:text-surface-100">
+						Achievements
+					</h3>
 					<p class="text-sm text-surface-600 dark:text-surface-400">Unlocked</p>
 				</div>
 			</div>
@@ -141,6 +147,8 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
+			← Back to Game Overview
+		</a>
 	</div>
 </div>

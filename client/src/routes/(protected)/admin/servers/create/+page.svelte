@@ -15,8 +15,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/servers" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Servers</a
+		<a
+			href="/admin/servers"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Servers</a
 		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">Create</span>

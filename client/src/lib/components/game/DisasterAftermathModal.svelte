@@ -38,7 +38,9 @@
 	);
 
 	const totalStructuresAffected = $derived(
-		aftermathSummary ? aftermathSummary.structuresDamaged + aftermathSummary.structuresDestroyed : 0
+		aftermathSummary
+			? aftermathSummary.structuresDamaged + aftermathSummary.structuresDestroyed
+			: 0
 	);
 
 	// Format emergency repair countdown
@@ -85,7 +87,9 @@
 		>
 			<!-- Header -->
 			<header class="flex items-center justify-between mb-6">
-				<h2 id="aftermath-title" class="h2 text-warning-400">⚠️ Disaster Aftermath Report</h2>
+				<h2 id="aftermath-title" class="h2 text-warning-400">
+					⚠️ Disaster Aftermath Report
+				</h2>
 				<button
 					type="button"
 					class="btn-icon btn-icon-sm variant-ghost-surface focus-visible:outline-3 focus-visible:outline-primary-500 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
@@ -104,7 +108,10 @@
 			<!-- Stats Grid -->
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 				<!-- Casualties Card -->
-				<div class="card variant-ghost-error p-4" transition:scale={{ delay: 100, duration: 300 }}>
+				<div
+					class="card variant-ghost-error p-4"
+					transition:scale={{ delay: 100, duration: 300 }}
+				>
 					<h3 class="h4 text-error-400 mb-2 flex items-center gap-2">
 						<span aria-hidden="true">💀</span>
 						<span>Casualties</span>
@@ -120,7 +127,9 @@
 							Casualty rate: <span class="text-error-300">{casualtyRate}%</span>
 							<br />
 							Sheltered:
-							<span class="text-success-300">{aftermathSummary.populationSheltered}</span> people
+							<span class="text-success-300"
+								>{aftermathSummary.populationSheltered}</span
+							> people
 						</p>
 					{/if}
 				</div>
@@ -141,9 +150,12 @@
 						<span class="text-surface-400">total</span>
 					</div>
 					<p class="text-sm text-surface-400 mt-2">
-						Damaged: <span class="text-warning-300">{aftermathSummary.structuresDamaged}</span>
+						Damaged: <span class="text-warning-300"
+							>{aftermathSummary.structuresDamaged}</span
+						>
 						<br />
-						Destroyed: <span class="text-error-300">{aftermathSummary.structuresDestroyed}</span>
+						Destroyed:
+						<span class="text-error-300">{aftermathSummary.structuresDestroyed}</span>
 					</p>
 				</div>
 
@@ -159,15 +171,21 @@
 					<div class="text-sm space-y-1" data-testid="resources-lost">
 						<div class="flex justify-between">
 							<span>Food:</span>
-							<span class="text-error-300">-{Math.floor(aftermathSummary.totalDamage * 1.5)}</span>
+							<span class="text-error-300"
+								>-{Math.floor(aftermathSummary.totalDamage * 1.5)}</span
+							>
 						</div>
 						<div class="flex justify-between">
 							<span>Water:</span>
-							<span class="text-error-300">-{Math.floor(aftermathSummary.totalDamage * 2)}</span>
+							<span class="text-error-300"
+								>-{Math.floor(aftermathSummary.totalDamage * 2)}</span
+							>
 						</div>
 						<div class="flex justify-between">
 							<span>Wood:</span>
-							<span class="text-error-300">-{Math.floor(aftermathSummary.totalDamage * 0.5)}</span>
+							<span class="text-error-300"
+								>-{Math.floor(aftermathSummary.totalDamage * 0.5)}</span
+							>
 						</div>
 					</div>
 				</div>
@@ -200,12 +218,17 @@
 					<div class="flex items-start gap-3">
 						<span class="text-3xl" aria-hidden="true">⚡</span>
 						<div class="flex-1">
-							<h3 class="h4 text-warning-900 mb-1">Emergency Repair Discount Active!</h3>
+							<h3 class="h4 text-warning-900 mb-1">
+								Emergency Repair Discount Active!
+							</h3>
 							<p class="text-warning-900 mb-2">
-								Repair all damaged structures for <strong>50% off</strong> during the emergency window.
+								Repair all damaged structures for <strong>50% off</strong> during the
+								emergency window.
 							</p>
 							<div class="flex items-center gap-2 text-warning-900">
-								<span class="font-bold text-lg">⏱️ {emergencyRepairFormatted()}</span>
+								<span class="font-bold text-lg"
+									>⏱️ {emergencyRepairFormatted()}</span
+								>
 								<span>remaining</span>
 							</div>
 						</div>
@@ -241,7 +264,9 @@
 				</div>
 				{#if emergencyRepairWindowActive}
 					<div class="text-center mt-3 text-success-400 font-semibold">
-						With 50% discount: {Math.floor(aftermathSummary.estimatedRepairCost.wood / 2)} Wood,
+						With 50% discount: {Math.floor(
+							aftermathSummary.estimatedRepairCost.wood / 2
+						)} Wood,
 						{Math.floor(aftermathSummary.estimatedRepairCost.stone / 2)} Stone,
 						{Math.floor(aftermathSummary.estimatedRepairCost.ore / 2)} Ore
 					</div>
@@ -266,8 +291,8 @@
 						>
 					</div>
 					<p class="text-xs text-surface-400 mt-3">
-						💡 Tip: Build a Relief Center to distribute emergency supplies and stabilize happiness
-						faster.
+						💡 Tip: Build a Relief Center to distribute emergency supplies and stabilize
+						happiness faster.
 					</p>
 				</div>
 			</div>

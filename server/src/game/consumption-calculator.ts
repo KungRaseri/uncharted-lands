@@ -172,7 +172,8 @@ export function calculateConsumption(
 ): Resources {
 	// Calculate base consumption rates
 	const baseFoodConsumption = population * CONSUMPTION_RATES.FOOD_PER_PERSON_PER_TICK * tickCount;
-	const baseWaterConsumption = population * CONSUMPTION_RATES.WATER_PER_PERSON_PER_TICK * tickCount;
+	const baseWaterConsumption =
+		population * CONSUMPTION_RATES.WATER_PER_PERSON_PER_TICK * tickCount;
 
 	// Structure maintenance costs (GDD Section 6.4)
 	const baseWoodMaintenance =

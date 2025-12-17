@@ -97,7 +97,9 @@
 					{searchTerm ? 'No worlds found' : 'No worlds yet'}
 				</h3>
 				<p class="text-surface-600 dark:text-surface-400 mb-4">
-					{searchTerm ? 'Try a different search term' : 'Create your first world to get started'}
+					{searchTerm
+						? 'Try a different search term'
+						: 'Create your first world to get started'}
 				</p>
 				{#if !searchTerm}
 					<a href="/admin/worlds/create" class="btn preset-filled-primary-500 rounded-md">
@@ -159,7 +161,10 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<td colspan="5" class="text-center text-sm text-surface-600 dark:text-surface-400">
+							<td
+								colspan="5"
+								class="text-center text-sm text-surface-600 dark:text-surface-400"
+							>
 								Total Worlds: {filteredWorlds.length}
 								{#if searchTerm}
 									(filtered from {data.worlds.length})
@@ -195,7 +200,9 @@
 				<h3 class="h3">Delete World</h3>
 			</header>
 			<section class="modal-body space-y-4">
-				<p>Are you sure you want to delete the world <strong>{worldToDelete.name}</strong>?</p>
+				<p>
+					Are you sure you want to delete the world <strong>{worldToDelete.name}</strong>?
+				</p>
 
 				<aside class="alert preset-filled-warning-500 rounded-md">
 					<div class="alert-message">

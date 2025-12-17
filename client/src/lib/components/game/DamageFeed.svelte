@@ -27,7 +27,9 @@
 	{:else}
 		{#each damageUpdates.slice().reverse() as update}
 			<div class="text-sm border-l-2 border-red-600 pl-3 py-1">
-				<p class="text-xs text-surface-500 dark:text-surface-400">{formatTime(update.timestamp)}</p>
+				<p class="text-xs text-surface-500 dark:text-surface-400">
+					{formatTime(update.timestamp)}
+				</p>
 				<p class="font-medium">
 					Structure #{update.structureId} damaged
 					<span class={getHealthColor(update.newHealth)}>
@@ -35,7 +37,9 @@
 					</span>
 				</p>
 				{#if update.structureName}
-					<p class="text-xs text-surface-600 dark:text-surface-300">{update.structureName}</p>
+					<p class="text-xs text-surface-600 dark:text-surface-300">
+						{update.structureName}
+					</p>
 				{/if}
 			</div>
 		{/each}

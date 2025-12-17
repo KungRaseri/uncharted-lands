@@ -217,7 +217,9 @@
 			<div>
 				<p class="text-sm font-medium">Selected: {selectedStructures.size} structures</p>
 				<p class="text-xs text-surface-600-300-token">
-					Total Cost: 🪵 {emergencyActive ? Math.floor(totalCost().wood / 2) : totalCost().wood}
+					Total Cost: 🪵 {emergencyActive
+						? Math.floor(totalCost().wood / 2)
+						: totalCost().wood}
 					| 🪨 {emergencyActive ? Math.floor(totalCost().stone / 2) : totalCost().stone}
 					| ⛏️ {emergencyActive ? Math.floor(totalCost().ore / 2) : totalCost().ore}
 				</p>

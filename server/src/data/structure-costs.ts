@@ -208,7 +208,8 @@ export const STRUCTURE_COSTS: StructureCostDefinition[] = [
 		costs: { wood: 600, stone: 400, ore: 200 },
 		constructionTimeSeconds: 1200,
 		populationRequired: 0,
-		description: 'Establishes diplomatic relations with NPC settlements. Unlocks quests and trade.',
+		description:
+			'Establishes diplomatic relations with NPC settlements. Unlocks quests and trade.',
 	},
 	{
 		id: 'TRADE_CARAVAN_STATION',
@@ -219,7 +220,8 @@ export const STRUCTURE_COSTS: StructureCostDefinition[] = [
 		costs: { wood: 400, stone: 300, ore: 100 },
 		constructionTimeSeconds: 1200,
 		populationRequired: 0,
-		description: 'NPC trade caravans visit regularly, offering special goods at discounted rates.',
+		description:
+			'NPC trade caravans visit regularly, offering special goods at discounted rates.',
 	},
 
 	// ==========================================
@@ -351,7 +353,8 @@ export const STRUCTURE_COSTS: StructureCostDefinition[] = [
 		costs: { wood: 300, stone: 200 },
 		constructionTimeSeconds: 7200,
 		populationRequired: 0,
-		description: 'Host NPC specialists for temporary bonuses. Capacity for 3 NPCs simultaneously.',
+		description:
+			'Host NPC specialists for temporary bonuses. Capacity for 3 NPCs simultaneously.',
 	},
 
 	// ==========================================
@@ -378,7 +381,8 @@ export const STRUCTURE_COSTS: StructureCostDefinition[] = [
 		costs: { wood: 200, stone: 150 },
 		constructionTimeSeconds: 7200,
 		populationRequired: 0,
-		description: 'Local guild presence in member settlements. Provides guild benefits and storage.',
+		description:
+			'Local guild presence in member settlements. Provides guild benefits and storage.',
 	},
 	{
 		id: 'GUILD_WORKSHOP',
@@ -412,7 +416,8 @@ export const STRUCTURE_COSTS: StructureCostDefinition[] = [
 		costs: { wood: 800, stone: 600, ore: 200 },
 		constructionTimeSeconds: 28800,
 		populationRequired: 0,
-		description: 'Enables permanent alliances, shared warnings, and emergency aid coordination.',
+		description:
+			'Enables permanent alliances, shared warnings, and emergency aid coordination.',
 	},
 	{
 		id: 'ADVANCED_GREENHOUSE',
@@ -423,7 +428,8 @@ export const STRUCTURE_COSTS: StructureCostDefinition[] = [
 		costs: { wood: 1200, stone: 800, ore: 300 },
 		constructionTimeSeconds: 43200,
 		populationRequired: 0,
-		description: 'Agricultural specialization. +50% food/herb production, -30% ore, -20% stone.',
+		description:
+			'Agricultural specialization. +50% food/herb production, -30% ore, -20% stone.',
 	},
 	{
 		id: 'DEEP_MINING_COMPLEX',
@@ -434,7 +440,8 @@ export const STRUCTURE_COSTS: StructureCostDefinition[] = [
 		costs: { wood: 1500, stone: 1000, ore: 500 },
 		constructionTimeSeconds: 57600,
 		populationRequired: 0,
-		description: 'Mining specialization. +60% ore, +40% stone, -20% food, +30% water consumption.',
+		description:
+			'Mining specialization. +60% ore, +40% stone, -20% food, +30% water consumption.',
 	},
 	{
 		id: 'FORTRESS',

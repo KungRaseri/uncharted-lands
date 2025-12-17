@@ -84,8 +84,8 @@
 				<div>
 					<h3 class="font-bold">World Not Available</h3>
 					<p>
-						The game world hasn't been created yet. Please contact an administrator to set up the
-						world before accessing the map.
+						The game world hasn't been created yet. Please contact an administrator to
+						set up the world before accessing the map.
 					</p>
 				</div>
 			</div>
@@ -95,7 +95,9 @@
 	<!-- Header -->
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2">Game Overview</h1>
+			<h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100 mb-2">
+				Game Overview
+			</h1>
 			<p class="text-surface-600 dark:text-surface-400">
 				Welcome back! Here's your empire at a glance.
 			</p>
@@ -119,7 +121,9 @@
 				<div class="p-3 bg-primary-500/10 rounded-lg">
 					<Building2 size={24} class="text-primary-500" />
 				</div>
-				<a href="/game/settlements" class="text-xs text-primary-500 hover:underline"> View All </a>
+				<a href="/game/settlements" class="text-xs text-primary-500 hover:underline">
+					View All
+				</a>
 			</div>
 			<div>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
@@ -170,7 +174,11 @@
 			</div>
 			<div>
 				<p class="text-2xl font-bold text-surface-900 dark:text-surface-100">
-					{(totalResources.wood + totalResources.stone + totalResources.ore).toLocaleString()}
+					{(
+						totalResources.wood +
+						totalResources.stone +
+						totalResources.ore
+					).toLocaleString()}
 				</p>
 				<p class="text-sm text-surface-600 dark:text-surface-400">Building Materials</p>
 			</div>
@@ -180,7 +188,9 @@
 	<!-- Settlements List -->
 	<div class="card preset-filled-surface-100-900">
 		<div class="p-6 border-b border-surface-300 dark:border-surface-700">
-			<h2 class="text-xl font-bold text-surface-900 dark:text-surface-100">Your Settlements</h2>
+			<h2 class="text-xl font-bold text-surface-900 dark:text-surface-100">
+				Your Settlements
+			</h2>
 		</div>
 
 		{#if data.settlements.length === 0}
@@ -190,8 +200,8 @@
 					No settlements yet
 				</h3>
 				<p class="text-surface-600 dark:text-surface-400 mb-4">
-					You haven't created your first settlement yet. Start by going through the getting started
-					flow.
+					You haven't created your first settlement yet. Start by going through the
+					getting started flow.
 				</p>
 				<a href="/game/getting-started" class="btn preset-filled-primary-500 rounded-md">
 					<Building2 size={20} />
@@ -208,7 +218,10 @@
 						>
 							<div class="flex items-start justify-between mb-3">
 								<div class="flex items-center gap-2">
-									<Building2 size={20} class="text-primary-500 group-hover:text-white" />
+									<Building2
+										size={20}
+										class="text-primary-500 group-hover:text-white"
+									/>
 									<h3
 										class="font-bold text-lg text-surface-900 dark:text-surface-100 group-hover:text-white"
 									>

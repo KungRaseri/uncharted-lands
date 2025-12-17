@@ -357,13 +357,15 @@ if (NODE_ENV !== 'test') {
 
 			// Sort routes by path then method
 			pathRoutes
-				.sort((a: { method: string; path: string }, b: { method: string; path: string }) => {
-					if (a.path === b.path) {
-						const methodOrder = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
-						return methodOrder.indexOf(a.method) - methodOrder.indexOf(b.method);
+				.sort(
+					(a: { method: string; path: string }, b: { method: string; path: string }) => {
+						if (a.path === b.path) {
+							const methodOrder = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+							return methodOrder.indexOf(a.method) - methodOrder.indexOf(b.method);
+						}
+						return a.path.localeCompare(b.path);
 					}
-					return a.path.localeCompare(b.path);
-				})
+				)
 				.forEach((route: { method: string; path: string }) => {
 					const methodPadded = route.method.padEnd(7);
 					logger.info(`       ${methodPadded} ${route.path}`);

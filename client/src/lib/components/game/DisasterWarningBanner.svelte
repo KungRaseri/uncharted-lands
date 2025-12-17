@@ -61,7 +61,8 @@
 					<span class="text-2xl" aria-hidden="true">{disasterIcon}</span>
 					<div>
 						<h2 class="font-bold text-lg">
-							{disaster.type.replace(/_/g, ' ')} WARNING - SEVERITY: {disaster.severityLevel} ({disaster.severity})
+							{disaster.type.replace(/_/g, ' ')} WARNING - SEVERITY: {disaster.severityLevel}
+							({disaster.severity})
 						</h2>
 						<p class="text-sm opacity-90">
 							Impact in: <span class="font-semibold">{timeRemaining}</span>

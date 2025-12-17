@@ -237,23 +237,38 @@
 							{@const tile = getTile(tileId)!}
 							<div class="flex flex-wrap items-center gap-2">
 								<!-- Biome Badge -->
-								<span class="badge {biomeColors[tile.biome] || 'variant-soft-surface'} text-xs">
+								<span
+									class="badge {biomeColors[tile.biome] ||
+										'variant-soft-surface'} text-xs"
+								>
 									{biomeIcons[tile.biome] || '🌍'}
 									{biomeNames[tile.biome] || tile.biome}
 								</span>
 
 								<!-- Resource Quality Badges -->
 								<div class="flex items-center gap-1.5 text-xs">
-									<span class={getQualityColor(tile.foodQuality)} title="Food Quality">
+									<span
+										class={getQualityColor(tile.foodQuality)}
+										title="Food Quality"
+									>
 										🌾 {tile.foodQuality}
 									</span>
-									<span class={getQualityColor(tile.woodQuality)} title="Wood Quality">
+									<span
+										class={getQualityColor(tile.woodQuality)}
+										title="Wood Quality"
+									>
 										🪵 {tile.woodQuality}
 									</span>
-									<span class={getQualityColor(tile.stoneQuality)} title="Stone Quality">
+									<span
+										class={getQualityColor(tile.stoneQuality)}
+										title="Stone Quality"
+									>
 										🪨 {tile.stoneQuality}
 									</span>
-									<span class={getQualityColor(tile.oreQuality)} title="Ore Quality">
+									<span
+										class={getQualityColor(tile.oreQuality)}
+										title="Ore Quality"
+									>
 										⛏️ {tile.oreQuality}
 									</span>
 								</div>
@@ -283,11 +298,15 @@
 										class="flex-1 card variant-ghost p-2 text-center hover:variant-soft-surface transition-colors"
 										onclick={() => onBuildExtractor?.(tileId, slotPosition)}
 										onkeydown={(e) =>
-											handleKeydown(e, () => onBuildExtractor?.(tileId, slotPosition))}
+											handleKeydown(e, () =>
+												onBuildExtractor?.(tileId, slotPosition)
+											)}
 										title="Build extractor in slot {slotPosition}"
 										aria-label="Build extractor in slot {slotPosition}"
 									>
-										<p class="text-xs text-surface-500-400-token">Slot {slotPosition}</p>
+										<p class="text-xs text-surface-500-400-token">
+											Slot {slotPosition}
+										</p>
 										<p class="text-[10px] text-primary-500 mt-0.5">+ Build</p>
 									</button>
 								{/if}
@@ -353,8 +372,10 @@
 											type="button"
 											class="btn btn-sm variant-soft-primary flex-1 text-xs"
 											onclick={() => onUpgrade?.(extractor.id)}
-											onkeydown={(e) => handleKeydown(e, () => onUpgrade?.(extractor.id))}
-											aria-label="Upgrade {extractor.name} to level {extractor.level + 1}"
+											onkeydown={(e) =>
+												handleKeydown(e, () => onUpgrade?.(extractor.id))}
+											aria-label="Upgrade {extractor.name} to level {extractor.level +
+												1}"
 										>
 											Upgrade
 										</button>
@@ -365,7 +386,8 @@
 											type="button"
 											class="btn btn-sm variant-soft-warning flex-1 text-xs"
 											onclick={() => onRepair?.(extractor.id)}
-											onkeydown={(e) => handleKeydown(e, () => onRepair?.(extractor.id))}
+											onkeydown={(e) =>
+												handleKeydown(e, () => onRepair?.(extractor.id))}
 											aria-label="Repair {extractor.name} to 100% health"
 										>
 											Repair
@@ -376,7 +398,8 @@
 										type="button"
 										class="btn btn-sm variant-soft-error flex-1 text-xs"
 										onclick={() => onDemolish?.(extractor.id)}
-										onkeydown={(e) => handleKeydown(e, () => onDemolish?.(extractor.id))}
+										onkeydown={(e) =>
+											handleKeydown(e, () => onDemolish?.(extractor.id))}
 										aria-label="Demolish {extractor.name}"
 									>
 										Demolish

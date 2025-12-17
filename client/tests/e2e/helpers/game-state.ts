@@ -87,7 +87,9 @@ export async function waitForSocketConnection(
 		throw new Error(`Socket.IO connection timeout after ${duration}ms`);
 	}
 
-	console.warn(`[E2E] Socket.IO connection timeout after ${duration}ms (not required, continuing)`);
+	console.warn(
+		`[E2E] Socket.IO connection timeout after ${duration}ms (not required, continuing)`
+	);
 	return false;
 }
 

@@ -286,7 +286,9 @@ describe('EmptyState.svelte', () => {
 
 			// The action button should be after the text content
 			const elements = Array.from(container.querySelectorAll('*'));
-			const titleIndex = elements.findIndex((el) => el.textContent?.includes('No Data Available'));
+			const titleIndex = elements.findIndex((el) =>
+				el.textContent?.includes('No Data Available')
+			);
 			const messageIndex = elements.findIndex((el) =>
 				el.textContent?.includes('There are no items')
 			);

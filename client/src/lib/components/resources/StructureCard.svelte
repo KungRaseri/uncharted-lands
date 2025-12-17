@@ -105,7 +105,11 @@
 
 			<!-- Upgrade Button -->
 			{#if onUpgrade}
-				<button class="btn variant-filled-primary w-full" onclick={handleUpgrade} type="button">
+				<button
+					class="btn variant-filled-primary w-full"
+					onclick={handleUpgrade}
+					type="button"
+				>
 					Upgrade Structure
 				</button>
 			{/if}

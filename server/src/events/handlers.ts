@@ -520,7 +520,8 @@ async function handleBuildStructure(
 					// Add modifier if it exists and hasn't been added yet
 					if (row.modifiers) {
 						const modifierExists = structure.modifiers.some(
-							(m) => m.name === row.modifiers!.name && m.value === row.modifiers!.value
+							(m) =>
+								m.name === row.modifiers!.name && m.value === row.modifiers!.value
 						);
 						if (!modifierExists) {
 							structure.modifiers.push({
@@ -617,7 +618,10 @@ async function handleBuildStructure(
 				});
 			}
 		} catch (popError) {
-			logger.error('[POPULATION] Error recalculating population after structure build:', popError);
+			logger.error(
+				'[POPULATION] Error recalculating population after structure build:',
+				popError
+			);
 			// Don't fail the whole operation if population update fails
 		}
 		// ===== END POPULATION RECALCULATION =====

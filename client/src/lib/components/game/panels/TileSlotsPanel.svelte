@@ -89,7 +89,8 @@
 	// Get disaster modifier description
 	function getDisasterModifierText(modifier: number): string {
 		if (modifier >= 0.9) return 'Normal production';
-		if (modifier >= 0.6) return `${Math.round((1 - modifier) * 100)}% reduced (disaster impact)`;
+		if (modifier >= 0.6)
+			return `${Math.round((1 - modifier) * 100)}% reduced (disaster impact)`;
 		return `Severe reduction (${Math.round((1 - modifier) * 100)}% penalty)`;
 	}
 
@@ -148,7 +149,9 @@
 				<div class="flex items-start gap-2">
 					<span class="text-lg leading-none" aria-hidden="true">⚠️</span>
 					<div class="flex-1">
-						<p class="text-sm font-medium text-warning-900 dark:text-warning-100 m-0 mb-1">
+						<p
+							class="text-sm font-medium text-warning-900 dark:text-warning-100 m-0 mb-1"
+						>
 							Disaster Impact Active
 						</p>
 						<p class="text-xs text-warning-800 dark:text-warning-200 m-0">
@@ -228,7 +231,9 @@
 								{#if extractor}
 									<!-- Occupied Slot -->
 									<div class="flex flex-col items-center gap-1">
-										<span class="text-2xl leading-none" aria-hidden="true">🏭</span>
+										<span class="text-2xl leading-none" aria-hidden="true"
+											>🏭</span
+										>
 										<span
 											class="text-xs font-semibold text-primary-700 dark:text-primary-300 tabular-nums"
 										>
@@ -257,8 +262,13 @@
 								{:else}
 									<!-- Empty Slot -->
 									<div class="flex flex-col items-center gap-1">
-										<span class="text-2xl leading-none opacity-40" aria-hidden="true">➕</span>
-										<span class="text-xs font-medium text-surface-600 dark:text-surface-400">
+										<span
+											class="text-2xl leading-none opacity-40"
+											aria-hidden="true">➕</span
+										>
+										<span
+											class="text-xs font-medium text-surface-600 dark:text-surface-400"
+										>
 											Slot {slotPosition + 1}
 										</span>
 									</div>
@@ -271,8 +281,8 @@
 
 			<!-- Help Text -->
 			<p class="text-xs text-surface-600 dark:text-surface-400 mt-3 mb-0">
-				Click an empty slot to build an extractor, or click an existing extractor to view details
-				and upgrade.
+				Click an empty slot to build an extractor, or click an existing extractor to view
+				details and upgrade.
 			</p>
 		</div>
 	</div>

@@ -122,14 +122,29 @@ function getFallbackConfig(): GameConfig {
 			{ type: 'WALL', name: 'Wall' }
 		],
 		biomeDisplay: {
-			GRASSLAND: { icon: '🌾', color: 'variant-soft-success', name: 'Grassland', description: '' },
+			GRASSLAND: {
+				icon: '🌾',
+				color: 'variant-soft-success',
+				name: 'Grassland',
+				description: ''
+			},
 			FOREST: { icon: '🌲', color: 'variant-soft-primary', name: 'Forest', description: '' },
 			DESERT: { icon: '🏜️', color: 'variant-soft-warning', name: 'Desert', description: '' },
-			MOUNTAIN: { icon: '⛰️', color: 'variant-soft-surface', name: 'Mountain', description: '' },
+			MOUNTAIN: {
+				icon: '⛰️',
+				color: 'variant-soft-surface',
+				name: 'Mountain',
+				description: ''
+			},
 			TUNDRA: { icon: '🧊', color: 'variant-soft-tertiary', name: 'Tundra', description: '' },
 			SWAMP: { icon: '🌿', color: 'variant-soft-secondary', name: 'Swamp', description: '' },
-			COASTAL: { icon: '🏖️', color: 'variant-soft-primary', name: 'Coastal', description: '' },
-			OCEAN: { icon: '🌊', color: 'variant-soft-primary', name: 'Ocean', description: '' },
+			COASTAL: {
+				icon: '🏖️',
+				color: 'variant-soft-primary',
+				name: 'Coastal',
+				description: ''
+			},
+			OCEAN: { icon: '🌊', color: 'variant-soft-primary', name: 'Ocean', description: '' }
 		},
 		qualityDisplay: [
 			{ threshold: 20, rating: 'Very Poor', color: 'text-red-600', multiplier: 0.5 },

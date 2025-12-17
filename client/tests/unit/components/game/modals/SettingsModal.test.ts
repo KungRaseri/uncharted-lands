@@ -189,7 +189,9 @@ describe('SettingsModal', () => {
 			// On mobile, BottomSheet component is used (not mocked, actually renders)
 			// Desktop modal has aria-labelledby="settings-modal-title"
 			// BottomSheet has aria-labelledby="sheet-title"
-			const desktopDialog = container.querySelector('[aria-labelledby="settings-modal-title"]');
+			const desktopDialog = container.querySelector(
+				'[aria-labelledby="settings-modal-title"]'
+			);
 			expect(desktopDialog).toBeFalsy();
 
 			// Verify BottomSheet is rendered instead

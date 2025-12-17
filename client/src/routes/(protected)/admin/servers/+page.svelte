@@ -128,7 +128,10 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<td colspan="7" class="text-center text-sm text-surface-600 dark:text-surface-400">
+							<td
+								colspan="7"
+								class="text-center text-sm text-surface-600 dark:text-surface-400"
+							>
 								Total Servers: {data.servers.length}
 							</td>
 						</tr>
@@ -158,7 +161,10 @@
 				<h3 class="h3" id="delete-modal-title">Delete Server</h3>
 			</header>
 			<section class="modal-body space-y-4">
-				<p>Are you sure you want to delete the server <strong>{serverToDelete.name}</strong>?</p>
+				<p>
+					Are you sure you want to delete the server <strong>{serverToDelete.name}</strong
+					>?
+				</p>
 
 				{#if serverToDelete.worlds && serverToDelete.worlds.length > 0}
 					<aside class="alert preset-filled-warning-500 rounded-md">
@@ -204,7 +210,8 @@
 					<button
 						type="submit"
 						class="btn preset-filled-error-500 rounded-md"
-						disabled={isDeleting || (serverToDelete.worlds && serverToDelete.worlds.length > 0)}
+						disabled={isDeleting ||
+							(serverToDelete.worlds && serverToDelete.worlds.length > 0)}
 					>
 						{#if isDeleting}
 							<span>Deleting...</span>

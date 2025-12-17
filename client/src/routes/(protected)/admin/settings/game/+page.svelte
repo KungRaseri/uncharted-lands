@@ -9,8 +9,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/settings" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Settings</a
+		<a
+			href="/admin/settings"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Settings</a
 		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">Game Configuration</span>
@@ -36,9 +37,9 @@
 		</div>
 		<h2 class="text-2xl font-bold mb-3">Coming Soon</h2>
 		<p class="text-surface-600 dark:text-surface-400 max-w-md mx-auto">
-			Game configuration management will be available in a future update. This will allow you to
-			configure global game settings such as resource generation rates, population growth, combat
-			parameters, and more.
+			Game configuration management will be available in a future update. This will allow you
+			to configure global game settings such as resource generation rates, population growth,
+			combat parameters, and more.
 		</p>
 	</div>
 </div>

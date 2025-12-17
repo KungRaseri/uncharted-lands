@@ -117,8 +117,9 @@
 		<h2 class="text-xl font-bold mb-4">About Settings</h2>
 		<div class="space-y-3 text-sm text-surface-600 dark:text-surface-400">
 			<p>
-				<strong class="text-surface-900 dark:text-surface-100">⚠️ Important:</strong> Changes to settings
-				may affect existing game data and player experience. Always review changes carefully before saving.
+				<strong class="text-surface-900 dark:text-surface-100">⚠️ Important:</strong> Changes
+				to settings may affect existing game data and player experience. Always review changes
+				carefully before saving.
 			</p>
 			<p>
 				<strong class="text-surface-900 dark:text-surface-100">🔒 Permissions:</strong> Only administrators

@@ -204,7 +204,9 @@ export function calculateRepairCost(params: RepairCostParams): RepairCostResult 
 	if (emergencyDiscountApplied) {
 		for (const resource of Object.keys(cost) as Array<keyof Resources>) {
 			if (cost[resource]) {
-				cost[resource] = Math.ceil(cost[resource] * EMERGENCY_REPAIR_CONFIG.DISCOUNT_PERCENTAGE);
+				cost[resource] = Math.ceil(
+					cost[resource] * EMERGENCY_REPAIR_CONFIG.DISCOUNT_PERCENTAGE
+				);
 			}
 		}
 	}

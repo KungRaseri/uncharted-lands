@@ -334,7 +334,10 @@ export async function updateSettlementPopulation(
 
 		return updated;
 	} catch (error) {
-		logger.error('[DB] Failed to update settlement population', error, { settlementId, updates });
+		logger.error('[DB] Failed to update settlement population', error, {
+			settlementId,
+			updates,
+		});
 		throw error;
 	}
 }

@@ -85,7 +85,8 @@
 				height: settings.height,
 				seed: settings.elevationSeed || settings.seed || Date.now(), // Use elevationSeed as the main seed
 				elevationOptions: settings.elevationSettings || settings.elevationOptions,
-				precipitationOptions: settings.precipitationSettings || settings.precipitationOptions,
+				precipitationOptions:
+					settings.precipitationSettings || settings.precipitationOptions,
 				temperatureOptions: settings.temperatureSettings || settings.temperatureOptions
 			};
 
@@ -194,8 +195,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Worlds</a
+		<a
+			href="/admin/worlds"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Worlds</a
 		>
 		<span class="text-surface-400">/</span>
 		<span class="font-semibold">{data.world.name}</span>
@@ -209,7 +211,8 @@
 				<div class="flex-1">
 					<h3 class="text-xl font-bold text-white mb-1">Generating World...</h3>
 					<p class="text-white/80 text-sm">
-						This may take a few minutes. The page will update automatically when complete.
+						This may take a few minutes. The page will update automatically when
+						complete.
 					</p>
 				</div>
 			</div>
@@ -221,7 +224,8 @@
 				<div class="flex-1">
 					<h3 class="text-xl font-bold text-white mb-1">Generation Failed</h3>
 					<p class="text-white/80 text-sm">
-						{generationError || 'World generation encountered an error. Please try again.'}
+						{generationError ||
+							'World generation encountered an error. Please try again.'}
 					</p>
 				</div>
 				<button onclick={retryGeneration} class="btn preset-filled-surface-100 rounded-md">
@@ -273,7 +277,10 @@
 				</div>
 
 				<div class="flex items-center gap-2">
-					<button onclick={startEdit} class="btn btn-sm preset-filled-primary-500 rounded-md">
+					<button
+						onclick={startEdit}
+						class="btn btn-sm preset-filled-primary-500 rounded-md"
+					>
 						<Edit size={16} />
 						<span>Edit</span>
 					</button>
@@ -295,7 +302,9 @@
 					{form.message}
 				</div>
 			{:else if form?.message}
-				<div class="mt-4 p-4 bg-error-500/10 border border-error-500 rounded-lg text-error-500">
+				<div
+					class="mt-4 p-4 bg-error-500/10 border border-error-500 rounded-lg text-error-500"
+				>
 					{form.message}
 				</div>
 			{/if}
@@ -361,7 +370,10 @@
 					</div>
 
 					<div class="flex items-center gap-2">
-						<button type="submit" class="btn btn-sm preset-filled-success-500 rounded-md">
+						<button
+							type="submit"
+							class="btn btn-sm preset-filled-success-500 rounded-md"
+						>
 							<Save size={16} />
 							<span>Save</span>
 						</button>
@@ -445,7 +457,9 @@
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 		<div class="card preset-filled-surface-100-900 p-4">
 			<div class="flex items-center gap-3">
-				<div class="w-12 h-12 rounded-lg bg-success-500/10 flex items-center justify-center">
+				<div
+					class="w-12 h-12 rounded-lg bg-success-500/10 flex items-center justify-center"
+				>
 					<Mountain size={24} class="text-success-500" />
 				</div>
 				<div>
@@ -457,7 +471,9 @@
 
 		<div class="card preset-filled-surface-100-900 p-4">
 			<div class="flex items-center gap-3">
-				<div class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center">
+				<div
+					class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center"
+				>
 					<Waves size={24} class="text-primary-500" />
 				</div>
 				<div>
@@ -469,7 +485,9 @@
 
 		<div class="card preset-filled-surface-100-900 p-4">
 			<div class="flex items-center gap-3">
-				<div class="w-12 h-12 rounded-lg bg-warning-500/10 flex items-center justify-center">
+				<div
+					class="w-12 h-12 rounded-lg bg-warning-500/10 flex items-center justify-center"
+				>
 					<MapPin size={24} class="text-warning-500" />
 				</div>
 				<div>
@@ -496,7 +514,12 @@
 	{#if worldRegions && worldRegions.length > 0}
 		<div class="card preset-filled-surface-100-900 p-6">
 			<h2 class="text-xl font-bold mb-4">World Map</h2>
-			<WorldMap regions={worldRegions} mode="admin" showLegend={true} mapViewMode="satellite" />
+			<WorldMap
+				regions={worldRegions}
+				mode="admin"
+				showLegend={true}
+				mapViewMode="satellite"
+			/>
 		</div>
 	{/if}
 
@@ -529,14 +552,19 @@
 					<tbody>
 						{#each data.world!.regions as region}
 							{@const tiles = region.tiles || []}
-							{@const landTiles = tiles.filter((t: TileWithRelations) => t.type === 'LAND').length}
+							{@const landTiles = tiles.filter(
+								(t: TileWithRelations) => t.type === 'LAND'
+							).length}
 							{@const oceanTiles = tiles.filter(
 								(t: TileWithRelations) => t.type === 'OCEAN'
 							).length}
 							{@const avgElevation =
 								tiles.length > 0
-									? tiles.reduce((sum: number, t: TileWithRelations) => sum + t.elevation, 0) /
-										tiles.length
+									? tiles.reduce(
+											(sum: number, t: TileWithRelations) =>
+												sum + t.elevation,
+											0
+										) / tiles.length
 									: 0}
 							{@const settlements = tiles.filter(
 								(t: TileWithRelations) => t.settlementId != null
@@ -567,15 +595,21 @@
 											{region.xCoord}:{region.yCoord}
 										</div>
 										<div>
-											<p class="font-semibold">{region.name || 'Unnamed Region'}</p>
-											<p class="text-xs text-surface-600 dark:text-surface-400 font-mono">
+											<p class="font-semibold">
+												{region.name || 'Unnamed Region'}
+											</p>
+											<p
+												class="text-xs text-surface-600 dark:text-surface-400 font-mono"
+											>
 												{region.id.substring(0, 8)}...
 											</p>
 										</div>
 									</div>
 								</td>
 								<td class="p-3 text-center">
-									<span class="font-mono text-sm">{region.xCoord}, {region.yCoord}</span>
+									<span class="font-mono text-sm"
+										>{region.xCoord}, {region.yCoord}</span
+									>
 								</td>
 								<td class="p-3 text-center">
 									<div class="flex items-center justify-center gap-1">
@@ -590,7 +624,9 @@
 									</div>
 								</td>
 								<td class="p-3 text-center">
-									<span class="px-2 py-1 rounded text-xs font-semibold {elevationClass}">
+									<span
+										class="px-2 py-1 rounded text-xs font-semibold {elevationClass}"
+									>
 										{avgElevation.toFixed(2)}
 									</span>
 								</td>

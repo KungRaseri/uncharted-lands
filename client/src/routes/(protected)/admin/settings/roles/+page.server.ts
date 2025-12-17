@@ -56,8 +56,16 @@ export const load: PageServerLoad = async () => {
 					name: 'Create Settlement',
 					description: 'Create new settlements'
 				},
-				{ id: 'settlement.manage_own', name: 'Manage Own', description: 'Manage own settlements' },
-				{ id: 'settlement.manage_all', name: 'Manage All', description: 'Manage any settlement' },
+				{
+					id: 'settlement.manage_own',
+					name: 'Manage Own',
+					description: 'Manage own settlements'
+				},
+				{
+					id: 'settlement.manage_all',
+					name: 'Manage All',
+					description: 'Manage any settlement'
+				},
 				{ id: 'settlement.delete', name: 'Delete', description: 'Delete settlements' }
 			]
 		},
@@ -73,14 +81,22 @@ export const load: PageServerLoad = async () => {
 		{
 			category: 'Support',
 			permissions: [
-				{ id: 'support.tickets', name: 'Support Tickets', description: 'Manage support tickets' },
+				{
+					id: 'support.tickets',
+					name: 'Support Tickets',
+					description: 'Manage support tickets'
+				},
 				{ id: 'support.chat', name: 'Support Chat', description: 'Access support chat' }
 			]
 		},
 		{
 			category: 'System',
 			permissions: [
-				{ id: 'system.settings', name: 'System Settings', description: 'Modify system settings' },
+				{
+					id: 'system.settings',
+					name: 'System Settings',
+					description: 'Modify system settings'
+				},
 				{ id: 'system.logs', name: 'View Logs', description: 'Access system logs' },
 				{ id: 'system.backup', name: 'Backup', description: 'Create/restore backups' }
 			]
@@ -103,8 +119,7 @@ export const actions: Actions = {
 		// For now, since roles are defined in the schema, this is a placeholder
 
 		return fail(400, {
-			error:
-				'Role modification requires database schema changes. This feature will be implemented when role permissions are moved to the database.'
+			error: 'Role modification requires database schema changes. This feature will be implemented when role permissions are moved to the database.'
 		});
 	},
 
@@ -117,8 +132,7 @@ export const actions: Actions = {
 		// This would create a new role in the database
 
 		return fail(400, {
-			error:
-				'Custom role creation requires database schema changes. This feature will be implemented in a future update.'
+			error: 'Custom role creation requires database schema changes. This feature will be implemented in a future update.'
 		});
 	}
 };

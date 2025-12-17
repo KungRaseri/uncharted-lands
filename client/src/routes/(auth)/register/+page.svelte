@@ -59,14 +59,18 @@
 								{#if form?.message}
 									{form.message}
 								{:else if form?.exists}
-									This email is already registered. If this is your account, please
-									<a href="/sign-in" class="text-primary-500 hover:underline">sign in here</a>.
+									This email is already registered. If this is your account,
+									please
+									<a href="/sign-in" class="text-primary-500 hover:underline"
+										>sign in here</a
+									>.
 								{:else if form?.length}
 									Password must be 16 or more characters in length.
 								{:else if form?.missingFields}
 									Please provide both email and password.
 								{:else}
-									Form information is invalid. Please check your information and try again.
+									Form information is invalid. Please check your information and
+									try again.
 								{/if}
 							</div>
 						</div>

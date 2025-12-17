@@ -114,7 +114,9 @@ export async function processPassiveRepairs(worldId: string): Promise<PassiveRep
 
 		// Process each settlement
 		for (const settlement of filteredSettlements) {
-			const result = await processSettlementPassiveRepair(settlement as SettlementWithStructures);
+			const result = await processSettlementPassiveRepair(
+				settlement as SettlementWithStructures
+			);
 			settlementResults.push(result);
 
 			if (result.hasWorkshop) {

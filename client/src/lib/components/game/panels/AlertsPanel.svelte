@@ -166,11 +166,17 @@
 								<!-- Icon -->
 								<div class="shrink-0" aria-hidden="true">
 									{#if alert.severity === 'critical'}
-										<AlertCircle class="w-5 h-5 text-error-600 dark:text-error-400" />
+										<AlertCircle
+											class="w-5 h-5 text-error-600 dark:text-error-400"
+										/>
 									{:else if alert.severity === 'warning'}
-										<AlertTriangle class="w-5 h-5 text-warning-600 dark:text-warning-400" />
+										<AlertTriangle
+											class="w-5 h-5 text-warning-600 dark:text-warning-400"
+										/>
 									{:else}
-										<Info class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+										<Info
+											class="w-5 h-5 text-primary-600 dark:text-primary-400"
+										/>
 									{/if}
 								</div>
 
@@ -193,7 +199,8 @@
 									{:else}
 										<div class="flex items-center gap-2">
 											<p
-												class="font-semibold text-sm truncate {alert.severity === 'critical'
+												class="font-semibold text-sm truncate {alert.severity ===
+												'critical'
 													? 'text-error-900 dark:text-error-100'
 													: alert.severity === 'warning'
 														? 'text-warning-900 dark:text-warning-100'

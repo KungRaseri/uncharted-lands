@@ -67,17 +67,23 @@
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 			<div class="text-center p-4 bg-surface-200 dark:bg-surface-800 rounded-lg">
 				<div class="text-3xl font-bold text-primary-500">{data.stats.recentPlayers}</div>
-				<div class="text-sm text-surface-600 dark:text-surface-400 mt-1">New Players (7 days)</div>
+				<div class="text-sm text-surface-600 dark:text-surface-400 mt-1">
+					New Players (7 days)
+				</div>
 			</div>
 			<div class="text-center p-4 bg-surface-200 dark:bg-surface-800 rounded-lg">
-				<div class="text-3xl font-bold text-success-500">{data.stats.recentSettlements}</div>
+				<div class="text-3xl font-bold text-success-500">
+					{data.stats.recentSettlements}
+				</div>
 				<div class="text-sm text-surface-600 dark:text-surface-400 mt-1">
 					New Settlements (7 days)
 				</div>
 			</div>
 			<div class="text-center p-4 bg-surface-200 dark:bg-surface-800 rounded-lg">
 				<div class="text-3xl font-bold text-warning-500">{data.stats.activePlayers}</div>
-				<div class="text-sm text-surface-600 dark:text-surface-400 mt-1">Active Players (24h)</div>
+				<div class="text-sm text-surface-600 dark:text-surface-400 mt-1">
+					Active Players (24h)
+				</div>
 			</div>
 		</div>
 	</div>
@@ -96,29 +102,37 @@
 					<div class="flex items-center gap-2">
 						<span class="font-semibold">{data.stats.memberCount}</span>
 						<span class="text-xs text-surface-500">
-							({((data.stats.memberCount / Math.max(data.stats.totalPlayers, 1)) * 100).toFixed(
-								0
-							)}%)
+							({(
+								(data.stats.memberCount / Math.max(data.stats.totalPlayers, 1)) *
+								100
+							).toFixed(0)}%)
 						</span>
 					</div>
 				</div>
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-surface-600 dark:text-surface-400">Support Staff</span>
+					<span class="text-sm text-surface-600 dark:text-surface-400">Support Staff</span
+					>
 					<div class="flex items-center gap-2">
 						<span class="font-semibold">{data.stats.supportCount}</span>
 						<span class="text-xs text-surface-500">
-							({((data.stats.supportCount / Math.max(data.stats.totalPlayers, 1)) * 100).toFixed(
-								0
-							)}%)
+							({(
+								(data.stats.supportCount / Math.max(data.stats.totalPlayers, 1)) *
+								100
+							).toFixed(0)}%)
 						</span>
 					</div>
 				</div>
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-surface-600 dark:text-surface-400">Administrators</span>
+					<span class="text-sm text-surface-600 dark:text-surface-400"
+						>Administrators</span
+					>
 					<div class="flex items-center gap-2">
 						<span class="font-semibold">{data.stats.adminCount}</span>
 						<span class="text-xs text-surface-500">
-							({((data.stats.adminCount / Math.max(data.stats.totalPlayers, 1)) * 100).toFixed(0)}%)
+							({(
+								(data.stats.adminCount / Math.max(data.stats.totalPlayers, 1)) *
+								100
+							).toFixed(0)}%)
 						</span>
 					</div>
 				</div>
@@ -133,15 +147,21 @@
 			</h2>
 			<div class="space-y-3">
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-surface-600 dark:text-surface-400">Avg Settlements/Player</span>
+					<span class="text-sm text-surface-600 dark:text-surface-400"
+						>Avg Settlements/Player</span
+					>
 					<span class="font-semibold">{data.stats.avgSettlementsPerPlayer}</span>
 				</div>
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-surface-600 dark:text-surface-400">Players with Profiles</span>
+					<span class="text-sm text-surface-600 dark:text-surface-400"
+						>Players with Profiles</span
+					>
 					<span class="font-semibold">{data.stats.playersWithProfiles}</span>
 				</div>
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-surface-600 dark:text-surface-400">Total Worlds Created</span>
+					<span class="text-sm text-surface-600 dark:text-surface-400"
+						>Total Worlds Created</span
+					>
 					<span class="font-semibold">{data.stats.totalWorlds}</span>
 				</div>
 			</div>

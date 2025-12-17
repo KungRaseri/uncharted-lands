@@ -81,7 +81,9 @@ test.describe('Disaster Lifecycle Flow', () => {
 
 		if (!elevateResponse.ok()) {
 			const errorText = await elevateResponse.text();
-			throw new Error(`Failed to elevate user to admin: ${elevateResponse.status()} ${errorText}`);
+			throw new Error(
+				`Failed to elevate user to admin: ${elevateResponse.status()} ${errorText}`
+			);
 		}
 
 		const elevateData = await elevateResponse.json();
@@ -333,7 +335,9 @@ test.describe('Disaster Lifecycle Flow', () => {
 			}
 
 			if (!warningReceived) {
-				console.log('[E2E] Skipping banner visibility check since warning event was not received');
+				console.log(
+					'[E2E] Skipping banner visibility check since warning event was not received'
+				);
 				// Mark test as pending/skipped if warning not received
 				test.skip();
 			}

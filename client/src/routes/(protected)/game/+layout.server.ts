@@ -88,15 +88,20 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 
 					// Find the matching server in our servers list
 					if (serverId && servers) {
-						const matchingServer = servers.find((s: { id: string }) => s.id === serverId);
+						const matchingServer = servers.find(
+							(s: { id: string }) => s.id === serverId
+						);
 
 						if (matchingServer) {
-							logger.info('[GAME LAYOUT] Found matching server for player settlement', {
-								serverName: matchingServer.name,
-								serverId,
-								worldId,
-								settlementName: settlement.name
-							});
+							logger.info(
+								'[GAME LAYOUT] Found matching server for player settlement',
+								{
+									serverName: matchingServer.name,
+									serverId,
+									worldId,
+									settlementName: settlement.name
+								}
+							);
 							return {
 								server: matchingServer,
 								worldId,
@@ -104,14 +109,19 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 								sessionToken: sessionToken || null
 							};
 						} else {
-							logger.warn('[GAME LAYOUT] Server from settlement not found in servers list', {
-								serverId,
-								worldId,
-								availableServerIds: servers.map((s: { id: string; name: string }) => ({
-									id: s.id,
-									name: s.name
-								}))
-							});
+							logger.warn(
+								'[GAME LAYOUT] Server from settlement not found in servers list',
+								{
+									serverId,
+									worldId,
+									availableServerIds: servers.map(
+										(s: { id: string; name: string }) => ({
+											id: s.id,
+											name: s.name
+										})
+									)
+								}
+							);
 						}
 					} else {
 						logger.warn('[GAME LAYOUT] Settlement missing world/server data', {
@@ -131,9 +141,12 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 				});
 			}
 		} catch (error) {
-			logger.warn('[GAME LAYOUT] Error fetching player settlement, falling back to first server', {
-				error: error instanceof Error ? error.message : 'Unknown error'
-			});
+			logger.warn(
+				'[GAME LAYOUT] Error fetching player settlement, falling back to first server',
+				{
+					error: error instanceof Error ? error.message : 'Unknown error'
+				}
+			);
 		}
 
 		// Fallback to first server if no settlement found or error occurred

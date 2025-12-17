@@ -96,23 +96,25 @@
 	 * Sorted by: tier (ascending), then name (alphabetical)
 	 */
 	const sortedBuildingGroups = $derived(() => {
-		const groupsArray = Array.from(buildingGroups().entries()).map(([structureId, instances]) => {
-			const definition = structureDefinitions[structureId] || {
-				id: structureId,
-				name: structureId,
-				displayName: structureId,
-				description: '',
-				category: 'BUILDING' as const,
-				tier: 1 as const,
-				unique: false
-			};
+		const groupsArray = Array.from(buildingGroups().entries()).map(
+			([structureId, instances]) => {
+				const definition = structureDefinitions[structureId] || {
+					id: structureId,
+					name: structureId,
+					displayName: structureId,
+					description: '',
+					category: 'BUILDING' as const,
+					tier: 1 as const,
+					unique: false
+				};
 
-			return {
-				structureId,
-				definition,
-				instances: instances.sort((a, b) => b.level - a.level) // Sort by level descending
-			};
-		});
+				return {
+					structureId,
+					definition,
+					instances: instances.sort((a, b) => b.level - a.level) // Sort by level descending
+				};
+			}
+		);
 
 		return groupsArray.sort((a, b) => {
 			if (a.definition.tier !== b.definition.tier) {
@@ -252,7 +254,9 @@
 					<!-- Group Header (if multiple instances) -->
 					{#if hasMultipleInstances}
 						<li role="listitem">
-							<div class="text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+							<div
+								class="text-sm font-medium text-surface-700 dark:text-surface-300 mb-2"
+							>
 								{getStructureIcon(group.structureId)}
 								{definition.displayName}
 								{#if isUnique}
@@ -287,7 +291,9 @@
 								class="w-full text-left p-3 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 cursor-pointer"
 								aria-label="{definition.displayName} {showInstanceNum
 									? `instance ${instanceNum}`
-									: ''} level {building.level} health {formatHealth(building.health)}"
+									: ''} level {building.level} health {formatHealth(
+									building.health
+								)}"
 							>
 								<!-- Building Header Row -->
 								<div class="flex items-start justify-between gap-3 mb-2">
@@ -299,10 +305,14 @@
 
 										<!-- Name and Instance -->
 										<div class="flex-1 min-w-0">
-											<div class="font-medium text-surface-900 dark:text-surface-100 truncate">
+											<div
+												class="font-medium text-surface-900 dark:text-surface-100 truncate"
+											>
 												{definition.displayName}
 												{#if showInstanceNum}
-													<span class="text-surface-600 dark:text-surface-400">
+													<span
+														class="text-surface-600 dark:text-surface-400"
+													>
 														#{instanceNum}
 													</span>
 												{/if}
@@ -314,7 +324,9 @@
 													</span>
 												{/if}
 											</div>
-											<div class="text-sm text-surface-600 dark:text-surface-400">
+											<div
+												class="text-sm text-surface-600 dark:text-surface-400"
+											>
 												Level {building.level}
 												{#if building.populationAssigned !== undefined && building.populationAssigned > 0}
 													• {building.populationAssigned} workers
@@ -327,8 +339,13 @@
 								<!-- Health Bar -->
 								<div class="mb-2">
 									<div class="flex items-center justify-between text-xs mb-1">
-										<span class="text-surface-600 dark:text-surface-400">Health</span>
-										<span class="font-medium tabular-nums" style:color={healthConfig.color}>
+										<span class="text-surface-600 dark:text-surface-400"
+											>Health</span
+										>
+										<span
+											class="font-medium tabular-nums"
+											style:color={healthConfig.color}
+										>
 											{formatHealth(building.health)} ({healthConfig.label})
 										</span>
 									</div>

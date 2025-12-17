@@ -100,7 +100,9 @@ class ClientLogger {
 
 				try {
 					fs.renameSync(oldPath, newPath);
-					console.log(`[LOGGER] Rotated previous log: ${file} → ${path.basename(newPath)}`);
+					console.log(
+						`[LOGGER] Rotated previous log: ${file} → ${path.basename(newPath)}`
+					);
 				} catch (err) {
 					console.error(`[LOGGER] Failed to rotate ${file}:`, err);
 				}
@@ -122,7 +124,9 @@ class ClientLogger {
 			const logFiles = files
 				.filter(
 					(f: string) =>
-						f.endsWith('.log') && !f.endsWith('.latest.log') && !f.endsWith('.error.log')
+						f.endsWith('.log') &&
+						!f.endsWith('.latest.log') &&
+						!f.endsWith('.error.log')
 				)
 				.map((f: string) => ({
 					name: f,
@@ -329,7 +333,9 @@ class ClientLogger {
 				errorContext.error = {
 					name: error.name,
 					message: error.message,
-					stack: this.isDevelopment ? error.stack?.split('\n').slice(0, 5).join('\n') : undefined
+					stack: this.isDevelopment
+						? error.stack?.split('\n').slice(0, 5).join('\n')
+						: undefined
 				};
 			} else if (error) {
 				errorContext.error = error;

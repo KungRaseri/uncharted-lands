@@ -1,6 +1,7 @@
 # GitHub Copilot Instructions for Uncharted Lands
 
-This file provides context and guidelines for GitHub Copilot when working on the Uncharted Lands project.
+This file provides context and guidelines for GitHub Copilot when working on the Uncharted Lands
+project.
 
 ---
 
@@ -38,7 +39,9 @@ This file provides context and guidelines for GitHub Copilot when working on the
 
 ## Project Overview
 
-**Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures while expanding settlements and improving technology.
+**Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a
+procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures
+while expanding settlements and improving technology.
 
 **Tech Stack**:
 
@@ -57,11 +60,16 @@ This file provides context and guidelines for GitHub Copilot when working on the
 **All game design documentation is centralized in the `docs/game-design/` folder.**
 
 - **🏠 [GDD Home](../docs/game-design/GDD-HOME.md)** - Design docs overview and quick navigation
-- **📖 [Design Docs Quick Start](../docs/game-design/GDD-Quick-Start.md)** - Start here! Explains how to use all design docs
-- **📚 [Game Design Document (GDD)](../docs/game-design/GDD-Monolith.md)** - Complete specifications for all game systems
-- **📊 [Implementation Tracker](../docs/game-design/GDD-Implementation-Tracker.md)** - Current status of all features (✅/🚧/📋)
-- **� [Table of Contents](../docs/game-design/GDD-Table-of-Contents.md)** - Complete design document index
-- **�🔧 [Feature Spec Template](../docs/templates/Feature-Spec-Template.md)** - Template for implementing new features
+- **📖 [Design Docs Quick Start](../docs/game-design/GDD-Quick-Start.md)** - Start here! Explains
+  how to use all design docs
+- **📚 [Game Design Document (GDD)](../docs/game-design/GDD-Monolith.md)** - Complete specifications
+  for all game systems
+- **📊 [Implementation Tracker](../docs/game-design/GDD-Implementation-Tracker.md)** - Current
+  status of all features (✅/🚧/📋)
+- **� [Table of Contents](../docs/game-design/GDD-Table-of-Contents.md)** - Complete design document
+  index
+- **�🔧 [Feature Spec Template](../docs/templates/Feature-Spec-Template.md)** - Template for
+  implementing new features
 
 **When implementing new features, follow this workflow:**
 
@@ -270,7 +278,8 @@ docs/
 
 ### Skeleton Labs Documentation
 
-Always consult these official Skeleton LLM documentation files when working with Skeleton components:
+Always consult these official Skeleton LLM documentation files when working with Skeleton
+components:
 
 1. **General Overview**: https://www.skeleton.dev/llms.txt
    - Overview of all available LLM documentation
@@ -464,30 +473,30 @@ import { Navbar } from '@skeletonlabs/skeleton-svelte';
 ```css
 /* ❌ AVOID */
 .my-class {
-	@apply bg-surface-50-950 text-surface-950 p-4;
+  @apply bg-surface-50-950 text-surface-950 p-4;
 }
 
 /* ✅ PREFER - Standard CSS */
 .my-class {
-	background-color: var(--color-surface-50-950);
-	color: var(--color-surface-950);
-	padding: 1rem;
+  background-color: var(--color-surface-50-950);
+  color: var(--color-surface-950);
+  padding: 1rem;
 }
 
 /* ✅ PREFER - CSS Custom Properties */
 .my-class {
-	background-color: var(--color-surface-50-950);
-	color: var(--color-surface-950);
-	padding: --spacing(4);
+  background-color: var(--color-surface-50-950);
+  color: var(--color-surface-950);
+  padding: --spacing(4);
 }
 
 /* ✅ PREFER - @variant for dark mode */
 .my-class {
-	color: var(--color-surface-950);
+  color: var(--color-surface-950);
 
-	@variant dark {
-		color: var(--color-surface-50);
-	}
+  @variant dark {
+    color: var(--color-surface-50);
+  }
 }
 ```
 
@@ -498,7 +507,7 @@ import { Navbar } from '@skeletonlabs/skeleton-svelte';
 @import 'tailwindcss';
 
 @theme {
-	--color-primary: oklch(0.75 0.15 250);
+  --color-primary: oklch(0.75 0.15 250);
 }
 
 @plugin "@tailwindcss/forms";
@@ -609,21 +618,22 @@ When the build works and we can use Skeleton components:
 
 ### Database Queries
 
-**Note**: Database access is handled through the game server's REST API and Socket.IO events. The client does not directly query the database.
+**Note**: Database access is handled through the game server's REST API and Socket.IO events. The
+client does not directly query the database.
 
 ```typescript
 // Example: Fetching data from server API
 import { API_URL } from '$lib/config';
 
 export async function load({ fetch, cookies }) {
-	const sessionToken = cookies.get('session');
+  const sessionToken = cookies.get('session');
 
-	const response = await fetch(`${API_URL}/api/settlements`, {
-		headers: { Cookie: `session=${sessionToken}` }
-	});
+  const response = await fetch(`${API_URL}/api/settlements`, {
+    headers: { Cookie: `session=${sessionToken}` },
+  });
 
-	const settlements = await response.json();
-	return { settlements };
+  const settlements = await response.json();
+  return { settlements };
 }
 ```
 
@@ -637,14 +647,14 @@ import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ locals, url }) => {
-	// Check authentication
-	if (!locals.user) {
-		return json({ error: 'Unauthorized' }, { status: 401 });
-	}
+  // Check authentication
+  if (!locals.user) {
+    return json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-	// Handle request
-	const data = await fetchData();
-	return json(data);
+  // Handle request
+  const data = await fetchData();
+  return json(data);
 };
 ```
 
@@ -660,10 +670,10 @@ import { render } from '@testing-library/svelte';
 import Component from './Component.svelte';
 
 describe('Component', () => {
-	it('renders correctly', () => {
-		const { getByText } = render(Component, { props: { title: 'Test' } });
-		expect(getByText('Test')).toBeInTheDocument();
-	});
+  it('renders correctly', () => {
+    const { getByText } = render(Component, { props: { title: 'Test' } });
+    expect(getByText('Test')).toBeInTheDocument();
+  });
 });
 ```
 
@@ -673,11 +683,11 @@ describe('Component', () => {
 import { test, expect } from '@playwright/test';
 
 test('user can login', async ({ page }) => {
-	await page.goto('/sign-in');
-	await page.fill('[name="email"]', 'test@example.com');
-	await page.fill('[name="password"]', 'password123');
-	await page.click('button[type="submit"]');
-	await expect(page).toHaveURL('/dashboard');
+  await page.goto('/sign-in');
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
+  await expect(page).toHaveURL('/dashboard');
 });
 ```
 
@@ -819,45 +829,44 @@ These examples should be used as guidance when configuring Sentry functionality 
 
 # Error / Exception Tracking
 
-Use `Sentry.captureException(error)` to capture an exception and log the error in Sentry.
-Use this in try catch blocks or areas where exceptions are expected
+Use `Sentry.captureException(error)` to capture an exception and log the error in Sentry. Use this
+in try catch blocks or areas where exceptions are expected
 
 # Tracing Examples
 
-Spans should be created for meaningful actions within an applications like button clicks, API calls, and function calls
-Ensure you are creating custom spans with meaningful names and operations
-Use the `Sentry.startSpan` function to create a span
-Child spans can exist within a parent span
+Spans should be created for meaningful actions within an applications like button clicks, API calls,
+and function calls Ensure you are creating custom spans with meaningful names and operations Use the
+`Sentry.startSpan` function to create a span Child spans can exist within a parent span
 
 ## Custom Span instrumentation in component actions
 
 ```javascript
 function TestComponent() {
-	const handleTestButtonClick = () => {
-		// Create a transaction/span to measure performance
-		Sentry.startSpan(
-			{
-				op: 'ui.click',
-				name: 'Test Button Click'
-			},
-			(span) => {
-				const value = 'some config';
-				const metric = 'some metric';
+  const handleTestButtonClick = () => {
+    // Create a transaction/span to measure performance
+    Sentry.startSpan(
+      {
+        op: 'ui.click',
+        name: 'Test Button Click',
+      },
+      (span) => {
+        const value = 'some config';
+        const metric = 'some metric';
 
-				// Metrics can be added to the span
-				span.setAttribute('config', value);
-				span.setAttribute('metric', metric);
+        // Metrics can be added to the span
+        span.setAttribute('config', value);
+        span.setAttribute('metric', metric);
 
-				doSomething();
-			}
-		);
-	};
+        doSomething();
+      }
+    );
+  };
 
-	return (
-		<button type="button" onClick={handleTestButtonClick}>
-			Test Sentry
-		</button>
-	);
+  return (
+    <button type="button" onClick={handleTestButtonClick}>
+      Test Sentry
+    </button>
+  );
 }
 ```
 
@@ -865,26 +874,26 @@ function TestComponent() {
 
 ```javascript
 async function fetchUserData(userId) {
-	return Sentry.startSpan(
-		{
-			op: 'http.client',
-			name: `GET /api/users/${userId}`
-		},
-		async () => {
-			const response = await fetch(`/api/users/${userId}`);
-			const data = await response.json();
-			return data;
-		}
-	);
+  return Sentry.startSpan(
+    {
+      op: 'http.client',
+      name: `GET /api/users/${userId}`,
+    },
+    async () => {
+      const response = await fetch(`/api/users/${userId}`);
+      const data = await response.json();
+      return data;
+    }
+  );
 }
 ```
 
 # Logs
 
-Where logs are used, ensure they are imported using `import * as Sentry from "@sentry/node"`
-Enable logging in Sentry using `Sentry.init({ enableLogs: true })`
-Reference the logger using `const { logger } = Sentry`
-Sentry offers a consoleLoggingIntegration that can be used to log specific console error types automatically without instrumenting the individual logger calls
+Where logs are used, ensure they are imported using `import * as Sentry from "@sentry/node"` Enable
+logging in Sentry using `Sentry.init({ enableLogs: true })` Reference the logger using
+`const { logger } = Sentry` Sentry offers a consoleLoggingIntegration that can be used to log
+specific console error types automatically without instrumenting the individual logger calls
 
 ## Configuration
 
@@ -896,10 +905,10 @@ In Node.js the Sentry initialization is typically in `instrumentation.ts`
 import * as Sentry from '@sentry/node';
 
 Sentry.init({
-	dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
+  dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
 
-	// Send structured logs to Sentry
-	enableLogs: true
+  // Send structured logs to Sentry
+  enableLogs: true,
 });
 ```
 
@@ -907,33 +916,34 @@ Sentry.init({
 
 ```javascript
 Sentry.init({
-	dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
-	integrations: [
-		// send console.log, console.warn, and console.error calls as logs to Sentry
-		Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })
-	]
+  dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
+  integrations: [
+    // send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
+  ],
 });
 ```
 
 ## Logger Examples
 
-`logger.fmt` is a template literal function that should be used to bring variables into the structured logs.
+`logger.fmt` is a template literal function that should be used to bring variables into the
+structured logs.
 
 ```javascript
 logger.trace('Starting database connection', { database: 'users' });
 logger.debug(logger.fmt`Cache miss for user: ${userId}`);
 logger.info('Updated profile', { profileId: 345 });
 logger.warn('Rate limit reached for endpoint', {
-	endpoint: '/api/results/',
-	isEnterprise: false
+  endpoint: '/api/results/',
+  isEnterprise: false,
 });
 logger.error('Failed to process payment', {
-	orderId: 'order_123',
-	amount: 99.99
+  orderId: 'order_123',
+  amount: 99.99,
 });
 logger.fatal('Database connection pool exhausted', {
-	database: 'users',
-	activeConnections: 100
+  database: 'users',
+  activeConnections: 100,
 });
 ```
 

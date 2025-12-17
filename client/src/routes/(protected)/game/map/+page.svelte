@@ -30,7 +30,9 @@
 	// Initialize loaded region keys
 	$effect(() => {
 		if (regions.length > 0 && loadedRegionKeys.size === 0) {
-			regions.forEach((r: RegionWithTiles) => loadedRegionKeys.add(`${r.xCoord},${r.yCoord}`));
+			regions.forEach((r: RegionWithTiles) =>
+				loadedRegionKeys.add(`${r.xCoord},${r.yCoord}`)
+			);
 		}
 	});
 
@@ -109,7 +111,9 @@
 			};
 			// Reset regions to initial load
 			regions = data.world?.regions || [];
-			loadedRegionKeys = new Set(regions.map((r: RegionWithTiles) => `${r.xCoord},${r.yCoord}`));
+			loadedRegionKeys = new Set(
+				regions.map((r: RegionWithTiles) => `${r.xCoord},${r.yCoord}`)
+			);
 			currentBounds = data.initialRegionBounds || currentBounds;
 		}
 	}
@@ -138,7 +142,8 @@
 		regions.reduce(
 			(sum: number, region: RegionWithTiles) =>
 				sum +
-				(region.tiles?.filter((tile: TileWithRelations) => tile.settlementId !== null).length || 0),
+				(region.tiles?.filter((tile: TileWithRelations) => tile.settlementId !== null)
+					.length || 0),
 			0
 		) || 0
 	);
@@ -187,21 +192,28 @@
 				{#if settledTiles > 0}
 					<div class="flex items-center gap-2">
 						<MapPin size={16} />
-						<span class="text-warning-500 font-semibold">{settledTiles} Settled Tiles</span>
+						<span class="text-warning-500 font-semibold"
+							>{settledTiles} Settled Tiles</span
+						>
 					</div>
 				{/if}
 			</div>
 
 			{#if data.playerSettlement}
-				<div class="card preset-filled-success-500 p-3 inline-flex items-center gap-2 text-sm">
+				<div
+					class="card preset-filled-success-500 p-3 inline-flex items-center gap-2 text-sm"
+				>
 					<MapPin size={16} />
 					<span>
 						Your settlement <strong>{data.playerSettlement.name}</strong> is at region ({data
-							.playerSettlement.regionCoords.x}, {data.playerSettlement.regionCoords.y})
+							.playerSettlement.regionCoords.x}, {data.playerSettlement.regionCoords
+							.y})
 					</span>
 				</div>
 			{:else}
-				<div class="card preset-filled-warning-500 p-3 inline-flex items-center gap-2 text-sm">
+				<div
+					class="card preset-filled-warning-500 p-3 inline-flex items-center gap-2 text-sm"
+				>
 					<Info size={16} />
 					<span>
 						You don't have a settlement yet.
@@ -222,8 +234,8 @@
 				<div class="text-sm">
 					<p class="font-semibold mb-1">Interactive Map</p>
 					<p class="opacity-90">
-						Hover over tiles to see details. Your settlement and other settled tiles are marked with
-						yellow dots.
+						Hover over tiles to see details. Your settlement and other settled tiles are
+						marked with yellow dots.
 					</p>
 				</div>
 			</div>
@@ -254,8 +266,8 @@
 		<div class="flex justify-center">
 			<div class="card preset-filled-primary-500 p-3 text-sm">
 				<p class="font-semibold">
-					Viewing center: ({centerCoords.x}, {centerCoords.y}) | Loaded regions: {regions.length} | Current
-					grid: ({currentBounds.xMin}-{currentBounds.xMax}, {currentBounds.yMin}-{currentBounds.yMax})
+					Viewing center: ({centerCoords.x}, {centerCoords.y}) | Loaded regions: {regions.length}
+					| Current grid: ({currentBounds.xMin}-{currentBounds.xMax}, {currentBounds.yMin}-{currentBounds.yMax})
 				</p>
 			</div>
 		</div>

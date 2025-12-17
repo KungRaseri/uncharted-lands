@@ -152,7 +152,9 @@ test.describe('Registration', () => {
 			expect(validationMessage).toBeTruthy();
 		});
 
-		test('should highlight inputs with error styling when validation fails', async ({ page }) => {
+		test('should highlight inputs with error styling when validation fails', async ({
+			page
+		}) => {
 			await page.goto('/register');
 			await page.waitForLoadState('networkidle');
 

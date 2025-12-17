@@ -197,7 +197,9 @@
 	<!-- Header with Tier Label -->
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
-			<span class="text-sm font-semibold text-surface-300 dark:text-surface-400">Resilience</span>
+			<span class="text-sm font-semibold text-surface-300 dark:text-surface-400"
+				>Resilience</span
+			>
 			{#if showTooltip}
 				<button
 					type="button"

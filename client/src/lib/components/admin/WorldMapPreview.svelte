@@ -49,7 +49,12 @@
 										dark:hover:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.9)]
 										transition-shadow duration-150"
 										style="background-color: {getElevationColor(elevation)}"
-										title={getTileTooltip(region, rowIndex, colIndex, elevation)}
+										title={getTileTooltip(
+											region,
+											rowIndex,
+											colIndex,
+											elevation
+										)}
 									></div>
 								{/each}
 							{/each}

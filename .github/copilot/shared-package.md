@@ -2,7 +2,8 @@
 
 **Package**: `@uncharted-lands/shared`  
 **Location**: `shared/`  
-**Purpose**: Single source of truth for types, constants, and utilities shared between client and server
+**Purpose**: Single source of truth for types, constants, and utilities shared between client and
+server
 
 ---
 
@@ -30,6 +31,7 @@ shared/
 ## ✅ What Belongs in Shared Package
 
 ### **Include** (Domain Types & Shared Logic):
+
 - ✅ Game configuration types (`GameConfig`, resource types, etc.)
 - ✅ Domain model types (Settlement, Tile, Structure, Disaster)
 - ✅ Socket.IO event definitions (shared protocol)
@@ -38,6 +40,7 @@ shared/
 - ✅ Shared enums and type guards
 
 ### **Exclude** (Platform-Specific):
+
 - ❌ Client UI types (Svelte components, form actions)
 - ❌ Server API types (Express routes, middleware)
 - ❌ Database types (Drizzle ORM schemas)
@@ -67,7 +70,7 @@ export const MY_NEW_TYPE_STATUSES: MyNewTypeStatus[] = ['active', 'inactive'];
 ```typescript
 // shared/src/index.ts
 export * from './types/game-config.js';
-export * from './types/my-new-type.js';  // Add this line
+export * from './types/my-new-type.js'; // Add this line
 ```
 
 ### Step 3: Build the Package
@@ -78,6 +81,7 @@ npm run build
 ```
 
 Or use watch mode during development:
+
 ```bash
 cd shared
 npm run build -- --watch
@@ -91,7 +95,7 @@ import type { MyNewType, MyNewTypeStatus } from '@uncharted-lands/shared';
 
 const example: MyNewType = {
   id: '123',
-  name: 'Test'
+  name: 'Test',
 };
 ```
 
@@ -141,17 +145,18 @@ npm run check:shared
 ## 📝 TypeScript Configuration
 
 **Key Settings** (`shared/tsconfig.json`):
+
 ```json
 {
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "declaration": true,          // Generate .d.ts files
-    "declarationMap": true,       // Generate .d.ts.map files
-    "outDir": "./dist",           // Output directory
-    "rootDir": "./src",           // Source directory
-    "strict": true,               // Strict type checking
+    "declaration": true, // Generate .d.ts files
+    "declarationMap": true, // Generate .d.ts.map files
+    "outDir": "./dist", // Output directory
+    "rootDir": "./src", // Source directory
+    "strict": true, // Strict type checking
     "esModuleInterop": true,
     "skipLibCheck": true
   },
@@ -165,33 +170,38 @@ npm run check:shared
 ## ⚠️ Important Rules
 
 ### 1. **Never Import Runtime Dependencies**
-   - Shared package should contain ONLY types and pure TypeScript utilities
-   - No framework-specific code (React, Svelte, Express, etc.)
-   - No database dependencies (Drizzle, Prisma, etc.)
+
+- Shared package should contain ONLY types and pure TypeScript utilities
+- No framework-specific code (React, Svelte, Express, etc.)
+- No database dependencies (Drizzle, Prisma, etc.)
 
 ### 2. **Use Type-Only Imports in Shared Package**
-   ```typescript
-   // ❌ BAD
-   import { someFunction } from 'some-library';
-   
-   // ✅ GOOD
-   import type { SomeType } from 'some-library';
-   ```
+
+```typescript
+// ❌ BAD
+import { someFunction } from 'some-library';
+
+// ✅ GOOD
+import type { SomeType } from 'some-library';
+```
 
 ### 3. **Always Build After Changes**
-   - Client and server import from `dist/`, not `src/`
-   - Run `npm run build` or use watch mode
-   - CI/CD builds shared package first (see `.github/workflows/monorepo-ci.yml`)
+
+- Client and server import from `dist/`, not `src/`
+- Run `npm run build` or use watch mode
+- CI/CD builds shared package first (see `.github/workflows/monorepo-ci.yml`)
 
 ### 4. **Avoid Circular Dependencies**
-   - Don't create circular type references
-   - Keep types simple and focused
-   - Use forward declarations if needed
+
+- Don't create circular type references
+- Keep types simple and focused
+- Use forward declarations if needed
 
 ### 5. **Document Breaking Changes**
-   - Shared package changes affect BOTH client and server
-   - Test both projects after modifying shared types
-   - Update version in package.json for major changes
+
+- Shared package changes affect BOTH client and server
+- Test both projects after modifying shared types
+- Update version in package.json for major changes
 
 ---
 
@@ -267,7 +277,7 @@ import type { ResourceTickEvent } from '@uncharted-lands/shared';
 io.to(`world:${worldId}`).emit('resource-tick', {
   settlementId,
   resources,
-  timestamp: Date.now()
+  timestamp: Date.now(),
 } satisfies ResourceTickEvent);
 ```
 
@@ -301,7 +311,8 @@ export type GameLimitKey = keyof typeof GAME_LIMITS;
 // Client: Use in form validation
 import { GAME_LIMITS } from '@uncharted-lands/shared';
 
-const nameSchema = z.string()
+const nameSchema = z
+  .string()
   .min(GAME_LIMITS.MIN_SETTLEMENT_NAME_LENGTH)
   .max(GAME_LIMITS.MAX_SETTLEMENT_NAME_LENGTH);
 ```
@@ -322,11 +333,13 @@ if (level > GAME_LIMITS.MAX_STRUCTURE_LEVEL) {
 ### "Cannot find module '@uncharted-lands/shared'"
 
 1. Make sure shared package is built:
+
    ```bash
    cd shared && npm run build
    ```
 
 2. Make sure client/server dependencies are installed:
+
    ```bash
    cd client && npm install
    cd server && npm install
@@ -337,6 +350,7 @@ if (level > GAME_LIMITS.MAX_STRUCTURE_LEVEL) {
 ### Type errors after updating shared package
 
 1. Rebuild shared package:
+
    ```bash
    cd shared && npm run build
    ```

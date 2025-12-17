@@ -110,7 +110,10 @@
 			aria-labelledby="sheet-title"
 		>
 			<!-- Drag Handle -->
-			<div class="flex justify-center py-2 cursor-grab active:cursor-grabbing" aria-hidden="true">
+			<div
+				class="flex justify-center py-2 cursor-grab active:cursor-grabbing"
+				aria-hidden="true"
+			>
 				<div class="w-10 h-1 bg-surface-400 dark:bg-surface-600 rounded-sm"></div>
 			</div>
 

@@ -73,8 +73,10 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		(resourceUtils.getQualityInfo as Mock).mockImplementation(async (quality: number) => {
-			if (quality >= 80) return { rating: 'Excellent', color: 'text-success-500', multiplier: 1.5 };
-			if (quality >= 60) return { rating: 'Good', color: 'text-primary-500', multiplier: 1.25 };
+			if (quality >= 80)
+				return { rating: 'Excellent', color: 'text-success-500', multiplier: 1.5 };
+			if (quality >= 60)
+				return { rating: 'Good', color: 'text-primary-500', multiplier: 1.25 };
 			if (quality >= 40) return { rating: 'Fair', color: 'text-warning-500', multiplier: 1 };
 			return { rating: 'Poor', color: 'text-error-500', multiplier: 0.75 };
 		});
@@ -134,7 +136,9 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should display stone quality rating', async () => {
-			renderComponent(TileResourceInfo, { props: { tile: { ...baseTile, stoneQuality: 30 } } });
+			renderComponent(TileResourceInfo, {
+				props: { tile: { ...baseTile, stoneQuality: 30 } }
+			});
 
 			await waitFor(() => {
 				expect(screen.getByText('Poor')).toBeDefined(); // 30 quality = Poor
@@ -399,7 +403,10 @@ describe('TileResourceInfo.svelte', () => {
 			(resourceUtils.getQualityInfo as Mock).mockImplementation(
 				() =>
 					new Promise((resolve) =>
-						setTimeout(() => resolve({ rating: 'Good', color: 'text-primary-500' }), 100)
+						setTimeout(
+							() => resolve({ rating: 'Good', color: 'text-primary-500' }),
+							100
+						)
 					)
 			);
 
@@ -522,11 +529,16 @@ describe('TileResourceInfo.svelte', () => {
 		});
 
 		it('should handle very long special resource names', async () => {
-			const tile = { ...baseTile, specialResource: 'Legendary Ancient Crystal Deposits of Power' };
+			const tile = {
+				...baseTile,
+				specialResource: 'Legendary Ancient Crystal Deposits of Power'
+			};
 			renderComponent(TileResourceInfo, { props: { tile } });
 
 			await waitFor(() => {
-				expect(screen.getByText('✨ Legendary Ancient Crystal Deposits of Power')).toBeDefined();
+				expect(
+					screen.getByText('✨ Legendary Ancient Crystal Deposits of Power')
+				).toBeDefined();
 			});
 		});
 	});

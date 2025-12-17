@@ -104,7 +104,9 @@ export const actions: Actions = {
 			});
 
 			if (!response.ok) {
-				const error = await response.json().catch(() => ({ error: 'Failed to create world' }));
+				const error = await response
+					.json()
+					.catch(() => ({ error: 'Failed to create world' }));
 				logger.error('[WORLD CREATE ACTION] Failed to create world record', {
 					status: response.status,
 					error

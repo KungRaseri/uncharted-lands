@@ -167,7 +167,9 @@ export async function validatePrerequisites(
 
 		if (!requiredStructureDefinition) {
 			// Structure definition doesn't exist (shouldn't happen)
-			throw new Error(`Required structure definition not found: ${prereq.requiredStructureName}`);
+			throw new Error(
+				`Required structure definition not found: ${prereq.requiredStructureName}`
+			);
 		}
 
 		// Check if settlement has this structure

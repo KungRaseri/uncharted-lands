@@ -82,7 +82,9 @@
 							<div>State: <span class="capitalize">{connectionState}</span></div>
 							{#if socketId}
 								<div>
-									Socket ID: <span class="font-mono text-[10px]">{socketId.slice(0, 8)}...</span>
+									Socket ID: <span class="font-mono text-[10px]"
+										>{socketId.slice(0, 8)}...</span
+									>
 								</div>
 							{/if}
 							<div>Last Ping: {lastPingTime()}</div>

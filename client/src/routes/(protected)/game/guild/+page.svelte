@@ -63,7 +63,9 @@
 		<!-- Guild Overview -->
 		<div class="card preset-filled-surface-100-900 p-6">
 			<div class="flex items-center gap-4 mb-6">
-				<div class="w-20 h-20 rounded-lg bg-primary-500/20 flex items-center justify-center">
+				<div
+					class="w-20 h-20 rounded-lg bg-primary-500/20 flex items-center justify-center"
+				>
 					<Users size={40} class="text-primary-500" />
 				</div>
 				<div class="flex-1">
@@ -105,15 +107,21 @@
 			</h3>
 			<div class="grid grid-cols-2 gap-4">
 				<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Settlements</p>
+					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+						Total Settlements
+					</p>
 					<p class="text-2xl font-bold text-surface-400">--</p>
 				</div>
 				<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Total Resources</p>
+					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+						Total Resources
+					</p>
 					<p class="text-2xl font-bold text-surface-400">--</p>
 				</div>
 				<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
-					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Territory Control</p>
+					<p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+						Territory Control
+					</p>
 					<p class="text-2xl font-bold text-surface-400">--</p>
 				</div>
 				<div class="p-4 bg-surface-200 dark:bg-surface-700 rounded-lg">
@@ -136,10 +144,14 @@
 
 		<div class="space-y-2">
 			{#each [1, 2, 3] as item}
-				<div class="flex items-center gap-4 p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
+				<div
+					class="flex items-center gap-4 p-3 bg-surface-200 dark:bg-surface-700 rounded-lg"
+				>
 					<div class="w-10 h-10 rounded-full bg-surface-300 dark:bg-surface-600"></div>
 					<div class="flex-1">
-						<div class="h-4 bg-surface-300 dark:bg-surface-600 rounded w-1/3 mb-2"></div>
+						<div
+							class="h-4 bg-surface-300 dark:bg-surface-600 rounded w-1/3 mb-2"
+						></div>
 						<div class="h-3 bg-surface-300 dark:bg-surface-600 rounded w-1/4"></div>
 					</div>
 					<div class="h-6 bg-surface-300 dark:bg-surface-600 rounded w-20"></div>
@@ -152,6 +164,8 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
+			← Back to Game Overview
+		</a>
 	</div>
 </div>

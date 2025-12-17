@@ -23,7 +23,9 @@
 
 	// Group panels by column, sorted by order within each column
 	const headerPanels = $derived(
-		panels.filter((p) => p.visible && p.column === 'header').toSorted((a, b) => a.order - b.order)
+		panels
+			.filter((p) => p.visible && p.column === 'header')
+			.toSorted((a, b) => a.order - b.order)
 	);
 
 	const leftPanels = $derived(
@@ -31,11 +33,15 @@
 	);
 
 	const centerPanels = $derived(
-		panels.filter((p) => p.visible && p.column === 'center').toSorted((a, b) => a.order - b.order)
+		panels
+			.filter((p) => p.visible && p.column === 'center')
+			.toSorted((a, b) => a.order - b.order)
 	);
 
 	const rightPanels = $derived(
-		panels.filter((p) => p.visible && p.column === 'right').toSorted((a, b) => a.order - b.order)
+		panels
+			.filter((p) => p.visible && p.column === 'right')
+			.toSorted((a, b) => a.order - b.order)
 	);
 </script>
 

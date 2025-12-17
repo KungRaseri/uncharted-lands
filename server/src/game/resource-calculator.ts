@@ -336,7 +336,9 @@ export function calculateProduction(
 			)
 			.reduce(
 				(highest, current) => {
-					return !highest || (current.level || 1) > (highest.level || 1) ? current : highest;
+					return !highest || (current.level || 1) > (highest.level || 1)
+						? current
+						: highest;
 				},
 				undefined as StructureWithInfo | undefined
 			);

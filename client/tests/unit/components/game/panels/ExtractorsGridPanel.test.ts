@@ -259,8 +259,12 @@ describe('ExtractorsGridPanel', () => {
 
 			// Use getAllByText for descriptions that appear multiple times
 			expect(screen.getAllByText('Produces food from crops').length).toBeGreaterThan(0);
-			expect(screen.getAllByText('Produces water from groundwater').length).toBeGreaterThan(0);
-			expect(screen.getAllByText('Produces ore from mineral deposits').length).toBeGreaterThan(0);
+			expect(screen.getAllByText('Produces water from groundwater').length).toBeGreaterThan(
+				0
+			);
+			expect(
+				screen.getAllByText('Produces ore from mineral deposits').length
+			).toBeGreaterThan(0);
 		});
 	});
 

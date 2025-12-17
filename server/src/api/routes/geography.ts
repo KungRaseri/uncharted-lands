@@ -176,7 +176,9 @@ router.get('/map', authenticate, async (req, res) => {
 				},
 			};
 
-			logger.info(`[API MAP] Player has settlement at region (${centerRegionX}, ${centerRegionY})`);
+			logger.info(
+				`[API MAP] Player has settlement at region (${centerRegionX}, ${centerRegionY})`
+			);
 		} else {
 			// No settlement - find first available world and use center
 			logger.info('[API MAP] No settlement found, using fallback world');

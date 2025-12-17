@@ -513,7 +513,9 @@ describe('ExtractorBuildModal.svelte', () => {
 			});
 
 			await waitFor(() => {
-				const farmButton = screen.getByText('Basic Farm').closest('button') as HTMLButtonElement;
+				const farmButton = screen
+					.getByText('Basic Farm')
+					.closest('button') as HTMLButtonElement;
 				expect(farmButton.disabled).toBe(true);
 			});
 		});

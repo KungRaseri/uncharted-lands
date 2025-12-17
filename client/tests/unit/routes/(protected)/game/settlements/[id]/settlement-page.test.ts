@@ -230,7 +230,9 @@ describe('Settlement Page - API Metadata Integration', () => {
 			const reasons: string[] = [];
 
 			if (insufficientStorage.wood < structure.costs.wood) {
-				reasons.push(`Need ${structure.costs.wood} wood (have ${insufficientStorage.wood})`);
+				reasons.push(
+					`Need ${structure.costs.wood} wood (have ${insufficientStorage.wood})`
+				);
 			}
 
 			const result = {
@@ -254,10 +256,14 @@ describe('Settlement Page - API Metadata Integration', () => {
 			const reasons: string[] = [];
 
 			if (insufficientStorage.wood < structure.costs.wood) {
-				reasons.push(`Need ${structure.costs.wood} wood (have ${insufficientStorage.wood})`);
+				reasons.push(
+					`Need ${structure.costs.wood} wood (have ${insufficientStorage.wood})`
+				);
 			}
 			if (insufficientStorage.stone < structure.costs.stone) {
-				reasons.push(`Need ${structure.costs.stone} stone (have ${insufficientStorage.stone})`);
+				reasons.push(
+					`Need ${structure.costs.stone} stone (have ${insufficientStorage.stone})`
+				);
 			}
 
 			const result = {
@@ -297,16 +303,24 @@ describe('Settlement Page - API Metadata Integration', () => {
 			const reasons: string[] = [];
 
 			if (mockStorage.food < expensiveStructure.costs.food) {
-				reasons.push(`Need ${expensiveStructure.costs.food} food (have ${mockStorage.food})`);
+				reasons.push(
+					`Need ${expensiveStructure.costs.food} food (have ${mockStorage.food})`
+				);
 			}
 			if (mockStorage.water < expensiveStructure.costs.water) {
-				reasons.push(`Need ${expensiveStructure.costs.water} water (have ${mockStorage.water})`);
+				reasons.push(
+					`Need ${expensiveStructure.costs.water} water (have ${mockStorage.water})`
+				);
 			}
 			if (mockStorage.wood < expensiveStructure.costs.wood) {
-				reasons.push(`Need ${expensiveStructure.costs.wood} wood (have ${mockStorage.wood})`);
+				reasons.push(
+					`Need ${expensiveStructure.costs.wood} wood (have ${mockStorage.wood})`
+				);
 			}
 			if (mockStorage.stone < expensiveStructure.costs.stone) {
-				reasons.push(`Need ${expensiveStructure.costs.stone} stone (have ${mockStorage.stone})`);
+				reasons.push(
+					`Need ${expensiveStructure.costs.stone} stone (have ${mockStorage.stone})`
+				);
 			}
 			if (mockStorage.ore < expensiveStructure.costs.ore) {
 				reasons.push(`Need ${expensiveStructure.costs.ore} ore (have ${mockStorage.ore})`);

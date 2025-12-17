@@ -1,6 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Layers, MapPin, Globe, Mountain, Droplets, Thermometer, ArrowLeft } from 'lucide-svelte';
+	import {
+		Layers,
+		MapPin,
+		Globe,
+		Mountain,
+		Droplets,
+		Thermometer,
+		ArrowLeft
+	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -12,8 +20,9 @@
 			>Dashboard</a
 		>
 		<span class="text-surface-400">/</span>
-		<a href="/admin/worlds" class="text-surface-600 dark:text-surface-400 hover:text-primary-500"
-			>Worlds</a
+		<a
+			href="/admin/worlds"
+			class="text-surface-600 dark:text-surface-400 hover:text-primary-500">Worlds</a
 		>
 		<span class="text-surface-400">/</span>
 		<a
@@ -46,7 +55,9 @@
 
 			<div class="flex-1">
 				<h1 class="text-3xl font-bold mb-2 capitalize">{data.tile.type} Tile</h1>
-				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">{data.tile.id}</p>
+				<p class="text-sm text-surface-600 dark:text-surface-400 font-mono mb-4">
+					{data.tile.id}
+				</p>
 
 				<div class="flex flex-wrap gap-4">
 					<div class="flex items-center gap-2">
@@ -71,7 +82,9 @@
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 		<div class="card preset-filled-surface-100-900 p-6">
 			<div class="flex items-center gap-3 mb-3">
-				<div class="w-10 h-10 rounded-lg bg-success-500/10 flex items-center justify-center">
+				<div
+					class="w-10 h-10 rounded-lg bg-success-500/10 flex items-center justify-center"
+				>
 					<Mountain size={20} class="text-success-500" />
 				</div>
 				<h3 class="font-semibold">Elevation</h3>
@@ -84,7 +97,9 @@
 
 		<div class="card preset-filled-surface-100-900 p-6">
 			<div class="flex items-center gap-3 mb-3">
-				<div class="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center">
+				<div
+					class="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center"
+				>
 					<Droplets size={20} class="text-primary-500" />
 				</div>
 				<h3 class="font-semibold">Precipitation</h3>
@@ -111,7 +126,10 @@
 
 	<!-- Back Button -->
 	<div>
-		<a href="/admin/regions/{data.tile.Region.id}" class="btn preset-tonal-surface-500 rounded-md">
+		<a
+			href="/admin/regions/{data.tile.Region.id}"
+			class="btn preset-tonal-surface-500 rounded-md"
+		>
 			<ArrowLeft size={20} />
 			<span>Back to {data.tile.Region.name}</span>
 		</a>

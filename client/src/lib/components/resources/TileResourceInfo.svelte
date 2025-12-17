@@ -54,7 +54,9 @@
 						<div class="flex-1">
 							<div class="text-xs opacity-60">Food</div>
 							{#if qualityInfo.quality !== undefined}
-								<div class="font-semibold {qualityInfo.color}">{qualityInfo.rating}</div>
+								<div class="font-semibold {qualityInfo.color}">
+									{qualityInfo.rating}
+								</div>
 								<div class="text-xs opacity-70">{qualityInfo.quality}/100</div>
 							{:else}
 								<div class="text-sm {qualityInfo.color}">{qualityInfo.rating}</div>
@@ -88,7 +90,9 @@
 						<div class="flex-1">
 							<div class="text-xs opacity-60">Wood</div>
 							{#if qualityInfo.quality !== undefined}
-								<div class="font-semibold {qualityInfo.color}">{qualityInfo.rating}</div>
+								<div class="font-semibold {qualityInfo.color}">
+									{qualityInfo.rating}
+								</div>
 								<div class="text-xs opacity-70">{qualityInfo.quality}/100</div>
 							{:else}
 								<div class="text-sm {qualityInfo.color}">{qualityInfo.rating}</div>
@@ -122,7 +126,9 @@
 						<div class="flex-1">
 							<div class="text-xs opacity-60">Stone</div>
 							{#if qualityInfo.quality !== undefined}
-								<div class="font-semibold {qualityInfo.color}">{qualityInfo.rating}</div>
+								<div class="font-semibold {qualityInfo.color}">
+									{qualityInfo.rating}
+								</div>
 								<div class="text-xs opacity-70">{qualityInfo.quality}/100</div>
 							{:else}
 								<div class="text-sm {qualityInfo.color}">{qualityInfo.rating}</div>
@@ -156,7 +162,9 @@
 						<div class="flex-1">
 							<div class="text-xs opacity-60">Ore</div>
 							{#if qualityInfo.quality !== undefined}
-								<div class="font-semibold {qualityInfo.color}">{qualityInfo.rating}</div>
+								<div class="font-semibold {qualityInfo.color}">
+									{qualityInfo.rating}
+								</div>
 								<div class="text-xs opacity-70">{qualityInfo.quality}/100</div>
 							{:else}
 								<div class="text-sm {qualityInfo.color}">{qualityInfo.rating}</div>

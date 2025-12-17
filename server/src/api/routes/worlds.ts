@@ -74,7 +74,10 @@ router.get('/:id', authenticate, async (req, res) => {
 					with: {
 						server: true,
 						regions: {
-							orderBy: (regions, { asc }) => [asc(regions.xCoord), asc(regions.yCoord)],
+							orderBy: (regions, { asc }) => [
+								asc(regions.xCoord),
+								asc(regions.yCoord),
+							],
 							with: {
 								tiles: {
 									// Order tiles by their coordinates (x=row, y=column) to match creation order
@@ -388,7 +391,12 @@ router.post('/', authenticateAdmin, async (req, res) => {
 					.set({ status: 'failed', updatedAt: new Date() })
 					.where(eq(worlds.id, newWorld.id));
 
-				return sendServerError(res, error, 'Failed to generate world data', 'GENERATION_FAILED');
+				return sendServerError(
+					res,
+					error,
+					'Failed to generate world data',
+					'GENERATION_FAILED'
+				);
 			}
 		}
 
@@ -612,7 +620,10 @@ async function generateWorldInBackground(
 			persistence: opts.persistence || 0.5,
 			frequency: opts.frequency || 0.05,
 			octaves: opts.octaves || 8,
-			scale: typeof opts.scale === 'function' ? opts.scale : (x: number) => x * (opts.scale || 1),
+			scale:
+				typeof opts.scale === 'function'
+					? opts.scale
+					: (x: number) => x * (opts.scale || 1),
 		});
 
 		// Call createWorld with the existing worldId

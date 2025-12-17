@@ -136,7 +136,10 @@
 	<div class="flex-1 overflow-y-auto p-4 md:p-3 flex flex-col gap-6">
 		{#if sortedQueue.length === 0}
 			<!-- Empty State -->
-			<div class="flex flex-col items-center justify-center py-12 px-4 text-center" role="status">
+			<div
+				class="flex flex-col items-center justify-center py-12 px-4 text-center"
+				role="status"
+			>
 				<span class="text-6xl leading-none mb-4 opacity-50" aria-hidden="true">🏗️</span>
 				<p class="text-lg font-semibold text-surface-700 dark:text-surface-300 m-0 mb-2">
 					No construction projects
@@ -160,9 +163,13 @@
 								class="bg-primary-50 dark:bg-primary-950 rounded-md p-4 md:p-3 border border-primary-300 dark:border-primary-700 flex flex-col gap-3"
 								role="listitem"
 							>
-								<div class="flex items-start justify-between gap-4 flex-col md:flex-row">
+								<div
+									class="flex items-start justify-between gap-4 flex-col md:flex-row"
+								>
 									<div class="flex items-start gap-3 flex-1">
-										<span class="text-2xl leading-none shrink-0" aria-hidden="true"
+										<span
+											class="text-2xl leading-none shrink-0"
+											aria-hidden="true"
 											>{getBuildingEmoji(project.buildingType)}</span
 										>
 										<div class="flex flex-col gap-1">
@@ -171,7 +178,9 @@
 											>
 												{project.buildingName}
 											</h4>
-											<p class="text-xs text-surface-600 dark:text-surface-400 m-0">
+											<p
+												class="text-xs text-surface-600 dark:text-surface-400 m-0"
+											>
 												Position: #{project.queuePosition}
 											</p>
 										</div>
@@ -183,7 +192,8 @@
 											class="text-lg font-bold text-primary-600 dark:text-primary-400 tabular-nums"
 											>{formatTimeRemaining(project.timeRemaining)}</span
 										>
-										<span class="text-xs text-surface-600 dark:text-surface-400 tabular-nums"
+										<span
+											class="text-xs text-surface-600 dark:text-surface-400 tabular-nums"
 											>{getEstimatedCompletion(project.timeRemaining)}</span
 										>
 									</div>
@@ -204,7 +214,8 @@
 										class="h-full bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 rounded-xl transition-all duration-500 ease-out flex items-center justify-center"
 										style:width="{project.progress}%"
 									>
-										<span class="text-xs font-semibold text-white shadow-sm tabular-nums"
+										<span
+											class="text-xs font-semibold text-white shadow-sm tabular-nums"
 											>{project.progress}%</span
 										>
 									</div>
@@ -212,8 +223,11 @@
 
 								<!-- Resource Costs -->
 								<div class="flex items-center gap-2 text-sm">
-									<span class="text-surface-600 dark:text-surface-400 font-medium">Cost:</span>
-									<span class="text-surface-800 dark:text-surface-200 font-semibold"
+									<span class="text-surface-600 dark:text-surface-400 font-medium"
+										>Cost:</span
+									>
+									<span
+										class="text-surface-800 dark:text-surface-200 font-semibold"
 										>{formatResourceCost(project.resourceCosts)}</span
 									>
 								</div>
@@ -237,9 +251,13 @@
 								class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 md:p-3 border border-surface-200 dark:border-surface-700 flex flex-col gap-3"
 								role="listitem"
 							>
-								<div class="flex items-start justify-between gap-4 flex-col md:flex-row">
+								<div
+									class="flex items-start justify-between gap-4 flex-col md:flex-row"
+								>
 									<div class="flex items-start gap-3 flex-1">
-										<span class="text-2xl leading-none shrink-0" aria-hidden="true"
+										<span
+											class="text-2xl leading-none shrink-0"
+											aria-hidden="true"
 											>{getBuildingEmoji(project.buildingType)}</span
 										>
 										<div class="flex flex-col gap-1">
@@ -248,7 +266,9 @@
 											>
 												{project.buildingName}
 											</h4>
-											<p class="text-xs text-surface-600 dark:text-surface-400 m-0">
+											<p
+												class="text-xs text-surface-600 dark:text-surface-400 m-0"
+											>
 												Position: #{project.queuePosition}
 											</p>
 										</div>
@@ -265,8 +285,11 @@
 
 								<!-- Resource Costs -->
 								<div class="flex items-center gap-2 text-sm">
-									<span class="text-surface-600 dark:text-surface-400 font-medium">Cost:</span>
-									<span class="text-surface-800 dark:text-surface-200 font-semibold"
+									<span class="text-surface-600 dark:text-surface-400 font-medium"
+										>Cost:</span
+									>
+									<span
+										class="text-surface-800 dark:text-surface-200 font-semibold"
 										>{formatResourceCost(project.resourceCosts)}</span
 									>
 								</div>

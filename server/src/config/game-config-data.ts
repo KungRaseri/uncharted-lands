@@ -119,14 +119,29 @@ export const DEFAULT_GAME_CONFIG: GameConfig = {
 		{ type: 'WOOD', name: 'Wood', icon: '🪵', description: 'Essential building material' },
 		{ type: 'STONE', name: 'Stone', icon: '🪨', description: 'Durable construction resource' },
 		{ type: 'ORE', name: 'Ore', icon: '⛏️', description: 'Metal for advanced structures' },
-		{ type: 'CLAY', name: 'Clay', icon: '🧱', description: 'Pottery and construction material' },
+		{
+			type: 'CLAY',
+			name: 'Clay',
+			icon: '🧱',
+			description: 'Pottery and construction material',
+		},
 		{ type: 'HERBS', name: 'Herbs', icon: '🌿', description: 'Medicinal plants' },
 		{ type: 'PELTS', name: 'Pelts', icon: '🦊', description: 'Animal furs for trade' },
 		{ type: 'GEMS', name: 'Gems', icon: '💎', description: 'Rare precious stones' },
-		{ type: 'EXOTIC_WOOD', name: 'Exotic Wood', icon: '🌳', description: 'Rare hardwood timber' },
+		{
+			type: 'EXOTIC_WOOD',
+			name: 'Exotic Wood',
+			icon: '🌳',
+			description: 'Rare hardwood timber',
+		},
 	],
 	extractorDisplay: [
-		{ type: 'FARM', name: 'Farm', icon: '🚜', description: 'Cultivates crops for food production' },
+		{
+			type: 'FARM',
+			name: 'Farm',
+			icon: '🚜',
+			description: 'Cultivates crops for food production',
+		},
 		{
 			type: 'WELL',
 			name: 'Well',
@@ -168,8 +183,18 @@ export const DEFAULT_GAME_CONFIG: GameConfig = {
 	buildingDisplay: [
 		{ type: 'HOUSE', name: 'House', icon: '🏠', description: 'Housing for settlers' },
 		{ type: 'STORAGE', name: 'Storage', icon: '📦', description: 'Stores resources' },
-		{ type: 'BARRACKS', name: 'Barracks', icon: '⚔️', description: 'Military training facility' },
-		{ type: 'WORKSHOP', name: 'Workshop', icon: '🔨', description: 'Crafts tools and equipment' },
+		{
+			type: 'BARRACKS',
+			name: 'Barracks',
+			icon: '⚔️',
+			description: 'Military training facility',
+		},
+		{
+			type: 'WORKSHOP',
+			name: 'Workshop',
+			icon: '🔨',
+			description: 'Crafts tools and equipment',
+		},
 		{ type: 'MARKETPLACE', name: 'Marketplace', icon: '🏪', description: 'Enables trade' },
 		{ type: 'TOWN_HALL', name: 'Town Hall', icon: '🏛️', description: 'Administrative center' },
 		{ type: 'WALL', name: 'Wall', icon: '🧱', description: 'Defensive fortification' },

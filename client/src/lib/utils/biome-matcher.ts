@@ -33,7 +33,8 @@ export function findBiomeForTile(
 	if (matches.length === 0) {
 		matches = biomes.filter(
 			(biome) =>
-				normalizedPrecip >= biome.precipitationMin && normalizedPrecip <= biome.precipitationMax
+				normalizedPrecip >= biome.precipitationMin &&
+				normalizedPrecip <= biome.precipitationMax
 		);
 	}
 

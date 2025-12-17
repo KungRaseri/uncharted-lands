@@ -175,7 +175,13 @@ describe('Region Statistics Utilities', () => {
 				tileCol: 0,
 				elevation: 0,
 				terrainType: 'Ocean',
-				stats: { avgElevation: 0, minElevation: 0, maxElevation: 0, landTiles: 0, oceanTiles: 0 }
+				stats: {
+					avgElevation: 0,
+					minElevation: 0,
+					maxElevation: 0,
+					landTiles: 0,
+					oceanTiles: 0
+				}
 			});
 
 			expect(tooltip).toContain('Region: Unknown (0, 0)');

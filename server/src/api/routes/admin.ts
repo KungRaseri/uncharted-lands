@@ -24,7 +24,9 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
 		const [serverCount] = await db.select({ count: sql<number>`count(*)` }).from(servers);
 		const [worldCount] = await db.select({ count: sql<number>`count(*)` }).from(worlds);
 		const [accountCount] = await db.select({ count: sql<number>`count(*)` }).from(accounts);
-		const [settlementCount] = await db.select({ count: sql<number>`count(*)` }).from(settlements);
+		const [settlementCount] = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(settlements);
 
 		// Get recent servers
 		const recentServers = await db.query.servers.findMany({

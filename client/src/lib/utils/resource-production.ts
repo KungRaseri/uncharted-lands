@@ -82,7 +82,8 @@ export async function getQualityInfo(quality: number): Promise<{
 	const config = await ensureConfig();
 	const t = config.qualityThresholds;
 
-	if (quality <= t.veryPoor) return { rating: 'Very Poor', color: 'text-red-600', multiplier: 0.5 };
+	if (quality <= t.veryPoor)
+		return { rating: 'Very Poor', color: 'text-red-600', multiplier: 0.5 };
 	if (quality <= t.poor) return { rating: 'Poor', color: 'text-orange-600', multiplier: 0.75 };
 	if (quality <= t.average) return { rating: 'Average', color: 'text-yellow-600', multiplier: 1 };
 	if (quality <= t.good) return { rating: 'Good', color: 'text-green-600', multiplier: 1.5 };

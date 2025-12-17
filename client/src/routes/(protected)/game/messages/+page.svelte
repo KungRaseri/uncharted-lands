@@ -23,7 +23,9 @@
 				<MessageSquare size={32} class="text-primary-500" />
 				Messages
 			</h1>
-			<p class="text-surface-600 dark:text-surface-400">Private conversations with other players</p>
+			<p class="text-surface-600 dark:text-surface-400">
+				Private conversations with other players
+			</p>
 		</div>
 		<button class="btn preset-filled-primary-500 rounded-md" disabled>
 			<Plus size={20} />
@@ -61,7 +63,12 @@
 					<div class="input-group-shim">
 						<Search size={16} />
 					</div>
-					<input type="text" placeholder="Search conversations..." class="input" disabled />
+					<input
+						type="text"
+						placeholder="Search conversations..."
+						class="input"
+						disabled
+					/>
 				</div>
 			</div>
 
@@ -69,10 +76,16 @@
 				{#each [1, 2, 3, 4] as item}
 					<div class="p-3 bg-surface-200 dark:bg-surface-700 rounded-lg">
 						<div class="flex items-center gap-3">
-							<div class="w-10 h-10 rounded-full bg-surface-300 dark:bg-surface-600"></div>
+							<div
+								class="w-10 h-10 rounded-full bg-surface-300 dark:bg-surface-600"
+							></div>
 							<div class="flex-1">
-								<div class="h-4 bg-surface-300 dark:bg-surface-600 rounded w-2/3 mb-2"></div>
-								<div class="h-3 bg-surface-300 dark:bg-surface-600 rounded w-full"></div>
+								<div
+									class="h-4 bg-surface-300 dark:bg-surface-600 rounded w-2/3 mb-2"
+								></div>
+								<div
+									class="h-3 bg-surface-300 dark:bg-surface-600 rounded w-full"
+								></div>
 							</div>
 						</div>
 					</div>
@@ -122,6 +135,8 @@
 
 	<!-- Back to Game -->
 	<div class="flex justify-center">
-		<a href="/game" class="btn preset-tonal-surface-500 rounded-md"> ← Back to Game Overview </a>
+		<a href="/game" class="btn preset-tonal-surface-500 rounded-md">
+			← Back to Game Overview
+		</a>
 	</div>
 </div>

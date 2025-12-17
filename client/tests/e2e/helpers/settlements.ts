@@ -175,7 +175,9 @@ export async function assertSettlementExists(page: Page, settlementName: string)
 	}
 
 	if (!found) {
-		throw new Error(`Settlement name "${settlementName}" not found in UI with any known selector`);
+		throw new Error(
+			`Settlement name "${settlementName}" not found in UI with any known selector`
+		);
 	}
 }
 
