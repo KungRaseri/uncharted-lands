@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { SettlementWithStorage } from '$lib/types/game';
+	import type { SettlementWithStorage } from '@uncharted-lands/shared';
 	import {
 		Building2,
 		MapPin,

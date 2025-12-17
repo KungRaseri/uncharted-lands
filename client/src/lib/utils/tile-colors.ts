@@ -17,7 +17,7 @@
  * In practice, values can exceed 2.0 in rare cases.
  */
 
-import type { TileType } from '$lib/types/game';
+import type { TileType } from '@uncharted-lands/shared';
 
 /**
  * Map visualization mode

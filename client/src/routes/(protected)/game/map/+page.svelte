@@ -2,7 +2,7 @@
 	import World from '$lib/components/game/map/World.svelte';
 	import MapControls from '$lib/components/game/map/MapControls.svelte';
 	import type { PageData } from './$types';
-	import type { RegionWithTiles, TileWithRelations } from '$lib/types/game';
+	import type { RegionWithTiles, TileWithRelations } from '@uncharted-lands/shared';
 	import { Map, Globe, Layers, MapPin, Info } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();

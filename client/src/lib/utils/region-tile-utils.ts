@@ -7,7 +7,7 @@
  */
 
 import { getTerrainType } from './tile-colors';
-import type { RegionStats } from '$lib/types/game';
+import type { RegionStats } from '@uncharted-lands/shared';
 
 export interface TileData {
 	elevation: number;

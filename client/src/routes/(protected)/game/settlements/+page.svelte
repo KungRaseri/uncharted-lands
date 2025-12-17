@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { SettlementWithStorage } from '$lib/types/game';
+	import type { SettlementWithStorage } from '@uncharted-lands/shared';
 	import { Building2, Search, MapPin, Package, Plus, Home, RefreshCw } from 'lucide-svelte';
 	import { createGameRefreshInterval, refreshGameData } from '$lib/stores/game/gameState.svelte';
 	import { onMount } from 'svelte';

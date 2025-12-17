@@ -4,7 +4,7 @@
 
 import { redirect } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
-import type { PlayerProfile } from '$lib/types/game';
+import type { PlayerProfile } from '@uncharted-lands/shared';
 
 type Role = 'MEMBER' | 'SUPPORT' | 'ADMINISTRATOR';
 

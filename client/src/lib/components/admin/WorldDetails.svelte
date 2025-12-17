@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { WorldWithRegions, WorldInfo } from '$lib/types/game';
+	import type { WorldWithRegions, WorldInfo } from '@uncharted-lands/shared';
 
 	type Props = {
 		world: WorldWithRegions;

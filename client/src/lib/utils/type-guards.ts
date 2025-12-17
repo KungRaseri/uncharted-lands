@@ -2,7 +2,7 @@
  * Type guard utilities for runtime type checking
  */
 
-import type { TileType, ServerStatus, Role } from '$lib/types/game';
+import type { TileType, ServerStatus, Role } from '@uncharted-lands/shared';
 
 /**
  * Checks if a value is a valid TileType

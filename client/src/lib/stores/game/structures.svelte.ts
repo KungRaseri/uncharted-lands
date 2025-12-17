@@ -11,7 +11,7 @@
 
 import { socketStore } from './socket';
 import type { Socket } from 'socket.io-client';
-import type { Structure } from '$lib/types/structures';
+import type { Structure } from '@uncharted-lands/shared';
 
 interface StructuresState {
 	// Map of settlementId -> Structure[]

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Tile from './Tile.svelte';
-	import type { RegionWithTiles } from '$lib/types/game';
+	import type { RegionWithTiles } from '@uncharted-lands/shared';
 	import type { MapViewMode } from '$lib/utils/tile-colors';
 
 	type Props = {

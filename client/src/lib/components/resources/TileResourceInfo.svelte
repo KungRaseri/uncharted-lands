@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getQualityInfo, getResourceIcon } from '$lib/utils/resource-production';
-	import type { Tile } from '$lib/types/game';
+	import type { Tile } from '@uncharted-lands/shared';
 
 	let { tile }: { tile: Tile } = $props();
 

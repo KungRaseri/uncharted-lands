@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import TileResourceInfo from '$lib/components/resources/TileResourceInfo.svelte';
 import * as resourceUtils from '$lib/utils/resource-production';
-import type { Tile, Biome, TileBase, TileType } from '$lib/types/game';
+import type { Tile, Biome, TileBase, TileType } from '@uncharted-lands/shared';
 
 // Helper function to fix TypeScript issues with Svelte 5 runes and testing-library
 // See: https://github.com/testing-library/svelte-testing-library/issues/360

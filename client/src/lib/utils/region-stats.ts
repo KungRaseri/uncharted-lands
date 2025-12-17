@@ -6,7 +6,7 @@
  * RegionStats imported from $lib/types/game (single source of truth)
  */
 
-import type { RegionStats } from '$lib/types/game';
+import type { RegionStats } from '@uncharted-lands/shared';
 
 /**
  * Calculate average, minimum, and maximum elevation for a region

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
-	import type { World } from '$lib/types/game';
+	import type { World } from '@uncharted-lands/shared';
 	import { Flame, Server, Globe, User, Rocket, AlertCircle } from 'lucide-svelte';
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';

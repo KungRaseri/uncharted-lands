@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { TrendingUp, Globe, CloudRain, Thermometer } from 'lucide-svelte';
-	import type { TileWithBiome } from '$lib/types/game';
+	import type { TileWithBiome } from '@uncharted-lands/shared';
 
 	type Props = {
 		tile: TileWithBiome;

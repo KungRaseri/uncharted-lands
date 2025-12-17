@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SettlementWithStorage } from '$lib/types/game';
+	import type { SettlementWithStorage } from '@uncharted-lands/shared';
 
 	type Props = {
 		settlement: SettlementWithStorage;

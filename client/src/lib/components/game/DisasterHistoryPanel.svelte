@@ -6,7 +6,7 @@
 		DisasterHistoryFilters,
 		DisasterHistorySort,
 		DisasterHistorySortBy
-	} from '$lib/types/disaster';
+	} from '@uncharted-lands/shared';
 	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 
 	interface Props {

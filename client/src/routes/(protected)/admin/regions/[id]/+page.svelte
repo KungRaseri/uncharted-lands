@@ -11,7 +11,7 @@
 		Home
 	} from 'lucide-svelte';
 	import WorldMap from '$lib/components/shared/WorldMap.svelte';
-	import type { TileWithRelations } from '$lib/types/game';
+	import type { TileWithRelations } from '@uncharted-lands/shared';
 
 	let { data }: { data: PageData } = $props();
 

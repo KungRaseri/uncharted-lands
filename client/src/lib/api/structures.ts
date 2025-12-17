@@ -14,10 +14,10 @@
  * Backend: server/src/api/routes/structures-metadata.ts
  */
 
-import type { StructureMetadata } from '$lib/types/structures';
+import type { StructureMetadata } from '@uncharted-lands/shared';
 
 // Re-export for backward compatibility with existing imports
-export type { StructureMetadata, StructureModifier } from '$lib/types/structures';
+export type { StructureMetadata, StructureModifier } from '@uncharted-lands/shared';
 
 /**
  * API response format

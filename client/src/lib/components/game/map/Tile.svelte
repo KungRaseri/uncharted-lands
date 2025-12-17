@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TileWithRelations } from '$lib/types/game';
+	import type { TileWithRelations } from '@uncharted-lands/shared';
 	import { getTileColorByViewMode, type MapViewMode } from '$lib/utils/tile-colors';
 	import { getTileTooltip } from '$lib/utils/tile-tooltips';
 

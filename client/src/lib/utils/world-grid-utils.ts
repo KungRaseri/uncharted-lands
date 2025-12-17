@@ -6,7 +6,7 @@
  * GridDimensions is calculation-specific utility type (kept local)
  */
 
-import type { RegionBase } from '$lib/types/game';
+import type { RegionBase } from '@uncharted-lands/shared';
 
 export interface GridDimensions {
 	cols: number;
