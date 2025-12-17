@@ -99,6 +99,7 @@
 	"dependencies": {
 		"@sentry/sveltekit": "^10.25.0",
 		"@sveltejs/kit": "^2.48.4",
+		"@uncharted-lands/shared": "file:../shared",
 		"cors": "^2.8.5",
 		"express": "^5.1.0",
 		"svelte": "^5.43.2"
