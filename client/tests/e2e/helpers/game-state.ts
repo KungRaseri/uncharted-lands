@@ -6,7 +6,8 @@
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-// Type for window with Vite import.meta
+// Type for window with Vite import.meta (not currently used but may be needed for future features)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface WindowWithImportMeta extends Window {
 	import?: {
 		meta?: {
@@ -51,7 +52,6 @@ export async function waitForSocketConnection(
 	while (Date.now() - startTime < timeoutMs) {
 		const debugInfo = await page.evaluate(() => {
 			try {
-				 
 				const w = globalThis as any;
 				const socket = w.socket || w.__socket || w.io?.sockets?.[0];
 
@@ -118,7 +118,6 @@ export async function joinWorldRoom(page: Page, worldId: string, playerId: strin
 		({ worldId, playerId }) => {
 			return new Promise((resolve) => {
 				try {
-					 
 					const w = globalThis as any;
 					const socket = w.socket || w.__socket || w.io?.sockets?.[0];
 
@@ -168,7 +167,6 @@ export async function joinWorldRoom(page: Page, worldId: string, playerId: strin
 
 	console.log('[E2E] joinWorldRoom result:', result);
 
-	 
 	const typedResult = result as any;
 	if (!typedResult.success) {
 		throw new Error(`Failed to join world room: ${typedResult.error}`);
@@ -424,7 +422,7 @@ export async function waitForSocketEvent(
 				}, timeout);
 
 				// Try to find socket in various locations
-				 
+
 				const w = globalThis as any;
 				const socket = w.socket || w.__socket || w.io?.sockets?.[0];
 
@@ -448,7 +446,7 @@ export async function waitForSocketEvent(
 
 				// Capture all events (Socket.IO internal method)
 				const originalOnevent = socket.onevent;
-				 
+
 				socket.onevent = function (packet: any) {
 					const eventName = packet.data?.[0];
 					if (eventName) {

@@ -270,7 +270,6 @@ test.describe('Resource Production Flow', () => {
 
 		// DEBUG: Check if page data is loaded
 		const pageData = await page.evaluate(() => {
-			 
 			const win = globalThis as any;
 			return {
 				hasWindowSocket: win.__socket !== undefined,

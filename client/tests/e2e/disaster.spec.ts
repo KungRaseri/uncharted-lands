@@ -260,7 +260,6 @@ test.describe('Disaster Lifecycle Flow', () => {
 
 		// DEBUG: Check if page data is loaded
 		const pageData = await page.evaluate(() => {
-			 
 			const win = globalThis as any;
 			return {
 				hasWindowSocket: win.__socket !== undefined,
@@ -326,14 +325,14 @@ test.describe('Disaster Lifecycle Flow', () => {
 				await waitForDisasterWarning(page, 10000);
 				console.log('[E2E] Disaster warning event received');
 				warningReceived = true;
-			} catch (_error) {
+			} catch (error) {
 				console.log('[E2E] Warning: Did not receive disaster-warning event within 10s');
 				console.log(
 					'[E2E] This may indicate game loop is not running or disaster processor has an issue'
 				);
+				console.log('[E2E] Error details:', error);
 				// Continue anyway to check if banner appears (might be cached/pre-loaded)
 			}
-
 			if (!warningReceived) {
 				console.log(
 					'[E2E] Skipping banner visibility check since warning event was not received'

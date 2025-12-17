@@ -144,7 +144,13 @@
 
 <!-- Delete Confirmation Modal -->
 {#if deleteModalOpen && serverToDelete}
-	<div class="modal-backdrop" onclick={closeDeleteModal} role="presentation">
+	<div
+		class="modal-backdrop"
+		onclick={closeDeleteModal}
+		onkeydown={(e) => e.key === 'Escape' && closeDeleteModal()}
+		role="presentation"
+		tabindex="-1"
+	>
 		<div
 			class="modal preset-filled-surface-50-950 w-full max-w-md"
 			onclick={(e) => e.stopPropagation()}

@@ -5,7 +5,7 @@ import type { StructureWithRelations, Settlement, StructureType } from '$lib/typ
 
 // Helper function to fix TypeScript issues with Svelte 5 runes and testing-library
 // See: https://github.com/testing-library/svelte-testing-library/issues/360
- 
+
 function renderComponent(component: any, options: any) {
 	return render(component, options);
 }
@@ -332,7 +332,6 @@ describe('StructureCard.svelte', () => {
 		});
 
 		it('should handle unknown structure type with fallback description', async () => {
-			 
 			const unknownStructure: any = {
 				...baseStructure,
 				type: 'unknown_type'
@@ -369,7 +368,7 @@ describe('StructureCard.svelte', () => {
 		it('should handle structure with null createdAt date', async () => {
 			const structureWithNullDate = {
 				...baseStructure,
-				 
+
 				createdAt: null as any
 			};
 

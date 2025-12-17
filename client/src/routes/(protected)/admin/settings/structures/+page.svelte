@@ -202,6 +202,8 @@
 		class="modal-backdrop"
 		onclick={handleBackdropClick}
 		onkeydown={handleBackdropKeydown}
+		role="presentation"
+		tabindex="-1"
 	></div>
 	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-2xl shadow-xl">
 		<header class="mb-6">

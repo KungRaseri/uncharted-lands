@@ -8,13 +8,12 @@ describe('Client Logger', () => {
 	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
-		 
 		consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {}) as any;
-		 
+
 		consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {}) as any;
-		 
+
 		consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {}) as any;
-		 
+
 		consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {}) as any;
 	});
 

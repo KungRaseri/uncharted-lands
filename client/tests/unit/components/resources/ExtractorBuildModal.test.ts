@@ -59,7 +59,7 @@ describe('ExtractorBuildModal.svelte', () => {
 			.mockResolvedValue(undefined);
 
 		// Setup default mocks
-		 
+
 		(resourceUtils.getResourceIcon as any).mockImplementation(async (type: string) => {
 			const icons: Record<string, string> = {
 				FOOD: '🌾',
@@ -71,7 +71,6 @@ describe('ExtractorBuildModal.svelte', () => {
 			return icons[type] || '?';
 		});
 
-		 
 		(resourceUtils.getResourceName as any).mockImplementation(async (type: string) => {
 			const names: Record<string, string> = {
 				FOOD: 'Food',
@@ -83,7 +82,6 @@ describe('ExtractorBuildModal.svelte', () => {
 			return names[type] || type;
 		});
 
-		 
 		(resourceUtils.getExtractorName as any).mockImplementation(async (type: string) => {
 			const names: Record<string, string> = {
 				BASIC_FARM: 'Basic Farm',

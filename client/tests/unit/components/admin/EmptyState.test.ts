@@ -221,17 +221,15 @@ describe('EmptyState.svelte', () => {
 		});
 
 		it('should handle different icon types', () => {
-			const { container, component } = render(EmptyState, {
+			const { container } = render(EmptyState, {
 				props: {
 					...baseProps,
 					icon: Plus
 				}
 			});
-
 			const svg = container.querySelector('svg');
 			expect(svg).toBeTruthy();
 		});
-
 		it('should work without optional action icon', () => {
 			render(EmptyState, {
 				props: {
