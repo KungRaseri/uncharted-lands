@@ -13,7 +13,7 @@ import {
 	getBuildingName
 } from '../../../src/lib/utils/resource-production';
 import { getGameConfig } from '../../../src/lib/api/game-config';
-import type { GameConfig } from '../../../src/lib/types/game-config';
+import type { GameConfig } from '@uncharted-lands/shared';
 
 // Mock the game-config module
 vi.mock('../../../src/lib/api/game-config', () => ({
@@ -82,7 +82,13 @@ const mockConfig: GameConfig = {
 	biomeDisplay: {} as Record<
 		string,
 		{ icon: string; color: string; name: string; description: string }
-	>
+	>,
+	gameLoopTimingConfig: {
+		tickRate: 60,
+		resourceIntervalSec: 3600,
+		populationIntervalSec: 3600,
+		socketEmitIntervalSec: 5
+	}
 };
 
 describe('Resource Production Utilities', () => {

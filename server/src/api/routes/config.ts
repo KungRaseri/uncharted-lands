@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { DEFAULT_GAME_CONFIG } from '../../config/game-config.js';
+import { DEFAULT_GAME_CONFIG } from '../../config/game-config-data.js';
 import { logger } from '../../utils/logger.js';
 
 const router = Router();

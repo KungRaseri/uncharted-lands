@@ -6,7 +6,7 @@
  */
 
 import { getGameConfig } from '../api/game-config';
-import type { GameConfig } from '../types/game-config';
+import type { GameConfig, BiomeType } from '@uncharted-lands/shared';
 
 let configCache: GameConfig | null = null;
 
@@ -187,7 +187,7 @@ export async function getBuildingName(buildingType: string): Promise<string> {
  */
 export async function getBiomeColor(biomeType: string): Promise<string> {
 	const config = await ensureConfig();
-	const biome = config.biomeDisplay?.[biomeType];
+	const biome = config.biomeDisplay?.[biomeType as BiomeType];
 	return biome?.color || 'variant-soft-surface'; // Fallback to neutral
 }
 
@@ -197,7 +197,7 @@ export async function getBiomeColor(biomeType: string): Promise<string> {
  */
 export async function getBiomeIcon(biomeType: string): Promise<string> {
 	const config = await ensureConfig();
-	const biome = config.biomeDisplay?.[biomeType];
+	const biome = config.biomeDisplay?.[biomeType as BiomeType];
 	return biome?.icon || '❓'; // Fallback to question mark
 }
 
@@ -207,7 +207,7 @@ export async function getBiomeIcon(biomeType: string): Promise<string> {
  */
 export async function getBiomeName(biomeType: string): Promise<string> {
 	const config = await ensureConfig();
-	const biome = config.biomeDisplay?.[biomeType];
+	const biome = config.biomeDisplay?.[biomeType as BiomeType];
 	return biome?.name || biomeType; // Fallback to enum value
 }
 

@@ -6,7 +6,7 @@
  */
 
 import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
-import type { GameConfig } from '../types/game-config';
+import type { GameConfig } from '@uncharted-lands/shared';
 
 let cachedConfig: GameConfig | null = null;
 let configPromise: Promise<GameConfig> | null = null;
@@ -121,7 +121,16 @@ function getFallbackConfig(): GameConfig {
 			{ type: 'TOWN_HALL', name: 'Town Hall' },
 			{ type: 'WALL', name: 'Wall' }
 		],
-		biomeDisplay: {},
+		biomeDisplay: {
+			GRASSLAND: { icon: '🌾', color: 'variant-soft-success', name: 'Grassland', description: '' },
+			FOREST: { icon: '🌲', color: 'variant-soft-primary', name: 'Forest', description: '' },
+			DESERT: { icon: '🏜️', color: 'variant-soft-warning', name: 'Desert', description: '' },
+			MOUNTAIN: { icon: '⛰️', color: 'variant-soft-surface', name: 'Mountain', description: '' },
+			TUNDRA: { icon: '🧊', color: 'variant-soft-tertiary', name: 'Tundra', description: '' },
+			SWAMP: { icon: '🌿', color: 'variant-soft-secondary', name: 'Swamp', description: '' },
+			COASTAL: { icon: '🏖️', color: 'variant-soft-primary', name: 'Coastal', description: '' },
+			OCEAN: { icon: '🌊', color: 'variant-soft-primary', name: 'Ocean', description: '' },
+		},
 		qualityDisplay: [
 			{ threshold: 20, rating: 'Very Poor', color: 'text-red-600', multiplier: 0.5 },
 			{ threshold: 40, rating: 'Poor', color: 'text-orange-600', multiplier: 0.75 },
@@ -136,6 +145,12 @@ function getFallbackConfig(): GameConfig {
 			tier2Multiplier: 0.25,
 			tier2Hours: 96,
 			maxHours: 96
+		},
+		gameLoopTimingConfig: {
+			tickRate: 60,
+			resourceIntervalSec: 3600,
+			populationIntervalSec: 3600,
+			socketEmitIntervalSec: 5
 		}
 	};
 }
