@@ -1,7 +1,7 @@
 # Multi-stage build for Node.js TypeScript server
 
 # Stage 1: Build shared package
-FROM node:22-alpine AS shared-builder
+FROM node:24-alpine AS shared-builder
 WORKDIR /app
 
 # Copy root package files for workspace setup
@@ -21,7 +21,7 @@ COPY shared/ ./shared/
 RUN npm run build:shared
 
 # Stage 2: Server dependencies
-FROM node:22-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
 
 # Copy root package files for workspace setup
@@ -37,7 +37,7 @@ COPY --from=shared-builder /app/shared/dist ./shared/dist/
 RUN npm ci && npm install --legacy-peer-deps
 
 # Stage 3: Builder
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 # Copy root package files for npm ci in server
@@ -64,7 +64,7 @@ RUN cp ../package-lock.json . && \
     npm run build && \
     rm package-lock.json
 # Stage 4: Production dependencies
-FROM node:22-alpine AS prod-deps
+FROM node:24-alpine AS prod-deps
 WORKDIR /app
 
 # Copy root package files for workspace setup
@@ -79,7 +79,7 @@ COPY --from=shared-builder /app/shared/dist ./shared/dist/
 RUN npm ci --omit=dev
 
 # Stage 5: Runner
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 
 # Create non-root user for security

@@ -95,8 +95,8 @@
 		"vitest": "^4.0.7"
 	},
 	"engines": {
-		"node": ">=20.0.0",
-		"npm": ">=9.0.0"
+		"node": "24.x",
+		"npm": ">=10.0.0"
 	},
 	"dependencies": {
 		"@sentry/sveltekit": "^10.25.0",
