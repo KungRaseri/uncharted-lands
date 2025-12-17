@@ -332,7 +332,7 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        run: echo "yes" | npm run db:push
+        run: npx drizzle-kit push --force
 
       - name: Run server tests
         run: npm run test:server
