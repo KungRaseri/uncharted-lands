@@ -142,7 +142,10 @@
 					{#if 'baseProduction' in structure && structure.baseProduction}
 						<div>
 							<span class="text-surface-600 dark:text-surface-400">Production:</span>
-							<span class="font-mono text-xs ml-2">{formatResources(structure.baseProduction)}</span
+							<span class="font-mono text-xs ml-2"
+								>{formatResources(
+									structure.baseProduction as Record<string, number | undefined>
+								)}</span
 							>
 						</div>
 					{/if}
@@ -166,17 +169,21 @@
 					{/if}
 					<div>
 						<span class="text-surface-600 dark:text-surface-400">Cost:</span>
-						<span class="font-mono text-xs ml-2">{formatResources(structure.baseCost)}</span>
+						<span class="font-mono text-xs ml-2"
+							>{formatResources(
+								(structure.baseCost || structure.costs) as Record<string, number | undefined>
+							)}</span
+						>
 					</div>
 				</div>
 
 				<div class="mt-4 pt-4 border-t border-surface-300 dark:border-surface-700">
 					<span
-						class="badge {structure.enabled
+						class="badge {(structure.enabled ?? true)
 							? 'preset-filled-success-500'
 							: 'preset-filled-error-500'} text-xs"
 					>
-						{structure.enabled ? 'Enabled' : 'Disabled'}
+						{(structure.enabled ?? true) ? 'Enabled' : 'Disabled'}
 					</span>
 				</div>
 			</button>

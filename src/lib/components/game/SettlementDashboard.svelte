@@ -244,10 +244,15 @@
 				level: s.level,
 				maxLevel: s.maxLevel,
 				health: s.health,
-				extractorType: s.extractorType,
-				buildingType: s.buildingType,
+				extractorType: s.extractorType ?? null,
+				buildingType: s.buildingType ?? null,
 				category: s.category,
-				modifiers: s.modifiers
+				modifiers: (s.modifiers ?? []).map((m) => ({
+					id: m.type, // BuildingsListPanel expects 'id', but canonical has 'type'
+					name: m.name,
+					description: m.description,
+					value: m.value
+				}))
 			}))
 	);
 
@@ -262,10 +267,10 @@
 				level: s.level,
 				maxLevel: s.maxLevel,
 				health: s.health,
-				tileId: s.tileId,
-				slotPosition: s.slotPosition,
-				extractorType: s.extractorType,
-				buildingType: s.buildingType,
+				tileId: s.tileId ?? null,
+				slotPosition: s.slotPosition ?? null,
+				extractorType: s.extractorType ?? null,
+				buildingType: s.buildingType ?? null,
 				category: s.category
 			}))
 	);
@@ -479,7 +484,15 @@
 
 	$effect(() => {
 		// Recalculate when structures change
-		calculateProduction(settlementStructures, undefined).then((result) => {
+		// Map to ensure properties are string | null (not string | null | undefined)
+		const mappedStructures = settlementStructures.map((s) => ({
+			...s,
+			tileId: s.tileId ?? null,
+			slotPosition: s.slotPosition ?? null,
+			extractorType: s.extractorType ?? null,
+			buildingType: s.buildingType ?? null
+		}));
+		calculateProduction(mappedStructures, undefined).then((result) => {
 			realProduction = result;
 		});
 	});

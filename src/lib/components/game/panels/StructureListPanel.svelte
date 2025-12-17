@@ -274,10 +274,17 @@
 						{@const showInstanceNum = hasMultipleInstances && !isUnique}
 
 						<li role="listitem">
-							<button
-								type="button"
+							<div
 								onclick={() => handleBuildingClick(building)}
-								class="w-full text-left p-3 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										handleBuildingClick(building);
+									}
+								}}
+								role="button"
+								tabindex="0"
+								class="w-full text-left p-3 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 cursor-pointer"
 								aria-label="{definition.displayName} {showInstanceNum
 									? `instance ${instanceNum}`
 									: ''} level {building.level} health {formatHealth(building.health)}"
@@ -379,7 +386,7 @@
 										💥 Demolish
 									</button>
 								</div>
-							</button>
+							</div>
 						</li>
 					{/each}
 				{/each}

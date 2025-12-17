@@ -11,6 +11,7 @@
 
 export const RESOURCE_TYPES = [
 	'FOOD',
+	'WATER',
 	'WOOD',
 	'STONE',
 	'ORE',
@@ -25,6 +26,7 @@ export type ResourceType = (typeof RESOURCE_TYPES)[number];
 
 export const EXTRACTOR_TYPES = [
 	'FARM',
+	'WELL',
 	'LUMBER_MILL',
 	'QUARRY',
 	'MINE',

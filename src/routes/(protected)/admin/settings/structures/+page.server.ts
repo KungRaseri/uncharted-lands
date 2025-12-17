@@ -21,6 +21,13 @@ interface StructureMetadata {
 		formula: string;
 	}>;
 	prerequisites: string[];
+	// Optional properties that may be present in the API response
+	baseCost?: Record<string, number>;
+	baseProduction?: Record<string, number>;
+	enabled?: boolean;
+	capacity?: number;
+	storageBonus?: number;
+	defenseBonus?: number;
 }
 
 export const load: PageServerLoad = async ({ cookies }) => {
