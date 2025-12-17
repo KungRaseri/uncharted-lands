@@ -128,9 +128,9 @@
 						</div>
 						<div>
 							<h3 class="text-lg font-bold">{structure.name}</h3>
-							<span class="badge preset-tonal-primary-500 text-xs"
-								>{structure.id}</span
-							>
+							<span class="badge preset-tonal-primary-500 text-xs">
+								{structure.id}
+							</span>
 						</div>
 					</div>
 					<ChevronRight
@@ -147,29 +147,29 @@
 					{#if 'baseProduction' in structure && structure.baseProduction}
 						<div>
 							<span class="text-surface-600 dark:text-surface-400">Production:</span>
-							<span class="font-mono text-xs ml-2"
-								>{formatResources(structure.baseProduction as Record<string, number | undefined>)}</span
+							<span class="font-mono text-xs ml-2">
+								{formatResources(structure.baseProduction as Record<string, number | undefined>)}</span
 							>
 						</div>
 					{/if}
 					{#if 'capacity' in structure && structure.capacity}
 						<div>
 							<span class="text-surface-600 dark:text-surface-400">Capacity:</span>
-							<span class="font-semibold ml-2">{structure.capacity}</span>
+							<span class="font-semibold ml-2">{structure.capacity} </span>
 						</div>
 					{/if}
 					{#if 'storageBonus' in structure && structure.storageBonus}
 						<div>
-							<span class="text-surface-600 dark:text-surface-400"
-								>Storage Bonus:</span
-							>
-							<span class="font-semibold ml-2">+{structure.storageBonus}</span>
+							<span class="text-surface-600 dark:text-surface-400">
+								Storage Bonus:
+							</span>
+							<span class="font-semibold ml-2">+{structure.storageBonus} </span>
 						</div>
 					{/if}
 					{#if 'defenseBonus' in structure && structure.defenseBonus}
 						<div>
 							<span class="text-surface-600 dark:text-surface-400">Defense:</span>
-							<span class="font-semibold ml-2">+{structure.defenseBonus}</span>
+							<span class="font-semibold ml-2">+{structure.defenseBonus} </span>
 						</div>
 					{/if}
 					<div>
@@ -217,9 +217,9 @@
 				</div>
 				<div>
 					<h3 class="text-2xl font-bold">{selectedStructure.name}</h3>
-					<span class="badge preset-tonal-primary-500 text-xs"
-						>{selectedStructure.id}</span
-					>
+					<span class="badge preset-tonal-primary-500 text-xs">
+						{selectedStructure.id}
+					</span>
 				</div>
 			</div>
 			<p class="text-sm text-surface-600 dark:text-surface-400">
