@@ -119,7 +119,8 @@ jobs:
           # Reinstall platform-specific native binaries for Linux CI
           rm -rf node_modules/rollup node_modules/@rollup
           rm -rf node_modules/lightningcss node_modules/lightningcss-*
-          npm install --no-save rollup lightningcss
+          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide
 
       - name: Type check client
         run: npm run check:client
@@ -183,7 +184,8 @@ jobs:
           # Reinstall platform-specific native binaries for Linux CI
           rm -rf node_modules/rollup node_modules/@rollup
           rm -rf node_modules/lightningcss node_modules/lightningcss-*
-          npm install --no-save rollup lightningcss
+          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide
 
       - name: Run client unit tests with coverage
         run: npm run test:client
