@@ -53,8 +53,11 @@ COPY --from=deps /app/shared ./shared
 # Copy server source code and config files
 COPY server/ ./server/
 
-# Build TypeScript to JavaScript (run from workspace root)
-RUN npm run build:server
+# Build TypeScript to JavaScript
+# Set NODE_PATH to include parent node_modules for type resolution
+WORKDIR /app/server
+ENV NODE_PATH=/app/node_modules
+RUN npm run build
 # Stage 4: Production dependencies
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
