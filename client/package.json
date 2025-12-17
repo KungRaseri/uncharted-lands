@@ -106,5 +106,11 @@
 		"express": "^5.1.0",
 		"svelte": "^5.43.2"
 	},
+	"optionalDependencies": {
+		"@rollup/rollup-linux-x64-gnu": "^4.30.1",
+		"@tailwindcss/oxide-linux-x64-gnu": "^4.1.16",
+		"lightningcss-linux-x64-gnu": "^1.28.4",
+		"sass-embedded-linux-x64": "^1.93.3"
+	},
 	"type": "module"
 }
