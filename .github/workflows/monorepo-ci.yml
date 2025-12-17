@@ -1,4 +1,6 @@
 name: Monorepo CI
+permissions:
+    contents: read
 
 on:
   push:
@@ -98,7 +100,10 @@ jobs:
 
       - name: Install client dependencies
         working-directory: ./client
-        run: npm ci
+        run: |
+          npm ci
+          # Force reinstall Rollup optional dependencies (fix for GHSA CI issue)
+          npm install --no-save --force rollup
 
       - name: Type check client
         run: npm run check:client
@@ -152,7 +157,10 @@ jobs:
 
       - name: Install client dependencies
         working-directory: ./client
-        run: npm ci
+        run: |
+          npm ci
+          # Force reinstall Rollup optional dependencies (fix for GHSA CI issue)
+          npm install --no-save --force rollup
 
       - name: Run client unit tests with coverage
         run: npm run test:client
