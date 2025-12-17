@@ -115,6 +115,12 @@ jobs:
         working-directory: ./client
         run: |
           npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Reinstall platform-specific native binaries for Linux CI
+          rm -rf node_modules/rollup node_modules/@rollup
+          rm -rf node_modules/lightningcss node_modules/lightningcss-*
+          npm install --no-save rollup lightningcss
+
       - name: Type check client
         run: npm run check:client
 
@@ -173,6 +179,12 @@ jobs:
         working-directory: ./client
         run: |
           npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Reinstall platform-specific native binaries for Linux CI
+          rm -rf node_modules/rollup node_modules/@rollup
+          rm -rf node_modules/lightningcss node_modules/lightningcss-*
+          npm install --no-save rollup lightningcss
+
       - name: Run client unit tests with coverage
         run: npm run test:client
         continue-on-error: false
