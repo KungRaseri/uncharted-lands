@@ -1,0 +1,954 @@
+# GitHub Copilot Instructions for Uncharted Lands
+
+This file provides context and guidelines for GitHub Copilot when working on the Uncharted Lands
+project.
+
+---
+
+## ⚠️ CRITICAL: No Summaries or Auto-Documentation
+
+**NEVER write conversation summaries or create documentation unless explicitly requested.**
+
+### Rules:
+
+1. **DO NOT EVER**:
+   - Write conversation summaries at any point
+   - Create summary documents (SUMMARY.md, STATUS.md, CHANGES.md, etc.)
+   - Generate progress reports automatically
+   - Create migration status files
+   - Auto-generate documentation files
+   - Create README files (except when specifically asked)
+
+2. **ONLY create documentation when user explicitly requests it**:
+   - "Create a summary"
+   - "Write documentation for X"
+   - "Document this feature"
+   - "Add a README"
+
+3. **Always prefer**:
+   - Direct answers in chat
+   - Inline explanations
+   - Code changes as requested
+   - Updating existing documentation if it exists
+
+4. **When documentation IS requested**:
+   - Confirm what they want documented
+   - Follow the Documentation Policy below for placement
+
+---
+
+## Project Overview
+
+**Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a
+procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures
+while expanding settlements and improving technology.
+
+**Tech Stack**:
+
+- **Framework**: SvelteKit 2.48.4 + Svelte 5.43.2
+- **Styling**: Tailwind CSS 4.1.16 + Skeleton 4.2.2
+- **Database**: Drizzle ORM + PostgreSQL (via server)
+- **Build**: Vite 6.0.3
+- **Testing**: Vitest + Playwright
+- **Deployment**: Vercel
+- **Node Version**: 22.x
+
+---
+
+## 📚 Game Design Documentation
+
+**All game design documentation is centralized in the `docs/game-design/` folder.**
+
+- **🏠 [GDD Home](../docs/game-design/GDD-HOME.md)** - Design docs overview and quick navigation
+- **📖 [Design Docs Quick Start](../docs/game-design/GDD-Quick-Start.md)** - Start here! Explains
+  how to use all design docs
+- **📚 [Game Design Document (GDD)](../docs/game-design/GDD-Monolith.md)** - Complete specifications
+  for all game systems
+- **📊 [Implementation Tracker](../docs/game-design/GDD-Implementation-Tracker.md)** - Current
+  status of all features (✅/🚧/📋)
+- **� [Table of Contents](../docs/game-design/GDD-Table-of-Contents.md)** - Complete design document
+  index
+- **�🔧 [Feature Spec Template](../docs/templates/Feature-Spec-Template.md)** - Template for
+  implementing new features
+
+**When implementing new features, follow this workflow:**
+
+1. **Check GDD Monolith** for design specifications and game mechanics
+2. **Review Implementation Tracker** for current status and dependencies
+3. **Create feature spec** from template in `docs/features/[feature-name].md`
+4. **Implement** following Svelte 5 + SvelteKit patterns below
+5. **Update tracker** when complete (mark as ✅)
+
+### 🎯 When to Reference the GDD
+
+**UI/Component Development:**
+
+- Building resource displays → Check GDD for resource types, icons, and formatting
+- Creating structure menus → Check GDD for structure categories and prerequisites
+- Implementing tooltips → Check GDD for detailed descriptions and mechanics
+- Designing forms/inputs → Check GDD for validation rules and constraints
+
+**Feature Implementation:**
+
+- **Before starting:** Read the relevant GDD section completely
+- **During development:** Reference formulas, balance values, and validation rules
+- **When unsure:** Check Implementation Tracker for dependencies and status
+- **After completion:** Update tracker and create/update feature spec
+
+**Game Mechanics:**
+
+- Population happiness → GDD Section 3.3 (Population System)
+- Resource production → GDD Section 3.1 (Resource System)
+- Structure building → GDD Section 3.2 (Settlement System)
+- Disaster events → GDD Section 4.5 (Disaster System)
+- Trading system → GDD Section 4.3 (Trading System)
+
+**Common Questions Answered by GDD:**
+
+- "What resources exist?" → GDD 3.1 (5 base + 6 special)
+- "How does population grow?" → GDD 3.3 (formulas included)
+- "What structures can be built?" → GDD 3.2 (30+ structures)
+- "How do disasters work?" → GDD 4.5 (15+ disaster types)
+- "What's the tech tree?" → GDD 4.2 (Research System)
+
+---
+
+## 🚨 CRITICAL DEVELOPMENT PRINCIPLES
+
+### **NEVER Leave Partial Implementations**
+
+When implementing frontend features:
+
+1. ❌ **DON'T** create UI components without backend API integration
+2. ❌ **DON'T** mock API responses with TODO comments for "later implementation"
+3. ❌ **DON'T** make partial UI changes that break user experience
+4. ✅ **DO** implement features fully, from state management to UI components
+5. ✅ **DO** ask for clarification if UX requirements are unclear
+6. ✅ **DO** consult the GDD for complete UI/UX specifications
+
+**Example of WRONG approach:**
+
+```svelte
+<!-- ❌ BAD: Mocking backend with TODO -->
+<script>
+	let resources = $state({ food: 0, water: 0 });
+
+	// TODO: In future, connect to real Socket.IO
+	function mockUpdateResources() {
+		resources.food += 10;
+	}
+</script>
+```
+
+**Example of CORRECT approach:**
+
+```svelte
+<!-- ✅ GOOD: Full implementation with real backend -->
+<script>
+	import { resourceStore } from '$lib/stores/game/resources.svelte';
+	import { socket } from '$lib/stores/socket.svelte';
+
+	const resources = $derived(resourceStore.getResources(settlementId));
+
+	// Real Socket.IO listener
+	socket.on('resource-tick', (data) => {
+		resourceStore.updateResources(data.settlementId, data.resources);
+	});
+
+	async function collectResources() {
+		try {
+			await fetch(`${API_URL}/settlements/${settlementId}/collect`, {
+				method: 'POST',
+				credentials: 'include'
+			});
+		} catch (error) {
+			// Proper error handling
+			toastStore.error('Failed to collect resources');
+		}
+	}
+</script>
+
+<div class="resources">
+	<span>Food: {resources.food}</span>
+	<span>Water: {resources.water}</span>
+	<button onclick={collectResources}>Collect</button>
+</div>
+```
+
+### **Full-Stack Implementation Required**
+
+Every frontend feature must be coordinated with backend:
+
+1. **Backend API** - Ensure endpoints exist and return correct data
+2. **Socket.IO Events** - Real-time updates defined and working
+3. **Frontend State** - Svelte stores manage state correctly
+4. **UI Components** - Components styled and responsive
+5. **Form Validation** - Client-side validation matches server-side
+6. **Error Handling** - User-friendly error messages for all failure cases
+7. **Testing** - Unit tests for stores, E2E tests for user flows
+
+**When you identify missing frontend functionality:**
+
+- Check if backend API/Socket.IO event exists first
+- If backend is missing, implement backend first OR ask user about approach
+- Check the GDD for complete UI/UX specifications
+- Implement the full user experience, not just partial UI
+- Update the Implementation Tracker when complete
+
+### **Frontend Feature Implementation Checklist**
+
+Before considering a client-side feature "done":
+
+- [ ] Backend API endpoints exist and work correctly
+- [ ] Socket.IO events connected and tested
+- [ ] State management using Svelte 5 stores (no old $: reactive statements)
+- [ ] UI components use Svelte 5 patterns (runes, snippets)
+- [ ] Styling follows Skeleton UI + Tailwind patterns
+- [ ] Responsive design works on mobile and desktop
+- [ ] Form validation matches backend validation rules
+- [ ] Error handling shows user-friendly messages
+- [ ] Loading states and skeletons for async operations
+- [ ] Accessibility features implemented (ARIA, keyboard nav)
+- [ ] Tests written and passing (unit + E2E)
+- [ ] **No TODO comments left in production code**
+- [ ] Code formatted (Prettier) and linted (ESLint)
+
+**API Integration Best Practices:**
+
+- Always use `credentials: 'include'` for authenticated requests
+- Check response status codes and handle errors gracefully
+- Show loading states during async operations
+- Emit Socket.IO events for real-time features, not polling
+- Use stores to manage shared state across components
+- Don't duplicate backend validation logic - trust the API
+
+---
+
+## Documentation Policy
+
+**⚠️ CRITICAL: ALL project documentation MUST be placed in the `docs/` directory.**
+
+### Documentation Rules
+
+1. **Location**: ALL `.md` documentation files go in `docs/` directory
+   - ✅ CORRECT: `docs/WORLD_GENERATION_GUIDE.md`
+   - ❌ WRONG: `WORLD_GENERATION_GUIDE.md` (root level)
+   - ❌ WRONG: `client/src/docs/guide.md` (inside src)
+2. **Root-Level Exceptions**: Only these files are allowed in the project root:
+   - `README.md` - Project overview and getting started
+   - `LICENSE` - License file
+   - `CHANGELOG.md` - Version history (if needed)
+3. **Summary Documents**:
+   - ⚠️ **DO NOT** create summary documents unless explicitly requested by the user
+   - User must specifically ask: "Create a summary of changes", "Document the migration", etc.
+   - Most changes should be documented in existing files or commit messages
+   - Only create summaries when the user specifically asks for one
+   - If created, they MUST go in `docs/` directory with appropriate subdirectory
+
+4. **When Creating Documentation**:
+   - **Always** check if `docs/` directory exists
+   - **Always** create new docs in `docs/`
+   - Use subdirectories for organization: `docs/guides/`, `docs/api/`, `docs/migration/`, etc.
+   - **Never** create documentation in the project root (except README.md)
+   - **Ask first** before creating new documentation files
+
+5. **Existing Root-Level Docs**: If you find documentation in the root:
+   - Move it to `docs/` with appropriate subdirectory
+   - Update any references to the old location
+   - Notify the user of the move
+
+### Documentation Organization
+
+```
+docs/
+├── Home.md                              # Wiki home page
+├── README.md                            # Documentation index
+├── WORLD_GENERATION_GUIDE.md            # World generation system
+├── RESOURCE_GENERATION_SYSTEM.md        # Resource management
+├── VERCEL_DEPLOYMENT.md                 # Vercel deployment guide
+└── game-design/                         # Game design documents
+    ├── GAME_DESIGN_DOCUMENT.md          # Complete game specifications
+    ├── GDD_IMPLEMENTATION_TRACKER.md    # Implementation status
+    └── DESIGN_DOCS_README.md            # Design docs quick start
+```
+
+---
+
+## Official Documentation References
+
+### Skeleton Labs Documentation
+
+Always consult these official Skeleton LLM documentation files when working with Skeleton
+components:
+
+1. **General Overview**: https://www.skeleton.dev/llms.txt
+   - Overview of all available LLM documentation
+   - Links to framework-specific guides
+
+2. **Svelte-Specific Guide**: https://www.skeleton.dev/llms-svelte.txt
+   - **VERSION REQUIREMENTS**:
+     - Svelte: 5+
+     - SvelteKit: 2+
+     - Skeleton: 4+
+     - Tailwind: 4+
+   - Complete setup instructions
+   - Component usage patterns
+   - Integration guides
+
+3. **React Guide** (for reference): https://www.skeleton.dev/llms-react.txt
+   - Cross-framework comparison
+   - Understanding Zag.js patterns
+
+### Skeleton Website Documentation
+
+- **Main Docs**: https://www.skeleton.dev/docs
+- **Get Started**: https://www.skeleton.dev/docs/get-started/svelte
+- **Components**: https://www.skeleton.dev/docs/components
+- **Integrations**: https://www.skeleton.dev/docs/integrations
+- **Guides**: https://www.skeleton.dev/docs/guides
+
+### Game Design Documentation
+
+- **GitHub Wiki**: https://github.com/KungRaseri/uncharted-lands/wiki/
+- **Game Design Document**: Complete specifications for all game systems
+- **Implementation Tracker**: Current status of all features (✅/🚧/📋)
+- **Design Docs Quick Start**: How to use the design documentation
+- **Feature Spec Template**: Template for implementing new features
+- **Migration v3→v4**: https://www.skeleton.dev/docs/get-started/migrate-from-v3
+
+---
+
+## Project-Specific Documentation
+
+### World Generation Guide
+
+**📍 Location**: `docs/WORLD_GENERATION_GUIDE.md`
+
+Complete technical documentation on the world generation system:
+
+- How simple sliders map to Open Simplex Noise parameters
+- Technical parameter explanations (octaves, frequency, amplitude, persistence, scale)
+- Preset recommendations for different world types
+- Troubleshooting common issues
+- Technical implementation details
+
+---
+
+## Code Style Guidelines
+
+### Svelte 5 Patterns
+
+**Use Svelte 5 Runes** (not old reactive statements):
+
+```svelte
+<!-- ✅ CORRECT (Svelte 5) -->
+<script>
+  let count = $state(0);
+  let doubled = $derived(count * 2);
+
+  function increment() {
+    count++;
+  }
+</script>
+
+<!-- ❌ WRONG (Svelte 4) -->
+<script>
+  let count = 0;
+  $: doubled = count * 2;
+
+  function increment() {
+    count++;
+  }
+</script>
+```
+
+**Accessing Page Data and Stores**:
+
+```svelte
+<!-- ✅ CORRECT - Svelte 5 with SvelteKit 2.12+ -->
+<script>
+  import { page } from '$app/state';
+
+  // Access page state directly (no $ prefix needed)
+  let currentPath = page.url.pathname;
+  let user = page.data.user;
+
+  // Use with $derived for reactive computations
+  let isActive = $derived(page.url.pathname === '/home');
+</script>
+
+<!-- ✅ BEST PRACTICE - For route components, use props when available -->
+<script lang="ts">
+  import type { PageData } from './$types';
+  import { page } from '$app/state';
+
+  let { data }: { data: PageData } = $props();
+
+  // Access page data directly from props - more efficient
+  let user = data.user;
+
+  // For URL/route data, use page state
+  let currentPath = page.url.pathname;
+</script>
+
+<!-- ✅ For derived values with page state -->
+<script>
+  import { page } from '$app/state';
+
+  let isActive = $derived.by(() => {
+    return (href: string) => page.url.pathname === href;
+  });
+</script>
+```
+
+**Key Points**:
+
+- Use `$app/state` for SvelteKit 2.12+ (not `$app/stores` which is deprecated)
+- `page` from `$app/state` is a reactive state object (no `$` prefix needed)
+- Access properties directly: `page.url.pathname`, `page.data.user`, `page.route.id`
+- Use `$derived` or `$derived.by()` for computed values based on page state
+- In route components, prefer using props (`data`) when you only need `page.data`
+- ❌ DON'T import from `$app/stores` in Svelte 5
+- ✅ DO import from `@sveltejs/kit` for page context
+- ✅ DO use `$props()` to receive page data in route components
+- ✅ DO pass data as props to child components
+- ❌ DON'T use `$page` store subscription syntax
+
+**Use Snippets** (not slots):
+
+```svelte
+<!-- ✅ CORRECT (Svelte 5) -->
+{#snippet header()}
+	<h1>Title</h1>
+{/snippet}
+
+<!-- ❌ WRONG (Svelte 4) -->
+<svelte:fragment slot="header">
+	<h1>Title</h1>
+</svelte:fragment>
+```
+
+**Event Handlers**:
+
+```svelte
+<!-- ✅ CORRECT (Svelte 5) -->
+<button onclick={handleClick}>Click</button>
+
+<!-- ❌ WRONG (Svelte 4) -->
+<button on:click={handleClick}>Click</button>
+```
+
+### Skeleton Component Usage
+
+**Current State**: We're still importing from OLD package paths (v2/v3):
+
+```typescript
+// ❌ CURRENT (needs migration)
+import { AppShell, AppBar } from '@skeletonlabs/skeleton';
+
+// ✅ TARGET (when build works)
+import { Navbar } from '@skeletonlabs/skeleton-svelte';
+```
+
+**Component Name Changes**:
+
+- `AppBar` → `Navbar`
+- `AppRail` → `Navigation`
+- `RangeSlider` → `Slider`
+- `AppShell` → REMOVED (use custom layouts)
+- `LightSwitch` → REMOVED (use custom component)
+- `Table` → REMOVED (use Tailwind tables)
+
+**When suggesting Skeleton components**:
+
+1. Check if component exists in v4 (see COMPONENT_MIGRATION_AUDIT.md)
+2. Use correct v4 name and import path
+3. Reference official docs for API changes
+4. Note if component is removed (provide alternative)
+
+### Tailwind CSS v4 Patterns
+
+**DO NOT use `@apply`** (discouraged in v4):
+
+```css
+/* ❌ AVOID */
+.my-class {
+  @apply bg-surface-50-950 text-surface-950 p-4;
+}
+
+/* ✅ PREFER - Standard CSS */
+.my-class {
+  background-color: var(--color-surface-50-950);
+  color: var(--color-surface-950);
+  padding: 1rem;
+}
+
+/* ✅ PREFER - CSS Custom Properties */
+.my-class {
+  background-color: var(--color-surface-50-950);
+  color: var(--color-surface-950);
+  padding: --spacing(4);
+}
+
+/* ✅ PREFER - @variant for dark mode */
+.my-class {
+  color: var(--color-surface-950);
+
+  @variant dark {
+    color: var(--color-surface-50);
+  }
+}
+```
+
+**Configuration in CSS** (not external files):
+
+```css
+/* ✅ CORRECT - Configuration in CSS */
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: oklch(0.75 0.15 250);
+}
+
+@plugin "@tailwindcss/forms";
+```
+
+**NO External Config Files**:
+
+- ❌ DO NOT create `tailwind.config.js`
+- ❌ DO NOT create `tailwind.config.ts`
+- ✅ All config in `src/app.postcss` using directives
+
+---
+
+## File Structure
+
+```
+uncharted-lands/
+├── .github/
+│   └── copilot-instructions.md          # This file
+├── client/                              # 🎮 SvelteKit game application
+│   ├── src/
+│   │   ├── lib/
+│   │   │   ├── components/
+│   │   │   │   ├── admin/               # Admin UI components
+│   │   │   │   ├── app/                 # Global app components
+│   │   │   │   └── game/                # Game UI components
+│   │   │   ├── auth.ts                  # Authentication utilities
+│   │   │   ├── config.ts                # API/WS configuration
+│   │   │   └── stores/                  # Svelte stores
+│   │   ├── routes/                      # SvelteKit routes
+│   │   │   ├── (auth)/                  # Auth-related routes
+│   │   │   ├── (protected)/             # Protected routes
+│   │   │   │   ├── admin/               # Admin pages
+│   │   │   │   ├── game/                # Game pages
+│   │   │   │   └── account/             # User account
+│   │   │   └── api/                     # API endpoints (proxy to server)
+│   │   ├── app.html                     # Root HTML template
+│   │   ├── app.postcss                  # Global styles
+│   │   └── hooks.server.ts              # Server hooks
+│   ├── vite.config.js                   # Vite configuration
+│   ├── vercel.json                      # Vercel deployment config
+│   └── package.json                     # Dependencies
+├── docs/                                # 📚 All documentation
+│   ├── VERCEL_DEPLOYMENT.md             # Deployment guide
+│   └── migration/                       # Migration docs
+└── package.json                         # Project configuration
+```
+
+---
+
+## Common Tasks & Patterns
+
+### Creating New Skeleton Components
+
+When the build works and we can use Skeleton components:
+
+```svelte
+<script lang="ts">
+	// ✅ Import from skeleton-svelte package
+	import { ComponentName } from '@skeletonlabs/skeleton-svelte';
+
+	// Use Svelte 5 runes for state
+	let value = $state(initialValue);
+
+	// Use proper event handlers
+	function handleChange(e) {
+		value = e.value; // Note: Skeleton v4 event structure
+	}
+</script>
+
+<ComponentName {value} onValueChange={handleChange} class="my-custom-classes" />
+```
+
+### Creating Custom Layouts (Replacing AppShell)
+
+```svelte
+<!-- ✅ Custom Layout Pattern -->
+<script>
+	import Header from '$lib/components/Header.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+</script>
+
+<div class="flex flex-col h-screen">
+	<!-- Header -->
+	<header class="flex-none">
+		<Header />
+	</header>
+
+	<div class="flex flex-1 overflow-hidden">
+		<!-- Sidebar -->
+		<aside class="flex-none w-64 overflow-y-auto">
+			<Navigation />
+		</aside>
+
+		<!-- Main Content -->
+		<main class="flex-1 overflow-y-auto">
+			<slot />
+		</main>
+	</div>
+
+	<!-- Footer -->
+	<footer class="flex-none">
+		<Footer />
+	</footer>
+</div>
+```
+
+### Database Queries
+
+**Note**: Database access is handled through the game server's REST API and Socket.IO events. The
+client does not directly query the database.
+
+```typescript
+// Example: Fetching data from server API
+import { API_URL } from '$lib/config';
+
+export async function load({ fetch, cookies }) {
+  const sessionToken = cookies.get('session');
+
+  const response = await fetch(`${API_URL}/api/settlements`, {
+    headers: { Cookie: `session=${sessionToken}` },
+  });
+
+  const settlements = await response.json();
+  return { settlements };
+}
+```
+
+For real-time updates, use Socket.IO events (see server Socket.IO documentation).
+
+### API Routes (SvelteKit)
+
+```typescript
+// src/routes/api/[endpoint]/+server.ts
+import type { RequestHandler } from './$types';
+import { json } from '@sveltejs/kit';
+
+export const GET: RequestHandler = async ({ locals, url }) => {
+  // Check authentication
+  if (!locals.user) {
+    return json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Handle request
+  const data = await fetchData();
+  return json(data);
+};
+```
+
+---
+
+## Testing
+
+### Unit Tests (Vitest)
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { render } from '@testing-library/svelte';
+import Component from './Component.svelte';
+
+describe('Component', () => {
+  it('renders correctly', () => {
+    const { getByText } = render(Component, { props: { title: 'Test' } });
+    expect(getByText('Test')).toBeInTheDocument();
+  });
+});
+```
+
+### E2E Tests (Playwright)
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('user can login', async ({ page }) => {
+  await page.goto('/sign-in');
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
+  await expect(page).toHaveURL('/dashboard');
+});
+```
+
+---
+
+## Do's and Don'ts
+
+### ✅ DO
+
+- **Reference the GDD first** before implementing any game UI or feature
+- Use GDD for resource types, structure lists, and game mechanics
+- Use Svelte 5 runes ($state, $derived, $effect)
+- Use Svelte 5 snippets (not slots)
+- Import Skeleton components from `@skeletonlabs/skeleton-svelte`
+- Use standard CSS instead of @apply
+- Reference official Skeleton LLM docs
+- Use TypeScript for type safety
+- Follow existing project patterns
+
+### ❌ DON'T
+
+- **Don't implement game UI without checking the GDD first**
+- Don't hardcode resource types or structure lists (use GDD)
+- Don't use Svelte 4 reactive statements (`$:`)
+- Don't use Svelte 4 slots syntax
+- Don't import from `@skeletonlabs/skeleton` (old package)
+- Don't use `@apply` in CSS
+- Don't create `tailwind.config.js/ts` files
+
+---
+
+## Component Reference
+
+### Current Skeleton v4 Components
+
+**Available Components**:
+
+- `Navbar` - Navigation bar
+- `Navigation` - App rail/sidebar navigation
+- `Avatar` - User avatars
+- `Slider` - Range slider
+- `Button`, `Card`, `Modal`, etc. - Standard UI components
+
+**Removed Components** (use alternatives):
+
+- ~~`AppShell`~~ → Use custom layouts
+- ~~`LightSwitch`~~ → Use custom theme toggle
+- ~~`Table`~~ → Use Tailwind table classes
+
+---
+
+## Environment Variables
+
+Check `.env` file for configuration. Never commit secrets!
+
+```env
+DATABASE_URL=postgresql://...
+AUTH_SECRET=...
+# etc.
+```
+
+---
+
+## Useful Commands
+
+```powershell
+# Development (from root)
+npm run dev              # Start client dev server (currently fails)
+npm run dev:client       # Start client (currently fails)
+npm run dev:server       # Start server
+npm run build:all        # Build both projects
+
+# Client-specific (from client/)
+cd client
+npm run dev              # Start dev server
+npm run build            # Build for production
+npm run preview          # Preview production build
+
+# Server-specific (from server/)
+cd server
+npm run dev              # Start dev server with auto-reload
+npm run build            # Build TypeScript
+npm start                # Run production build
+
+# Database (from root or server/)
+cd server
+npm run db:generate      # Generate migration from schema changes
+npm run db:push          # Push schema to database
+npm run db:studio        # Open Drizzle Studio
+
+# Testing
+npm run test             # Run client tests
+npm run test:all         # Run all tests
+npm run coverage         # Generate coverage report
+
+# Code Quality
+npm run check            # Type checking (works!)
+npm run lint             # Lint code
+npm run format           # Format with Prettier
+
+# Deployment
+cd client && vercel --prod     # Deploy client
+cd server && vercel --prod     # Deploy server
+
+# Git
+git status               # Check status
+git log --oneline -10    # Recent commits
+```
+
+---
+
+## Additional Resources
+
+### Skeleton
+
+- Discord: https://discord.gg/EXqV7W8MtY
+- GitHub: https://github.com/skeletonlabs/skeleton
+- Themes: https://themes.skeleton.dev/
+
+### Tailwind
+
+- Docs: https://tailwindcss.com/docs
+- Discord: https://discord.gg/tailwindcss
+
+### Svelte
+
+- Docs: https://svelte.dev/docs
+- Tutorial: https://learn.svelte.dev/
+- Discord: https://discord.gg/svelte
+
+### SvelteKit
+
+- Docs: https://kit.svelte.dev/docs
+- FAQ: https://kit.svelte.dev/faq
+
+---
+
+These examples should be used as guidance when configuring Sentry functionality within a project.
+
+# Error / Exception Tracking
+
+Use `Sentry.captureException(error)` to capture an exception and log the error in Sentry. Use this
+in try catch blocks or areas where exceptions are expected
+
+# Tracing Examples
+
+Spans should be created for meaningful actions within an applications like button clicks, API calls,
+and function calls Ensure you are creating custom spans with meaningful names and operations Use the
+`Sentry.startSpan` function to create a span Child spans can exist within a parent span
+
+## Custom Span instrumentation in component actions
+
+```javascript
+function TestComponent() {
+  const handleTestButtonClick = () => {
+    // Create a transaction/span to measure performance
+    Sentry.startSpan(
+      {
+        op: 'ui.click',
+        name: 'Test Button Click',
+      },
+      (span) => {
+        const value = 'some config';
+        const metric = 'some metric';
+
+        // Metrics can be added to the span
+        span.setAttribute('config', value);
+        span.setAttribute('metric', metric);
+
+        doSomething();
+      }
+    );
+  };
+
+  return (
+    <button type="button" onClick={handleTestButtonClick}>
+      Test Sentry
+    </button>
+  );
+}
+```
+
+## Custom span instrumentation in API calls
+
+```javascript
+async function fetchUserData(userId) {
+  return Sentry.startSpan(
+    {
+      op: 'http.client',
+      name: `GET /api/users/${userId}`,
+    },
+    async () => {
+      const response = await fetch(`/api/users/${userId}`);
+      const data = await response.json();
+      return data;
+    }
+  );
+}
+```
+
+# Logs
+
+Where logs are used, ensure they are imported using `import * as Sentry from "@sentry/node"` Enable
+logging in Sentry using `Sentry.init({ enableLogs: true })` Reference the logger using
+`const { logger } = Sentry` Sentry offers a consoleLoggingIntegration that can be used to log
+specific console error types automatically without instrumenting the individual logger calls
+
+## Configuration
+
+In Node.js the Sentry initialization is typically in `instrumentation.ts`
+
+### Baseline
+
+```javascript
+import * as Sentry from '@sentry/node';
+
+Sentry.init({
+  dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
+
+  // Send structured logs to Sentry
+  enableLogs: true,
+});
+```
+
+### Logger Integration
+
+```javascript
+Sentry.init({
+  dsn: 'https://0a128684927db4409d51d0848f4d3666@o4504635308638208.ingest.us.sentry.io/4510353298292736',
+  integrations: [
+    // send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
+  ],
+});
+```
+
+## Logger Examples
+
+`logger.fmt` is a template literal function that should be used to bring variables into the
+structured logs.
+
+```javascript
+logger.trace('Starting database connection', { database: 'users' });
+logger.debug(logger.fmt`Cache miss for user: ${userId}`);
+logger.info('Updated profile', { profileId: 345 });
+logger.warn('Rate limit reached for endpoint', {
+  endpoint: '/api/results/',
+  isEnterprise: false,
+});
+logger.error('Failed to process payment', {
+  orderId: 'order_123',
+  amount: 99.99,
+});
+logger.fatal('Database connection pool exhausted', {
+  database: 'users',
+  activeConnections: 100,
+});
+```
+
+---
+
+**Last Updated**: November 13, 2025  
+**Status**: Current production setup  
+**Configuration**: 100% compliant with all official guidelines

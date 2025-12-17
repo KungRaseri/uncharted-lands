@@ -1,0 +1,422 @@
+name: Monorepo CI
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: ['main', 'development']
+  pull_request:
+    branches: ['main', 'development']
+
+# Cancel in-progress runs when a new run is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================
+  # Shared Package Build (runs first)
+  # ============================================
+  shared:
+    name: Shared Package
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true # Checkout docs submodule
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            shared/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+
+      - name: Type check shared package
+        run: npm run check:shared
+
+      - name: Build shared package
+        run: npm run build:shared
+
+      - name: Upload shared package build
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+          retention-days: 1
+
+  # ============================================
+  # Client Build & Test
+  # ============================================
+  client-build:
+    name: Client - Build
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    needs: [shared]
+
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PUBLIC_CLIENT_API_URL: http://localhost:3001/api
+      PUBLIC_WS_URL: http://localhost:3001
+      PUBLIC_SENTRY_DSN: disabled
+      SERVER_API_URL: http://localhost:3001/api
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            shared/package-lock.json
+
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Reinstall platform-specific native binaries for Linux CI
+          rm -rf node_modules/rollup node_modules/@rollup
+          rm -rf node_modules/lightningcss node_modules/lightningcss-*
+          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
+          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
+
+      - name: Type check client
+        run: npm run check:client
+
+      - name: Build client
+        run: npm run build:client
+
+  client-test:
+    name: Client - Test
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    needs: [shared]
+
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      PUBLIC_SENTRY_DSN: disabled
+      PUBLIC_API_URL: http://localhost:3001
+      PUBLIC_WS_URL: ws://localhost:3001
+      PUBLIC_CLIENT_API_URL: http://localhost:3001/api
+      SERVER_API_URL: http://localhost:3001/api
+      NODE_ENV: test
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            shared/package-lock.json
+
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Reinstall platform-specific native binaries for Linux CI
+          rm -rf node_modules/rollup node_modules/@rollup
+          rm -rf node_modules/lightningcss node_modules/lightningcss-*
+          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
+          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
+
+      - name: Run client unit tests with coverage
+        run: npm run test:client
+        continue-on-error: false
+
+      - name: Upload client test coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-client
+          path: client/coverage/
+          retention-days: 30
+
+  # ============================================
+  # Server Build & Test
+  # ============================================
+  server-build:
+    name: Server - Build
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    needs: [shared]
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            shared/package-lock.json
+
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Reinstall platform-specific native binaries for Linux CI
+          rm -rf node_modules/rollup node_modules/@rollup
+          npm install --no-save rollup
+
+      - name: Type check server
+        run: npm run check:server
+
+      - name: Lint server
+        run: npm run lint:server
+
+      - name: Build server
+        run: npm run build:server
+
+      - name: Verify server build output
+        working-directory: ./server
+        run: |
+          if [ -d "dist" ]; then
+            echo "✅ Server build successful"
+            ls -la dist/
+          else
+            echo "❌ Build failed - dist/ directory not found"
+            exit 1
+          fi
+
+  server-test:
+    name: Server - Test
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    needs: [shared]
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: uncharted-lands
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted-lands
+      NODE_ENV: test
+      PORT: 3001
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            shared/package-lock.json
+
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Reinstall platform-specific native binaries for Linux CI
+          rm -rf node_modules/rollup node_modules/@rollup
+          npm install --no-save rollup
+
+      - name: Setup database schema
+        working-directory: ./server
+        run: npx drizzle-kit push --force
+
+      - name: Seed database
+        working-directory: ./server
+        run: npm run db:seed
+
+      - name: Run server tests
+        run: npm run test:server
+        continue-on-error: false
+
+      - name: Upload server test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-server
+          path: server/test-results/
+          retention-days: 30
+
+  # ============================================
+  # SonarCloud Analysis (Client)
+  # ============================================
+  sonarcloud-client:
+    name: SonarCloud - Client
+    permissions:
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    needs: [client-test]
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Shallow clones disabled for SonarCloud
+          submodules: true
+
+      - name: Download client test coverage
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: coverage-client
+          path: client/coverage/
+
+      - name: SonarCloud Scan - Client
+        uses: SonarSource/sonarqube-scan-action@v6
+        continue-on-error: true
+        with:
+          projectBaseDir: client
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # ============================================
+  # SonarCloud Analysis (Server)
+  # ============================================
+  sonarcloud-server:
+    name: SonarCloud - Server
+    permissions:
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    needs: [server-test]
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Shallow clones disabled for SonarCloud
+          submodules: true
+
+      - name: SonarCloud Scan - Server
+        uses: SonarSource/sonarqube-scan-action@v6
+        continue-on-error: true
+        with:
+          projectBaseDir: server
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

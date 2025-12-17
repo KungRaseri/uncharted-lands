@@ -1,0 +1,148 @@
+# Docker Compose for E2E Testing
+# This sets up the entire testing environment with PostgreSQL, server, and client
+#
+# Usage:
+#   docker-compose -f docker-compose.e2e.yml up -d     # Start all services
+#   docker-compose -f docker-compose.e2e.yml down      # Stop all services
+#   docker-compose -f docker-compose.e2e.yml logs -f   # View logs
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database (test environment)
+  postgres-test:
+    image: postgres:17.5-alpine
+    container_name: uncharted-postgres-test
+    environment:
+      POSTGRES_DB: uncharted_test
+      POSTGRES_USER: uncharted_user
+      POSTGRES_PASSWORD: uncharted_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432" # Different port to avoid conflicts with local postgres
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U uncharted_user -d uncharted_test" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - e2e-network
+
+  # Database Migration Service (init container)
+  migrate-test:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: uncharted-migrate-test
+    environment:
+      NODE_ENV: e2e
+      DATABASE_URL: postgresql://uncharted_user:uncharted_password@postgres-test:5432/uncharted_test
+    volumes:
+      - ./server/src:/app/src:ro
+      - ./server/drizzle:/app/drizzle:ro
+      - ./server/scripts:/app/scripts:ro
+      - ./server/package.json:/app/package.json:ro
+      - ./server/tsconfig.json:/app/tsconfig.json:ro
+      - server-node-modules:/app/node_modules
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    networks:
+      - e2e-network
+    command: sh -c "npm run db:migrate:run && npm run db:seed"
+    restart: "no" # Only run once, then exit
+
+  # Backend Server (development mode for E2E)
+  server-test:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: uncharted-server-test
+    environment:
+      NODE_ENV: e2e
+      DATABASE_URL: postgresql://uncharted_user:uncharted_password@postgres-test:5432/uncharted_test
+      PORT: 3001
+      SESSION_SECRET: test-session-secret-for-e2e-only
+      CORS_ORIGINS: http://localhost:3000
+      LOG_LEVEL: debug
+      # Game loop configuration - fast intervals for E2E testing
+      TICK_RATE: 60
+      RESOURCE_INTERVAL_SEC: 10 # Fast resource production (instead of 3600 = 1 hour)
+      SOCKET_EMIT_INTERVAL_SEC: 1
+      POPULATION_INTERVAL_SEC: 10 # Fast population updates (instead of 3600 = 1 hour)
+      # Testing & Development
+      TEST_ADMIN_TOKEN: test-admin-secret-token
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server/src:/app/src:ro # Mount source for hot reload
+      - ./server/drizzle:/app/drizzle:ro
+      - ./server/package.json:/app/package.json:ro
+      - ./server/tsconfig.json:/app/tsconfig.json:ro
+      - server-node-modules:/app/node_modules # Use named volume for node_modules
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      migrate-test:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - e2e-network
+    command: npm run dev
+
+  # Frontend Client (development mode for E2E)
+  client-test:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: uncharted-client-test
+    environment:
+      NODE_ENV: e2e
+      # Server-side SSR: container-to-container (NO PUBLIC_ prefix!)
+      SERVER_API_URL: http://server-test:3001/api
+      # Client-side browser: host machine port (PUBLIC_ prefix required!)
+      PUBLIC_CLIENT_API_URL: http://localhost:3001/api
+      # WebSocket: host machine port (PUBLIC_ prefix required!)
+      PUBLIC_WS_URL: http://localhost:3001
+      ORIGIN: http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client/src:/app/src:ro # Mount source for hot reload
+      - ./client/static:/app/static:ro
+      - ./client/package.json:/app/package.json:ro
+      - ./client/svelte.config.js:/app/svelte.config.js:ro
+      - ./client/vite.config.js:/app/vite.config.js:ro
+      - ./client/tsconfig.json:/app/tsconfig.json:ro
+      - client-node-modules:/app/node_modules # Use named volume for node_modules
+    depends_on:
+      server-test:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - e2e-network
+    command: npm run dev -- --host 0.0.0.0
+
+networks:
+  e2e-network:
+    driver: bridge
+
+volumes:
+  postgres-test-data:
+    name: uncharted-postgres-test-data
+  server-node-modules:
+    name: uncharted-server-test-node-modules
+  client-node-modules:
+    name: uncharted-client-test-node-modules

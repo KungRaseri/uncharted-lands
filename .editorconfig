@@ -1,0 +1,25 @@
+# EditorConfig for Uncharted Lands
+# Enforces consistent whitespace across all editors
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# TypeScript, JavaScript, Svelte, JSON
+[*.{ts,js,svelte,json}]
+indent_style = tab
+indent_size = 4
+
+# YAML, Markdown
+[*.{yml,yaml,md}]
+indent_style = space
+indent_size = 2
+
+# Package.json (NPM standard)
+[package.json]
+indent_style = space
+indent_size = 2

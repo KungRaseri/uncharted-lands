@@ -1,0 +1,83 @@
+{
+  "name": "uncharted-lands-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for Uncharted Lands game",
+  "type": "module",
+  "main": "dist/index.js",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepare": "node -e \"try { require('fs').statSync('.git') && require('child_process').execSync('husky', {stdio:'inherit'}) } catch (e) {}\"",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:migrate:run": "tsx ../scripts/server/migrate.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/db/seed.ts"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
+  "keywords": [
+    "websocket",
+    "game-server",
+    "typescript"
+  ],
+  "author": "KungRaseri",
+  "license": "MIT",
+  "dependencies": {
+    "@paralleldrive/cuid2": "^3.0.4",
+    "@sentry/node": "^10.25.0",
+    "@sentry/profiling-node": "^10.25.0",
+    "@uncharted-lands/shared": "file:../shared",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.44.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "fractal-noise": "^2.1.0",
+    "open-simplex-noise": "^2.5.0",
+    "postgres": "^3.4.7",
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/node": "^22.19.0",
+    "@types/pg": "^8.15.6",
+    "@types/supertest": "^6.0.3",
+    "@types/ws": "^8.5.13",
+    "@eslint/js": "^9.39.2",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "@vitest/coverage-v8": "^4.0.7",
+    "drizzle-kit": "^0.31.6",
+    "eslint": "^9.18.0",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.4.2",
+    "socket.io-client": "^4.8.1",
+    "supertest": "^7.1.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.7"
+  }
+}

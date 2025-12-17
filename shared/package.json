@@ -1,0 +1,32 @@
+{
+  "name": "@uncharted-lands/shared",
+  "version": "1.0.0",
+  "description": "Shared types and utilities for Uncharted Lands",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "test": "echo \"No tests in shared package yet\" && exit 0"
+  },
+  "keywords": [
+    "uncharted-lands",
+    "shared",
+    "types"
+  ],
+  "author": "KungRaseri",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "rimraf": "^6.0.1"
+  }
+}

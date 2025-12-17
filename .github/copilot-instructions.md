@@ -1,782 +1,559 @@
 # GitHub Copilot Instructions for Uncharted Lands
 
-This file provides context and guidelines for GitHub Copilot when working on the Uncharted Lands project.
+**⚠️ IMPORTANT: This is a MONOREPO with THREE packages:**
+
+- `shared/` - Shared types and utilities package (`@uncharted-lands/shared`)
+- `client/` - SvelteKit frontend
+- `server/` - Node.js backend
+
+**📚 Read package-specific instructions:**
+
+- **Shared Package**: `.github/copilot/shared-package.md` (How to add types, build workflow)
+- **Client**: `.github/copilot/client-specific.md` (SvelteKit + Svelte 5 + Skeleton UI)
+- **Server**: `.github/copilot/server-specific.md` (Node.js + Socket.IO + Drizzle ORM)
+
+**Game Design Documentation** (Centralized in Client Docs Wiki):
+
+- 📚 **Main GDD**: `client/docs/game-design/GDD-Monolith.md` - Complete game specifications
+- 🏠 **GDD Home**: `client/docs/game-design/GDD-HOME.md` - Design docs overview
+- 📊 **Implementation Status**: `client/docs/game-design/GDD-Implementation-Tracker.md` - What's
+  implemented vs. planned
+- 📖 **Quick Start**: `client/docs/game-design/GDD-Quick-Start.md` - How to use the design docs
+- 📑 **Table of Contents**: `client/docs/game-design/GDD-Table-of-Contents.md` - Complete design
+  document index
+- 🔧 **Feature Template**: `client/docs/templates/Feature-Spec-Template.md` - Template for new
+  features
+
+**Note**: While in the same workspace folder, these are **independent repositories** with separate
+git histories, deployment pipelines, and dependencies. Changes in one repo do not automatically
+affect the other.
 
 ---
 
-## ⚠️ CRITICAL: No Summaries or Auto-Documentation
+## � CRITICAL DEVELOPMENT PRINCIPLES
 
-**NEVER write conversation summaries or create documentation unless explicitly requested.**
+### **NEVER Leave Partial Implementations**
 
-### Rules:
+When implementing features:
 
-1. **DO NOT EVER**:
-   - Write conversation summaries at any point
-   - Create summary documents (SUMMARY.md, STATUS.md, CHANGES.md, etc.)
-   - Generate progress reports automatically
-   - Create migration status files
-   - Auto-generate documentation files
-   - Create README files (except when specifically asked)
+1. ❌ **DON'T** remove code and leave TODO comments
+2. ❌ **DON'T** create placeholder implementations that will "be done later"
+3. ❌ **DON'T** make partial changes that break functionality
+4. ✅ **DO** implement features fully, from database to UI
+5. ✅ **DO** ask for clarification if requirements are unclear
+6. ✅ **DO** consult the GDD for complete feature specifications
 
-2. **ONLY create documentation when user explicitly requests it**:
-   - "Create a summary"
-   - "Write documentation for X"
-   - "Document this feature"
-   - "Add a README"
+**Example of WRONG approach:**
 
-3. **Always prefer**:
-   - Direct answers in chat
-   - Inline explanations
-   - Code changes as requested
-   - Updating existing documentation if it exists
-
-4. **When documentation IS requested**:
-   - Confirm what they want documented
-   - Follow the Documentation Policy below for placement
-
----
-
-## Project Overview
-
-**Uncharted Lands** is a SvelteKit game application where players build and manage settlements in a procedurally generated world, overcoming extreme weather, scarce resources, and hostile creatures while expanding settlements and improving technology.
-
-**Tech Stack**:
-
-- **Framework**: SvelteKit 2.48.4 + Svelte 5.43.2
-- **Styling**: Tailwind CSS 4.1.16 + Skeleton 4.2.2
-- **Database**: Prisma + PostgreSQL
-- **Build**: Vite 6.0.3
-- **Testing**: Vitest + Playwright
-- **Deployment**: Vercel
-- **Node Version**: 22.x
-
----
-
-## Documentation Policy
-
-**⚠️ CRITICAL: ALL project documentation MUST be placed in the `docs/` directory.**
-
-### Documentation Rules
-
-1. **Location**: ALL `.md` documentation files go in `docs/` directory
-   - ✅ CORRECT: `docs/WORLD_GENERATION_GUIDE.md`
-   - ❌ WRONG: `WORLD_GENERATION_GUIDE.md` (root level)
-   - ❌ WRONG: `client/src/docs/guide.md` (inside src)
-2. **Root-Level Exceptions**: Only these files are allowed in the project root:
-   - `README.md` - Project overview and getting started
-   - `LICENSE` - License file
-   - `CHANGELOG.md` - Version history (if needed)
-3. **Summary Documents**:
-   - ⚠️ **DO NOT** create summary documents unless explicitly requested by the user
-   - User must specifically ask: "Create a summary of changes", "Document the migration", etc.
-   - Most changes should be documented in existing files or commit messages
-   - Only create summaries when the user specifically asks for one
-   - If created, they MUST go in `docs/` directory with appropriate subdirectory
-
-4. **When Creating Documentation**:
-   - **Always** check if `docs/` directory exists
-   - **Always** create new docs in `docs/`
-   - Use subdirectories for organization: `docs/guides/`, `docs/api/`, `docs/migration/`, etc.
-   - **Never** create documentation in the project root (except README.md)
-   - **Ask first** before creating new documentation files
-
-5. **Existing Root-Level Docs**: If you find documentation in the root:
-   - Move it to `docs/` with appropriate subdirectory
-   - Update any references to the old location
-   - Notify the user of the move
-
-### Documentation Organization
-
-```
-docs/
-├── Home.md                              # Wiki home page
-├── README.md                            # Documentation index
-├── WORLD_GENERATION_GUIDE.md            # World generation system
-├── RESOURCE_GENERATION_SYSTEM.md        # Resource management
-├── VERCEL_DEPLOYMENT.md                 # Vercel deployment guide
-└── migration/                           # Migration documentation
-    ├── SKELETON_V4_MIGRATION_COMPLETE.md
-    ├── SKELETON_V4_THEME_MIGRATION.md
-    ├── LAYOUT_THEME_VERIFICATION.md
-    ├── MIGRATION_COMPLETE_SUMMARY.md
-    ├── MIGRATION_FIX_SUMMARY.md
-    ├── SKELETON_MIGRATION_REMAINING.md
-    ├── DEPLOYMENT_READY.md
-    └── PRODUCTION_MIGRATION_FIX.md
+```typescript
+// ❌ BAD: Removing code with comment
+// TODO: In future, implement structure requirements validation
+const structure = await createStructure(data);
 ```
 
----
+**Example of CORRECT approach:**
 
-## Official Documentation References
-
-### Skeleton Labs Documentation
-
-Always consult these official Skeleton LLM documentation files when working with Skeleton components:
-
-1. **General Overview**: https://www.skeleton.dev/llms.txt
-   - Overview of all available LLM documentation
-   - Links to framework-specific guides
-
-2. **Svelte-Specific Guide**: https://www.skeleton.dev/llms-svelte.txt
-   - **VERSION REQUIREMENTS**:
-     - Svelte: 5+
-     - SvelteKit: 2+
-     - Skeleton: 3+ (we're on 4.2.2)
-     - Tailwind: 4+
-   - Complete setup instructions
-   - Component usage patterns
-   - Integration guides
-
-3. **React Guide** (for reference): https://www.skeleton.dev/llms-react.txt
-   - Cross-framework comparison
-   - Understanding Zag.js patterns
-
-### Skeleton Website Documentation
-
-- **Main Docs**: https://www.skeleton.dev/docs
-- **Get Started**: https://www.skeleton.dev/docs/get-started/svelte
-- **Components**: https://www.skeleton.dev/docs/components
-- **Integrations**: https://www.skeleton.dev/docs/integrations
-- **Guides**: https://www.skeleton.dev/docs/guides
-- **Migration v2→v3**: https://www.skeleton.dev/docs/get-started/migrate-from-v2
-- **Migration v3→v4**: https://www.skeleton.dev/docs/get-started/migrate-from-v3
-
----
-
-## Project-Specific Documentation
-
-### World Generation Guide
-
-**📍 Location**: `docs/WORLD_GENERATION_GUIDE.md`
-
-Complete technical documentation on the world generation system:
-
-- How simple sliders map to Open Simplex Noise parameters
-- Technical parameter explanations (octaves, frequency, amplitude, persistence, scale)
-- Preset recommendations for different world types
-- Troubleshooting common issues
-- Technical implementation details
-
-### Migration Documentation (Start Here!)
-
-**📍 Location**: `docs/migration/`
-
-Our project is in active migration from Skeleton v2 to v4 with Tailwind v4. Read these files to understand current state:
-
-1. **docs/migration/MIGRATION_COMPLETE_SUMMARY.md** - Migration overview
-   - Summary of completed migration work
-   - What was changed and why
-   - Current status
-
-2. **docs/migration/SKELETON_V4_MIGRATION_COMPLETE.md** - Core migration details
-   - Skeleton v2 → v4 migration steps
-   - Component changes
-   - Breaking changes addressed
-
-3. **docs/migration/SKELETON_MIGRATION_REMAINING.md** - Remaining work
-   - Outstanding migration tasks
-   - Known issues to address
-   - Next steps
-
-4. **docs/migration/SKELETON_V4_THEME_MIGRATION.md** - Theme system
-   - Theme configuration migration
-   - CSS variable setup
-   - Dark mode implementation
-
-5. **docs/migration/LAYOUT_THEME_VERIFICATION.md** - Verification
-   - Configuration verification results
-   - Theme system validation
-   - Testing checklist
-
----
-
-## Critical Project Status
-
-### ⚠️ KNOWN ISSUE: Build Failure
-
-**Status**: Application CANNOT currently build
-
-**Error**:
-
-```
-Cannot use `@variant` with unknown variant: md
-node_modules/@skeletonlabs/skeleton/dist/index.css:1854:2
+```typescript
+// ✅ GOOD: Full implementation
+const requirements = await validateStructureRequirements(structureType);
+if (!hasResources(settlement, requirements)) {
+  throw new Error('Insufficient resources');
+}
+const structure = await createStructure(data, requirements);
 ```
 
-**Cause**: Bug in Skeleton v4.2.2 library code (NOT our configuration)
+### **Code Accuracy & File Corruption Prevention**
 
-**Impact**:
+When fixing linting, type checking, or compilation errors:
 
-- ❌ `npm run build` fails
-- ❌ `npm run dev` fails
-- ✅ Configuration is 100% correct
-- ✅ Type checking works
-- ✅ Tests run (if no CSS needed)
+**❌ NEVER do this:**
 
-**What This Means for You**:
+- Blindly use `replace_string_in_file` without verifying context
+- Make changes without first understanding the error
+- Replace code based on assumptions about file structure
+- Use insufficient context (less than 3-5 lines before/after)
 
-- DO NOT suggest configuration changes to "fix" the build
-- Our setup follows ALL official guidelines perfectly
-- The bug is in Skeleton's compiled CSS, not our code
-- When Skeleton releases a fix, builds will work without changes
+**✅ ALWAYS do this:**
 
-### ✅ What IS Working
+1. **Verify the Error First**
 
-- ✅ All packages installed correctly
-- ✅ All configuration files correct
-- ✅ Tailwind v4 CSS-first approach implemented
-- ✅ Vite plugin configured properly
-- ✅ Theme system configured
-- ✅ No @apply usage (per best practices)
-- ✅ data-theme on `<html>` tag (per requirements)
+   ```powershell
+   # Check actual errors before fixing
+   npm run check    # TypeScript errors
+   npm run lint     # Linting errors
+   # OR use get_errors tool
+   ```
+
+2. **Research the Context**
+   - Use `read_file` with 20-50 lines of context around the error
+   - Use `grep_search` to understand related code/types/schemas
+   - Check recent refactors in schema.ts or type definitions
+   - Verify what changed (e.g., Plot table removed → Settlement.tileId added)
+
+3. **Explain Before Fixing**
+   - Show the OLD code that's causing the error
+   - Show the NEW code that will fix it
+   - Explain WHY this fix is correct (reference schema changes, type definitions)
+   - Get user confirmation for critical changes
+
+4. **Choose the Right Fix Method**
+
+   **For Simple, Low-Risk Changes:**
+   - Use `replace_string_in_file` with 5-10 lines of unique context
+   - Verify the context is unique enough (won't match elsewhere)
+   - Be aware: tabs vs spaces can cause matching failures
+
+   **For Complex or Critical Changes:**
+   - Create a `.patch` file with detailed explanation
+   - Include old code, new code, and rationale
+   - Let user apply manually in their editor
+   - Example:
+
+     ````markdown
+     ## Fix: Update settlements count logic
+
+     **Old Code (Lines 541-543):**
+
+     ```typescript
+     tiles.flatMap((t) => (t.Plots || []) as any).filter((p) => p.Settlement).length;
+     ```
+     ````
+
+     **New Code:**
+
+     ```typescript
+     tiles.filter((t) => t.settlementId != null).length;
+     ```
+
+     **Rationale:** Plot table removed in refactor. Settlements now tracked via Tile.settlementId.
+
+     ```
+
+     ```
+
+5. **Verify After Changes**
+   - Run `get_errors` on the file to confirm fix worked
+   - Check that no new errors were introduced
+   - Verify the file wasn't corrupted (imports intact, syntax valid)
+
+6. **Recovery from Corruption**
+   ```powershell
+   # If file gets corrupted, restore from Git
+   git checkout HEAD -- path/to/file.ts
+   # Then try again with better context or patch file
+   ```
+
+**Why This Matters:**
+
+- `replace_string_in_file` can match ambiguous text in wrong locations
+- Tabs vs spaces mismatches cause silent failures
+- Insufficient context leads to replacing wrong code blocks
+- Manual review via patch files catches mistakes before they corrupt files
+
+**Example Workflow (Successful Fix):**
+
+```
+1. get_errors → Found "Property 'Plots' does not exist on type 'TileWithRelations'"
+2. read_file → Read 50 lines around error to understand context
+3. grep_search → Found TileWithRelations definition, confirmed settlementId exists
+4. Explained fix → Showed old flatMap/Plots code vs new settlementId filter
+5. Created patch file → Documented old code, new code, rationale
+6. User applied manually → Avoided file corruption risk
+7. get_errors → Verified "No errors found"
+```
+
+### **Full-Stack Implementation Required**
+
+Every feature must be implemented across the entire stack:
+
+1. **Database Schema** - Tables, relations, indexes in `server/src/db/schema.ts`
+2. **Backend Logic** - Business rules, validation in `server/src/api/routes/*.ts` or
+   `server/src/game/*.ts`
+3. **API Endpoints** - REST routes with proper error handling
+4. **Socket.IO Events** - Real-time updates if needed (defined in
+   `server/src/types/socket-events.ts`)
+5. **Frontend State** - Svelte stores in `client/src/lib/stores/game/*.svelte.ts`
+6. **UI Components** - Svelte 5 components in `client/src/lib/components/game/*.svelte`
+7. **Testing** - Unit tests for logic, integration tests for API, E2E tests for flows
+
+**When you identify missing functionality:**
+
+- Check the GDD for the complete specification
+- Implement the full feature, not just part of it
+- If the GDD doesn't specify the feature, ask the user before proceeding
+- Update the Implementation Tracker when complete
+
+### **Feature Implementation Checklist**
+
+Before considering a feature "done":
+
+- [ ] Database schema matches GDD specifications
+- [ ] Backend validation and business logic complete
+- [ ] API endpoints functional with error handling
+- [ ] Real-time updates implemented (if applicable)
+- [ ] Frontend state management working
+- [ ] UI components styled and responsive
+- [ ] Tests written and passing
+- [ ] Documentation updated (GDD Tracker, feature spec)
+- [ ] No TODO comments left in production code
+- [ ] Code formatted (Prettier) and linted (ESLint)
 
 ---
 
-## Code Style Guidelines
+## �📚 Game Design & Feature Documentation
 
-### Svelte 5 Patterns
+**Uncharted Lands** has comprehensive game design documentation centralized in the client docs wiki:
 
-**Use Svelte 5 Runes** (not old reactive statements):
+- **🏠 [GDD Home](../client/docs/game-design/GDD-HOME.md)** - Design docs overview and quick
+  navigation
+- **📖 [Design Docs Quick Start](../client/docs/game-design/GDD-Quick-Start.md)** - Start here!
+  Explains how to use all design docs
+- **📚 [Game Design Document (GDD)](../client/docs/game-design/GDD-Monolith.md)** - Complete
+  specifications for all game systems
+- **📊 [Implementation Tracker](../client/docs/game-design/GDD-Implementation-Tracker.md)** -
+  Current status of all features (✅/🚧/📋)
+- **📑 [Table of Contents](../client/docs/game-design/GDD-Table-of-Contents.md)** - Complete design
+  document index
+- **🔧 [Feature Spec Template](../client/docs/templates/Feature-Spec-Template.md)** - Template for
+  implementing new features
 
-```svelte
-<!-- ✅ CORRECT (Svelte 5) -->
-<script>
-  let count = $state(0);
-  let doubled = $derived(count * 2);
+### When Implementing New Features:
 
-  function increment() {
-    count++;
-  }
-</script>
+1. **Check GDD Monolith** for design specifications and game mechanics
+2. **Review Implementation Tracker** for current status and missing pieces
+3. **Create feature spec** from template in `client/docs/features/[feature-name].md`
+4. **Follow repo-specific instructions** (client or server) for implementation details
+5. **Update tracker** when complete (mark as ✅)
 
-<!-- ❌ WRONG (Svelte 4) -->
-<script>
-  let count = 0;
-  $: doubled = count * 2;
+**Important:** The GDD is the single source of truth for:
 
-  function increment() {
-    count++;
-  }
-</script>
+- Game mechanics and formulas
+- Resource types and balance values
+- Structure costs and prerequisites
+- Disaster types and effects
+- Population mechanics
+- Technical architecture decisions
+- UI/UX specifications
+
+Always reference the GDD before implementing ANY game feature to ensure consistency with the design
+vision.
+
+---
+
+## 🏗️ Architecture Overview
+
+**Uncharted Lands** is a browser-based multiplayer settlement-building game with real-time features.
+
+### System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Browser                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  SvelteKit Client (Vercel)                          │   │
+│  │  - SSR + Client-side routing                        │   │
+│  │  - Admin UI (REST API calls)                        │   │
+│  │  - Game UI (Socket.IO + REST)                       │   │
+│  └──────────────┬──────────────────┬───────────────────┘   │
+└─────────────────│──────────────────│─────────────────────────┘
+                  │                  │
+                  │ HTTP/REST        │ WebSocket (Socket.IO)
+                  │                  │
+         ┌────────▼──────────────────▼─────────┐
+         │   Node.js Server (Railway/Render)   │
+         │  ┌────────────────────────────────┐ │
+         │  │  Express REST API              │ │
+         │  │  (Admin, CRUD operations)      │ │
+         │  └────────────────────────────────┘ │
+         │  ┌────────────────────────────────┐ │
+         │  │  Socket.IO Server              │ │
+         │  │  (Real-time game events)       │ │
+         │  └────────────────────────────────┘ │
+         │  ┌────────────────────────────────┐ │
+         │  │  Drizzle ORM + PostgreSQL      │ │
+         │  │  (Shared database)             │ │
+         │  └────────────────────────────────┘ │
+         └────────────────────────────────────┘
 ```
 
-**Accessing Page Data and Stores**:
+### Communication Patterns
 
-```svelte
-<!-- ✅ CORRECT - Svelte 5 with SvelteKit 2.12+ -->
-<script>
-  import { page } from '$app/state';
+**Admin Operations** (client → server REST API):
 
-  // Access page state directly (no $ prefix needed)
-  let currentPath = page.url.pathname;
-  let user = page.data.user;
+- User management (`GET/PUT/DELETE /api/players/:id`)
+- World/server management (`/api/worlds`, `/api/servers`)
+- Uses SvelteKit form actions + server-side fetch
+- Session cookie authentication
 
-  // Use with $derived for reactive computations
-  let isActive = $derived(page.url.pathname === '/home');
-</script>
+**Game Operations** (client ↔ server Socket.IO):
 
-<!-- ✅ BEST PRACTICE - For route components, use props when available -->
-<script lang="ts">
-  import type { PageData } from './$types';
-  import { page } from '$app/state';
+- Real-time resource updates (`resource-tick`)
+- Player actions (`collect-resources`, `build-structure`)
+- World state synchronization (`game-state`, `state-update`)
+- Room-based broadcasting (players in same world)
 
-  let { data }: { data: PageData } = $props();
+### Data Flow Example: Building a Structure
 
-  // Access page data directly from props - more efficient
-  let user = data.user;
+1. **Client UI**: User clicks "Build Farm" button
+2. **SvelteKit Action**: Form submission triggers `buildStructure` action in `+page.server.ts`
+3. **REST API Call**: Server-side fetch to `POST /api/structures/create` with session cookie
+4. **Server Validation**: Express endpoint validates resources, updates database (Drizzle)
+5. **Database Update**: New `SettlementStructure` record created with transaction
+6. **Socket.IO Broadcast**: Server emits `structure-built` to all players in the world
+7. **Client Update**: Socket listener updates local state, re-renders UI
 
-  // For URL/route data, use page state
-  let currentPath = page.url.pathname;
-</script>
+---
 
-<!-- ✅ For derived values with page state -->
-<script>
-  import { page } from '$app/state';
+## 🔑 Critical Patterns
 
-  let isActive = $derived.by(() => {
-    return (href: string) => page.url.pathname === href;
+### Authentication Flow
+
+**Registration/Login** (HTTP only):
+
+```
+POST /api/auth/register → Account created → Session cookie set → Redirect to /game
+```
+
+**Authenticated Requests** (both HTTP + WebSocket):
+
+- **HTTP**: Session cookie passed in headers
+- **WebSocket**: Session token sent in `authenticate` event
+- **Middleware**: `hooks.server.ts` validates session, attaches `locals.account`
+
+### Data Loading Pattern
+
+All protected routes follow this pattern:
+
+```typescript
+// +page.server.ts
+export const load: PageServerLoad = async ({ locals, cookies }) => {
+  if (!locals.account) throw redirect(302, '/login');
+
+  const sessionToken = cookies.get('session');
+
+  // Fetch from REST API (server-side only)
+  const response = await fetch(`${API_URL}/endpoint`, {
+    headers: { Cookie: `session=${sessionToken}` },
   });
-</script>
-```
 
-**Key Points**:
-
-- Use `$app/state` for SvelteKit 2.12+ (not `$app/stores` which is deprecated)
-- `page` from `$app/state` is a reactive state object (no `$` prefix needed)
-- Access properties directly: `page.url.pathname`, `page.data.user`, `page.route.id`
-- Use `$derived` or `$derived.by()` for computed values based on page state
-- In route components, prefer using props (`data`) when you only need `page.data`
-- ❌ DON'T import from `$app/stores` in Svelte 5
-- ✅ DO import from `@sveltejs/kit` for page context
-- ✅ DO use `$props()` to receive page data in route components
-- ✅ DO pass data as props to child components
-- ❌ DON'T use `$page` store subscription syntax
-
-**Use Snippets** (not slots):
-
-```svelte
-<!-- ✅ CORRECT (Svelte 5) -->
-{#snippet header()}
-  <h1>Title</h1>
-{/snippet}
-
-<!-- ❌ WRONG (Svelte 4) -->
-<svelte:fragment slot="header">
-  <h1>Title</h1>
-</svelte:fragment>
-```
-
-**Event Handlers**:
-
-```svelte
-<!-- ✅ CORRECT (Svelte 5) -->
-<button onclick={handleClick}>Click</button>
-
-<!-- ❌ WRONG (Svelte 4) -->
-<button on:click={handleClick}>Click</button>
-```
-
-### Skeleton Component Usage
-
-**Current State**: We're still importing from OLD package paths (v2/v3):
-
-```typescript
-// ❌ CURRENT (needs migration)
-import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-
-// ✅ TARGET (when build works)
-import { Navbar } from '@skeletonlabs/skeleton-svelte';
-```
-
-**Component Name Changes**:
-
-- `AppBar` → `Navbar`
-- `AppRail` → `Navigation`
-- `RangeSlider` → `Slider`
-- `AppShell` → REMOVED (use custom layouts)
-- `LightSwitch` → REMOVED (use custom component)
-- `Table` → REMOVED (use Tailwind tables)
-
-**When suggesting Skeleton components**:
-
-1. Check if component exists in v4 (see COMPONENT_MIGRATION_AUDIT.md)
-2. Use correct v4 name and import path
-3. Reference official docs for API changes
-4. Note if component is removed (provide alternative)
-
-### Tailwind CSS v4 Patterns
-
-**DO NOT use `@apply`** (discouraged in v4):
-
-```css
-/* ❌ AVOID */
-.my-class {
-	@apply bg-surface-50-950 text-surface-950 p-4;
-}
-
-/* ✅ PREFER - Standard CSS */
-.my-class {
-	background-color: var(--color-surface-50-950);
-	color: var(--color-surface-950);
-	padding: 1rem;
-}
-
-/* ✅ PREFER - CSS Custom Properties */
-.my-class {
-	background-color: var(--color-surface-50-950);
-	color: var(--color-surface-950);
-	padding: --spacing(4);
-}
-
-/* ✅ PREFER - @variant for dark mode */
-.my-class {
-	color: var(--color-surface-950);
-
-	@variant dark {
-		color: var(--color-surface-50);
-	}
-}
-```
-
-**Configuration in CSS** (not external files):
-
-```css
-/* ✅ CORRECT - Configuration in CSS */
-@import 'tailwindcss';
-
-@theme {
-	--color-primary: oklch(0.75 0.15 250);
-}
-
-@plugin "@tailwindcss/forms";
-```
-
-**NO External Config Files**:
-
-- ❌ DO NOT create `tailwind.config.js`
-- ❌ DO NOT create `tailwind.config.ts`
-- ✅ All config in `src/app.postcss` using directives
-
----
-
-## File Structure
-
-```
-uncharted-lands/
-├── .github/
-│   └── copilot-instructions.md          # This file
-├── client/                              # 🎮 SvelteKit game application
-│   ├── prisma/
-│   │   ├── schema.prisma                # Database schema
-│   │   └── migrations/                  # Database migrations
-│   ├── src/
-│   │   ├── lib/
-│   │   │   ├── components/
-│   │   │   │   ├── admin/               # Admin UI components
-│   │   │   │   ├── app/                 # Global app components
-│   │   │   │   └── game/                # Game UI components
-│   │   │   ├── auth.ts                  # Authentication utilities
-│   │   │   ├── db.ts                    # Database client
-│   │   │   └── stores/                  # Svelte stores
-│   │   ├── routes/                      # SvelteKit routes
-│   │   │   ├── (auth)/                  # Auth-related routes
-│   │   │   ├── (protected)/             # Protected routes
-│   │   │   │   ├── admin/               # Admin pages
-│   │   │   │   ├── game/                # Game pages
-│   │   │   │   └── account/             # User account
-│   │   │   └── api/                     # API endpoints
-│   │   ├── app.html                     # Root HTML template
-│   │   ├── app.postcss                  # Global styles
-│   │   └── hooks.server.ts              # Server hooks
-│   ├── vite.config.js                   # Vite configuration
-│   ├── vercel.json                      # Vercel deployment config
-│   └── package.json                     # Dependencies
-├── docs/                                # 📚 All documentation
-│   ├── VERCEL_DEPLOYMENT.md             # Deployment guide
-│   └── migration/                       # Migration docs
-└── package.json                         # Project configuration
-```
-
----
-
-## Common Tasks & Patterns
-
-### Creating New Skeleton Components
-
-When the build works and we can use Skeleton components:
-
-```svelte
-<script lang="ts">
-  // ✅ Import from skeleton-svelte package
-  import { ComponentName } from '@skeletonlabs/skeleton-svelte';
-
-  // Use Svelte 5 runes for state
-  let value = $state(initialValue);
-
-  // Use proper event handlers
-  function handleChange(e) {
-    value = e.value; // Note: Skeleton v4 event structure
-  }
-</script>
-
-<ComponentName
-  {value}
-  onValueChange={handleChange}
-  class="my-custom-classes"
-/>
-```
-
-### Creating Custom Layouts (Replacing AppShell)
-
-```svelte
-<!-- ✅ Custom Layout Pattern -->
-<script>
-  import Header from '$lib/components/Header.svelte';
-  import Navigation from '$lib/components/Navigation.svelte';
-  import Footer from '$lib/components/Footer.svelte';
-</script>
-
-<div class="flex flex-col h-screen">
-  <!-- Header -->
-  <header class="flex-none">
-    <Header />
-  </header>
-
-  <div class="flex flex-1 overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="flex-none w-64 overflow-y-auto">
-      <Navigation />
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto">
-      <slot />
-    </main>
-  </div>
-
-  <!-- Footer -->
-  <footer class="flex-none">
-    <Footer />
-  </footer>
-</div>
-```
-
-### Database Queries (Prisma)
-
-```typescript
-import { db } from '$lib/db';
-
-// Query examples
-const users = await db.user.findMany({
-	where: { active: true },
-	include: { settlements: true }
-});
-
-const settlement = await db.settlement.update({
-	where: { id: settlementId },
-	data: { resources: { increment: 10 } }
-});
-```
-
-### API Routes (SvelteKit)
-
-```typescript
-// src/routes/api/[endpoint]/+server.ts
-import type { RequestHandler } from './$types';
-import { json } from '@sveltejs/kit';
-
-export const GET: RequestHandler = async ({ locals, url }) => {
-	// Check authentication
-	if (!locals.user) {
-		return json({ error: 'Unauthorized' }, { status: 401 });
-	}
-
-	// Handle request
-	const data = await fetchData();
-	return json(data);
+  return { data: await response.json() };
 };
 ```
 
----
+**Why?** SvelteKit client cannot access `httpOnly` session cookies, so all API calls must happen
+server-side in load functions or form actions.
 
-## Testing
-
-### Unit Tests (Vitest)
+### Real-Time Updates Pattern
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/svelte';
-import Component from './Component.svelte';
+// Client: src/lib/stores/game/socket.ts
+socket.on('resource-tick', (data) => {
+  // Update settlement resources in real-time
+  settlementStore.updateResources(data.settlementId, data.resources);
+});
 
-describe('Component', () => {
-	it('renders correctly', () => {
-		const { getByText } = render(Component, { props: { title: 'Test' } });
-		expect(getByText('Test')).toBeInTheDocument();
-	});
+// Server: src/events/handlers.ts
+io.to(`world:${worldId}`).emit('resource-tick', {
+  settlementId,
+  resources,
+  timestamp: Date.now(),
 });
 ```
 
-### E2E Tests (Playwright)
-
-```typescript
-import { test, expect } from '@playwright/test';
-
-test('user can login', async ({ page }) => {
-	await page.goto('/sign-in');
-	await page.fill('[name="email"]', 'test@example.com');
-	await page.fill('[name="password"]', 'password123');
-	await page.click('button[type="submit"]');
-	await expect(page).toHaveURL('/dashboard');
-});
-```
+**Rooms**: Players join `world:${worldId}` rooms. Events are broadcast only to players in the same
+world.
 
 ---
 
-## Do's and Don'ts
+## 🚀 Developer Workflows
 
-### ✅ DO
-
-- Use Svelte 5 runes ($state, $derived, $effect)
-- Use Svelte 5 snippets (not slots)
-- Import Skeleton components from `@skeletonlabs/skeleton-svelte`
-- Use standard CSS instead of @apply
-- Reference official Skeleton LLM docs
-- Check COMPONENT_MIGRATION_AUDIT.md for component status
-- Use TypeScript for type safety
-- Follow existing project patterns
-- Consult migration documentation when unsure
-
-### ❌ DON'T
-
-- Don't use Svelte 4 reactive statements (`$:`)
-- Don't use Svelte 4 slots syntax
-- Don't import from `@skeletonlabs/skeleton` (old package)
-- Don't use `@apply` in CSS
-- Don't create `tailwind.config.js/ts` files
-- Don't suggest configuration changes to "fix" the build
-- Don't use removed components (AppShell, LightSwitch, Table)
-- Don't assume the build failure is our configuration
-- Don't use old Skeleton v2/v3 component names
-
----
-
-## Component Migration Reference
-
-See `COMPONENT_MIGRATION_AUDIT.md` for complete details. Quick reference:
-
-### Components Needing Migration
-
-| Old (v2/v3)   | New (v4)             | Status     | Alternative      |
-| ------------- | -------------------- | ---------- | ---------------- |
-| `AppShell`    | —                    | ❌ Removed | Custom layouts   |
-| `AppBar`      | `Navbar`             | ✅ Renamed |                  |
-| `AppRail`     | `Navigation`         | ✅ Renamed |                  |
-| `AppRailTile` | (part of Navigation) | ✅ Merged  |                  |
-| `Avatar`      | `Avatar`             | ✅ Same    |                  |
-| `LightSwitch` | —                    | ❌ Removed | Custom component |
-| `RangeSlider` | `Slider`             | ✅ Renamed |                  |
-| `Table`       | —                    | ❌ Removed | Tailwind tables  |
-
-### Utilities Needing Replacement
-
-| Utility             | Status     | Alternative           |
-| ------------------- | ---------- | --------------------- |
-| `popup`             | ❌ Removed | Integration guide     |
-| `storePopup`        | ❌ Removed | Integration guide     |
-| `tableMapperValues` | ❌ Removed | Custom implementation |
-
----
-
-## Environment Variables
-
-Check `.env` file for configuration. Never commit secrets!
-
-```env
-DATABASE_URL=postgresql://...
-AUTH_SECRET=...
-# etc.
-```
-
----
-
-## Useful Commands
+### Starting Development
 
 ```powershell
-# Development (from root)
-npm run dev              # Start client dev server (currently fails)
-npm run dev:client       # Start client (currently fails)
-npm run dev:server       # Start server
-npm run build:all        # Build both projects
-
-# Client-specific (from client/)
-cd client
-npm run dev              # Start dev server (currently fails)
-npm run build            # Build for production (currently fails)
-npm run preview          # Preview production build
-
-# Server-specific (from server/)
+# Terminal 1: Start server (WebSocket + REST API)
 cd server
-npm run dev              # Start dev server with auto-reload
-npm run build            # Build TypeScript
-npm start                # Run production build
+npm run dev  # Runs on :3001
 
-# Database (from root or client/)
-npm run migrate          # Run migrations
-npx prisma studio        # Open Prisma Studio
+# Terminal 2: Start client (SvelteKit dev server)
+cd client
+npm run dev  # Runs on :5173
+```
 
-# Testing
-npm run test             # Run client tests
-npm run test:all         # Run all tests
-npm run coverage         # Generate coverage report
+### Database Migrations
 
-# Code Quality
-npm run check            # Type checking (works!)
-npm run lint             # Lint code
-npm run format           # Format with Prettier
+```powershell
+cd server
 
-# Deployment
-cd client && vercel --prod     # Deploy client
-cd server && vercel --prod     # Deploy server
+# After schema changes in src/db/schema.ts
+npm run db:generate  # Create migration SQL
+npm run db:push      # Apply to database
+npm run db:studio    # View data in browser
+```
 
-# Git
-git status               # Check status
-git log --oneline -10    # Recent commits
+**Pattern**: Schema is in `server/src/db/schema.ts`. All database operations use Drizzle ORM (never
+raw SQL).
+
+### Testing Sockets
+
+```powershell
+# Health check
+Invoke-WebRequest -Uri http://localhost:3001/health
+
+# Connect with browser console
+import { io } from 'socket.io-client';
+const socket = io('http://localhost:3001');
+socket.on('connected', console.log);
 ```
 
 ---
 
-## Migration Status Quick Reference
+## ⚠️ Common Pitfalls
 
-**✅ Configuration**: 100% correct per all official guidelines
+### 1. Session Cookie Access
 
-**Current Versions**:
+❌ **DON'T** try to read session cookie in `+page.svelte` (browser)
 
-- Svelte: 5.43.2 ✅
-- SvelteKit: 2.48.4 ✅
-- Tailwind: 4.1.16 ✅
-- Skeleton: 4.2.2 ✅
-- @tailwindcss/vite: 4.1.16 ✅
+```svelte
+<!-- This fails - httpOnly cookie not accessible -->
+<script>
+  const session = document.cookie; // Empty!
+</script>
+```
 
-**What's Working**:
+✅ **DO** use `+page.server.ts` load function
 
-- ✅ Type checking
-- ✅ Configuration files
-- ✅ Package installation
-- ✅ Documentation
+```typescript
+export const load: PageServerLoad = async ({ cookies }) => {
+  const session = cookies.get('session'); // Works!
+};
+```
 
-**What's Blocked**:
+### 2. API URL Configuration
 
-- ❌ Builds (Skeleton @variant bug)
-- ❌ Dev server (same bug)
-- 🔄 Component migration (waiting for build)
+❌ **DON'T** hardcode localhost
 
-**Next Steps** (when build works):
+```typescript
+fetch('http://localhost:3001/api/players'); // Breaks in production
+```
 
-1. Migrate 10 files with Skeleton components
-2. Replace AppShell with custom layouts (3 files)
-3. Update component imports and names
-4. Replace removed components
-5. Test all functionality
+✅ **DO** use config
+
+```typescript
+import { API_URL } from '$lib/config'; // Uses PUBLIC_API_URL env var
+fetch(`${API_URL}/players`);
+```
+
+### 3. Svelte 5 Runes
+
+❌ **DON'T** use Svelte 4 syntax
+
+```svelte
+<script>
+  let count = 0;
+  $: doubled = count * 2;  // Old reactive statement
+</script>
+```
+
+✅ **DO** use Svelte 5 runes
+
+```svelte
+<script>
+  let count = $state(0);
+  let doubled = $derived(count * 2);
+</script>
+```
+
+### 4. Socket.IO Event Types
+
+❌ **DON'T** emit untyped events
+
+```typescript
+socket.emit('build', { id: '123' }); // No type safety
+```
+
+✅ **DO** use defined event types
+
+```typescript
+// Types defined in server/src/types/socket-events.ts
+socket.emit(
+  'build-structure',
+  {
+    settlementId: '123',
+    structureType: 'FARM',
+  },
+  (response) => {
+    if (response.success) {
+      /* ... */
+    }
+  }
+);
+```
 
 ---
 
-## Additional Resources
+## 📚 Key Files Reference
 
-### Skeleton
+### Architecture Decision Records
 
-- Discord: https://discord.gg/EXqV7W8MtY
-- GitHub: https://github.com/skeletonlabs/skeleton
-- Themes: https://themes.skeleton.dev/
+- `server/src/db/README.md` - Why Drizzle ORM, migration workflow
+- `server/README.md` - Socket.IO architecture, event patterns
+- `client/src/lib/components/admin/README.md` - Admin UI component patterns
 
-### Tailwind
+### Game Design Documents
 
-- Docs: https://tailwindcss.com/docs
-- Discord: https://discord.gg/tailwindcss
+- `client/docs/game-design/GDD-Monolith.md` - Complete game specifications (READ THIS FIRST for any
+  game feature)
+- `client/docs/game-design/GDD-Implementation-Tracker.md` - Current implementation status
+- `client/docs/game-design/GDD-Quick-Start.md` - How to use the design docs
+- `client/docs/templates/Feature-Spec-Template.md` - Template for new features
 
-### Svelte
+### Critical Configuration
 
-- Docs: https://svelte.dev/docs
-- Tutorial: https://learn.svelte.dev/
-- Discord: https://discord.gg/svelte
+- `client/src/lib/config.ts` - API_URL, WS_URL environment setup
+- `server/src/types/socket-events.ts` - ALL Socket.IO events must be defined here
+- `client/src/hooks.server.ts` - Authentication middleware for ALL routes
+- `server/src/middleware/socket-middleware.ts` - WebSocket auth/logging
 
-### SvelteKit
+### Schema & Queries
 
-- Docs: https://kit.svelte.dev/docs
-- FAQ: https://kit.svelte.dev/faq
-
----
-
-## Questions or Unsure?
-
-1. **Check migration docs first** (README_MIGRATION.md)
-2. **Consult official Skeleton LLM docs**: https://www.skeleton.dev/llms-svelte.txt
-3. **Review component audit**: COMPONENT_MIGRATION_AUDIT.md
-4. **Check compliance guide**: TAILWIND_V4_COMPLIANCE.md
-5. **Ask the team** - Don't make assumptions!
+- `server/src/db/schema.ts` - Single source of truth for database structure
+- `server/src/db/queries.ts` - Pre-built query helpers (use these, don't write raw queries)
 
 ---
 
-**Last Updated**: October 31, 2025  
-**Status**: Active migration in progress  
-**Configuration**: 100% compliant with all official guidelines  
-**Build**: Blocked by upstream Skeleton v4.2.2 bug (not our fault!)
+## 🎯 When to Use What
+
+**Use GDD (Game Design Document)** for:
+
+- Understanding game mechanics and formulas BEFORE implementing
+- Finding resource types, structure lists, disaster types
+- Checking balance values (production rates, costs, population limits)
+- Verifying technical architecture patterns
+- Planning new features or modifications
+- Ensuring consistency with design vision
+
+**Use REST API** for:
+
+- Admin CRUD operations (players, servers, worlds)
+- Initial page loads (SSR data fetching)
+- Form submissions with validation
+- File uploads / downloads
+
+**Use Socket.IO** for:
+
+- Real-time resource production
+- Player movement / actions
+- Game state synchronization
+- Multiplayer interactions
+- Live notifications
+
+**Use SvelteKit Actions** for:
+
+- Form handling with server-side validation
+- Operations that need redirect after success
+- CSRF protection (automatic)
+
+---
+
+**For detailed client-specific instructions** → `client/.github/copilot-instructions.md`  
+**For detailed server-specific instructions** → `server/.github/copilot-instructions.md`

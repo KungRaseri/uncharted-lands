@@ -1,6 +1,29 @@
 {
-	"sonarlint.connectedMode.project": {
-		"connectionId": "kungraseri",
-		"projectKey": "KungRaseri_uncharted-lands"
-	}
+  "sonarlint.connectedMode.project": {
+    "connectionId": "kungraseri",
+    "projectKey": "KungRaseri_uncharted-lands"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "*": true
+    // "/^npm run\\b/i": true,
+    // "/^npx playwright\\b/i": true,
+    // "cd": true,
+    // "ls": true,
+    // "/^Select-String\\b/i": true,
+    // "/^Select-Object\\b/i": true,
+    // "/^ForEach-Object\\b/i": true,
+    // "/^Move-Item\\b/i": true,
+    // "/^Start-Sleep\\b/i": true,
+    // "/^docker\\b/i": true,
+    // "rm": false,
+    // "rmdir": false,
+    // "del": false,
+    // "kill": false,
+    // "curl": false,
+    // "wget": false,
+    // "eval": false,
+    // "chmod": false,
+    // "chown": false,
+    // "/^Remove-Item\\b/i": false
+  }
 }

@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1764889425416,
+      "tag": "0000_clumsy_kree",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1764910372232,
+      "tag": "0001_smiling_princess_powerful",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765513841428,
+      "tag": "0002_violet_guardsmen",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1765597190705,
+      "tag": "0003_even_wraith",
+      "breakpoints": true
+    }
+  ]
+}
