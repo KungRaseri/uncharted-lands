@@ -25,7 +25,6 @@
  */
 
 import type { Server as SocketIOServer } from 'socket.io';
-import type { Timeout } from 'node:timers';
 import { eq, or, and, inArray } from 'drizzle-orm';
 import { logger } from '../utils/logger.js';
 import {
@@ -79,7 +78,7 @@ const SOCKET_EMIT_INTERVAL_SEC = Number.parseInt(process.env.SOCKET_EMIT_INTERVA
 const POPULATION_INTERVAL_SEC = Number.parseInt(process.env.POPULATION_INTERVAL_SEC || '1800', 10); // Default: 30 minutes (half-hour offset)
 
 // Track active game loop
-let gameLoopInterval: Timeout | null = null;
+let gameLoopInterval: NodeJS.Timeout | null = null;
 let currentTick = 0;
 let isRunning = false;
 let lastStatusLog = 0;

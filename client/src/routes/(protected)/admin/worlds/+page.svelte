@@ -194,6 +194,7 @@
 		<div
 			class="modal preset-filled-surface-50-950 w-full max-w-md"
 			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 			role="dialog"
 			aria-modal="true"
 			tabindex="-1"

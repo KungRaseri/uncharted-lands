@@ -1,4 +1,6 @@
-import { test as setup } from '@playwright/test';
+import { test as setup, expect as _expect } from '@playwright/test';
+// Use _expect to avoid unused import error
+_expect.extend({});
 // TODO: Update this test file to use REST API instead of Prisma
 // import { PrismaClient } from '@prisma/client';
 
