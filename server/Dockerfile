@@ -57,9 +57,11 @@ COPY server/package.json ./server/
 COPY server/ ./server/
 
 # Build TypeScript to JavaScript
-# Explicitly tell TypeScript where to find type definitions
+# Create symlink to parent node_modules so TypeScript can find @types
 WORKDIR /app/server
-RUN npx tsc --typeRoots ../node_modules/@types,./node_modules/@types
+RUN ln -s ../node_modules node_modules && \
+    npm run build && \
+    rm -rf node_modules
 # Stage 4: Production dependencies
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
