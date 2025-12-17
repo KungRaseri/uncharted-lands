@@ -50,10 +50,8 @@ COPY --from=deps /app/shared ./shared
 # Copy server source code and config files
 COPY server/ ./server/
 
-# Build TypeScript to JavaScript
-WORKDIR /app/server
-RUN npm run build
-
+# Build TypeScript to JavaScript (run from workspace root)
+RUN npm run build:server
 # Stage 4: Production dependencies
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
@@ -75,7 +73,7 @@ WORKDIR /app
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 serveruser
+  adduser --system --uid 1001 serveruser
 
 # Copy production dependencies (entire node_modules with workspace structure)
 COPY --from=prod-deps /app/node_modules ./node_modules
