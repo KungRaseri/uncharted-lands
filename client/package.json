@@ -67,6 +67,7 @@
 		"globals": "^15.11.0",
 		"husky": "^9.1.7",
 		"jsdom": "^25.0.1",
+		"lightningcss": "^1.30.2",
 		"lint-staged": "^16.2.6",
 		"lucide-svelte": "^0.468.0",
 		"mdi-svelte": "^1.1.2",

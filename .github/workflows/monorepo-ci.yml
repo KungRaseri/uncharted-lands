@@ -1,6 +1,6 @@
 name: Monorepo CI
 permissions:
-    contents: read
+  contents: read
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
   shared:
     name: Shared Package
     permissions:
-        contents: read    
+      contents: read
     runs-on: ubuntu-latest
 
     strategy:
@@ -67,7 +67,7 @@ jobs:
   client-build:
     name: Client - Build
     permissions:
-        contents: read
+      contents: read
     runs-on: ubuntu-latest
     needs: [shared]
 
@@ -115,11 +115,6 @@ jobs:
         working-directory: ./client
         run: |
           npm ci
-          # Force reinstall Rollup optional dependencies (fix for GHSA CI issue)
-          npm install --no-save --force rollup
-          # Force rebuild lightningcss for Linux CI environment
-          npm rebuild lightningcss --force || true
-
       - name: Type check client
         run: npm run check:client
 
@@ -129,7 +124,7 @@ jobs:
   client-test:
     name: Client - Test
     permissions:
-        contents: read
+      contents: read
     runs-on: ubuntu-latest
     needs: [shared]
 
@@ -178,11 +173,6 @@ jobs:
         working-directory: ./client
         run: |
           npm ci
-          # Force reinstall Rollup optional dependencies (fix for GHSA CI issue)
-          npm install --no-save --force rollup
-          # Force rebuild lightningcss for Linux CI environment
-          npm rebuild lightningcss --force || true
-
       - name: Run client unit tests with coverage
         run: npm run test:client
         continue-on-error: false
@@ -201,7 +191,7 @@ jobs:
   server-build:
     name: Server - Build
     permissions:
-        contents: read
+      contents: read
     runs-on: ubuntu-latest
     needs: [shared]
 
@@ -264,7 +254,7 @@ jobs:
   server-test:
     name: Server - Test
     permissions:
-        contents: read
+      contents: read
     runs-on: ubuntu-latest
     needs: [shared]
 
@@ -346,7 +336,7 @@ jobs:
   sonarcloud-client:
     name: SonarCloud - Client
     permissions:
-        contents: read
+      contents: read
     runs-on: ubuntu-latest
     needs: [client-test]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
@@ -377,7 +367,7 @@ jobs:
   sonarcloud-server:
     name: SonarCloud - Server
     permissions:
-        contents: read
+      contents: read
     runs-on: ubuntu-latest
     needs: [server-test]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
