@@ -40,6 +40,9 @@ RUN npm ci
 FROM node:22-alpine AS builder
 WORKDIR /app
 
+# Copy root package.json for workspace scripts
+COPY package.json ./
+
 # Copy base TypeScript config (server tsconfig extends this)
 COPY tsconfig.base.json ./
 
