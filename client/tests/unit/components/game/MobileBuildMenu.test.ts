@@ -93,18 +93,18 @@ describe('MobileBuildMenu', () => {
 	});
 
 	describe('Category Selection', () => {
-		it('should highlight EXTRACTOR category by default', () => {
+		it('should highlight BUILDING category by default', () => {
 			const { container } = render(MobileBuildMenu, {
 				props: mockProps
 			});
 
 			const categoryTabs = container.querySelectorAll('[role="tab"]');
-			const extractorTab = Array.from(categoryTabs).find((tab) =>
-				tab.textContent?.includes('EXTRACTOR')
+			const buildingTab = Array.from(categoryTabs).find((tab) =>
+				tab.textContent?.includes('BUILDING')
 			);
 
 			// Component uses aria-selected="true" instead of 'active' class
-			expect(extractorTab?.getAttribute('aria-selected')).toBe('true');
+			expect(buildingTab?.getAttribute('aria-selected')).toBe('true');
 		});
 
 		it('should switch categories when tab is clicked', async () => {

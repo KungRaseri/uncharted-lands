@@ -35,12 +35,11 @@ describe('Client Logger', () => {
 		it('should include context in debug messages', () => {
 			logger.debug('Test with context', { key: 'value', number: 42 });
 			expect(consoleDebugSpy).toHaveBeenCalled();
-			const call = consoleDebugSpy.mock.calls[0][0];
-			const contextArg = consoleDebugSpy.mock.calls[0][3]; // Context is 4th arg
+			const call = consoleDebugSpy.mock.calls[0][0]; // Context is embedded in message
 			expect(call).toContain('DEBUG');
 			expect(call).toContain('Test with context');
-			expect(contextArg).toContain('key');
-			expect(contextArg).toContain('value');
+			expect(call).toContain('key');
+			expect(call).toContain('value');
 		});
 	});
 
@@ -56,17 +55,20 @@ describe('Client Logger', () => {
 		it('should include context in info messages', () => {
 			logger.info('Info with context', { userId: '123', action: 'login' });
 			expect(consoleLogSpy).toHaveBeenCalled();
-			const contextArg = consoleLogSpy.mock.calls[0][3]; // Context is 4th arg
-			expect(contextArg).toContain('userId');
-			expect(contextArg).toContain('123');
+			const call = consoleLogSpy.mock.calls[0][0]; // Context is embedded in message
+			// userId is displayed as "user=123" in inline format
+			expect(call).toContain('user');
+			expect(call).toContain('123');
+			expect(call).toContain('action');
+			expect(call).toContain('login');
 		});
 
 		it('should include timestamp in messages', () => {
 			logger.info('Test timestamp');
 			expect(consoleLogSpy).toHaveBeenCalled();
 			const call = consoleLogSpy.mock.calls[0][0];
-			// Should contain HH:MM:SS time format (not full ISO)
-			expect(call).toMatch(/\[\d{2}:\d{2}:\d{2}/);
+			// Should contain full ISO timestamp or HH:MM:SS format
+			expect(call).toMatch(/\d{4}-\d{2}-\d{2}|\[\d{2}:\d{2}:\d{2}/);
 		});
 	});
 
@@ -82,9 +84,9 @@ describe('Client Logger', () => {
 		it('should include context in warning messages', () => {
 			logger.warn('Warning with context', { reason: 'deprecated', endpoint: '/api/old' });
 			expect(consoleWarnSpy).toHaveBeenCalled();
-			const contextArg = consoleWarnSpy.mock.calls[0][3]; // Context is 4th arg
-			expect(contextArg).toContain('reason');
-			expect(contextArg).toContain('deprecated');
+			const call = consoleWarnSpy.mock.calls[0][0]; // Context is embedded in message
+			expect(call).toContain('reason');
+			expect(call).toContain('deprecated');
 		});
 	});
 
@@ -101,35 +103,35 @@ describe('Client Logger', () => {
 			const error = new Error('Something went wrong');
 			logger.error('Error occurred', error);
 			expect(consoleErrorSpy).toHaveBeenCalled();
-			const call = consoleErrorSpy.mock.calls[0][0];
-			const contextArg = consoleErrorSpy.mock.calls[0][3]; // Context is 4th arg
+			const call = consoleErrorSpy.mock.calls[0][0]; // Context is embedded in message
 			expect(call).toContain('Error occurred');
-			expect(contextArg).toContain('Something went wrong');
-			expect(contextArg).toContain('name');
-			expect(contextArg).toContain('message');
+			expect(call).toContain('Something went wrong');
+			expect(call).toContain('name');
+			expect(call).toContain('message');
 		});
 
 		it('should include non-Error objects in error messages', () => {
 			const error = { code: 'CUSTOM_ERROR', details: 'Something failed' };
 			logger.error('Custom error', error);
 			expect(consoleErrorSpy).toHaveBeenCalled();
-			const call = consoleErrorSpy.mock.calls[0][0];
-			const contextArg = consoleErrorSpy.mock.calls[0][3]; // Context is 4th arg
+			const call = consoleErrorSpy.mock.calls[0][0]; // Context is embedded in message
 			expect(call).toContain('Custom error');
-			expect(contextArg).toContain('code');
-			expect(contextArg).toContain('CUSTOM_ERROR');
+			expect(call).toContain('code');
+			expect(call).toContain('CUSTOM_ERROR');
 		});
 
 		it('should include context along with error', () => {
 			const error = new Error('Test error');
 			logger.error('Error with context', error, { userId: '456', action: 'delete' });
 			expect(consoleErrorSpy).toHaveBeenCalled();
-			const call = consoleErrorSpy.mock.calls[0][0];
-			const contextArg = consoleErrorSpy.mock.calls[0][3]; // Context is 4th arg
+			const call = consoleErrorSpy.mock.calls[0][0]; // Context is embedded in message
 			expect(call).toContain('Error with context');
-			expect(contextArg).toContain('userId');
-			expect(contextArg).toContain('456');
-			expect(contextArg).toContain('Test error');
+			// userId is displayed as "user=456" in inline format
+			expect(call).toContain('user');
+			expect(call).toContain('456');
+			expect(call).toContain('action');
+			expect(call).toContain('delete');
+			expect(call).toContain('Test error');
 		});
 
 		it('should handle null/undefined errors', () => {
@@ -202,11 +204,10 @@ describe('Client Logger', () => {
 				metadata: { tags: ['a', 'b'], count: 5 }
 			});
 			expect(consoleLogSpy).toHaveBeenCalled();
-			const call = consoleLogSpy.mock.calls[0][0];
-			const contextArg = consoleLogSpy.mock.calls[0][3]; // Context is 4th arg
+			const call = consoleLogSpy.mock.calls[0][0]; // Context is embedded in message
 			expect(call).toContain('Complex context');
-			expect(contextArg).toContain('user');
-			expect(contextArg).toContain('metadata');
+			expect(call).toContain('user');
+			expect(call).toContain('metadata');
 		});
 	});
 

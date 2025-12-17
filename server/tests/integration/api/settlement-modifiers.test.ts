@@ -31,6 +31,7 @@ import {
 	cleanupTestChain,
 	type TestEntityChain,
 } from '../../helpers/integration-test-factory.js';
+import { MODIFIER_NAMES } from '../../../src/game/modifier-names.js';
 
 // Module-level helpers for tracking test chains across describe blocks
 let additionalChains: TestEntityChain[] = [];
@@ -98,7 +99,7 @@ describe('Settlement Modifiers API', () => {
 
 			// Should contain FOOD_PRODUCTION modifier from Farm
 			const foodModifier = response.body.modifiers.find(
-				(m: any) => m.modifierType === 'FOOD_PRODUCTION'
+				(m: any) => m.modifierType === MODIFIER_NAMES.FOOD_PRODUCTION
 			);
 			expect(foodModifier).toBeDefined();
 			expect(Number(foodModifier.totalValue)).toBeGreaterThan(0);
@@ -123,7 +124,7 @@ describe('Settlement Modifiers API', () => {
 
 			// Then: contributingStructures should include the Farm
 			const foodModifier = response.body.modifiers.find(
-				(m: any) => m.modifierType === 'FOOD_PRODUCTION'
+				(m: any) => m.modifierType === MODIFIER_NAMES.FOOD_PRODUCTION
 			);
 			expect(foodModifier).toBeDefined();
 			expect(Array.isArray(foodModifier.contributingStructures)).toBe(true);
@@ -167,7 +168,7 @@ describe('Settlement Modifiers API', () => {
 
 			// Should have FOOD_PRODUCTION modifier
 			const foodModifier = response.body.modifiers.find(
-				(m: any) => m.modifierType === 'FOOD_PRODUCTION'
+				(m: any) => m.modifierType === MODIFIER_NAMES.FOOD_PRODUCTION
 			);
 			expect(foodModifier).toBeDefined();
 			expect(Number(foodModifier.totalValue)).toBeGreaterThan(0);
@@ -248,7 +249,7 @@ describe('Settlement Modifier Aggregation (Lifecycle)', () => {
 			expect(finalModifiers.length).toBeGreaterThan(0);
 
 			// Should contain FOOD_PRODUCTION modifier
-			const foodModifier = finalModifiers.find((m) => m.modifierType === 'FOOD_PRODUCTION');
+			const foodModifier = finalModifiers.find((m) => m.modifierType === MODIFIER_NAMES.FOOD_PRODUCTION);
 			expect(foodModifier).toBeDefined();
 			expect(Number(foodModifier!.totalValue)).toBeGreaterThan(0);
 		});
@@ -459,3 +460,4 @@ describe('Settlement Modifier Aggregation (Lifecycle)', () => {
 		});
 	});
 });
+

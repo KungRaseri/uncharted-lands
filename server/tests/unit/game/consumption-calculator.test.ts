@@ -14,6 +14,7 @@ import {
 	CONSUMPTION_RATES,
 	type Structure,
 } from '../../../src/game/consumption-calculator.js';
+import { MODIFIER_NAMES } from '../../../src/game/modifier-names.js';
 
 describe('Consumption Calculator', () => {
 	describe('GDD Compliance Verification', () => {
@@ -52,11 +53,11 @@ describe('Consumption Calculator', () => {
 			const structures: Structure[] = [
 				{
 					name: 'House',
-					modifiers: [{ name: 'Population Capacity', value: 5 }],
+					modifiers: [{ name: MODIFIER_NAMES.POPULATION_CAPACITY, value: 5 }],
 				},
 				{
 					name: 'House',
-					modifiers: [{ name: 'Population Capacity', value: 5 }],
+					modifiers: [{ name: MODIFIER_NAMES.POPULATION_CAPACITY, value: 5 }],
 				},
 			];
 
@@ -70,7 +71,7 @@ describe('Consumption Calculator', () => {
 					name: 'Farm',
 					modifiers: [
 						{ name: 'Food Production', value: 10 },
-						{ name: 'Population Capacity', value: 3 },
+						{ name: MODIFIER_NAMES.POPULATION_CAPACITY, value: 3 },
 					],
 				},
 			];
@@ -83,7 +84,7 @@ describe('Consumption Calculator', () => {
 			const structures: Structure[] = [
 				{
 					name: 'Disaster',
-					modifiers: [{ name: 'Population Capacity', value: -1000 }],
+					modifiers: [{ name: MODIFIER_NAMES.POPULATION_CAPACITY, value: -1000 }],
 				},
 			];
 
@@ -97,7 +98,7 @@ describe('Consumption Calculator', () => {
 			const structures: Structure[] = [
 				{
 					name: 'House',
-					modifiers: [{ name: 'Population Capacity', value: 5 }],
+					modifiers: [{ name: MODIFIER_NAMES.POPULATION_CAPACITY, value: 5 }],
 				},
 			];
 
@@ -188,11 +189,11 @@ describe('Consumption Calculator', () => {
 			const structures: Structure[] = [
 				{
 					name: 'Tavern',
-					modifiers: [{ name: 'Morale Boost', value: 10 }],
+					modifiers: [{ name: MODIFIER_NAMES.MORALE_BONUS, value: 10 }],
 				},
 				{
 					name: 'Theater',
-					modifiers: [{ name: 'Morale Boost', value: 15 }],
+					modifiers: [{ name: MODIFIER_NAMES.MORALE_BONUS, value: 15 }],
 				},
 			];
 
@@ -204,7 +205,7 @@ describe('Consumption Calculator', () => {
 			const structures: Structure[] = [
 				{
 					name: 'Paradise',
-					modifiers: [{ name: 'Morale Boost', value: 200 }],
+					modifiers: [{ name: MODIFIER_NAMES.MORALE_BONUS, value: 200 }],
 				},
 			];
 
@@ -216,7 +217,7 @@ describe('Consumption Calculator', () => {
 			const structures: Structure[] = [
 				{
 					name: 'Disaster',
-					modifiers: [{ name: 'Morale Boost', value: -200 }],
+					modifiers: [{ name: MODIFIER_NAMES.MORALE_BONUS, value: -200 }],
 				},
 			];
 
@@ -230,11 +231,11 @@ describe('Consumption Calculator', () => {
 			const structures: Structure[] = [
 				{
 					name: 'House',
-					modifiers: [{ name: 'Population Capacity', value: 5 }],
+					modifiers: [{ name: MODIFIER_NAMES.POPULATION_CAPACITY, value: 5 }],
 				},
 				{
 					name: 'Tavern',
-					modifiers: [{ name: 'Morale Boost', value: 10 }],
+					modifiers: [{ name: MODIFIER_NAMES.MORALE_BONUS, value: 10 }],
 				},
 			];
 

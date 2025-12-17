@@ -14,6 +14,7 @@ import {
 	getConsumptionSummary,
 } from '../../../src/game/consumption-calculator.js';
 import type { Resources } from '../../../src/game/resource-calculator.js';
+import { MODIFIER_NAMES } from '../../../src/game/modifier-names.js';
 
 describe('Consumption Integration Tests', () => {
 	describe('Consumption Over Time', () => {
@@ -209,7 +210,7 @@ describe('Consumption Integration Tests', () => {
 						{
 							id: 'mod-1',
 							structureId: 'house-1',
-							name: 'Population Capacity',
+							name: MODIFIER_NAMES.POPULATION_CAPACITY,
 							description: '+5 population capacity',
 							value: 5,
 						},
@@ -257,7 +258,7 @@ describe('Consumption Integration Tests', () => {
 						{
 							id: 'mod-1',
 							structureId: 'house-1',
-							name: 'Population Capacity',
+							name: MODIFIER_NAMES.POPULATION_CAPACITY,
 							description: '+5 population capacity',
 							value: 5,
 						},
@@ -273,7 +274,7 @@ describe('Consumption Integration Tests', () => {
 						{
 							id: 'mod-2',
 							structureId: 'house-2',
-							name: 'Population Capacity',
+							name: MODIFIER_NAMES.POPULATION_CAPACITY,
 							description: '+5 population capacity',
 							value: 5,
 						},
@@ -289,7 +290,7 @@ describe('Consumption Integration Tests', () => {
 						{
 							id: 'mod-3',
 							structureId: 'house-3',
-							name: 'Population Capacity',
+							name: MODIFIER_NAMES.POPULATION_CAPACITY,
 							description: '+5 population capacity',
 							value: 5,
 						},
@@ -420,3 +421,4 @@ describe('Consumption Integration Tests', () => {
 		});
 	});
 });
+
