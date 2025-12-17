@@ -59,6 +59,8 @@ jobs:
   # ============================================
   client-build:
     name: Client - Build
+    permissions:
+        contents: read
     runs-on: ubuntu-latest
     needs: [shared]
 
@@ -113,6 +115,8 @@ jobs:
 
   client-test:
     name: Client - Test
+    permissions:
+        contents: read
     runs-on: ubuntu-latest
     needs: [shared]
 
@@ -179,6 +183,8 @@ jobs:
   # ============================================
   server-build:
     name: Server - Build
+    permissions:
+        contents: read
     runs-on: ubuntu-latest
     needs: [shared]
 
@@ -240,6 +246,8 @@ jobs:
 
   server-test:
     name: Server - Test
+    permissions:
+        contents: read
     runs-on: ubuntu-latest
     needs: [shared]
 
@@ -320,6 +328,8 @@ jobs:
   # ============================================
   sonarcloud-client:
     name: SonarCloud - Client
+    permissions:
+        contents: read
     runs-on: ubuntu-latest
     needs: [client-test]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
@@ -349,6 +359,8 @@ jobs:
   # ============================================
   sonarcloud-server:
     name: SonarCloud - Server
+    permissions:
+        contents: read
     runs-on: ubuntu-latest
     needs: [server-test]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
