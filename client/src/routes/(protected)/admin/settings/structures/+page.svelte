@@ -148,7 +148,7 @@
 						<div>
 							<span class="text-surface-600 dark:text-surface-400">Production:</span>
 							<span class="font-mono text-xs ml-2">
-								{formatResources(structure.baseProduction as Record)}</span
+								{formatResources(structure.baseProduction as Record<string, number | undefined>)}</span
 							>
 						</div>
 					{/if}
@@ -175,7 +175,7 @@
 					<div>
 						<span class="text-surface-600 dark:text-surface-400">Cost:</span>
 						<span class="font-mono text-xs ml-2">
-							{formatResources((structure.baseCost || structure.costs) as Record)}
+							{formatResources((structure.baseCost || structure.costs) as Record<string, number | undefined>)}
 						</span>
 					</div>
 				</div>
