@@ -50,14 +50,16 @@ COPY tsconfig.base.json ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/shared ./shared
 
+# Copy server package.json to maintain workspace structure
+COPY server/package.json ./server/
+
 # Copy server source code and config files
 COPY server/ ./server/
 
 # Build TypeScript to JavaScript
-# Set NODE_PATH to include parent node_modules for type resolution
+# Explicitly tell TypeScript where to find type definitions
 WORKDIR /app/server
-ENV NODE_PATH=/app/node_modules
-RUN npm run build
+RUN npx tsc --typeRoots ../node_modules/@types,./node_modules/@types
 # Stage 4: Production dependencies
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
