@@ -245,7 +245,12 @@ jobs:
 
       - name: Install server dependencies
         working-directory: ./server
-        run: npm ci
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Reinstall platform-specific native binaries for Linux CI
+          rm -rf node_modules/rollup node_modules/@rollup
+          npm install --no-save rollup
 
       - name: Type check server
         run: npm run check:server
@@ -328,7 +333,12 @@ jobs:
 
       - name: Install server dependencies
         working-directory: ./server
-        run: npm ci
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Reinstall platform-specific native binaries for Linux CI
+          rm -rf node_modules/rollup node_modules/@rollup
+          npm install --no-save rollup
 
       - name: Setup database schema
         working-directory: ./server
