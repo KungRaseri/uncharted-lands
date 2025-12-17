@@ -34,14 +34,14 @@ COPY shared/package.json ./shared/
 COPY --from=shared-builder /app/shared/dist ./shared/dist/
 
 # Install all workspace dependencies (including dev dependencies for build stage)
-RUN npm ci
+RUN npm ci && npm install --legacy-peer-deps
 
 # Stage 3: Builder
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy root package.json for workspace scripts
-COPY package.json ./
+# Copy root package files for npm ci in server
+COPY package.json package-lock.json ./
 
 # Copy base TypeScript config (server tsconfig extends this)
 COPY tsconfig.base.json ./
@@ -57,11 +57,12 @@ COPY server/package.json ./server/
 COPY server/ ./server/
 
 # Build TypeScript to JavaScript
-# Create symlink to parent node_modules so TypeScript can find @types
+# Copy lockfile and install dependencies locally for proper module resolution
 WORKDIR /app/server
-RUN ln -s ../node_modules node_modules && \
+RUN cp ../package-lock.json . && \
+    npm ci && \
     npm run build && \
-    rm -rf node_modules
+    rm package-lock.json
 # Stage 4: Production dependencies
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
