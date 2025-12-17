@@ -9,6 +9,7 @@
 
 import type { Page, APIRequestContext } from '@playwright/test';
 import { expect } from '@playwright/test';
+import crypto from 'node:crypto';
 
 /**
  * Test user credentials
@@ -195,7 +196,8 @@ export async function assertInputErrors(page: Page): Promise<void> {
  */
 export function generateUniqueEmail(prefix: string = 'test'): string {
 	const timestamp = Date.now();
-	const random = Math.random().toString(36).substring(7);
+	// Use crypto.randomBytes for secure random generation (GHSA-finding fix)
+	const random = crypto.randomBytes(4).toString('hex');
 	return `${prefix}.${timestamp}.${random}@test.local`;
 }
 

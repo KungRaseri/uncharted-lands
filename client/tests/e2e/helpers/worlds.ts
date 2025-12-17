@@ -4,6 +4,7 @@
  */
 
 import type { APIRequestContext } from '@playwright/test';
+import crypto from 'node:crypto';
 
 /**
  * Wait for world generation to complete
@@ -104,7 +105,8 @@ export async function createWorldViaAPI(
 		generate: true, // Enable server-side world generation
 		width: dimensions.width,
 		height: dimensions.height,
-		elevationSeed: worldData.seed || Math.floor(Math.random() * 1000000),
+		// Use crypto.randomInt for secure random seed generation (GHSA finding fix)
+		elevationSeed: worldData.seed || crypto.randomInt(0, 1000000),
 		worldTemplateType: 'STANDARD' // Use standard game template
 	};
 
