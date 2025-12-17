@@ -98,7 +98,7 @@
 					focus-visible:outline-3 focus-visible:outline-primary-300 dark:focus-visible:outline-primary-400 focus-visible:outline-offset-2"
 				onclick={() => (selectedCategory = category)}
 				role="tab"
-				aria-selected={String(selectedCategory === category)}
+				aria-selected={selectedCategory === category ? 'true' : 'false'}
 				aria-controls="category-{category}"
 				type="button"
 			>
