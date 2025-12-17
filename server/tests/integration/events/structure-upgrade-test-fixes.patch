@@ -1,0 +1,218 @@
+# Fixes for structure-upgrade.test.ts
+
+## Issue: Database schema requires explicit IDs for all entities
+
+All tables use `text('id').primaryKey()` with NO default value.
+Tests must provide explicit IDs using `createId()` from @paralleldrive/cuid2.
+
+## Required Changes:
+
+### 1. Profile insert (around line 61):
+**Missing**: `id` and `picture` fields
+
+**Replace this**:
+```typescript
+const [profile] = await db
+  .insert(profiles)
+  .values({
+    username: `test-upgrade-${Date.now()}`,
+    accountId: testAccountId,
+  })
+  .returning();
+testProfileId = profile.id;
+```
+
+**With this**:
+```typescript
+testProfileId = createId();
+await db
+  .insert(profiles)
+  .values({
+    id: testProfileId,
+    username: `test-upgrade-${Date.now()}`,
+    picture: 'https://example.com/avatar.jpg',
+    accountId: testAccountId,
+  });
+```
+
+### 2. Server insert (around line 73):
+**Missing**: `id` field
+
+**Replace this**:
+```typescript
+const [server] = await db
+  .insert(servers)
+  .values({
+    name: `Test Server Upgrade ${Date.now()}`,
+    hostname: 'localhost',
+    port: TEST_PORT,
+  })
+  .returning();
+testServerId = server.id;
+```
+
+**With this**:
+```typescript
+testServerId = createId();
+await db
+  .insert(servers)
+  .values({
+    id: testServerId,
+    name: `Test Server Upgrade ${Date.now()}`,
+    hostname: 'localhost',
+    port: TEST_PORT,
+  });
+```
+
+### 3. World insert (around line 86):
+**Issues**: Missing `id`, invalid field `seed` (should be `generationSeed`)
+
+**Replace this**:
+```typescript
+const [world] = await db
+  .insert(worlds)
+  .values({
+    name: `Test World Upgrade ${Date.now()}`,
+    serverId: testServerId,
+    seed: 'test-seed-upgrade',
+    size: 'SMALL',
+    status: 'READY',
+  })
+  .returning();
+testWorldId = world.id;
+```
+
+**With this**:
+```typescript
+testWorldId = createId();
+await db
+  .insert(worlds)
+  .values({
+    id: testWorldId,
+    name: `Test World Upgrade ${Date.now()}`,
+    serverId: testServerId,
+    generationSeed: 'test-seed-upgrade',
+    size: 'SMALL',
+    status: 'READY',
+  });
+```
+
+### 4. Settlement insert (around line 100):
+**Missing**: `id` field
+
+**Replace this**:
+```typescript
+const [settlement] = await db
+  .insert(settlements)
+  .values({
+    playerProfileId: testProfileId,
+    name: 'Test Settlement',
+    worldId: testWorldId,
+    tileId: null,
+  })
+  .returning();
+testSettlementId = settlement.id;
+```
+
+**With this**:
+```typescript
+testSettlementId = createId();
+await db
+  .insert(settlements)
+  .values({
+    id: testSettlementId,
+    playerProfileId: testProfileId,
+    name: 'Test Settlement',
+    worldId: testWorldId,
+    tileId: null,
+  });
+```
+
+### 5. Storage insert (around line 113):
+**Missing**: `id` field
+
+**Replace this**:
+```typescript
+const [storage] = await db
+  .insert(settlementStorage)
+  .values({
+    settlementId: testSettlementId,
+    food: 10000,
+    water: 10000,
+    wood: 10000,
+    stone: 10000,
+    ore: 10000,
+    capacity: 50000,
+    lastModified: new Date(),
+  })
+  .returning();
+testStorageId = storage.id;
+```
+
+**With this**:
+```typescript
+testStorageId = createId();
+await db
+  .insert(settlementStorage)
+  .values({
+    id: testStorageId,
+    settlementId: testSettlementId,
+    food: 10000,
+    water: 10000,
+    wood: 10000,
+    stone: 10000,
+    ore: 10000,
+    capacity: 50000,
+    lastModified: new Date(),
+  });
+```
+
+### 6. Also initialize testAccountId at the top of beforeAll:
+
+**Replace this**:
+```typescript
+beforeAll(async () => {
+  // Generate unique IDs
+  const uniqueId = Date.now();
+  testAccountId = `test-account-${uniqueId}`;
+```
+
+**With this**:
+```typescript
+beforeAll(async () => {
+  // Generate unique IDs using createId()
+  testAccountId = createId();
+  const uniqueId = Date.now();
+```
+
+### 7. Remove unused variable around line 50:
+
+Delete line `const [account] = await db` and just use:
+```typescript
+await db
+  .insert(accounts)
+  .values({
+    id: testAccountId,
+    email: `test-upgrade-${uniqueId}@example.com`,
+    passwordHash: 'test-hash',
+    userAuthToken: `test-token-${uniqueId}`,
+  });
+```
+
+## Summary of Changes:
+
+- Generate all IDs upfront using `createId()` (not `Date.now()`)
+- Provide explicit `id` field for all entity inserts
+- Add required `picture` field to profiles
+- Fix world `seed` → `generationSeed`
+- Remove `.returning()` calls since we pre-generate IDs
+- Remove unused variables
+
+## After applying these fixes:
+
+Run the tests:
+```bash
+npm test -- structure-upgrade.test.ts
+```
+
+All 8 tests should execute (may have other runtime issues to address).
