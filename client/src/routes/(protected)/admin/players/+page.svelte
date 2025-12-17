@@ -242,14 +242,15 @@
 											<span>View</span>
 										</a>
 
-									<div class="relative">
-										<button
-											type="button"
-											class="btn btn-sm preset-tonal-surface-500 rounded-md"
-											onclick={() => toggleDropdown(account.id)}
-										>
-											<EllipsisVertical size={16} />
-										</button>											{#if openDropdownId === account.id}
+										<div class="relative">
+											<button
+												type="button"
+												class="btn btn-sm preset-tonal-surface-500 rounded-md"
+												onclick={() => toggleDropdown(account.id)}
+											>
+												<EllipsisVertical size={16} />
+											</button>
+											{#if openDropdownId === account.id}
 												<div
 													class="absolute right-0 top-full mt-1 card preset-filled-surface-100-900 p-2 w-48 shadow-xl z-50"
 												>
