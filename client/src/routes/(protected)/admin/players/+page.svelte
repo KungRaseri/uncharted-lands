@@ -8,14 +8,8 @@
 		Mail,
 		Calendar,
 		User,
-		MoreVert													'class',
-													'text-primary-500'
-												);
-												svg.innerHTML =
-													'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>';
-												fallback.appendChild(svg);
-												parent?.appendChild(fallback);
-											}}
+		EllipsisVertical,
+		Ban,
 		Trash2,
 		UserCog
 	} from 'lucide-svelte';
@@ -254,7 +248,7 @@
 											class="btn btn-sm preset-tonal-surface-500 rounded-md"
 											onclick={() => toggleDropdown(account.id)}
 										>
-											<MoreVert size={16} />
+											<EllipsisVertical size={16} />
 										</button>											{#if openDropdownId === account.id}
 												<div
 													class="absolute right-0 top-full mt-1 card preset-filled-surface-100-900 p-2 w-48 shadow-xl z-50"
