@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "sveltekit",
-  "installCommand": "cd .. && npm ci && npm run build:shared && cd client && npm install @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu sass-embedded-linux-x64 --save-optional",
+  "installCommand": "cd .. && npm ci --include=dev && npm run build:shared && cd client && npm install @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu sass-embedded-linux-x64 --save-optional",
   "buildCommand": "npm run build"
 }
