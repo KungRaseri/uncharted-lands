@@ -1,12 +1,14 @@
 # GitHub Copilot Instructions for Uncharted Lands
 
-**⚠️ CRITICAL: This is a workspace with TWO separate repositories:**
-- `client/` - SvelteKit frontend (separate git repo)
-- `server/` - Node.js backend (separate git repo)
+**⚠️ IMPORTANT: This is a MONOREPO with THREE packages:**
+- `shared/` - Shared types and utilities package (`@uncharted-lands/shared`)
+- `client/` - SvelteKit frontend
+- `server/` - Node.js backend
 
-**Read BOTH repo-specific instructions:**
-- Client: `client/.github/copilot-instructions.md` (SvelteKit + Svelte 5 + Skeleton UI)
-- Server: `server/.github/copilot-instructions.md` (Node.js + Socket.IO + Drizzle ORM)
+**📚 Read package-specific instructions:**
+- **Shared Package**: `.github/copilot/shared-package.md` (How to add types, build workflow)
+- **Client**: `.github/copilot/client-specific.md` (SvelteKit + Svelte 5 + Skeleton UI)
+- **Server**: `.github/copilot/server-specific.md` (Node.js + Socket.IO + Drizzle ORM)
 
 **Game Design Documentation** (Centralized in Client Docs Wiki):
 - 📚 **Main GDD**: `client/docs/game-design/GDD-Monolith.md` - Complete game specifications

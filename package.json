@@ -1,0 +1,71 @@
+{
+  "name": "uncharted-lands-monorepo",
+  "version": "1.0.0",
+  "description": "Uncharted Lands - Multiplayer settlement-building game (Monorepo)",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "build": "npm run build:shared && npm run build:client && npm run build:server",
+    "build:shared": "cd shared && npm run build",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    
+    "dev": "concurrently --kill-others \"npm run dev:shared\" \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:shared": "cd shared && npm run build -- --watch",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    
+    "test": "npm run test:shared && npm run test:client && npm run test:server",
+    "test:shared": "cd shared && npm test",
+    "test:client": "cd client && npm run test:unit",
+    "test:server": "cd server && npm test",
+    "test:e2e": "cd client && npm run test:e2e",
+    
+    "lint": "npm run lint:client && npm run lint:server",
+    "lint:client": "cd client && npm run lint",
+    "lint:server": "cd server && npm run lint",
+    "lint:fix": "npm run lint:client -- --fix && npm run lint:server -- --fix",
+    
+    "check": "npm run check:shared && npm run check:client && npm run check:server",
+    "check:shared": "cd shared && npm run check",
+    "check:client": "cd client && npm run check",
+    "check:server": "cd server && npm run check",
+    
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    
+    "clean": "npm run clean:shared && npm run clean:client && npm run clean:server",
+    "clean:shared": "cd shared && rimraf dist node_modules",
+    "clean:client": "cd client && rimraf .svelte-kit build node_modules",
+    "clean:server": "cd server && rimraf dist node_modules",
+    
+    "install:all": "npm install && cd shared && npm install && cd ../client && npm install && cd ../server && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KungRaseri/uncharted-lands.git"
+  },
+  "keywords": [
+    "game",
+    "multiplayer",
+    "settlement",
+    "svelte",
+    "nodejs",
+    "socketio"
+  ],
+  "author": "KungRaseri",
+  "license": "MIT"
+}

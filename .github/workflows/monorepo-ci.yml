@@ -1,0 +1,360 @@
+name: Monorepo CI
+
+on:
+  push:
+    branches: ['main', 'development']
+  pull_request:
+    branches: ['main', 'development']
+
+jobs:
+  # ============================================
+  # Shared Package Build (runs first)
+  # ============================================
+  shared:
+    name: Shared Package
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true  # Checkout docs submodule
+          
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            shared/package-lock.json
+      
+      - name: Install root dependencies
+        run: npm ci
+      
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+      
+      - name: Type check shared package
+        run: npm run check:shared
+      
+      - name: Build shared package
+        run: npm run build:shared
+      
+      - name: Upload shared package build
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+          retention-days: 1
+
+  # ============================================
+  # Client Build & Test
+  # ============================================
+  client-build:
+    name: Client - Build
+    runs-on: ubuntu-latest
+    needs: [shared]
+    
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            shared/package-lock.json
+      
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+      
+      - name: Install root dependencies
+        run: npm ci
+      
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+      
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm ci
+      
+      - name: Type check client
+        run: npm run check:client
+      
+      - name: Build client
+        run: npm run build:client
+
+  client-test:
+    name: Client - Test
+    runs-on: ubuntu-latest
+    needs: [shared]
+    
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      PUBLIC_SENTRY_DSN: disabled
+      PUBLIC_API_URL: http://localhost:3001
+      PUBLIC_WS_URL: ws://localhost:3001
+      NODE_ENV: test
+    
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            shared/package-lock.json
+      
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+      
+      - name: Install root dependencies
+        run: npm ci
+      
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+      
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm ci
+      
+      - name: Run client unit tests with coverage
+        run: npm run test:client
+        continue-on-error: false
+      
+      - name: Upload client test coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-client
+          path: client/coverage/
+          retention-days: 30
+
+  # ============================================
+  # Server Build & Test
+  # ============================================
+  server-build:
+    name: Server - Build
+    runs-on: ubuntu-latest
+    needs: [shared]
+    
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            shared/package-lock.json
+      
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+      
+      - name: Install root dependencies
+        run: npm ci
+      
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+      
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm ci
+      
+      - name: Type check server
+        run: npm run check:server
+      
+      - name: Lint server
+        run: npm run lint:server
+      
+      - name: Build server
+        run: npm run build:server
+      
+      - name: Verify server build output
+        working-directory: ./server
+        run: |
+          if [ -d "dist" ]; then
+            echo "✅ Server build successful"
+            ls -la dist/
+          else
+            echo "❌ Build failed - dist/ directory not found"
+            exit 1
+          fi
+
+  server-test:
+    name: Server - Test
+    runs-on: ubuntu-latest
+    needs: [shared]
+    
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: uncharted-lands
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted-lands
+      NODE_ENV: test
+      PORT: 3001
+    
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            shared/package-lock.json
+      
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+      
+      - name: Install root dependencies
+        run: npm ci
+      
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+      
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm ci
+      
+      - name: Setup database schema
+        working-directory: ./server
+        run: npm run db:push
+      
+      - name: Run server tests
+        run: npm run test:server
+        continue-on-error: false
+      
+      - name: Upload server test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-server
+          path: server/test-results/
+          retention-days: 30
+
+  # ============================================
+  # SonarCloud Analysis (Client)
+  # ============================================
+  sonarcloud-client:
+    name: SonarCloud - Client
+    runs-on: ubuntu-latest
+    needs: [client-test]
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones disabled for SonarCloud
+          submodules: true
+      
+      - name: Download client test coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-client
+          path: client/coverage/
+      
+      - name: SonarCloud Scan - Client
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: client
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # ============================================
+  # SonarCloud Analysis (Server)
+  # ============================================
+  sonarcloud-server:
+    name: SonarCloud - Server
+    runs-on: ubuntu-latest
+    needs: [server-test]
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones disabled for SonarCloud
+          submodules: true
+      
+      - name: SonarCloud Scan - Server
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: server
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
