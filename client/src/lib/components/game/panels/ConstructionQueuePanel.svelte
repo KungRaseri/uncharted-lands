@@ -29,7 +29,6 @@
 		constructionQueue?: ConstructionProject[];
 	}
 
-	// eslint-disable-next-line no-unused-vars
 	let { settlementId: _settlementId, constructionQueue = [] }: Props = $props();
 
 	// Sort queue by position

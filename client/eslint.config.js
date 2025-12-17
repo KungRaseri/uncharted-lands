@@ -85,5 +85,16 @@ export default [
 			...tsPlugin.configs.recommended.rules
 		}
 	},
+	// Relax rules for test files
+	{
+		files: ['tests/**/*.ts', 'tests/**/*.js'],
+		rules: {
+			'@typescript-eslint/no-explicit-any': 'off', // Allow 'any' in tests for mocking
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+			]
+		}
+	},
 	prettierConfig
 ];

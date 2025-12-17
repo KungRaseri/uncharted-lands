@@ -6,6 +6,23 @@
 import type { Page, APIRequestContext } from '@playwright/test';
 import { expect } from '@playwright/test';
 
+// Type for disaster warning event data
+type DisasterWarningData = {
+	disasterId: string;
+	type: string;
+	severity: string;
+	warningTime: number;
+	[key: string]: unknown;
+};
+
+// Extended window type for test helpers
+interface WindowWithSocket extends Window {
+	socket?: {
+		once: (event: string, callback: (data: unknown) => void) => void;
+	};
+	__disasterWarningPromise?: Promise<DisasterWarningData>;
+}
+
 // ============================================================================
 // TEST DISASTER CONFIGURATIONS
 // ============================================================================
@@ -115,16 +132,20 @@ export async function triggerDisasterWarning(
  * @param timeoutMs - Maximum time to wait
  * @returns Warning data from event
  */
-export async function waitForDisasterWarning(page: Page, timeoutMs: number = 65000): Promise<any> {
+export async function waitForDisasterWarning(
+	page: Page,
+	timeoutMs: number = 65000
+): Promise<DisasterWarningData> {
 	// Set up event listener before waiting
 	await page.evaluate(() => {
-		if (!(window as any).__disasterWarningPromise) {
-			(window as any).__disasterWarningPromise = new Promise((resolve) => {
-				const socket = (window as any).socket;
+		const win = window as unknown as WindowWithSocket;
+		if (!win.__disasterWarningPromise) {
+			win.__disasterWarningPromise = new Promise((resolve) => {
+				const socket = win.socket;
 				if (socket) {
-					socket.once('disaster-warning', (data: any) => {
+					socket.once('disaster-warning', (data: unknown) => {
 						console.log('[E2E] Received disaster-warning event:', data);
-						resolve(data);
+						resolve(data as DisasterWarningData);
 					});
 				}
 			});
@@ -133,8 +154,9 @@ export async function waitForDisasterWarning(page: Page, timeoutMs: number = 650
 
 	// Wait for the promise with timeout
 	const result = await page.evaluate((timeout) => {
+		const win = window as unknown as WindowWithSocket;
 		return Promise.race([
-			(window as any).__disasterWarningPromise,
+			win.__disasterWarningPromise,
 			new Promise((_, reject) =>
 				setTimeout(
 					() =>
@@ -147,7 +169,7 @@ export async function waitForDisasterWarning(page: Page, timeoutMs: number = 650
 		]);
 	}, timeoutMs);
 
-	return result;
+	return result as DisasterWarningData;
 }
 
 /**
@@ -226,11 +248,12 @@ export async function waitForStructureDamage(
 					reject(new Error(`Structure ${id} was not damaged within ${timeout}ms`));
 				}, timeout);
 
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(window as any).socket?.once('structure-damaged', (data: any) => {
-					if (data.structureId === id) {
+				const win = window as unknown as WindowWithSocket;
+				win.socket?.once('structure-damaged', (data: unknown) => {
+					const damageData = data as { structureId: string; health: number };
+					if (damageData.structureId === id) {
 						clearTimeout(timer);
-						resolve({ health: data.health });
+						resolve({ health: damageData.health });
 					}
 				});
 			});

@@ -1,4 +1,4 @@
-import { test as setup, expect } from '@playwright/test';
+import { test as setup } from '@playwright/test';
 // TODO: Update this test file to use REST API instead of Prisma
 // import { PrismaClient } from '@prisma/client';
 

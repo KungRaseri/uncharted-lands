@@ -112,8 +112,8 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
 	updateRole: async ({ request }) => {
 		const formData = await request.formData();
-		const roleId = formData.get('roleId') as string;
-		const permissions = formData.getAll('permissions') as string[];
+		const _roleId = formData.get('roleId') as string;
+		const _permissions = formData.getAll('permissions') as string[];
 
 		// This would update the role configuration in the database
 		// For now, since roles are defined in the schema, this is a placeholder
@@ -125,9 +125,9 @@ export const actions: Actions = {
 
 	createRole: async ({ request }) => {
 		const formData = await request.formData();
-		const name = formData.get('name') as string;
-		const description = formData.get('description') as string;
-		const permissions = formData.getAll('permissions') as string[];
+		const _name = formData.get('name') as string;
+		const _description = formData.get('description') as string;
+		const _permissions = formData.getAll('permissions') as string[];
 
 		// This would create a new role in the database
 

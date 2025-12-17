@@ -144,11 +144,7 @@
 
 <!-- Delete Confirmation Modal -->
 {#if deleteModalOpen && serverToDelete}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="modal-backdrop" onclick={closeDeleteModal} role="presentation">
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="modal preset-filled-surface-50-950 w-full max-w-md"
 			onclick={(e) => e.stopPropagation()}

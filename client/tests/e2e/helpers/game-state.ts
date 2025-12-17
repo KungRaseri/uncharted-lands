@@ -6,6 +6,18 @@
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
+// Type for window with Vite import.meta
+interface WindowWithImportMeta extends Window {
+	import?: {
+		meta?: {
+			env?: {
+				DEV?: boolean;
+				MODE?: string;
+			};
+		};
+	};
+}
+
 // ============================================================================
 // SOCKET.IO HELPERS
 // ============================================================================

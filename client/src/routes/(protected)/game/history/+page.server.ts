@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals: _locals }) => {
 	// Placeholder - will implement activity history system later
 	return {
 		activities: [],
