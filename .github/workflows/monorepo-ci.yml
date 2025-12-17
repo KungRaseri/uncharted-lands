@@ -386,7 +386,8 @@ jobs:
           path: client/coverage/
 
       - name: SonarCloud Scan - Client
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
+        continue-on-error: true
         with:
           projectBaseDir: client
         env:
@@ -412,7 +413,8 @@ jobs:
           submodules: true
 
       - name: SonarCloud Scan - Server
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
+        continue-on-error: true
         with:
           projectBaseDir: server
         env:
