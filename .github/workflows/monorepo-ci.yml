@@ -344,6 +344,10 @@ jobs:
         working-directory: ./server
         run: npx drizzle-kit push --force
 
+      - name: Seed database
+        working-directory: ./server
+        run: npm run db:seed
+
       - name: Run server tests
         run: npm run test:server
         continue-on-error: false
