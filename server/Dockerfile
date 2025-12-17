@@ -26,10 +26,11 @@ WORKDIR /app
 
 # Copy root package files for workspace setup
 COPY package.json package-lock.json ./
+COPY tsconfig.base.json ./
 
 # Copy server and shared package files
 COPY server/package.json ./server/
-COPY --from=shared-builder /app/shared/package.json ./shared/
+COPY shared/package.json ./shared/
 COPY --from=shared-builder /app/shared/dist ./shared/dist/
 
 # Install all workspace dependencies (including dev dependencies for build stage)
@@ -62,7 +63,7 @@ COPY package.json package-lock.json ./
 
 # Copy server and shared package files
 COPY server/package.json ./server/
-COPY --from=shared-builder /app/shared/package.json ./shared/
+COPY shared/package.json ./shared/
 COPY --from=shared-builder /app/shared/dist ./shared/dist/
 
 # Install only production dependencies
