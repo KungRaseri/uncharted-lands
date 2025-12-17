@@ -20,7 +20,7 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"prepare": "node -e \"try { require('fs').statSync('.git') && require('child_process').execSync('husky', {stdio:'inherit'}) } catch (e) {}\"",
-		"postinstall": "node scripts/patch-skeleton.js || true"
+		"postinstall": "node ../scripts/client/patch-skeleton.js || exit 0"
 	},
 	"lint-staged": {
 		"*.{ts,svelte,json,md,css}": [
@@ -48,6 +48,7 @@
 		"@types/bcrypt": "^5.0.2",
 		"@types/node": "^22.8.6",
 		"@types/node-cron": "^3.0.11",
+		"@eslint/js": "^9.39.2",
 		"@typescript-eslint/eslint-plugin": "^8.11.0",
 		"@typescript-eslint/parser": "^8.11.0",
 		"@vitest/coverage-v8": "^4.0.7",
