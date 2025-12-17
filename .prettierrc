@@ -1,0 +1,25 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "useTabs": true,
+  "printWidth": 100,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": ["*.json", "*.jsonc"],
+      "options": {
+        "useTabs": false
+      }
+    },
+    {
+      "files": ["*.md"],
+      "options": {
+        "useTabs": false,
+        "proseWrap": "always"
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getRegionStats, formatRegionTileTooltip } from '../../../src/lib/utils/region-stats';
-import type { RegionStats } from '../../../src/lib/types/game';
+import type { RegionStats } from '@uncharted-lands/shared';
 
 describe('Region Statistics Utilities', () => {
 	describe('getRegionStats', () => {

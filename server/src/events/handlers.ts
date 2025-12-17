@@ -19,7 +19,7 @@ import type {
 	WorldDataResponse,
 	RequestRegionData,
 	RegionDataResponse,
-} from '../types/socket-events.js';
+} from '@uncharted-lands/shared';
 import { logger } from '../utils/logger.js';
 import {
 	getSettlementWithDetails,

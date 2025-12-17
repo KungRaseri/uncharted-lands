@@ -40,7 +40,7 @@ import type {
 	DisasterImpactEndData,
 	DisasterAftermathData,
 	DisasterResolvedData,
-} from '../types/socket-events.js';
+} from '@uncharted-lands/shared';
 
 /**
  * Process all active disasters
