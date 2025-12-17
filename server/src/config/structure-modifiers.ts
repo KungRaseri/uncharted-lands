@@ -13,6 +13,8 @@
  * @see server/src/game/modifier-calculator.ts
  */
 
+import { MODIFIER_NAMES } from '../game/modifier-names.js';
+
 export type ScalingFormula = 'LINEAR' | 'EXPONENTIAL' | 'DIMINISHING';
 
 export interface StructureModifierConfig {
@@ -48,14 +50,14 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	FARM: [
 		{
-			type: 'FOOD_PRODUCTION',
+			type: MODIFIER_NAMES.FOOD_PRODUCTION,
 			name: 'Food Production',
 			description: 'Increases food production per tick',
 			baseValue: 10,
 			formula: 'LINEAR',
 		},
 		{
-			type: 'HAPPINESS',
+			type: MODIFIER_NAMES.HAPPINESS_BONUS,
 			name: 'Happiness Bonus',
 			description: 'Provides happiness to settlement from food security',
 			baseValue: 2,
@@ -134,7 +136,7 @@ export const STRUCTURE_BASE_BONUSES: Record<string, StructureModifierConfig[]> =
 
 	TENT: [
 		{
-			type: 'POPULATION_CAPACITY',
+			type: MODIFIER_NAMES.POPULATION_CAPACITY,
 			name: 'Population Capacity',
 			description: 'Increases maximum population',
 			baseValue: 2,
