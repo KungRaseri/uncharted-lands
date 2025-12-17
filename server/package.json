@@ -21,7 +21,7 @@
     "prepare": "node -e \"try { require('fs').statSync('.git') && require('child_process').execSync('husky', {stdio:'inherit'}) } catch (e) {}\"",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:migrate:run": "tsx scripts/migrate.ts",
+    "db:migrate:run": "tsx ../scripts/server/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed.ts"
