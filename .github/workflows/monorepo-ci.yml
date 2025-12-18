@@ -497,6 +497,8 @@ jobs:
           # Workaround for npm optional dependencies bug
           rm -rf node_modules/rollup node_modules/@rollup
           npm install --no-save rollup
+          # Install drizzle-kit for database schema setup
+          npm install --no-save drizzle-kit
 
       - name: Install client dependencies
         working-directory: ./client
@@ -508,15 +510,7 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        run: |
-          # Verify drizzle-kit is installed
-          if [ -f "./node_modules/.bin/drizzle-kit" ]; then
-            echo "✅ Using local drizzle-kit"
-            ./node_modules/.bin/drizzle-kit push --force
-          else
-            echo "⚠️ Local drizzle-kit not found, using npx"
-            npx --yes drizzle-kit push --force
-          fi
+        run: ./node_modules/.bin/drizzle-kit push --force
 
       - name: Seed database
         working-directory: ./server
