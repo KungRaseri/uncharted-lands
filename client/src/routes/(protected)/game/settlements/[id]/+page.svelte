@@ -12,6 +12,7 @@
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
 	import { structuresStore } from '$lib/stores/game/structures.svelte';
+	import { disasterStore } from '$lib/stores/game/disaster.svelte';
 	import { socketStore } from '$lib/stores/game/socket';
 	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -37,6 +38,12 @@
 	onMount(() => {
 		console.log('[SETTLEMENT PAGE] Initializing stores from server data...');
 		console.log('[SETTLEMENT PAGE] Settlement data:', data.settlement);
+
+		// Initialize structures store socket listeners
+		structuresStore.initialize();
+		
+		// Initialize disaster store socket listeners
+		disasterStore.initialize();
 
 		// Initialize stores from server-side loaded data
 		if (data.settlement) {
@@ -131,6 +138,9 @@
 				);
 				socket.on('structure:built', handleStructureBuilt);
 				listenerAttached = true;
+
+				// Initialize disaster store listeners now that socket is connected
+				disasterStore.initialize();
 			}
 		});
 

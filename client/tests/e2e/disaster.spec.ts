@@ -6,7 +6,6 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { TEST_SETTLEMENTS } from './helpers/settlements';
 import {
 	getPopulation,
 	getHappiness,
@@ -33,6 +32,7 @@ import {
 	generateUniqueEmail,
 	assertRedirectedToGettingStarted
 } from './auth/auth.helpers';
+import { ensureProfileExists } from './helpers/profile';
 import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
 
 // ============================================================================
@@ -99,7 +99,24 @@ test.describe('Disaster Lifecycle Flow', () => {
 		// Store cookie value for cleanup in afterEach
 		sessionCookieValue = sessionCookie.value;
 
-		// 4. Clean up old test worlds before creating new ones
+		// 4. Get account information
+		const accountResponse = await request.get(`${apiUrl}/account/me`, {
+			headers: {
+				Cookie: `session=${sessionCookie.value}`
+			}
+		});
+
+		if (!accountResponse.ok()) {
+			throw new Error(
+				`Failed to get account: ${accountResponse.status()} ${await accountResponse.text()}`
+			);
+		}
+
+		const account = await accountResponse.json();
+		const accountId = account.id;
+		const username = account.profile?.username || testUserEmail;
+
+		// 5. Clean up old test worlds before creating new ones
 		console.log('[E2E] Cleaning up old test worlds...');
 		try {
 			const worldsResponse = await request.get(`${apiUrl}/worlds`, {
@@ -133,23 +150,6 @@ test.describe('Disaster Lifecycle Flow', () => {
 			console.warn('[E2E] Failed to clean up old test worlds:', error);
 			// Continue with test - cleanup failure is not critical
 		}
-
-		// 5. Get account information
-		const accountResponse = await request.get(`${apiUrl}/account/me`, {
-			headers: {
-				Cookie: `session=${sessionCookie.value}`
-			}
-		});
-
-		if (!accountResponse.ok()) {
-			throw new Error(
-				`Failed to get account: ${accountResponse.status()} ${await accountResponse.text()}`
-			);
-		}
-
-		const account = await accountResponse.json();
-		const accountId = account.id;
-		const username = account.profile?.username || testUserEmail;
 
 		// 6. Get or create test server
 		const serversResponse = await request.get(`${apiUrl}/servers`, {
@@ -218,28 +218,21 @@ test.describe('Disaster Lifecycle Flow', () => {
 			tileCount: world.tileCount
 		});
 
-		// 8. Create test settlement via API
-		const settlementResponse = await request.post(`${apiUrl}/settlements`, {
-			headers: {
-				Cookie: `session=${sessionCookie.value}`
-			},
-			data: {
-				worldId: testWorldId,
-				serverId: testServer.id,
-				accountId: accountId,
-				username: username,
-				name: TEST_SETTLEMENTS.BASIC.name
-			}
-		});
+		// 8. Ensure profile exists and create test settlement
+		// Using ensureProfileExists which creates both profile and settlement in one call
+		console.log('[E2E] Creating profile and settlement...');
+		const { profile, settlementId } = await ensureProfileExists(
+			request,
+			sessionCookie.value,
+			accountId,
+			testWorldId,
+			testServer.id,
+			username
+		);
 
-		if (!settlementResponse.ok()) {
-			throw new Error(
-				`Failed to create settlement: ${settlementResponse.status()} ${await settlementResponse.text()}`
-			);
-		}
-
-		const settlement = await settlementResponse.json();
-		testSettlementId = settlement.id;
+		testSettlementId = settlementId;
+		console.log('[E2E] Profile created:', profile.id);
+		console.log('[E2E] Using settlement:', testSettlementId);
 
 		// Navigate to settlement and wait for page load
 		await page.goto(`/game/settlements/${testSettlementId}`, { waitUntil: 'load' });

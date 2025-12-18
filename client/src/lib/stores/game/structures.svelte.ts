@@ -160,15 +160,18 @@ function initializeListeners(socket: Socket) {
 	console.log('[StructuresStore] Listeners initialized successfully');
 }
 
-// Subscribe to socket connection state and initialize listeners
-$effect(() => {
+/**
+ * Initialize the store by setting up socket listeners
+ * Should be called from a component context (e.g., in $effect)
+ */
+function initialize() {
 	const socket = socketStore.getSocket();
 
 	if (socket && !listenersInitialized) {
-		console.log('[StructuresStore] Socket available, initializing listeners');
+		console.log('[StructuresStore] Initializing socket listeners');
 		initializeListeners(socket);
 	}
-});
+}
 
 /**
  * Initialize structures for a settlement from initial data
@@ -265,6 +268,7 @@ export const structuresStore = {
 	},
 
 	// Initialization
+	initialize,
 	initializeStructures,
 
 	// Getters

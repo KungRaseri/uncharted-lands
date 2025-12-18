@@ -6,6 +6,7 @@
 	import { socketStore, gameSocket } from '$lib/stores/game/socket';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
+	import { disasterStore } from '$lib/stores/game/disaster.svelte';
 	import { exposeSocketForTesting } from '$lib/utils/environment';
 	import { onMount } from 'svelte';
 
@@ -28,6 +29,7 @@
 				const socket = socketStore.getSocket();
 				if (socket && typeof window !== 'undefined') {
 					(window as any).__socket = socket;
+					(window as any).disasterStore = disasterStore;
 					console.log('[GAME LAYOUT] Socket exposed to window for E2E testing');
 				}
 			}

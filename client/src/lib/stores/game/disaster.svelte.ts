@@ -76,10 +76,31 @@ class DisasterStore {
 	emergencyRepairTimeRemaining = $state<number | null>(null); // milliseconds
 
 	private countdownInterval: ReturnType<typeof setInterval> | null = null;
+	private listenersInitialized = false;
 
 	constructor() {
-		this.setupSocketListeners();
 		this.startCountdownTimer();
+	}
+
+	/**
+	 * Initialize Socket.IO listeners.
+	 * MUST be called from component context (e.g., onMount) after socket is connected.
+	 * Svelte 5 requires socket listeners to be set up in component lifecycle, not at module level.
+	 */
+	initialize() {
+		if (this.listenersInitialized) {
+			console.log('[DISASTER] Listeners already initialized, skipping');
+			return;
+		}
+
+		const socket = socketStore.getSocket();
+		if (!socket) {
+			console.warn('[DISASTER] Socket not available yet, listeners will be initialized when socket connects');
+			return;
+		}
+
+		this.setupSocketListeners();
+		this.listenersInitialized = true;
 	}
 
 	private setupSocketListeners() {

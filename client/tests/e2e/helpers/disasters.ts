@@ -136,37 +136,40 @@ export async function waitForDisasterWarning(
 	page: Page,
 	timeoutMs: number = 65000
 ): Promise<DisasterWarningData> {
-	// Set up event listener before waiting
-	await page.evaluate(() => {
-		const win = window as unknown as WindowWithSocket;
-		if (!win.__disasterWarningPromise) {
-			win.__disasterWarningPromise = new Promise((resolve) => {
-				const socket = win.socket;
-				if (socket) {
-					socket.once('disaster-warning', (data: unknown) => {
-						console.log('[E2E] Received disaster-warning event:', data);
-						resolve(data as DisasterWarningData);
+	// Poll the disaster store state to check if warning was received
+	const result = await page.evaluate(async (timeout) => {
+		const win = window as any;
+		const startTime = Date.now();
+
+		// Poll disasterStore.warningActive every 100ms
+		return new Promise((resolve, reject) => {
+			const pollInterval = setInterval(() => {
+				const elapsed = Date.now() - startTime;
+
+				// Check if timeout exceeded
+				if (elapsed > timeout) {
+					clearInterval(pollInterval);
+					reject(new Error(`Timeout waiting for disaster-warning after ${timeout}ms`));
+					return;
+				}
+
+				// Check if disaster store has received warning
+				const disasterStore = win.disasterStore;
+				if (disasterStore && disasterStore.warningActive && disasterStore.activeDisaster) {
+					clearInterval(pollInterval);
+					console.log('[E2E] Disaster warning detected from store:', disasterStore.activeDisaster);
+					resolve({
+						disasterId: disasterStore.activeDisaster.id,
+						type: disasterStore.activeDisaster.type,
+						severity: disasterStore.activeDisaster.severity,
+						severityLevel: disasterStore.activeDisaster.severityLevel,
+						timeRemaining: disasterStore.timeUntilImpact,
+						affectedRegion: disasterStore.activeDisaster.affectedRegion,
+						affectedBiomes: disasterStore.activeDisaster.affectedBiomes
 					});
 				}
-			});
-		}
-	});
-
-	// Wait for the promise with timeout
-	const result = await page.evaluate((timeout) => {
-		const win = window as unknown as WindowWithSocket;
-		return Promise.race([
-			win.__disasterWarningPromise,
-			new Promise((_, reject) =>
-				setTimeout(
-					() =>
-						reject(
-							new Error(`Timeout waiting for disaster-warning after ${timeout}ms`)
-						),
-					timeout
-				)
-			)
-		]);
+			}, 100);
+		});
 	}, timeoutMs);
 
 	return result as DisasterWarningData;
