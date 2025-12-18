@@ -7,6 +7,9 @@
 	import { slide } from 'svelte/transition';
 
 	let { form }: { form: ActionData } = $props();
+
+	let isSubmitting = $state(false);
+	let networkError = $state(false);
 </script>
 
 <div class="container mx-auto max-w-md mt-8 p-6">
@@ -21,7 +24,19 @@
 			method="POST"
 			class="space-y-1 md:space-y-3"
 			use:enhance={() => {
-				return async ({ result }) => {
+				isSubmitting = true;
+				networkError = false;
+
+				return async ({ result, update }) => {
+					isSubmitting = false;
+					
+					// If there's an error result (network failure, server error, etc.)
+					if (result.type === 'error') {
+						networkError = true;
+						// Don't navigate away - stay on the form
+						return;
+					}
+					
 					await applyAction(result);
 				};
 			}}
@@ -50,6 +65,19 @@
 				/>
 			</label>
 
+			{#if networkError}
+				<div transition:slide>
+					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
+						<div class="alert-message">
+							<Info size={24} />
+							<div class="grid grid-cols-1">
+								Network error. Please check your connection and try again.
+							</div>
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			{#if form?.invalid}
 				<div transition:slide>
 					<div class="alert bg-error-500/10 text-error-900 dark:text-error-50 mx-5 mt-5">
@@ -77,8 +105,11 @@
 					</div>
 				</div>
 			{/if}
-			<button type="submit" class="w-full p-2 btn preset-filled-primary-500 rounded-md"
-				>Register</button
+			<button
+				type="submit"
+				class="w-full p-2 btn preset-filled-primary-500 rounded-md"
+				disabled={isSubmitting}
+				>{isSubmitting ? 'Registering...' : 'Register'}</button
 			>
 		</form>
 	</div>
