@@ -508,7 +508,15 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        run: ./node_modules/.bin/drizzle-kit push --force
+        run: |
+          # Verify drizzle-kit is installed
+          if [ -f "./node_modules/.bin/drizzle-kit" ]; then
+            echo "✅ Using local drizzle-kit"
+            ./node_modules/.bin/drizzle-kit push --force
+          else
+            echo "⚠️ Local drizzle-kit not found, using npx"
+            npx --yes drizzle-kit push --force
+          fi
 
       - name: Seed database
         working-directory: ./server
