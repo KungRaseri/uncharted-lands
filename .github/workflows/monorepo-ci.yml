@@ -129,12 +129,19 @@ jobs:
       - name: Build client
         run: npm run build:client
 
+      - name: Upload client build
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build
+          path: client/build/
+          retention-days: 1
+
   client-test:
     name: Client - Test
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    needs: [shared]
+    needs: [client-build]  # Only run if build succeeds
 
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -272,12 +279,19 @@ jobs:
             exit 1
           fi
 
+      - name: Upload server build
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build
+          path: server/dist/
+          retention-days: 1
+
   server-test:
     name: Server - Test
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    needs: [shared]
+    needs: [server-build]  # Only run if build succeeds
 
     services:
       postgres:
@@ -432,6 +446,18 @@ jobs:
           name: shared-dist
           path: shared/dist/
 
+      - name: Download client build
+        uses: actions/download-artifact@v4
+        with:
+          name: client-build
+          path: client/build/
+
+      - name: Download server build
+        uses: actions/download-artifact@v4
+        with:
+          name: server-build
+          path: server/dist/
+
       - name: Install root dependencies
         run: npm ci
 
@@ -441,22 +467,7 @@ jobs:
 
       - name: Install server dependencies
         working-directory: ./server
-        run: |
-          npm ci
-          # Workaround for npm optional dependencies bug
-          rm -rf node_modules/rollup node_modules/@rollup
-          npm install --no-save rollup
-
-      - name: Install client dependencies
-        working-directory: ./client
-        run: |
-          npm ci
-          # Workaround for npm optional dependencies bug
-          rm -rf node_modules/rollup node_modules/@rollup
-          rm -rf node_modules/lightningcss node_modules/lightningcss-*
-          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
-          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
-          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
+        run: npm ci
 
       - name: Install Playwright Browsers
         working-directory: ./client
@@ -470,22 +481,18 @@ jobs:
         working-directory: ./server
         run: npm run db:seed
 
-      - name: Start server
+      - name: Start server (from build)
         working-directory: ./server
         run: |
-          npm run dev &
+          npm start &
           echo $! > server.pid
           # Wait for server to be ready
           timeout 30 bash -c 'until curl -f http://localhost:3001/health; do sleep 1; done'
 
-      - name: Build client
-        working-directory: ./client
-        run: npm run build
-
       - name: Start client (preview mode)
         working-directory: ./client
         run: |
-          npm run preview -- --port 5173 &
+          npx vite preview --port 5173 &
           echo $! > client.pid
           # Wait for client to be ready
           timeout 30 bash -c 'until curl -f http://localhost:5173; do sleep 1; done'
