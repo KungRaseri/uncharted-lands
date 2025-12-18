@@ -9,6 +9,13 @@ dotenv.config();
 
 /**
  * See https://playwright.dev/docs/test-configuration.
+ * 
+ * Parallelism Strategy:
+ * - Local: 4 workers for faster feedback (~30-45s for full suite)
+ * - CI: 1 worker to conserve resources
+ * - fullyParallel: true allows tests within files to run in parallel
+ * - Some test files use serial mode (disaster.spec.ts, resources.spec.ts) for stateful tests
+ * - maxFailures: 5 on CI to fail fast and save resources
  */
 const config: PlaywrightTestConfig = {
 	testDir: 'tests/e2e',
@@ -29,7 +36,9 @@ const config: PlaywrightTestConfig = {
 	/* Retry on CI only */
 	retries: process.env.CI ? 2 : 0,
 	/* Opt out of parallel tests on CI. */
-	workers: process.env.CI ? 1 : undefined,
+	workers: process.env.CI ? 1 : 4,
+	/* Fail fast on CI to save resources */
+	maxFailures: process.env.CI ? 5 : undefined,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	reporter: [
 		['list'], // Console output
