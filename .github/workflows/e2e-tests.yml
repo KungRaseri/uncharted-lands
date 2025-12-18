@@ -73,7 +73,7 @@ jobs:
         working-directory: ./server
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
-        run: npx drizzle-kit push --force
+        run: npm exec drizzle-kit push -- --force
 
       - name: Seed database
         working-directory: ./server
