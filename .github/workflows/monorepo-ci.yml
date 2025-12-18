@@ -145,12 +145,20 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare client build for upload
+        working-directory: ./client
+        run: |
+          # Workaround: upload-artifact@v4 has issues with hidden directories
+          # Copy .svelte-kit to svelte-kit-build (without leading dot)
+          cp -r .svelte-kit svelte-kit-build
+          echo "Copied .svelte-kit to svelte-kit-build"
+          ls -la svelte-kit-build/
+
       - name: Upload client build
         uses: actions/upload-artifact@v4
         with:
           name: client-build
-          path: |
-            client/.svelte-kit/**/*
+          path: client/svelte-kit-build
           retention-days: 1
 
   client-test:
