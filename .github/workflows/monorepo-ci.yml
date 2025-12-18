@@ -369,7 +369,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    needs: [shared]
+    needs: [client-test, server-test]
 
     services:
       postgres:
@@ -395,6 +395,16 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
+      PUBLIC_API_URL: http://localhost:3001
+      PUBLIC_WS_URL: ws://localhost:3001
+      PUBLIC_CLIENT_API_URL: http://localhost:3001/api
+      SERVER_API_URL: http://localhost:3001/api
+      NODE_ENV: e2e
+      PORT: 3001
+      REDIS_URL: redis://localhost:6379
 
     strategy:
       matrix:
@@ -433,7 +443,7 @@ jobs:
         working-directory: ./server
         run: |
           npm ci
-          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          # Workaround for npm optional dependencies bug
           rm -rf node_modules/rollup node_modules/@rollup
           npm install --no-save rollup
 
@@ -454,23 +464,14 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
         run: npx drizzle-kit push --force
 
       - name: Seed database
         working-directory: ./server
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
         run: npm run db:seed
 
       - name: Start server
         working-directory: ./server
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
-          PORT: 3001
-          NODE_ENV: e2e
-          REDIS_URL: redis://localhost:6379
         run: |
           npm run dev &
           echo $! > server.pid
@@ -479,9 +480,6 @@ jobs:
 
       - name: Build client
         working-directory: ./client
-        env:
-          PUBLIC_API_URL: http://localhost:3001
-          PUBLIC_WS_URL: ws://localhost:3001
         run: npm run build
 
       - name: Start client (preview mode)
@@ -494,9 +492,6 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: ./client
-        env:
-          PUBLIC_API_URL: http://localhost:3001
-          PUBLIC_WS_URL: ws://localhost:3001
         run: npm run test:e2e
 
       - name: Stop server and client
