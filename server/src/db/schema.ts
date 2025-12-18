@@ -129,6 +129,13 @@ export const biomeTypeEnum = pgEnum('BiomeType', [
 	'OCEAN',
 ]);
 
+export const settlementTypeEnum = pgEnum('SettlementType', [
+	'OUTPOST', // Tier 1: Small frontier camp (max pop 50)
+	'VILLAGE', // Tier 2: Growing community (max pop 200)
+	'TOWN', // Tier 3: Established settlement (max pop 500)
+	'CITY', // Tier 4: Major population center (max pop 1000+)
+]);
+
 // ==================== DISASTER CONFIGURATION ====================
 
 /**
@@ -445,6 +452,9 @@ export const settlements = pgTable(
 			// @ts-expect-error - Circular reference to settlementStorage table
 			.references(() => settlementStorage.id, { onDelete: 'cascade' }),
 		name: text('name').notNull().default('Home Settlement'),
+		// Settlement tier system (GDD Section 2.1)
+		settlementType: settlementTypeEnum('settlementType').notNull().default('OUTPOST'),
+		tier: integer('tier').notNull().default(1), // 1-4 corresponding to OUTPOST/VILLAGE/TOWN/CITY
 		resilience: integer('resilience').notNull().default(0), // Disaster survival resilience score (0-100)
 		createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
