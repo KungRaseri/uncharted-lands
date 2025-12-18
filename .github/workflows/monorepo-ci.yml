@@ -129,6 +129,22 @@ jobs:
       - name: Build client
         run: npm run build:client
 
+      - name: Verify build artifacts exist
+        working-directory: ./client
+        run: |
+          echo "Checking for .svelte-kit directory..."
+          ls -la | grep svelte-kit || echo ".svelte-kit not visible in ls -la"
+          if [ -d ".svelte-kit" ]; then
+            echo "✅ .svelte-kit directory exists"
+            echo "Contents:"
+            ls -la .svelte-kit/
+            echo "Size:"
+            du -sh .svelte-kit/
+          else
+            echo "❌ .svelte-kit directory not found!"
+            exit 1
+          fi
+
       - name: Upload client build
         uses: actions/upload-artifact@v4
         with:
