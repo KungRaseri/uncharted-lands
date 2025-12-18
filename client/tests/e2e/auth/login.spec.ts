@@ -294,7 +294,7 @@ test.describe('Login', () => {
 
 		test('should redirect to requested page after login', async ({ page }) => {
 			// Try to access protected route (should redirect to sign-in with redirectTo param)
-			await page.goto('/game/world');
+			await page.goto('/game/profile');
 
 			// Should be redirected to sign-in with redirectTo parameter
 			// Allow for URL encoding variations

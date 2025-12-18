@@ -330,25 +330,44 @@ export async function assertAftermathModalVisible(page: Page): Promise<void> {
 }
 
 /**
+ * Wait for disaster aftermath modal to appear
+ * @param page - Playwright page object
+ * @param timeoutMs - How long to wait (default 120s for disaster duration + processing)
+ * @returns True when modal appears
+ */
+export async function waitForAftermathModal(page: Page, timeoutMs: number = 120000): Promise<void> {
+	const modal = page.locator('[data-testid="disaster-aftermath-modal"]');
+	await modal.waitFor({ state: 'visible', timeout: timeoutMs });
+	console.log('[E2E] Disaster aftermath modal appeared');
+}
+
+/**
  * Get disaster summary from aftermath modal
  * @param page - Playwright page object
+ * @param timeoutMs - How long to wait for modal (default 10s)
  * @returns Disaster summary data
  */
-export async function getDisasterSummary(page: Page): Promise<{
+export async function getDisasterSummary(
+	page: Page,
+	timeoutMs: number = 10000
+): Promise<{
 	casualties: number;
 	structuresDamaged: number;
 	resourcesLost: number;
 }> {
 	const modal = page.locator('[data-testid="disaster-aftermath-modal"]');
+	
+	// Wait for modal to be visible first
+	await modal.waitFor({ state: 'visible', timeout: timeoutMs });
 
 	const casualtiesText = await modal.locator('[data-testid="total-casualties"]').textContent();
 	const damagedText = await modal.locator('[data-testid="structures-damaged"]').textContent();
 	const resourcesText = await modal.locator('[data-testid="resources-lost"]').textContent();
 
 	return {
-		casualties: parseInt(casualtiesText?.match(/\d+/)?.[0] || '0', 10),
-		structuresDamaged: parseInt(damagedText?.match(/\d+/)?.[0] || '0', 10),
-		resourcesLost: parseInt(resourcesText?.match(/\d+/)?.[0] || '0', 10)
+		casualties: Number.parseInt(casualtiesText?.match(/\d+/)?.[0] || '0', 10),
+		structuresDamaged: Number.parseInt(damagedText?.match(/\d+/)?.[0] || '0', 10),
+		resourcesLost: Number.parseInt(resourcesText?.match(/\d+/)?.[0] || '0', 10)
 	};
 }
 

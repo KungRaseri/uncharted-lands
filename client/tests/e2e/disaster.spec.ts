@@ -577,13 +577,13 @@ test.describe('Disaster Lifecycle Flow', () => {
 				TEST_DISASTERS.EARTHQUAKE_MINOR
 			);
 
-			// Wait for aftermath
-			await waitForSocketEvent(page, 'disaster-aftermath', 420000);
+			// Wait for aftermath modal to appear (more reliable than socket event)
+			const modal = page.locator('[data-testid="disaster-aftermath-modal"]');
+			await modal.waitFor({ state: 'visible', timeout: 90000 }); // 90s for disaster completion
+			console.log('[E2E] Aftermath modal appeared');
 
 			// Close modal
-			const closeButton = page.locator(
-				'[data-testid="disaster-aftermath-modal"] button[aria-label="Close"]'
-			);
+			const closeButton = modal.locator('button[aria-label="Close"]');
 			await closeButton.click();
 
 			// Verify game loop still running

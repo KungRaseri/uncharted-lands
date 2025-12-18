@@ -83,10 +83,11 @@ test.describe('Authentication Flow', () => {
 			userEmail = generateUniqueEmail('protected');
 			userPassword = TEST_USERS.VALID.password;
 
-			const page = await browser.newPage();
+			const context = await browser.newContext();
+			const page = await context.newPage();
 			await registerUser(page, userEmail, userPassword);
 			// registerUser already waits for /game/getting-started - no additional wait needed
-			await page.close();
+			await context.close();
 		});
 
 		test.afterEach(async ({ request }) => {
