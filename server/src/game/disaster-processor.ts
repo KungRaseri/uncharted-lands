@@ -27,7 +27,14 @@
 
 import type { Server as SocketIOServer } from 'socket.io';
 import { db } from '../db/index.js';
-import { disasterEvents, settlements, disasterHistory } from '../db/schema.js';
+import {
+	disasterEvents,
+	settlements,
+	disasterHistory,
+	settlementStructures,
+	type Settlement,
+	type DisasterEvent,
+} from '../db/schema.js';
 import { eq, and, lt, sql } from 'drizzle-orm';
 import { logger } from '../utils/logger.js';
 import { calculateSettlementDamage } from './disaster-damage-calculator.js';
@@ -233,9 +240,12 @@ async function transitionToImpact(
 
 /**
  * Process disasters in IMPACT phase
- * - Apply gradual damage every 10 minutes
- * - Emit progress updates
+ * - Apply gradual damage incrementally based on tick interval
+ * - Emit progress updates and damage events
  * - Transition to AFTERMATH when duration complete
+ *
+ * IMPORTANT: Damage is now applied INCREMENTALLY during impact, not all at the end.
+ * This provides better UX and allows E2E tests to validate damage feed population.
  */
 async function processImpactPhase(io: SocketIOServer, currentTime: number): Promise<void> {
 	const disasters = await db.query.disasterEvents.findMany({
@@ -245,6 +255,13 @@ async function processImpactPhase(io: SocketIOServer, currentTime: number): Prom
 		},
 	});
 
+	// Use E2E_DAMAGE_TICK_SECONDS for testing (default: 10s for E2E, 10min for production)
+	const tickIntervalSeconds = process.env.E2E_DAMAGE_TICK_SECONDS
+		? Number.parseInt(process.env.E2E_DAMAGE_TICK_SECONDS, 10)
+		: 10 * 60; // 10 minutes in production
+
+	const tickIntervalMs = tickIntervalSeconds * 1000;
+
 	for (const disaster of disasters) {
 		if (!disaster.impactStartedAt) continue;
 
@@ -253,10 +270,10 @@ async function processImpactPhase(io: SocketIOServer, currentTime: number): Prom
 		const impactDurationMs = disaster.impactDuration * 1000;
 		const progress = Math.min(100, (elapsedTime / impactDurationMs) * 100);
 
-		// Emit damage update every 10 minutes (600,000ms)
-		const tenMinutes = 10 * 60 * 1000;
-		if (elapsedTime % tenMinutes < 100) {
+		// Apply incremental damage every tick interval
+		if (elapsedTime % tickIntervalMs < 100) {
 			// Within 100ms tolerance
+			// Emit progress update
 			const updateData: DisasterDamageUpdateData = {
 				disasterId: disaster.id,
 				progress: Math.floor(progress),
@@ -264,13 +281,172 @@ async function processImpactPhase(io: SocketIOServer, currentTime: number): Prom
 			};
 
 			io.to(`world:${disaster.worldId}`).emit('disaster-damage-update', updateData);
+
+			// Apply incremental damage to settlements (only during ticks, not at completion)
+			if (elapsedTime < impactDurationMs) {
+				await applyIncrementalDamage(disaster, io, currentTime, tickIntervalMs, impactDurationMs);
+			}
 		}
 
-		// Check if impact phase complete
+		// Check if impact phase complete (check EVERY game loop iteration, not just ticks)
 		if (elapsedTime >= impactDurationMs) {
 			await transitionToAftermath(disaster, io, currentTime);
 		}
 	}
+}
+
+/**
+ * Apply incremental damage to all settlements affected by the disaster
+ * Called every tick interval during impact phase
+ */
+async function applyIncrementalDamage(
+	disaster: { id: string; worldId: string; type: string },
+	io: SocketIOServer,
+	currentTime: number,
+	tickIntervalMs: number,
+	totalDurationMs: number
+): Promise<void> {
+	// Query the full disaster event to get severity
+	const fullDisaster = await db.query.disasterEvents.findFirst({
+		where: eq(disasterEvents.id, disaster.id),
+	});
+
+	if (!fullDisaster) {
+		logger.error('[DISASTER PROCESSOR] Could not find disaster event for incremental damage', {
+			disasterId: disaster.id,
+		});
+		return;
+	}
+
+	// Get all affected settlements (must query through tiles → regions → world)
+	// SCHEMA NOTE: Settlements don't have worldId, must join through tile.region.worldId
+	const affectedSettlements = await db.query.settlements.findMany({
+		with: {
+			tile: {
+				with: {
+					region: true,
+				},
+			},
+		},
+	});
+	
+	// Filter settlements by worldId from tile.region.worldId
+	const settlementsInWorld = affectedSettlements.filter(
+		(s) => s.tile?.region?.worldId === disaster.worldId
+	);
+
+	// Calculate damage fraction for this tick
+	const numberOfTicks = Math.floor(totalDurationMs / tickIntervalMs);
+	const damageFraction = 1 / numberOfTicks;
+
+	logger.info('[DISASTER PROCESSOR] Applying incremental damage', {
+		disasterId: disaster.id,
+		numberOfTicks,
+		damageFraction: damageFraction.toFixed(3),
+		settlementCount: settlementsInWorld.length,
+	});
+
+	for (const settlement of settlementsInWorld) {
+		await applySettlementIncrementalDamage(
+			settlement,
+			fullDisaster,
+			disaster,
+			damageFraction,
+			io,
+			currentTime
+		);
+	}
+}
+
+/**
+ * Apply incremental damage to a single settlement
+ * Extracted for reduced complexity
+ */
+async function applySettlementIncrementalDamage(
+	settlement: Settlement,
+	fullDisaster: DisasterEvent,
+	disaster: { id: string; worldId: string },
+	damageFraction: number,
+	io: SocketIOServer,
+	currentTime: number
+): Promise<void> {
+	try {
+		// Calculate FULL damage for settlement (we'll apply fractionally)
+		const fullDamage = await calculateSettlementDamage(fullDisaster, settlement);
+
+		// Apply damage fraction to structures
+		const damageToApply = fullDamage.affectedStructures.map((structure) => {
+			const healthLoss = structure.oldHealth - structure.newHealth;
+			const incrementalHealthLoss = Math.floor(healthLoss * damageFraction);
+
+			return {
+				...structure,
+				incrementalHealthLoss,
+			};
+		});
+
+		// Update structure health in database
+		for (const structure of damageToApply) {
+			if (structure.incrementalHealthLoss > 0) {
+				await applyStructureIncrementalDamage(structure, settlement, disaster, io, currentTime);
+			}
+		}
+	} catch (error) {
+		logger.error('[DISASTER PROCESSOR] Error applying incremental damage', {
+			settlementId: settlement.id,
+			disasterId: disaster.id,
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
+}
+
+/**
+ * Apply incremental damage to a single structure
+ * Extracted for reduced complexity
+ */
+async function applyStructureIncrementalDamage(
+	structure: { structureId: string; name: string; incrementalHealthLoss: number },
+	settlement: { id: string },
+	disaster: { id: string; worldId: string },
+	io: SocketIOServer,
+	currentTime: number
+): Promise<void> {
+	// Get current health from database
+	const currentStructure = await db.query.settlementStructures.findFirst({
+		where: eq(settlementStructures.id, structure.structureId),
+	});
+
+	if (!currentStructure) return;
+
+	const newHealth = Math.max(
+		0,
+		(currentStructure.health ?? 100) - structure.incrementalHealthLoss
+	);
+
+	await db
+		.update(settlementStructures)
+		.set({ health: newHealth })
+		.where(eq(settlementStructures.id, structure.structureId));
+
+	// Emit structure-damaged event with CURRENT health values
+	io.to(`world:${disaster.worldId}`).emit('structure-damaged', {
+		worldId: disaster.worldId,
+		settlementId: settlement.id,
+		disasterId: disaster.id,
+		structureId: structure.structureId,
+		structureName: structure.name,
+		oldHealth: currentStructure.health ?? 100,
+		newHealth: newHealth,
+		timestamp: currentTime,
+	});
+
+	logger.debug('[DISASTER PROCESSOR] Structure damaged incrementally', {
+		structureId: structure.structureId,
+		structureName: structure.name,
+		oldHealth: currentStructure.health ?? 100,
+		newHealth,
+		healthLoss: structure.incrementalHealthLoss,
+	});
 }
 
 /**
@@ -306,18 +482,33 @@ async function transitionToAftermath(
 		})
 		.where(eq(disasterEvents.id, disaster.id));
 
-	// Calculate damage for all affected settlements
+	// NOTE: Damage has already been applied incrementally during impact phase.
+	// Now we just need to calculate final statistics and create disaster history records.
+	// SCHEMA NOTE: Settlements don't have worldId, must join through tile.region.worldId
 	const affectedSettlements = await db.query.settlements.findMany({
-		where: eq(settlements.worldId, disaster.worldId),
+		with: {
+			tile: {
+				with: {
+					region: true,
+				},
+			},
+		},
 	});
+	
+	// Filter settlements by worldId from tile.region.worldId
+	const settlementsInWorld = affectedSettlements.filter(
+		(s) => s.tile?.region?.worldId === disaster.worldId
+	);
 
 	let totalCasualties = 0;
 	let totalStructuresDamaged = 0;
 	let totalStructuresDestroyed = 0;
 	const totalResourcesLost = { food: 0, water: 0, wood: 0, stone: 0, ore: 0 };
 
-	for (const settlement of affectedSettlements) {
+	for (const settlement of settlementsInWorld) {
 		try {
+			// Calculate final statistics based on current structure health
+			// (damage was already applied incrementally, so we just calculate casualties/resources)
 			const damage = await calculateSettlementDamage(fullDisaster, settlement);
 
 			totalCasualties += damage.casualties;
@@ -341,31 +532,6 @@ async function transitionToAftermath(
 				resilienceGained: 0, // Will be set in transitionToResolved
 			});
 
-			// Emit per-settlement structure damage events
-			for (const structure of damage.affectedStructures) {
-				if (structure.newHealth === 0) {
-					io.to(`settlement:${settlement.id}`).emit('structure-destroyed', {
-						worldId: disaster.worldId,
-						settlementId: settlement.id,
-						disasterId: disaster.id,
-						structureId: structure.structureId,
-						structureName: structure.name,
-						timestamp: currentTime,
-					});
-				} else {
-					io.to(`settlement:${settlement.id}`).emit('structure-damaged', {
-						worldId: disaster.worldId,
-						settlementId: settlement.id,
-						disasterId: disaster.id,
-						structureId: structure.structureId,
-						structureName: structure.name,
-						oldHealth: structure.oldHealth,
-						newHealth: structure.newHealth,
-						timestamp: currentTime,
-					});
-				}
-			}
-
 			// Emit casualties report if any casualties occurred
 			if (damage.casualties > 0) {
 				io.to(`settlement:${settlement.id}`).emit('casualties-report', {
@@ -378,7 +544,7 @@ async function transitionToAftermath(
 				});
 			}
 		} catch (error) {
-			logger.error('[DISASTER PROCESSOR] Error calculating damage for settlement', {
+			logger.error('[DISASTER PROCESSOR] Error calculating final damage statistics', {
 				settlementId: settlement.id,
 				disasterId: disaster.id,
 				error: error instanceof Error ? error.message : String(error),

@@ -884,9 +884,10 @@ async function processSettlementWorldBased(
 		}
 
 		// ==================================================================
-		// REAL-TIME PROJECTION (On projection ticks, NOT on production)
+		// REAL-TIME PROJECTION (On projection ticks)
+		// Note: Projections can happen on the same tick as production
 		// ==================================================================
-		else if (timing.shouldEmitProjection && roomSize > 0) {
+		if (timing.shouldEmitProjection && roomSize > 0) {
 			logger.debug('[GAME LOOP] 📊 PROJECTION TICK', {
 				settlementId,
 				secondsSinceLastProduction,

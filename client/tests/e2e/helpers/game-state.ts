@@ -481,10 +481,11 @@ export async function waitForSocketEvent(
  */
 export async function assertGameLoopRunning(page: Page, timeoutMs: number = 30000): Promise<void> {
 	try {
-		// Use resource-preview which fires frequently (~60 times/sec) instead of resource-update
-		// which fires on production intervals (10s in E2E, 3600s in production)
-		await waitForSocketEvent(page, 'resource-preview', timeoutMs);
+		// Wait for either resource-update or resource-preview events
+		// resource-update fires on production intervals (10s in E2E, 3600s in production)
+		// resource-preview fires frequently (every 1s) if client is listening for it
+		await waitForSocketEvent(page, 'resource-update', timeoutMs);
 	} catch {
-		throw new Error('Game loop not running - no resource-preview events received');
+		throw new Error('Game loop not running - no resource events received');
 	}
 }

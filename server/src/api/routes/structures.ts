@@ -759,6 +759,18 @@ router.get('/by-settlement/:settlementId', authenticate, async (req: Request, re
 		// Flatten master structure fields for each structure
 		const flattenedList = structureList.map((s) => {
 			const structureDef = s.structure as Structure | undefined;
+			
+			// DEBUG: Log structure data to diagnose category issue
+			logger.debug('[API] Structure flattening:', {
+				settlementStructureId: s.id,
+				structureId: s.structureId,
+				hasMasterDef: !!structureDef,
+				category: structureDef?.category,
+				name: structureDef?.name,
+				buildingType: structureDef?.buildingType,
+				extractorType: structureDef?.extractorType,
+			});
+			
 			return {
 				...s,
 				name: structureDef?.name,

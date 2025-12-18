@@ -25,6 +25,7 @@
 	<div class="fixed inset-0 z-100 bg-black bg-opacity-50 flex items-center justify-center">
 		<div
 			class="bg-surface-100-800-token p-6 rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-screen overflow-y-auto"
+			data-testid="disaster-aftermath-modal"
 		>
 			<div class="flex justify-between items-center mb-6">
 				<h2 class="h2">Disaster Aftermath Report</h2>
@@ -32,6 +33,7 @@
 					type="button"
 					onclick={closeModal}
 					class="btn btn-icon variant-filled-surface"
+					aria-label="Close"
 				>
 					✕
 				</button>
@@ -45,23 +47,35 @@
 				</div>
 				<div class="card p-4">
 					<p class="text-xs text-surface-600-300-token">Structures Damaged</p>
-					<p class="text-2xl font-bold">{aftermathSummary.structuresDamaged}</p>
+					<p class="text-2xl font-bold" data-testid="structures-damaged">
+						{aftermathSummary.structuresDamaged}
+					</p>
 				</div>
 				<div class="card p-4">
 					<p class="text-xs text-surface-600-300-token">Structures Destroyed</p>
-					<p class="text-2xl font-bold text-purple-600">
+					<p class="text-2xl font-bold text-purple-600" data-testid="structures-destroyed">
 						{aftermathSummary.structuresDestroyed}
 					</p>
 				</div>
 				<div class="card p-4">
 					<p class="text-xs text-surface-600-300-token">Casualties</p>
-					<p class="text-2xl font-bold text-red-600">{aftermathSummary.casualties}</p>
-				</div>
+				<p class="text-2xl font-bold text-red-600" data-testid="total-casualties">
+					{aftermathSummary.casualties}
+				</p>
 			</div>
-
-			<!-- Repair Costs -->
+		</div>			<!-- Repair Costs -->
 			<div class="card p-4 mb-6">
 				<h3 class="h4 mb-4">Estimated Repair Costs</h3>
+
+				<!-- Total Resources Lost -->
+				<div class="mb-4">
+					<p class="text-xs text-surface-600-300-token">Total Resources for Repairs</p>
+					<p class="text-xl font-bold" data-testid="resources-lost">
+						{aftermathSummary.estimatedRepairCost.wood +
+							aftermathSummary.estimatedRepairCost.stone +
+							aftermathSummary.estimatedRepairCost.ore}
+					</p>
+				</div>
 
 				{#if emergencyRepairActive}
 					<div class="bg-yellow-600 text-white p-3 rounded mb-4">
