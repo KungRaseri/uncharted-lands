@@ -31,21 +31,21 @@ export const TEST_DISASTERS = {
 	EARTHQUAKE_MINOR: {
 		type: 'EARTHQUAKE',
 		severity: 25,
-		duration: 300, // 5 minutes in seconds
+		duration: 30, // 30 seconds (fast E2E testing)
 		expectedCasualties: 0, // Minor should have 0-5% casualties
 		expectedStructureDamage: 15 // 5-15% health loss
 	},
 	FLOOD_MODERATE: {
 		type: 'FLOOD',
 		severity: 50,
-		duration: 600, // 10 minutes
+		duration: 60, // 60 seconds (fast E2E testing)
 		expectedCasualties: 10, // 5-15% casualties
 		expectedStructureDamage: 35 // 15-35% health loss
 	},
 	DROUGHT_MAJOR: {
 		type: 'DROUGHT',
 		severity: 70,
-		duration: 1800, // 30 minutes
+		duration: 120, // 120 seconds (fast E2E testing)
 		expectedCasualties: 25, // 15-30% casualties
 		expectedStructureDamage: 50 // 35-60% health loss
 	}
@@ -195,13 +195,28 @@ export async function assertWarningBannerVisible(page: Page, disasterType: strin
  */
 export async function getWarningTimeRemaining(page: Page): Promise<number> {
 	const countdown = page.locator('[data-testid="disaster-countdown"]');
+	
+	// Wait for countdown to be visible and have content
+	await countdown.waitFor({ state: 'visible', timeout: 5000 });
+	
 	const text = await countdown.textContent();
 
-	// Parse "0h 0m" format (no seconds)
+	// Parse different formats:
+	// - "30s" (seconds only, for times < 60s)
+	// - "5m" (minutes only, for times < 1h)
+	// - "2h 15m" (hours and minutes, for times >= 1h)
+	
+	// Check for seconds-only format first
+	const secondsMatch = text?.match(/^(\d+)s$/);
+	if (secondsMatch) {
+		return Number.parseInt(secondsMatch[1], 10);
+	}
+	
+	// Parse hours and minutes
 	const hours = text?.match(/(\d+)h/)?.[1] || '0';
 	const minutes = text?.match(/(\d+)m/)?.[1] || '0';
 
-	return Number.parseInt(hours) * 3600 + Number.parseInt(minutes) * 60;
+	return Number.parseInt(hours, 10) * 3600 + Number.parseInt(minutes, 10) * 60;
 }
 
 /**
@@ -224,10 +239,14 @@ export async function activateEmergencyShelter(page: Page): Promise<void> {
 /**
  * Verify disaster impact banner is visible
  * @param page - Playwright page object
+ * @param timeoutMs - Maximum time to wait (default: 20000ms = 20 seconds, accounting for 10-second warning time + buffer)
  */
-export async function assertImpactBannerVisible(page: Page): Promise<void> {
+export async function assertImpactBannerVisible(
+	page: Page,
+	timeoutMs: number = 20000
+): Promise<void> {
 	const banner = page.locator('[data-testid="disaster-impact-banner"]');
-	await banner.waitFor({ state: 'visible', timeout: 5000 });
+	await banner.waitFor({ state: 'visible', timeout: timeoutMs });
 }
 
 /**

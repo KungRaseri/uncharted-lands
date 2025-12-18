@@ -130,7 +130,12 @@ class DisasterStore {
 		// IMMINENT phase (30 min warning)
 		socket.on('disaster-imminent', (data: DisasterImminentData) => {
 			console.log('[DISASTER] Imminent:', data);
-			this.timeUntilImpact = data.impactIn;
+			
+			// Only update if significantly different (more than 2 seconds off)
+			// This prevents server updates from interfering with client-side countdown
+			if (this.timeUntilImpact === null || Math.abs(this.timeUntilImpact - data.impactIn) > 2000) {
+				this.timeUntilImpact = data.impactIn;
+			}
 			// Could trigger urgent notification here
 		});
 
@@ -302,10 +307,21 @@ class DisasterStore {
 	get timeUntilImpactFormatted() {
 		if (!this.timeUntilImpact) return '';
 
-		const hours = Math.floor(this.timeUntilImpact / (1000 * 60 * 60));
-		const minutes = Math.floor((this.timeUntilImpact % (1000 * 60 * 60)) / (1000 * 60));
+		const totalSeconds = Math.floor(this.timeUntilImpact / 1000);
 
-		return `${hours}h ${minutes}m`;
+		// Show seconds if less than 1 minute (for E2E testing and short warnings)
+		if (totalSeconds < 60) {
+			return `${totalSeconds}s`;
+		}
+
+		// Show hours and minutes for longer durations
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+		if (hours > 0) {
+			return `${hours}h ${minutes}m`;
+		}
+		return `${minutes}m`;
 	}
 
 	get emergencyRepairTimeFormatted() {

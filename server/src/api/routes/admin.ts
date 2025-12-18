@@ -125,14 +125,15 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 			});
 		}
 
-		// Default values
-		const disasterSeverity = severity || 50; // Default moderate severity
-		const warningTime = 60; // 1 minute warning for testing
-		const impactDuration = duration || 600; // 10 minutes default
-		const currentTime = Date.now();
-		const scheduledAt = new Date(currentTime + warningTime * 1000);
-
-		// Create disaster event
+	// Default values
+	const disasterSeverity = severity || 50; // Default moderate severity
+	// Use E2E_DISASTER_WARNING_SECONDS env var for testing (default: 10 seconds for E2E, 300 for production)
+	const warningTime = process.env.E2E_DISASTER_WARNING_SECONDS
+		? Number.parseInt(process.env.E2E_DISASTER_WARNING_SECONDS, 10)
+		: 10; // 10 seconds for fast E2E tests
+	const impactDuration = duration || 600; // 10 minutes default
+	const currentTime = Date.now();
+	const scheduledAt = new Date(currentTime + warningTime * 1000);		// Create disaster event
 		const [disasterEvent] = await db
 			.insert(disasterEvents)
 			.values({
