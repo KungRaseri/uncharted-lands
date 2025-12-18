@@ -492,7 +492,11 @@ jobs:
 
       - name: Install server dependencies
         working-directory: ./server
-        run: npm ci
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug
+          rm -rf node_modules/rollup node_modules/@rollup
+          npm install --no-save rollup
 
       - name: Install client dependencies
         working-directory: ./client
