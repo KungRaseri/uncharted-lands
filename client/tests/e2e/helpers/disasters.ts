@@ -250,6 +250,19 @@ export async function assertImpactBannerVisible(
 }
 
 /**
+ * Open the damage feed during impact phase
+ * @param page - Playwright page object
+ */
+export async function openDamageFeed(page: Page): Promise<void> {
+	const toggleButton = page.locator('[data-testid="toggle-damage-feed-btn"]');
+	await toggleButton.click();
+	
+	// Wait for damage feed to appear
+	const damageFeed = page.locator('[data-testid="damage-feed"]');
+	await damageFeed.waitFor({ state: 'visible', timeout: 2000 });
+}
+
+/**
  * Wait for structure damage event
  * @param page - Playwright page object
  * @param structureId - Structure ID to monitor

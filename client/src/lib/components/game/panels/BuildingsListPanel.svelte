@@ -135,7 +135,8 @@
 			{#each buildings as building (building.id)}
 				<li
 					data-testid="structure"
-					data-structure-type={building.buildingType}
+					data-structure-id={building.buildingType || building.extractorType || building.structureId}
+					data-structure-type={building.buildingType || building.extractorType}
 					class="card variant-soft p-4 space-y-2"
 					transition:slide={{ duration: 300, easing: quintOut }}
 				>
@@ -158,7 +159,7 @@
 							class="flex items-center gap-2 shrink-0"
 							title="Structure health: {building.health}%"
 						>
-							<span class={getHealthColor(building.health)}>
+							<span class={getHealthColor(building.health)} data-testid="health">
 								{building.health}%
 							</span>
 							<span class="text-xs text-surface-500-400-token">
