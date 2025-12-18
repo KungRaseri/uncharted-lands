@@ -381,7 +381,7 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        run: npx drizzle-kit push --force
+        run: ./node_modules/.bin/drizzle-kit push --force
 
       - name: Seed database
         working-directory: ./server
@@ -508,7 +508,7 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        run: npx drizzle-kit push --force
+        run: ./node_modules/.bin/drizzle-kit push --force
 
       - name: Seed database
         working-directory: ./server
