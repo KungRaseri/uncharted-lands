@@ -77,8 +77,9 @@ export const load = (async ({ params, depends, cookies, fetch: eventFetch }) => 
 	let settlementStructures = [];
 	if (structuresResponse.ok) {
 		settlementStructures = await structuresResponse.json();
-		logger.debug('[SETTLEMENT DETAIL] Structures loaded via API', {
-			count: settlementStructures.length
+		logger.info('[SETTLEMENT DETAIL] Structures loaded via API', {
+			count: settlementStructures.length,
+			firstStructure: settlementStructures[0] || null
 		});
 	} else {
 		logger.error('[SETTLEMENT DETAIL] Failed to fetch structures via API', {

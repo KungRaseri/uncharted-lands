@@ -82,17 +82,17 @@
 			}
 
 			// ✅ NEW: Initialize structures store from structures data
-			if (data.settlement.structures) {
+			if (data.settlementStructures) {
 				console.log(
 					'[SETTLEMENT PAGE] Initializing structures:',
-					data.settlement.structures.length
+					data.settlementStructures.length
 				);
 				structuresStore.initializeStructures(
 					data.settlement.id,
-					data.settlement.structures
+					data.settlementStructures
 				);
 			} else {
-				console.warn('[SETTLEMENT PAGE] No structures data available in settlement');
+				console.warn('[SETTLEMENT PAGE] No structures data available in settlementStructures');
 			}
 		} else {
 			console.error('[SETTLEMENT PAGE] No settlement data available!');

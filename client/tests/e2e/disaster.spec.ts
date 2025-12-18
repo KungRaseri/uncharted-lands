@@ -421,11 +421,10 @@ test.describe('Disaster Lifecycle Flow', () => {
 		expect(entries >= 0 || hasNoDataMessage).toBeTruthy();
 	});
 
-	// TODO: Re-enable after fixing TENT category/join issue (structures showing as undefined)
-	test.only('should show structure health decreasing during impact', async ({ page, request }) => {
-			// Get initial structure health (TENT should be at 100%)
-			const initialHealth = await getStructureHealth(page, 'TENT');
-			console.log('[E2E] Initial TENT health:', initialHealth, '%');
+	test('should show structure health decreasing during impact', async ({ page, request }) => {
+			// Get initial structure health (Tent has buildingType="HOUSE", so use HOUSE as the structure ID)
+			const initialHealth = await getStructureHealth(page, 'HOUSE');
+			console.log('[E2E] Initial Tent health:', initialHealth, '%');
 			expect(initialHealth).toBe(100);
 
 			// Trigger disaster
@@ -444,8 +443,8 @@ test.describe('Disaster Lifecycle Flow', () => {
 			await page.waitForTimeout(15000);
 
 			// Check structure health again
-			const damagedHealth = await getStructureHealth(page, 'TENT');
-			console.log('[E2E] Damaged TENT health:', damagedHealth, '%');
+			const damagedHealth = await getStructureHealth(page, 'HOUSE');
+			console.log('[E2E] Damaged Tent health:', damagedHealth, '%');
 
 			// Should be less than 100% (unless very lucky with variance)
 			expect(damagedHealth).toBeLessThanOrEqual(100);
