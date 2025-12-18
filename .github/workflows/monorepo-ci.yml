@@ -129,6 +129,20 @@ jobs:
       - name: Build client
         run: npm run build:client
 
+      - name: Verify client build output
+        working-directory: ./client
+        run: |
+          if [ -d ".svelte-kit" ]; then
+            echo "✅ Client build successful"
+            ls -la .svelte-kit/
+            du -sh .svelte-kit/
+          else
+            echo "❌ Build failed - .svelte-kit/ directory not found"
+            echo "Contents of client directory:"
+            ls -la
+            exit 1
+          fi
+
       - name: Upload client build
         uses: actions/upload-artifact@v4
         with:
