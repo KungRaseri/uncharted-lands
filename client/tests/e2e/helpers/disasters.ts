@@ -197,12 +197,11 @@ export async function getWarningTimeRemaining(page: Page): Promise<number> {
 	const countdown = page.locator('[data-testid="disaster-countdown"]');
 	const text = await countdown.textContent();
 
-	// Parse "1h 23m 45s" format
+	// Parse "0h 0m" format (no seconds)
 	const hours = text?.match(/(\d+)h/)?.[1] || '0';
 	const minutes = text?.match(/(\d+)m/)?.[1] || '0';
-	const seconds = text?.match(/(\d+)s/)?.[1] || '0';
 
-	return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+	return Number.parseInt(hours) * 3600 + Number.parseInt(minutes) * 60;
 }
 
 /**

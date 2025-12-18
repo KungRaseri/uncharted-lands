@@ -39,12 +39,6 @@
 		console.log('[SETTLEMENT PAGE] Initializing stores from server data...');
 		console.log('[SETTLEMENT PAGE] Settlement data:', data.settlement);
 
-		// Initialize structures store socket listeners
-		structuresStore.initialize();
-		
-		// Initialize disaster store socket listeners
-		disasterStore.initialize();
-
 		// Initialize stores from server-side loaded data
 		if (data.settlement) {
 			// Initialize resources store from storage data
@@ -139,7 +133,8 @@
 				socket.on('structure:built', handleStructureBuilt);
 				listenerAttached = true;
 
-				// Initialize disaster store listeners now that socket is connected
+				// Initialize store socket listeners now that socket is connected
+				structuresStore.initialize();
 				disasterStore.initialize();
 			}
 		});
