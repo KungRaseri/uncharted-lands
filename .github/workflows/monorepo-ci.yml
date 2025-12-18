@@ -133,7 +133,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: client-build
-          path: client/build/
+          path: client/.svelte-kit/
           retention-days: 1
 
   client-test:
@@ -450,7 +450,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: client-build
-          path: client/build/
+          path: client/.svelte-kit/
 
       - name: Download server build
         uses: actions/download-artifact@v4
