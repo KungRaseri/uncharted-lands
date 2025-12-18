@@ -8,7 +8,7 @@
  * @note This data was extracted from the old hardcoded structureTypes object
  *       in events/handlers.ts (lines 318-378)
  */
-import { MODIFIER_NAMES } from '../game/modifier-names';
+import { MODIFIER_NAMES } from '../game/modifier-names.js';
 
 export interface StructureModifier {
 	name: string;
