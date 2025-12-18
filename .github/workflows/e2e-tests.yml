@@ -81,6 +81,8 @@ jobs:
 
       - name: Seed database
         working-directory: ./server
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
         run: npm run db:seed
 
       - name: Start server
