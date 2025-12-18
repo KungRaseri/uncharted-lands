@@ -133,9 +133,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: client-build
-          path: |
-            client/.svelte-kit/output/**
-            client/.svelte-kit/generated/**
+          path: client/.svelte-kit
           retention-days: 1
 
   client-test:
@@ -469,6 +467,10 @@ jobs:
 
       - name: Install server dependencies
         working-directory: ./server
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: ./client
         run: npm ci
 
       - name: Install Playwright Browsers
