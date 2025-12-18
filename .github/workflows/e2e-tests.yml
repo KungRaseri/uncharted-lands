@@ -55,15 +55,34 @@ jobs:
             server/package-lock.json
             shared/package-lock.json
 
-      - name: Install all dependencies
-        run: |
-          npm ci
-          npm ci --workspace=shared
-          npm ci --workspace=server
-          npm ci --workspace=client
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
 
       - name: Build shared package
         run: npm run build:shared
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug (https://github.com/npm/cli/issues/4828)
+          rm -rf node_modules/rollup node_modules/@rollup
+          npm install --no-save rollup
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug
+          rm -rf node_modules/rollup node_modules/@rollup
+          rm -rf node_modules/lightningcss node_modules/lightningcss-*
+          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
+          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
 
       - name: Install Playwright Browsers
         working-directory: ./client
@@ -73,7 +92,7 @@ jobs:
         working-directory: ./server
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
-        run: npm exec drizzle-kit push -- --force
+        run: npx drizzle-kit push --force
 
       - name: Seed database
         working-directory: ./server
