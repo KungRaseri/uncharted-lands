@@ -66,8 +66,10 @@
 						</h2>
 						<p class="text-sm opacity-90">
 							Impact in: <span class="font-semibold">{timeRemaining}</span>
-							{#if disaster.affectedRegion}
-								| Affected Region: {disaster.affectedRegion}
+						{#if disaster.affectedRegions && disaster.affectedRegions.length > 0}
+							| Affected Regions: {disaster.affectedRegions.length === 1 
+								? disaster.affectedRegions[0] 
+								: `${disaster.affectedRegions.length} regions`}
 							{/if}
 						</p>
 					</div>
@@ -137,8 +139,19 @@
 					<p><strong>Type:</strong> {disaster.type.replace(/_/g, ' ')}</p>
 					<p><strong>Severity:</strong> {disaster.severityLevel} ({disaster.severity})</p>
 					<p><strong>Time Until Impact:</strong> {timeRemaining}</p>
-					{#if disaster.affectedRegion}
-						<p><strong>Affected Region:</strong> {disaster.affectedRegion}</p>
+					{#if disaster.affectedRegions && disaster.affectedRegions.length > 0}
+						<div>
+							<p><strong>Affected Regions:</strong></p>
+							{#if disaster.affectedRegions.length === 1}
+								<p class="ml-4">{disaster.affectedRegions[0]}</p>
+							{:else}
+								<ul class="list-disc list-inside ml-4 mt-2">
+									{#each disaster.affectedRegions as region}
+										<li>{region}</li>
+									{/each}
+								</ul>
+							{/if}
+						</div>
 					{/if}
 					<p><strong>Affected Biomes:</strong> {disaster.affectedBiomes.join(', ')}</p>
 				</div>

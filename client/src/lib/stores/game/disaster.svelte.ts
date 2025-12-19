@@ -27,8 +27,8 @@ interface DisasterEvent {
 	severity: number;
 	severityLevel: string;
 	duration: number;
-	affectedRegion?: string | null;
-	affectedBiomes: string[];
+	affectedRegions: string[]; // Changed from affectedRegion (now array of region IDs)
+	affectedBiomes: string[]; // Biome types vulnerable to this disaster
 }
 
 interface DamageUpdate {
@@ -121,7 +121,7 @@ class DisasterStore {
 				severity: data.severity,
 				severityLevel: data.severityLevel,
 				duration: 0, // Will be set on impact start
-				affectedRegion: data.affectedRegion,
+				affectedRegions: data.affectedRegions, // Now array of region IDs
 				affectedBiomes: data.affectedBiomes
 			};
 			this.warningActive = true;
