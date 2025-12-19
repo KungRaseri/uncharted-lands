@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { SERVER_API_URL } from '$env/static/private';
-import { logger } from '../utils/logger.js';
+import { logger } from '$lib/utils/logger';
 
 export const load = (async ({ locals, cookies }) => {
 	if (!locals.account) {

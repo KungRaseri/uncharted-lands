@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { logger } from '$lib/utils/logger';
 
 	import Header from '$lib/components/app/Header.svelte';
 	import Footer from '$lib/components/app/Footer.svelte';

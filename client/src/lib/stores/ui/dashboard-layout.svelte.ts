@@ -10,7 +10,7 @@
  */
 
 import { browser } from '$app/environment';
-import { logger } from '../utils/logger.js';
+import { logger } from '$lib/utils/logger';
 
 // ==================== TYPE DEFINITIONS ====================
 

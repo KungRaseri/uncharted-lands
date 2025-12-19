@@ -50,8 +50,7 @@ function initializeListeners() {
 	 * Bulk resource data update (on page load or settlement switch)
 	 */
 	socket.on('resources-data', (data: ResourcesState) => {
-		logger.debug('[ResourcesStore] Received resources-data:', data);
-
+			logger.debug('[ResourcesStore] Received resources-data:', { data });
 		if (!data.settlementId) {
 			logger.error('[ResourcesStore] Missing settlementId in resources-data');
 			return;
@@ -129,8 +128,8 @@ function initializeListeners() {
 
 				logger.debug(
 					'[ResourcesStore] Updated all resources for settlement:',
-					data.settlementId,
 					{
+						settlementId: data.settlementId,
 						resources: data.resources,
 						productionRates: {
 							food: existing.food.productionRate,
@@ -287,12 +286,13 @@ function initializeListeners() {
 
 				logger.debug(
 					`[ResourcesStore] Deducted construction costs for ${data.structureName}:`,
-					data.resourcesDeducted,
-					'New resources:',
 					{
-						wood: existing.wood.current,
-						stone: existing.stone.current,
-						ore: existing.ore.current
+						resourcesDeducted: data.resourcesDeducted,
+						newResources: {
+							wood: existing.wood.current,
+							stone: existing.stone.current,
+							ore: existing.ore.current
+						}
 					}
 				);
 			} else if (!existing) {
@@ -484,7 +484,7 @@ export const resourcesStore = {
 			return;
 		}
 
-		logger.debug('[ResourcesStore] Requesting resources data for:', settlementId);
+		logger.debug('[ResourcesStore] Requesting resources data for:', { settlementId });
 		socket.emit('request-resources-data', { settlementId });
 	},
 
@@ -513,8 +513,10 @@ export const resourcesStore = {
 
 		logger.debug(
 			'[ResourcesStore] Initializing from server data for settlement:',
-			settlementId,
-			serverData
+			{
+				settlementId,
+				serverData
+			}
 		);
 
 		const resourcesState: ResourcesState = {
@@ -557,8 +559,8 @@ export const resourcesStore = {
 		// Trigger Svelte reactivity by creating new Map reference
 		state.resources = new Map(state.resources);
 
-		logger.debug('[ResourcesStore] Initialized resources for settlement:', settlementId);
-		logger.debug('[ResourcesStore] Current resources map size:', state.resources.size);
+		logger.debug('[ResourcesStore] Initialized resources for settlement:', { settlementId });
+		logger.debug('[ResourcesStore] Current resources map size:', { size: state.resources.size });
 	},
 
 	/**

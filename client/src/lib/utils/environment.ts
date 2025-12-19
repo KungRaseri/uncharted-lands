@@ -5,6 +5,8 @@
  * Use these instead of directly checking import.meta.env.
  */
 
+import { logger } from './logger';
+
 /**
  * Current environment mode
  */

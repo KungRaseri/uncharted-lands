@@ -8,7 +8,7 @@
 import { SERVER_API_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { logger } from '../utils/logger.js';
+import { logger } from '$lib/utils/logger';
 
 export const GET: RequestHandler = async ({ cookies }) => {
 	try {
