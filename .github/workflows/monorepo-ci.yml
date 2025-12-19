@@ -507,7 +507,8 @@ jobs:
           fi
 
       - name: Build server (fresh build with all tooling)
-        run: npm run build:server
+        working-directory: ./server
+        run: npm run build
 
       - name: Install client dependencies
         working-directory: ./client
