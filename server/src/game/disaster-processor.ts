@@ -113,7 +113,7 @@ async function transitionToWarning(
 		type: string;
 		severity: number;
 		severityLevel: string;
-		affectedRegionId: string | null;
+		affectedRegionIds: string[]; // Changed from affectedRegionId
 		affectedBiomes: string[];
 		scheduledAt: Date;
 		warningTime: number;
@@ -141,7 +141,7 @@ async function transitionToWarning(
 		type: disaster.type,
 		severity: disaster.severity,
 		severityLevel: disaster.severityLevel,
-		affectedRegion: disaster.affectedRegionId,
+		affectedRegions: disaster.affectedRegionIds, // Changed from affectedRegion
 		affectedBiomes: disaster.affectedBiomes,
 		timeRemaining,
 		recommendedActions: getRecommendedActions(disaster.type, disaster.severityLevel),

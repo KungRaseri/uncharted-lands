@@ -22,12 +22,13 @@ import {
 	disasterEvents,
 	worlds,
 	tiles,
+	regions,
 	BIOME_DISASTER_MAP,
 	type BiomeType,
 	type DisasterType,
 	type DisasterSeverity,
 } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { logger } from '../utils/logger.js';
 
 /**
@@ -132,6 +133,27 @@ export function selectDisasterType(biomeType: BiomeType): DisasterType {
 	// Random selection from chosen risk level
 	const selectedIndex = Math.floor(Math.random() * disasters.length);
 	return disasters[selectedIndex] as DisasterType;
+}
+
+/**
+ * Get biome types that are vulnerable to a specific disaster type
+ * Returns array of biome names that have this disaster in high/moderate/low risk
+ */
+export function getVulnerableBiomes(disasterType: DisasterType): string[] {
+	const vulnerableBiomes: string[] = [];
+
+	for (const [biome, risks] of Object.entries(BIOME_DISASTER_MAP)) {
+		const allDisasters = [
+			...risks.highRisk,
+			...risks.moderateRisk,
+			...risks.lowRisk,
+		];
+		if (allDisasters.includes(disasterType)) {
+			vulnerableBiomes.push(biome);
+		}
+	}
+
+	return vulnerableBiomes;
 }
 
 /**
@@ -260,27 +282,43 @@ export async function checkRegionalDisasterTrigger(
 				`(rolled ${random.toFixed(4)} <= ${config.probabilityPerHour})`
 		);
 
-		// Get random region (biome type) from world tiles
-		const worldTiles = await db.query.tiles.findMany({
-			where: eq(tiles.worldId, worldId),
-			limit: 100, // Sample to determine biome distribution
+		// Get a random region from the world
+		const worldRegions = await db.query.regions.findMany({
+			where: eq(regions.worldId, worldId),
 		});
 
-		if (worldTiles.length === 0) {
-			logger.warn(`[DISASTER SCHEDULER] No tiles found for world ${worldId}`);
+		if (worldRegions.length === 0) {
+			logger.warn(`[DISASTER SCHEDULER] No regions found for world ${worldId}`);
 			return;
 		}
 
-		// Select random biome from world
-		const randomTile = worldTiles[Math.floor(Math.random() * worldTiles.length)];
-		const affectedBiome = randomTile.biome as BiomeType;
+		// Select random region
+		const targetRegion = worldRegions[Math.floor(Math.random() * worldRegions.length)];
 
-		// Select disaster type based on biome
-		const disasterType = selectDisasterType(affectedBiome);
+		// Get tiles in the region to determine dominant biome
+		const regionTiles = await db.query.tiles.findMany({
+			where: eq(tiles.regionId, targetRegion.id),
+			limit: 50, // Sample to determine biome distribution
+		});
+
+		if (regionTiles.length === 0) {
+			logger.warn(`[DISASTER SCHEDULER] No tiles found in region ${targetRegion.id}`);
+			return;
+		}
+
+		// Select disaster type based on dominant biome in region
+		const randomTile = regionTiles[Math.floor(Math.random() * regionTiles.length)];
+		const dominantBiome = randomTile.biome as BiomeType;
+		const disasterType = selectDisasterType(dominantBiome);
+
+		// Get all biomes vulnerable to this disaster type
+		const vulnerableBiomes = getVulnerableBiomes(disasterType);
 
 		// Calculate severity
 		const biomeVulnerability = 1; // Could vary by specific disaster/biome combo
-		const severity = calculateDisasterSeverity(config.severityMultiplier, biomeVulnerability); // Calculate timing
+		const severity = calculateDisasterSeverity(config.severityMultiplier, biomeVulnerability);
+
+		// Calculate timing
 		const warningTime = calculateWarningTime(disasterType, config.warningTimeMultiplier);
 		const impactDuration = calculateImpactDuration(disasterType);
 		const scheduledAt = currentTime + warningTime * 1000; // Convert to ms
@@ -291,8 +329,8 @@ export async function checkRegionalDisasterTrigger(
 			type: disasterType,
 			severity: severity,
 			severityLevel: getSeverityLevel(severity),
-			affectedRegionId: null, // null for world-scale disasters
-			affectedBiomes: [affectedBiome],
+			affectedRegionIds: [targetRegion.id], // Single region for random events
+			affectedBiomes: vulnerableBiomes, // All biome types vulnerable to this disaster
 			status: 'SCHEDULED',
 			scheduledAt: new Date(scheduledAt),
 			warningIssuedAt: null, // Set when warning is issued
@@ -304,7 +342,9 @@ export async function checkRegionalDisasterTrigger(
 			`[DISASTER SCHEDULER] Created disaster event:\n` +
 				`  Type: ${disasterType}\n` +
 				`  Severity: ${severity} (${getSeverityLevel(severity)})\n` +
-				`  Region: ${affectedBiome}\n` +
+				`  Region: ${targetRegion.name} (${targetRegion.id})\n` +
+				`  Dominant Biome: ${dominantBiome}\n` +
+				`  Vulnerable Biomes: ${vulnerableBiomes.join(', ')}\n` +
 				`  Warning Time: ${warningTime}s (${(warningTime / 3600).toFixed(1)}h)\n` +
 				`  Impact Duration: ${impactDuration}s (${(impactDuration / 60).toFixed(0)}min)\n` +
 				`  Scheduled At: ${new Date(scheduledAt).toISOString()}`

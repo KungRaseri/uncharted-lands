@@ -411,8 +411,8 @@ export interface DisasterWarningData {
 	type: string; // DisasterType enum value
 	severity: number; // 0-100
 	severityLevel: string; // 'MILD' | 'MODERATE' | 'MAJOR' | 'CATASTROPHIC'
-	affectedRegion?: string | null;
-	affectedBiomes: string[];
+	affectedRegions: string[]; // Changed from affectedRegion (now array of region IDs)
+	affectedBiomes: string[]; // Biome types vulnerable to this disaster
 	timeRemaining: number; // Milliseconds until impact
 	recommendedActions: string[];
 	timestamp: number;

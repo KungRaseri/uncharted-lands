@@ -769,9 +769,11 @@ export const disasterEvents = pgTable(
 		severity: integer('severity').notNull(), // 0-100 numeric value
 		severityLevel: disasterSeverityEnum('severityLevel').notNull(), // MILD/MODERATE/MAJOR/CATASTROPHIC
 
-		// Affected area (nullable for world-scale disasters)
-		affectedRegionId: text('affectedRegionId').references(() => regions.id),
-		affectedBiomes: json('affectedBiomes').$type<string[]>(), // Array of biome names
+		// Affected area - region-based disaster system
+		// Multiple regions can be affected (e.g., earthquake spanning adjacent regions)
+		// Within those regions, only tiles with vulnerable biomes take damage
+		affectedRegionIds: json('affectedRegionIds').$type<string[]>().notNull(), // Array of region IDs
+		affectedBiomes: json('affectedBiomes').$type<string[]>().notNull(), // Array of biome types vulnerable to this disaster (e.g., ['FOREST', 'GRASSLAND'] for wildfire)
 
 		// Timing
 		scheduledAt: timestamp('scheduledAt', { mode: 'date' }).notNull(), // When disaster will start
@@ -843,10 +845,8 @@ export const disasterEventsRelations = relations(disasterEvents, ({ one, many })
 		fields: [disasterEvents.worldId],
 		references: [worlds.id],
 	}),
-	affectedRegion: one(regions, {
-		fields: [disasterEvents.affectedRegionId],
-		references: [regions.id],
-	}),
+	// Note: affectedRegionIds is now an array, so no direct relation
+	// Use manual queries to fetch affected regions when needed
 	history: many(disasterHistory),
 }));
 

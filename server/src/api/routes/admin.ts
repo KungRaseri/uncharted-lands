@@ -5,11 +5,11 @@
  */
 
 import { Router } from 'express';
-import { sql, eq } from 'drizzle-orm';
-import { db, servers, worlds, accounts, settlements, disasterEvents } from '../../db/index.js';
+import { sql, eq, inArray } from 'drizzle-orm';
+import { db, servers, worlds, accounts, settlements, disasterEvents, regions, tiles } from '../../db/index.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 import { logger } from '../../utils/logger.js';
-import { getSeverityLevel } from '../../game/disaster-scheduler.js';
+import { getSeverityLevel, getVulnerableBiomes } from '../../game/disaster-scheduler.js';
 import type { DisasterType } from '../../db/schema.js';
 
 const router = Router();
@@ -100,7 +100,13 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
  * POST /api/admin/disasters/trigger
  * Manually trigger a disaster for testing purposes
  *
- * Body:
+ * Body (NEW region-based format):
+ * - worldId: string (required) - Target world
+ * - regionIds: string[] (required) - Array of region IDs to affect
+ * - disasterType: DisasterType (required) - Type of disaster
+ * - severity: number 1-5 (required) - Severity level
+ *
+ * OR legacy settlement-based:
  * - settlementId: string (required) - Target settlement
  * - disasterType: DisasterType (required) - Type of disaster
  * - severity: number 1-5 (required) - Severity level
@@ -113,29 +119,34 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
  */
 router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 	try {
-		const { settlementId, disasterType, severity, worldId, type, duration } = req.body;
+		const { worldId, regionIds, disasterType, severity, settlementId, type, duration } = req.body;
 
-		// Support both new admin UI format (settlementId) and legacy E2E format (worldId)
-		const isNewFormat = settlementId && disasterType && typeof severity === 'number';
-		const isLegacyFormat = worldId && type;
+		// Support three formats:
+		// 1. New region-based: worldId + regionIds + disasterType + severity
+		// 2. Legacy settlement-based: settlementId + disasterType + severity
+		// 3. E2E testing: worldId + type
+		const isRegionFormat = worldId && regionIds && Array.isArray(regionIds) && disasterType && typeof severity === 'number';
+		const isSettlementFormat = settlementId && disasterType && typeof severity === 'number';
+		const isE2EFormat = worldId && type && !regionIds;
 
-		if (!isNewFormat && !isLegacyFormat) {
+		if (!isRegionFormat && !isSettlementFormat && !isE2EFormat) {
 			return res.status(400).json({
 				error: 'Missing required fields',
 				code: 'MISSING_FIELDS',
-				required: 'Either (settlementId, disasterType, severity) or (worldId, type)',
+				required: 'Either (worldId, regionIds[], disasterType, severity) or (settlementId, disasterType, severity) or (worldId, type)',
 			});
 		}
 
 		let targetWorldId: string;
-		let targetBiome = 'GRASSLAND';
+		let affectedRegionIds: string[];
+		let vulnerableBiomes: string[];
 		let disasterSeverity: number;
 		let disasterTypeValue: DisasterType;
 		let warningTime: number;
 		let impactDuration: number;
 
-		if (isNewFormat) {
-			// New admin UI format: settlement-based targeting
+		if (isRegionFormat) {
+			// NEW region-based format
 			if (severity < 1 || severity > 5) {
 				return res.status(400).json({
 					error: 'Severity must be between 1 and 5',
@@ -143,7 +154,66 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 				});
 			}
 
-			// Get settlement and its world
+			// Verify world exists
+			const world = await db.query.worlds.findFirst({
+				where: eq(worlds.id, worldId),
+			});
+
+			if (!world) {
+				return res.status(404).json({
+					error: 'World not found',
+					code: 'WORLD_NOT_FOUND',
+				});
+			}
+
+			// Verify all regions exist and belong to this world
+			const targetRegions = await db.query.regions.findMany({
+				where: inArray(regions.id, regionIds),
+			});
+
+			if (targetRegions.length !== regionIds.length) {
+				return res.status(404).json({
+					error: 'One or more regions not found',
+					code: 'REGIONS_NOT_FOUND',
+				});
+			}
+
+			// Verify all regions belong to the world
+			const invalidRegions = targetRegions.filter(r => r.worldId !== worldId);
+			if (invalidRegions.length > 0) {
+				return res.status(400).json({
+					error: 'Some regions do not belong to the specified world',
+					code: 'INVALID_REGIONS',
+				});
+			}
+
+			targetWorldId = worldId;
+			affectedRegionIds = regionIds;
+			disasterTypeValue = disasterType as DisasterType;
+			vulnerableBiomes = getVulnerableBiomes(disasterTypeValue);
+
+			// Convert user-friendly scale (1-5) to internal (0-100)
+			const severityMap: Record<number, [number, number]> = {
+				1: [20, 25], // MILD
+				2: [30, 40], // MILD-MODERATE
+				3: [45, 55], // MODERATE
+				4: [60, 75], // MAJOR
+				5: [80, 100], // CATASTROPHIC
+			};
+			const [min, max] = severityMap[severity] || [45, 55];
+			disasterSeverity = Math.floor(Math.random() * (max - min + 1)) + min;
+			warningTime = 300; // 5 minutes for admin-triggered
+			impactDuration = 600; // 10 minutes default
+		} else if (isSettlementFormat) {
+			// Legacy settlement-based format (convert to region-based)
+			if (severity < 1 || severity > 5) {
+				return res.status(400).json({
+					error: 'Severity must be between 1 and 5',
+					code: 'INVALID_SEVERITY',
+				});
+			}
+
+			// Get settlement and its tile/region
 			const settlement = await db.query.settlements.findFirst({
 				where: eq(settlements.id, settlementId),
 				with: {
@@ -159,7 +229,9 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 			}
 
 			targetWorldId = settlement.tile.worldId;
-			targetBiome = settlement.tile.biome;
+			affectedRegionIds = [settlement.tile.regionId]; // Convert to region-based
+			disasterTypeValue = disasterType as DisasterType;
+			vulnerableBiomes = getVulnerableBiomes(disasterTypeValue);
 
 			// Convert user-friendly scale (1-5) to internal (0-100)
 			const severityMap: Record<number, [number, number]> = {
@@ -171,11 +243,10 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 			};
 			const [min, max] = severityMap[severity] || [45, 55];
 			disasterSeverity = Math.floor(Math.random() * (max - min + 1)) + min;
-			disasterTypeValue = disasterType as DisasterType;
 			warningTime = 300; // 5 minutes for admin-triggered
 			impactDuration = 600; // 10 minutes default
 		} else {
-			// Legacy E2E testing format: world-based
+			// E2E testing format
 			const world = await db.query.worlds.findFirst({
 				where: eq(worlds.id, worldId),
 			});
@@ -187,9 +258,24 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 				});
 			}
 
+			// Get a random region for E2E tests
+			const worldRegions = await db.query.regions.findMany({
+				where: eq(regions.worldId, worldId),
+				limit: 1,
+			});
+
+			if (worldRegions.length === 0) {
+				return res.status(404).json({
+					error: 'No regions found in world',
+					code: 'NO_REGIONS',
+				});
+			}
+
 			targetWorldId = worldId;
+			affectedRegionIds = [worldRegions[0].id];
 			disasterSeverity = severity || 50;
 			disasterTypeValue = type as DisasterType;
+			vulnerableBiomes = getVulnerableBiomes(disasterTypeValue);
 			// Use E2E_DISASTER_WARNING_SECONDS env var for testing
 			warningTime = process.env.E2E_DISASTER_WARNING_SECONDS
 				? Number.parseInt(process.env.E2E_DISASTER_WARNING_SECONDS, 10)
@@ -208,8 +294,8 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 				type: disasterTypeValue,
 				severity: disasterSeverity,
 				severityLevel: getSeverityLevel(disasterSeverity),
-				affectedRegionId: null,
-				affectedBiomes: [targetBiome],
+				affectedRegionIds: affectedRegionIds,
+				affectedBiomes: vulnerableBiomes,
 				status: 'WARNING', // Start with WARNING for immediate visibility
 				scheduledAt: scheduledAt,
 				warningIssuedAt: new Date(currentTime),
@@ -224,9 +310,10 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 			type: disasterTypeValue,
 			severity: disasterSeverity,
 			severityLevel: getSeverityLevel(disasterSeverity),
-			biome: targetBiome,
+			affectedRegionIds,
+			vulnerableBiomes,
 			scheduledAt: scheduledAt.toISOString(),
-			format: isNewFormat ? 'admin-ui' : 'e2e-legacy',
+			format: isRegionFormat ? 'region-based' : (isSettlementFormat ? 'settlement-legacy' : 'e2e-legacy'),
 		});
 
 		res.json({
