@@ -513,8 +513,14 @@ jobs:
       - name: Install client dependencies for vite preview
         working-directory: ./client
         run: |
-          # Only install vite for preview, avoid full npm ci that might affect workspace
-          npm install --no-save vite
+          # Install all dependencies needed for vite preview
+          npm ci
+          # Workaround for npm optional dependencies bug
+          rm -rf node_modules/rollup node_modules/@rollup
+          rm -rf node_modules/lightningcss node_modules/lightningcss-*
+          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
+          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
 
       - name: Install Playwright Browsers
         working-directory: ./client
@@ -556,10 +562,10 @@ jobs:
       - name: Start client (preview mode)
         working-directory: ./client
         run: |
-          npx vite preview &
+          npx vite preview --port 3000 &
           echo $! > client.pid
           # Wait for client to be ready
-          timeout 30 bash -c 'until curl -f http://localhost:5173; do sleep 1; done'
+          timeout 30 bash -c 'until curl -f http://localhost:3000; do sleep 1; done'
 
       - name: Run Playwright tests
         working-directory: ./client
