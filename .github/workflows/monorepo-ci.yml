@@ -444,6 +444,7 @@ jobs:
       NODE_ENV: e2e
       PORT: 3001
       REDIS_URL: redis://localhost:6379
+      CORS_ORIGINS: http://localhost:3000
 
     strategy:
       matrix:
