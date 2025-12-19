@@ -510,13 +510,32 @@ jobs:
         working-directory: ./server
         run: npm run build
 
-      - name: Install client dependencies
+      - name: Install client dependencies for vite preview
         working-directory: ./client
-        run: npm ci
+        run: |
+          # Only install vite for preview, avoid full npm ci that might affect workspace
+          npm install --no-save vite
 
       - name: Install Playwright Browsers
         working-directory: ./client
         run: npx playwright install --with-deps
+
+      - name: Verify drizzle-kit still exists (right before use)
+        working-directory: ./server
+        run: |
+          echo "=== Checking drizzle-kit right before database schema step ==="
+          ls -la node_modules/.bin/ | grep drizzle || echo "❌ drizzle-kit NOT in .bin"
+          if [ -d "node_modules/drizzle-kit" ]; then
+            echo "✅ drizzle-kit package directory exists"
+          else
+            echo "❌ drizzle-kit package directory MISSING"
+          fi
+          if [ -f "node_modules/.bin/drizzle-kit" ]; then
+            echo "✅ drizzle-kit binary exists"
+            ls -la node_modules/.bin/drizzle-kit
+          else
+            echo "❌ drizzle-kit binary MISSING"
+          fi
 
       - name: Setup database schema
         working-directory: ./server
