@@ -11,6 +11,8 @@ import type { Page, APIRequestContext } from '@playwright/test';
 import { expect } from '@playwright/test';
 import crypto from 'node:crypto';
 
+const API_BASE_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+
 /**
  * Test user credentials
  */
@@ -50,7 +52,7 @@ export const API_ENDPOINTS = {
 export async function cleanupTestUser(request: APIRequestContext, email: string): Promise<void> {
 	try {
 		const response = await request.delete(
-			`http://localhost:3001/api/test/cleanup/user/${encodeURIComponent(email)}`
+			`${API_BASE_URL}/test/cleanup/user/${encodeURIComponent(email)}`
 		);
 		if (!response.ok()) {
 			console.warn(`Failed to cleanup user ${email}: ${response.status()}`);

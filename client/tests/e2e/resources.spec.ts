@@ -44,7 +44,7 @@ import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
 // TEST CONFIGURATION
 // ============================================================================
 
-const apiUrl = 'http://localhost:3001/api';
+const apiUrl = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
 
 let testWorldId: string;
 let testSettlementId: string;

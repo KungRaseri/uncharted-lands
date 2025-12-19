@@ -6,6 +6,8 @@
 import type { APIRequestContext } from '@playwright/test';
 import crypto from 'node:crypto';
 
+const API_BASE_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+
 /**
  * Wait for world generation to complete
  * Polls the world status until it changes from 'GENERATING' to 'READY'
@@ -29,7 +31,7 @@ export async function waitForWorldGeneration(
 
 	while (Date.now() - startTime < timeoutMs) {
 		// Fetch current world status with authentication
-		const response = await api.get(`http://localhost:3001/api/worlds/${worldId}`, {
+		const response = await api.get(`${API_BASE_URL}/worlds/${worldId}`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -113,7 +115,7 @@ export async function createWorldViaAPI(
 	console.log('[E2E] World creation request payload:', requestPayload);
 
 	// Create world (returns immediately with GENERATING status)
-	const response = await api.post('http://localhost:3001/api/worlds', {
+	const response = await api.post(`${API_BASE_URL}/worlds`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
 		},

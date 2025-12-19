@@ -1,9 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { env } from '$env/dynamic/public';
-
-// Use PUBLIC_CLIENT_API_URL which works in both client and server contexts
-const API_URL = env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+import { SERVER_API_URL } from '$env/static/private';
 
 /**
  * API endpoint to fetch specific regions by coordinates for lazy loading
@@ -41,13 +38,13 @@ export const GET: RequestHandler = async ({ params, url, locals, fetch }) => {
 		accountId: locals.account.id
 	});
 
-	try {
-		// Proxy request to server REST API
-		const response = await fetch(`${API_URL}/regions?${queryParams.toString()}`, {
-			headers: {
-				Cookie: `session=${locals.account.userAuthToken}`
-			}
-		});
+		try {
+			// Proxy request to server REST API
+			const response = await fetch(`${SERVER_API_URL}/regions?${queryParams.toString()}`, {
+				headers: {
+					Cookie: `session=${locals.account.userAuthToken}`
+				}
+			});
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));

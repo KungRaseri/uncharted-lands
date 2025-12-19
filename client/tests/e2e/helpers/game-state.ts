@@ -47,7 +47,7 @@ export async function waitForSocketConnection(
 	console.log('[E2E] Waiting for Socket.IO connection...', { timeoutMs, required });
 
 	const startTime = Date.now();
-	const pollInterval = 100; // Check every 100ms
+	const pollInterval = 500; // Check every 500ms
 
 	while (Date.now() - startTime < timeoutMs) {
 		const debugInfo = await page.evaluate(() => {

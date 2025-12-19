@@ -6,6 +6,8 @@
 import type { Page, APIRequestContext } from '@playwright/test';
 import { expect } from '@playwright/test';
 
+const DEFAULT_API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+
 // Type for disaster warning event data
 type DisasterWarningData = {
 	disasterId: string;
@@ -61,7 +63,7 @@ export const TEST_DISASTERS = {
  * @param sessionCookie - Session cookie value for authentication
  * @param worldId - World ID to trigger disaster in
  * @param disasterConfig - Disaster configuration
- * @param apiUrl - Base API URL (optional, defaults to http://localhost:3001/api)
+ * @param apiUrl - Base API URL (optional, defaults to PUBLIC_CLIENT_API_URL env var)
  * @returns Disaster event ID
  */
 export async function triggerDisaster(
@@ -69,7 +71,7 @@ export async function triggerDisaster(
 	sessionCookie: string,
 	worldId: string,
 	disasterConfig: (typeof TEST_DISASTERS)[keyof typeof TEST_DISASTERS],
-	apiUrl: string = 'http://localhost:3001/api'
+	apiUrl: string = DEFAULT_API_URL
 ): Promise<string> {
 	const response = await request.post(`${apiUrl}/admin/disasters/trigger`, {
 		headers: {
