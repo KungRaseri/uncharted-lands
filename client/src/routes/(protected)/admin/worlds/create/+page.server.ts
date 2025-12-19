@@ -3,8 +3,8 @@ import { logger } from '$lib/utils/logger';
 import type { PageServerLoad, Actions } from './$types';
 import { env } from '$env/dynamic/public';
 
-// Use PUBLIC_API_URL which works in both client and server contexts
-const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
+// Use PUBLIC_CLIENT_API_URL which works in both client and server contexts
+const API_URL = env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
 
 export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
 	if (!locals.account || locals.account.role !== 'ADMINISTRATOR') {

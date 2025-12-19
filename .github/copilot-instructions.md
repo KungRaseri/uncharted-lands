@@ -439,7 +439,7 @@ fetch('http://localhost:3001/api/players'); // Breaks in production
 ✅ **DO** use config
 
 ```typescript
-import { API_URL } from '$lib/config'; // Uses PUBLIC_API_URL env var
+import { API_URL } from '$lib/config'; // Uses PUBLIC_CLIENT_API_URL env var
 fetch(`${API_URL}/players`);
 ```
 

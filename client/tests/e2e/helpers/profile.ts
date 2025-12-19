@@ -6,7 +6,7 @@
 
 import type { APIRequestContext } from '@playwright/test';
 
-const API_BASE_URL = process.env.PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
 
 export interface ProfileData {
 	id: string;

@@ -2,8 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/public';
 
-// Use PUBLIC_API_URL which works in both client and server contexts
-const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
+// Use PUBLIC_CLIENT_API_URL which works in both client and server contexts
+const API_URL = env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
 
 /**
  * API endpoint to fetch specific regions by coordinates for lazy loading
