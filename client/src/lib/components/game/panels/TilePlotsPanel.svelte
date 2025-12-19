@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { logger } from '$lib/utils/logger';
+	import type { TileWithRelations } from '@uncharted-lands/shared';
 	import { fade } from 'svelte/transition';
 
 	/**
@@ -37,7 +38,7 @@
 	};
 
 	type Props = {
-		tile: Tile;
+		tile: TileWithRelations;
 		extractors: Extractor[]; // Extractors on this tile
 		onBuildExtractor?: (tileId: string, slotPosition: number) => void;
 		onSelectExtractor?: (extractorId: string) => void;
@@ -117,7 +118,7 @@
 		<div>
 			<h3 id="tile-plots-heading" class="h5 flex items-center gap-2">
 				<span>Plot Slots</span>
-				<span class="badge variant-soft text-xs">{tile.biome.name}</span>
+				<span class="badge variant-soft text-xs">{tile.biome?.name}</span>
 			</h3>
 			<p class="text-xs text-surface-600-300-token mt-1">
 				📍 Tile ({tile.xCoord}, {tile.yCoord}) • {extractors.length}/{tile.plotSlots} occupied

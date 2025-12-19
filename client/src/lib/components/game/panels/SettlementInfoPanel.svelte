@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { Tile } from '@uncharted-lands/shared';
+
 	/**
 	 * Settlement Info Panel Component
 	 *
@@ -20,20 +22,17 @@
 		worldId: string;
 		resilience: number | null;
 		createdAt: string | Date;
-		Tile?: {
-			xCoord: number;
-			yCoord: number;
-		} | null;
 	}
 
 	interface Props {
 		settlementId: string;
 		settlement: Settlement;
+		tile: Tile;
 		collapsed?: boolean;
 		onToggleCollapse?: () => void;
 	}
 
-	let { settlementId, settlement, collapsed = false, onToggleCollapse }: Props = $props();
+	let { settlementId, settlement, tile, collapsed = false, onToggleCollapse }: Props = $props();
 
 	// Format date as "X days ago"
 	function formatDaysAgo(dateInput: string | Date): string {
@@ -141,7 +140,7 @@
 							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
 						/>
 					</svg>
-					<span>({settlement.Tile?.xCoord ?? 0}, {settlement.Tile?.yCoord ?? 0})</span>
+					<span>({tile?.xCoord ?? 0}, {tile?.yCoord ?? 0})</span>
 				</div>
 			</div>
 

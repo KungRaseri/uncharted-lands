@@ -40,6 +40,7 @@
 	import { calculateProduction } from '$lib/utils/production-calculator';
 	import type { StructureMetadata } from '$lib/api/structures';
 	import { logger } from '$lib/utils/logger';
+	import type { TileWithRelations } from '@uncharted-lands/shared';
 
 	// ✅ NEW: TypeScript interface for settlement structures
 	interface SettlementStructure {
@@ -72,10 +73,6 @@
 		worldId: string;
 		resilience: number | null;
 		createdAt: string | Date;
-		Tile?: {
-			xCoord: number;
-			yCoord: number;
-		} | null;
 	}
 
 	// ✅ NEW: Add Tile type definition (must match TilePlotsPanel)
@@ -98,7 +95,7 @@
 		onOpenBuildMenu?: () => void; // Handler to open build menu
 		structures?: StructureMetadata[];
 		settlement?: Settlement;
-		tile?: Tile | null; // ✅ NEW: Add tile data
+		tile: TileWithRelations;
 	}
 
 	let {
@@ -107,7 +104,7 @@
 		onOpenBuildMenu,
 		structures = [],
 		settlement,
-		tile = null
+		tile
 	}: Props = $props();
 
 	// ✅ REACTIVE: Get structures from store with real-time Socket.IO updates
@@ -503,8 +500,8 @@
 			level: 1, // TODO: Get from settlement tier when implemented
 			type: 'OUTPOST' as const, // TODO: Get from settlement type when implemented
 			location: {
-				x: settlement.Tile?.xCoord || 0,
-				y: settlement.Tile?.yCoord || 0
+				x: tile.xCoord || 0,
+				y: tile.yCoord || 0
 			},
 			population: {
 				current: realPopulation.current,
@@ -577,7 +574,7 @@
 		<ResourcePanel {settlementId} settlementName={settlement?.name} resources={realResources} />
 	{:else if panel.id === 'settlement-info'}
 		{#if settlement}
-			<SettlementInfoPanel {settlementId} {settlement} />
+			<SettlementInfoPanel {settlementId} {settlement} {tile} />
 		{/if}
 	{:else if panel.id === 'population'}
 		<PopulationPanel {settlementId} population={realPopulation} />
