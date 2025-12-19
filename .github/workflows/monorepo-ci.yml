@@ -530,6 +530,13 @@ jobs:
           rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
           npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
 
+      - name: Fix server dependencies corrupted by client npm ci
+        working-directory: ./server
+        run: |
+          # Client npm ci corrupts iconv-lite which breaks Express body-parser
+          rm -rf node_modules/iconv-lite node_modules/raw-body/node_modules/iconv-lite
+          npm install --no-save iconv-lite
+
       - name: Install Playwright Browsers
         working-directory: ./client
         run: npx playwright install --with-deps
