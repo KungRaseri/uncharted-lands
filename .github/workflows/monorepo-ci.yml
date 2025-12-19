@@ -477,12 +477,6 @@ jobs:
           name: client-build
           path: client/.svelte-kit/
 
-      - name: Download server build
-        uses: actions/download-artifact@v4
-        with:
-          name: server-build
-          path: server/dist/
-
       - name: Install root dependencies
         run: npm ci
 
@@ -490,15 +484,16 @@ jobs:
         working-directory: ./shared
         run: npm ci
 
-      - name: Install server dependencies
+      - name: Install server dependencies (all deps including dev)
         working-directory: ./server
         run: |
           npm ci
           # Workaround for npm optional dependencies bug
           rm -rf node_modules/rollup node_modules/@rollup
           npm install --no-save rollup
-          # Install drizzle-kit for database schema setup
-          npm install --no-save drizzle-kit
+
+      - name: Build server (fresh build with all tooling)
+        run: npm run build:server
 
       - name: Install client dependencies
         working-directory: ./client
@@ -510,7 +505,7 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        run: ./node_modules/.bin/drizzle-kit push --force
+        run: npx drizzle-kit push --force
 
       - name: Seed database
         working-directory: ./server
