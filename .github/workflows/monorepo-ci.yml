@@ -526,6 +526,13 @@ jobs:
         working-directory: ./client
         run: npx playwright install --with-deps
 
+      - name: Ensure drizzle-kit is installed (after all npm operations)
+        working-directory: ./server
+        run: |
+          echo "Installing drizzle-kit after all other dependencies..."
+          npm install --no-save drizzle-kit
+          ls -la node_modules/.bin/drizzle-kit
+
       - name: Verify drizzle-kit still exists (right before use)
         working-directory: ./server
         run: |
@@ -534,13 +541,15 @@ jobs:
           if [ -d "node_modules/drizzle-kit" ]; then
             echo "✅ drizzle-kit package directory exists"
           else
-            echo "❌ drizzle-kit package directory MISSING"
+            echo "❌ drizzle-kit package directory MISSING - reinstalling"
+            npm install --no-save drizzle-kit
           fi
           if [ -f "node_modules/.bin/drizzle-kit" ]; then
             echo "✅ drizzle-kit binary exists"
             ls -la node_modules/.bin/drizzle-kit
           else
-            echo "❌ drizzle-kit binary MISSING"
+            echo "❌ drizzle-kit binary MISSING - reinstalling"
+            npm install --no-save drizzle-kit
           fi
 
       - name: Setup database schema
