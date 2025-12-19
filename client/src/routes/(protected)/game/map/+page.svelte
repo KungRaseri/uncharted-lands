@@ -7,7 +7,7 @@
 
 	let { data }: { data: PageData } = $props();
 
-	console.log('[MAP CLIENT] Page data received:', {
+	logger.debug('[MAP CLIENT] Page data received:', {
 		hasWorld: !!data.world,
 		worldName: data.world?.name,
 		regionCount: data.world?.regions?.length,
@@ -41,7 +41,7 @@
 		if (!data.world) return;
 
 		isLoading = true;
-		console.log('[MAP PAN] Fetching regions:', { centerX, centerY, radius });
+		logger.debug('[MAP PAN] Fetching regions:', { centerX, centerY, radius });
 
 		try {
 			const response = await fetch(
@@ -50,8 +50,8 @@
 			const result = await response.json();
 
 			if (response.ok && result.regions) {
-				console.log('[MAP PAN] Received regions:', result.count);
-				console.log('[MAP PAN] Bounds:', result.bounds);
+				logger.debug('[MAP PAN] Received regions:', result.count);
+				logger.debug('[MAP PAN] Bounds:', result.bounds);
 
 				// REPLACE the regions array with new grid (don't append)
 				// This ensures we always show exactly 3×3 grid centered on new coordinates
@@ -66,16 +66,16 @@
 				// Update current bounds
 				currentBounds = result.bounds;
 
-				console.log('[MAP PAN] Displaying regions:', regions.length);
-				console.log(
+				logger.debug('[MAP PAN] Displaying regions:', regions.length);
+				logger.debug(
 					'[MAP PAN] Region coordinates:',
 					regions.map((r: RegionWithTiles) => `(${r.xCoord},${r.yCoord})`).join(', ')
 				);
 			} else {
-				console.error('[MAP PAN] Failed to fetch regions:', result.error);
+				logger.error('[MAP PAN] Failed to fetch regions:', result.error);
 			}
 		} catch (error) {
-			console.error('[MAP PAN] Error fetching regions:', error);
+			logger.error('[MAP PAN] Error fetching regions:', error);
 		} finally {
 			isLoading = false;
 		}

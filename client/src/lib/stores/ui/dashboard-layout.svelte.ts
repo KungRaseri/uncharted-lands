@@ -10,6 +10,7 @@
  */
 
 import { browser } from '$app/environment';
+import { logger } from '../utils/logger.js';
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -274,7 +275,7 @@ function createDashboardLayoutStore() {
 			try {
 				currentLayout = JSON.parse(stored);
 			} catch (e) {
-				console.error('Failed to load layout:', e);
+				logger.error('Failed to load layout:', e);
 				currentLayout = JSON.parse(
 					JSON.stringify(DEFAULT_LAYOUTS[layoutName] || DEFAULT_LAYOUTS.default)
 				);

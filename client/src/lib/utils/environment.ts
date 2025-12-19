@@ -88,7 +88,7 @@ export function logEnvironmentInfo() {
 		exposeSocket: exposeSocketForTesting
 	};
 
-	console.log('[ENVIRONMENT] Configuration:', info);
+	logger.debug('[ENVIRONMENT] Configuration:', info);
 
 	return info;
 }

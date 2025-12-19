@@ -10,9 +10,9 @@
 	onMount(async () => {
 		try {
 			await getProductionRates();
-			console.log('[App] Production rates pre-loaded successfully');
+			logger.debug('[App] Production rates pre-loaded successfully');
 		} catch (error) {
-			console.error('[App] Failed to pre-load production rates:', error);
+			logger.error('[App] Failed to pre-load production rates:', error);
 			// Non-critical: Calculator will load on demand with fallback
 		}
 	});

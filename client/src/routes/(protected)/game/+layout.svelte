@@ -17,12 +17,12 @@
 
 	// Auto-connect Socket.IO and initialize stores when entering game section
 	onMount(() => {
-		console.log('[GAME LAYOUT] Initializing game connection...');
+		logger.debug('[GAME LAYOUT] Initializing game connection...');
 
 		// Only connect Socket.IO if user has both session token AND profile
 		// Profile is created when user creates their first settlement
 		if (data.sessionToken && data.profileId) {
-			console.log('[GAME LAYOUT] Auto-connecting Socket.IO...');
+			logger.debug('[GAME LAYOUT] Auto-connecting Socket.IO...');
 			socketStore.connect(undefined, data.sessionToken);
 
 			// Expose socket to window for E2E testing
@@ -31,24 +31,24 @@
 				if (socket && typeof window !== 'undefined') {
 					(window as any).__socket = socket;
 					(window as any).disasterStore = disasterStore;
-					console.log('[GAME LAYOUT] Socket exposed to window for E2E testing');
+					logger.debug('[GAME LAYOUT] Socket exposed to window for E2E testing');
 				}
 			}
 
 			// Join world if we have worldId
 			if (data.worldId) {
-				console.log('[GAME LAYOUT] Joining world...', {
+				logger.debug('[GAME LAYOUT] Joining world...', {
 					worldId: data.worldId,
 					profileId: data.profileId
 				});
 				gameSocket.joinWorld(data.worldId, data.profileId);
 			} else {
-				console.warn('[GAME LAYOUT] Cannot join world - missing worldId', {
+				logger.warn('[GAME LAYOUT] Cannot join world - missing worldId', {
 					hasWorldId: !!data.worldId
 				});
 			}
 		} else {
-			console.log(
+			logger.debug(
 				'[GAME LAYOUT] Skipping Socket.IO connection - user needs to create settlement first',
 				{
 					hasSessionToken: !!data.sessionToken,
@@ -60,17 +60,17 @@
 		// Fallback for E2E tests that need socket exposed even without profile
 		if (exposeSocketForTesting && !data.profileId && typeof window !== 'undefined') {
 			(window as any).__socket = null;
-			console.log(
+			logger.debug(
 				'[GAME LAYOUT] Socket not connected (no profile), exposed null for E2E testing'
 			);
 		}
 
 		if (!data.sessionToken) {
-			console.warn('[GAME LAYOUT] No session token - Socket.IO will not auto-connect');
+			logger.warn('[GAME LAYOUT] No session token - Socket.IO will not auto-connect');
 		}
 
 		return () => {
-			console.log('[GAME LAYOUT] Cleaning up game connection...');
+			logger.debug('[GAME LAYOUT] Cleaning up game connection...');
 			// Leave world and disconnect Socket.IO when leaving game section
 			if (data.worldId && data.profileId) {
 				gameSocket.leaveWorld(data.worldId, data.profileId);

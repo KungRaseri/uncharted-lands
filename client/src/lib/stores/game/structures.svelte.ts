@@ -12,6 +12,7 @@
 import { socketStore } from './socket';
 import type { Socket } from 'socket.io-client';
 import type { Structure } from '@uncharted-lands/shared';
+import { logger } from '$lib/utils/logger';
 
 interface StructuresState {
 	// Map of settlementId -> Structure[]
@@ -35,11 +36,11 @@ let listenersInitialized = false;
  */
 function initializeListeners(socket: Socket) {
 	if (listenersInitialized) {
-		console.log('[StructuresStore] Listeners already initialized, skipping');
+		logger.debug('[StructuresStore] Listeners already initialized, skipping');
 		return;
 	}
 
-	console.log('[StructuresStore] Initializing Socket.IO listeners');
+	logger.debug('[StructuresStore] Initializing Socket.IO listeners');
 
 	// ✅ EVENT: structure:built - New structure created
 	socket.on(
@@ -51,10 +52,10 @@ function initializeListeners(socket: Socket) {
 			structureName: string;
 			resourcesDeducted?: { wood: number; stone: number; ore: number };
 		}) => {
-			console.log('[StructuresStore] Received structure:built:', data);
+				logger.debug('[StructuresStore] Received structure:built:', data);
 
 			if (!data.settlementId || !data.structure) {
-				console.warn(
+				logger.warn(
 					'[StructuresStore] Invalid structure:built data, missing settlementId or structure'
 				);
 				return;
@@ -69,7 +70,7 @@ function initializeListeners(socket: Socket) {
 			// Update map (create new Map to trigger Svelte reactivity)
 			state.structures = new Map(state.structures.set(data.settlementId, updated));
 
-			console.log('[StructuresStore] Structure added to settlement:', {
+			logger.debug('[StructuresStore] Structure added to settlement:', {
 				settlementId: data.settlementId,
 				structureId: data.structure.id,
 				totalStructures: updated.length
@@ -88,18 +89,18 @@ function initializeListeners(socket: Socket) {
 			structureName: string;
 			resourcesDeducted?: { wood: number; stone: number; ore: number };
 		}) => {
-			console.log('[StructuresStore] Received structure:upgraded:', data);
+			logger.debug('[StructuresStore] Received structure:upgraded:', data);
 
 			if (!data.settlementId || !data.structureId) {
-				console.warn('[StructuresStore] Invalid structure:upgraded data');
+				logger.warn('[StructuresStore] Invalid structure:upgraded data');
 				return;
 			}
 
 			const existing = state.structures.get(data.settlementId);
 			if (!existing) {
-				console.warn(
+				logger.warn(
 					'[StructuresStore] No structures found for settlement:',
-					data.settlementId
+					{ settlementId: data.settlementId }
 				);
 				return;
 			}
@@ -119,7 +120,7 @@ function initializeListeners(socket: Socket) {
 			// Trigger reactivity
 			state.structures = new Map(state.structures.set(data.settlementId, updated));
 
-			console.log('[StructuresStore] Structure upgraded:', {
+			logger.debug('[StructuresStore] Structure upgraded:', {
 				structureId: data.structureId,
 				newLevel: data.level
 			});
@@ -128,18 +129,18 @@ function initializeListeners(socket: Socket) {
 
 	// ✅ EVENT: structure:demolished - Structure removed
 	socket.on('structure:demolished', (data: { settlementId: string; structureId: string }) => {
-		console.log('[StructuresStore] Received structure:demolished:', data);
+		logger.debug('[StructuresStore] Received structure:demolished:', data);
 
 		if (!data.settlementId || !data.structureId) {
-			console.warn('[StructuresStore] Invalid structure:demolished data');
+			logger.warn('[StructuresStore] Invalid structure:demolished data');
 			return;
 		}
 
 		const existing = state.structures.get(data.settlementId);
 		if (!existing) {
-			console.warn(
+			logger.warn(
 				'[StructuresStore] No structures found for settlement:',
-				data.settlementId
+				{ settlementId: data.settlementId }
 			);
 			return;
 		}
@@ -150,14 +151,14 @@ function initializeListeners(socket: Socket) {
 		// Trigger reactivity
 		state.structures = new Map(state.structures.set(data.settlementId, updated));
 
-		console.log('[StructuresStore] Structure removed:', {
+		logger.debug('[StructuresStore] Structure removed:', {
 			structureId: data.structureId,
 			remainingStructures: updated.length
 		});
 	});
 
 	listenersInitialized = true;
-	console.log('[StructuresStore] Listeners initialized successfully');
+	logger.debug('[StructuresStore] Listeners initialized successfully');
 }
 
 /**
@@ -168,7 +169,7 @@ function initialize() {
 	const socket = socketStore.getSocket();
 
 	if (socket && !listenersInitialized) {
-		console.log('[StructuresStore] Initializing socket listeners');
+		logger.debug('[StructuresStore] Initializing socket listeners');
 		initializeListeners(socket);
 	}
 }
@@ -177,10 +178,9 @@ function initialize() {
  * Initialize structures for a settlement from initial data
  */
 function initializeStructures(settlementId: string, structures: Structure[]) {
-	console.log(
+	logger.debug(
 		'[StructuresStore] Initializing structures for settlement:',
-		settlementId,
-		structures.length
+		{ settlementId, count: structures.length }
 	);
 	state.structures = new Map(state.structures.set(settlementId, structures));
 }
@@ -216,7 +216,7 @@ function addStructure(settlementId: string, structure: Structure) {
 	const updated = [...existing, structure];
 	state.structures = new Map(state.structures.set(settlementId, updated));
 
-	console.log('[StructuresStore] Structure manually added:', structure.id);
+	logger.debug('[StructuresStore] Structure manually added:', { structureId: structure.id });
 }
 
 /**
@@ -235,7 +235,7 @@ function updateStructure(settlementId: string, structureId: string, updates: Par
 
 	state.structures = new Map(state.structures.set(settlementId, updated));
 
-	console.log('[StructuresStore] Structure manually updated:', structureId);
+	logger.debug('[StructuresStore] Structure manually updated:', { structureId });
 }
 
 /**
@@ -248,7 +248,7 @@ function removeStructure(settlementId: string, structureId: string) {
 	const updated = existing.filter((structure) => structure.id !== structureId);
 	state.structures = new Map(state.structures.set(settlementId, updated));
 
-	console.log('[StructuresStore] Structure manually removed:', structureId);
+	logger.debug('[StructuresStore] Structure manually removed:', { structureId });
 }
 
 /**
@@ -257,7 +257,7 @@ function removeStructure(settlementId: string, structureId: string) {
 function clearStructures() {
 	state.structures = new Map();
 	state.error = null;
-	console.log('[StructuresStore] All structures cleared');
+	logger.debug('[StructuresStore] All structures cleared');
 }
 
 // Export public API

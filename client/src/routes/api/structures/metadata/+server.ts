@@ -8,6 +8,7 @@
 import { SERVER_API_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { logger } from '../utils/logger.js';
 
 export const GET: RequestHandler = async ({ cookies }) => {
 	try {
@@ -35,7 +36,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
 		const data = await response.json();
 		return json(data);
 	} catch (err) {
-		console.error('[API] Error fetching structure metadata:', err);
+		logger.error('[API] Error fetching structure metadata:', err);
 		return json(
 			{
 				error: `Failed to fetch structure metadata: ${err instanceof Error ? err.message : 'Unknown error'}`

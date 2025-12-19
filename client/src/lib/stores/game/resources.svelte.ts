@@ -8,6 +8,7 @@
 
 import { browser } from '$app/environment';
 import { socketStore } from './socket';
+import { logger } from '$lib/utils/logger';
 import type { ResourceType, ResourceData, ResourceWithType } from '$lib/types/resources';
 
 // Store-specific types
@@ -39,20 +40,20 @@ let state = $state<ResourcesStore>({
 function initializeListeners() {
 	const socket = socketStore.getSocket();
 	if (!socket) {
-		console.warn('[ResourcesStore] No socket available for listeners');
+		logger.warn('[ResourcesStore] No socket available for listeners');
 		return;
 	}
 
-	console.log('[ResourcesStore] Initializing Socket.IO listeners');
+	logger.debug('[ResourcesStore] Initializing Socket.IO listeners');
 
 	/**
 	 * Bulk resource data update (on page load or settlement switch)
 	 */
 	socket.on('resources-data', (data: ResourcesState) => {
-		console.log('[ResourcesStore] Received resources-data:', data);
+		logger.debug('[ResourcesStore] Received resources-data:', data);
 
 		if (!data.settlementId) {
-			console.error('[ResourcesStore] Missing settlementId in resources-data');
+			logger.error('[ResourcesStore] Missing settlementId in resources-data');
 			return;
 		}
 
@@ -86,10 +87,10 @@ function initializeListeners() {
 			population: number;
 			timestamp: number;
 		}) => {
-			console.log('[ResourcesStore] Received resource-update:', data);
+			logger.debug('[ResourcesStore] Received resource-update:', data);
 
 			if (!data.settlementId || !data.resources) {
-				console.error('[ResourcesStore] Invalid resource-update data:', data);
+				logger.error('[ResourcesStore] Invalid resource-update data:', data);
 				return;
 			}
 
@@ -126,7 +127,7 @@ function initializeListeners() {
 				// Trigger reactivity
 				state.resources = new Map(state.resources);
 
-				console.log(
+				logger.debug(
 					'[ResourcesStore] Updated all resources for settlement:',
 					data.settlementId,
 					{
@@ -141,7 +142,7 @@ function initializeListeners() {
 					}
 				);
 			} else {
-				console.warn(
+				logger.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for resource update`
 				);
 			}
@@ -154,10 +155,10 @@ function initializeListeners() {
 	socket.on(
 		'resource-production',
 		(data: { settlementId: string; type: ResourceType; productionRate: number }) => {
-			console.log('[ResourcesStore] Received resource-production:', data);
+			logger.debug('[ResourcesStore] Received resource-production:', data);
 
 			if (!data.settlementId || !data.type) {
-				console.error('[ResourcesStore] Invalid resource-production data:', data);
+				logger.error('[ResourcesStore] Invalid resource-production data:', data);
 				return;
 			}
 
@@ -169,7 +170,7 @@ function initializeListeners() {
 				// Trigger reactivity
 				state.resources = new Map(state.resources);
 			} else {
-				console.warn(
+				logger.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for production update`
 				);
 			}
@@ -182,10 +183,10 @@ function initializeListeners() {
 	socket.on(
 		'resource-consumption',
 		(data: { settlementId: string; type: ResourceType; consumptionRate: number }) => {
-			console.log('[ResourcesStore] Received resource-consumption:', data);
+			logger.debug('[ResourcesStore] Received resource-consumption:', data);
 
 			if (!data.settlementId || !data.type) {
-				console.error('[ResourcesStore] Invalid resource-consumption data:', data);
+				logger.error('[ResourcesStore] Invalid resource-consumption data:', data);
 				return;
 			}
 
@@ -197,7 +198,7 @@ function initializeListeners() {
 				// Trigger reactivity
 				state.resources = new Map(state.resources);
 			} else {
-				console.warn(
+				logger.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for consumption update`
 				);
 			}
@@ -210,10 +211,10 @@ function initializeListeners() {
 	socket.on(
 		'resource-capacity-change',
 		(data: { settlementId: string; capacities: Record<ResourceType, number> }) => {
-			console.log('[ResourcesStore] Received resource-capacity-change:', data);
+			logger.debug('[ResourcesStore] Received resource-capacity-change:', data);
 
 			if (!data.settlementId || !data.capacities) {
-				console.error('[ResourcesStore] Invalid resource-capacity-change data:', data);
+				logger.error('[ResourcesStore] Invalid resource-capacity-change data:', data);
 				return;
 			}
 
@@ -232,7 +233,7 @@ function initializeListeners() {
 				// Trigger reactivity
 				state.resources = new Map(state.resources);
 			} else {
-				console.warn(
+				logger.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for capacity change`
 				);
 			}
@@ -256,10 +257,10 @@ function initializeListeners() {
 				ore: number;
 			};
 		}) => {
-			console.log('[ResourcesStore] Received structure:built:', data);
+			logger.debug('[ResourcesStore] Received structure:built:', data);
 
 			if (!data.settlementId) {
-				console.error('[ResourcesStore] Missing settlementId in structure:built');
+				logger.error('[ResourcesStore] Missing settlementId in structure:built');
 				return;
 			}
 
@@ -284,7 +285,7 @@ function initializeListeners() {
 				// Trigger reactivity
 				state.resources = new Map(state.resources);
 
-				console.log(
+				logger.debug(
 					`[ResourcesStore] Deducted construction costs for ${data.structureName}:`,
 					data.resourcesDeducted,
 					'New resources:',
@@ -295,7 +296,7 @@ function initializeListeners() {
 					}
 				);
 			} else if (!existing) {
-				console.warn(
+				logger.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for structure:built update`
 				);
 			}
@@ -320,10 +321,10 @@ function initializeListeners() {
 				ore: number;
 			};
 		}) => {
-			console.log('[ResourcesStore] Received structure:upgraded:', data);
+			logger.debug('[ResourcesStore] Received structure:upgraded:', data);
 
 			if (!data.settlementId) {
-				console.error('[ResourcesStore] Missing settlementId in structure:upgraded');
+				logger.error('[ResourcesStore] Missing settlementId in structure:upgraded');
 				return;
 			}
 
@@ -348,7 +349,7 @@ function initializeListeners() {
 				// Trigger reactivity
 				state.resources = new Map(state.resources);
 
-				console.log(
+				logger.debug(
 					`[ResourcesStore] Deducted upgrade costs for ${data.structureName} to level ${data.level}:`,
 					data.resourcesDeducted,
 					'New resources:',
@@ -359,7 +360,7 @@ function initializeListeners() {
 					}
 				);
 			} else if (!existing) {
-				console.warn(
+				logger.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for structure:upgraded update`
 				);
 			}
@@ -479,11 +480,11 @@ export const resourcesStore = {
 	requestResourcesData(settlementId: string): void {
 		const socket = socketStore.getSocket();
 		if (!socket) {
-			console.warn('[ResourcesStore] Cannot request data - no socket connection');
+			logger.warn('[ResourcesStore] Cannot request data - no socket connection');
 			return;
 		}
 
-		console.log('[ResourcesStore] Requesting resources data for:', settlementId);
+		logger.debug('[ResourcesStore] Requesting resources data for:', settlementId);
 		socket.emit('request-resources-data', { settlementId });
 	},
 
@@ -510,7 +511,7 @@ export const resourcesStore = {
 	): void {
 		const capacity = serverData.capacity || 1000;
 
-		console.log(
+		logger.debug(
 			'[ResourcesStore] Initializing from server data for settlement:',
 			settlementId,
 			serverData
@@ -556,8 +557,8 @@ export const resourcesStore = {
 		// Trigger Svelte reactivity by creating new Map reference
 		state.resources = new Map(state.resources);
 
-		console.log('[ResourcesStore] Initialized resources for settlement:', settlementId);
-		console.log('[ResourcesStore] Current resources map size:', state.resources.size);
+		logger.debug('[ResourcesStore] Initialized resources for settlement:', settlementId);
+		logger.debug('[ResourcesStore] Current resources map size:', state.resources.size);
 	},
 
 	/**

@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { SERVER_API_URL } from '$env/static/private';
+import { logger } from '../utils/logger.js';
 
 export const load = (async ({ locals, cookies }) => {
 	if (!locals.account) {
@@ -40,7 +41,7 @@ export const load = (async ({ locals, cookies }) => {
 			settlementCount
 		};
 	} catch (error) {
-		console.error('[PROFILE LOAD] Error:', error);
+		logger.error('[PROFILE LOAD] Error:', error);
 		return {
 			profile: locals.account.profile,
 			account: {
