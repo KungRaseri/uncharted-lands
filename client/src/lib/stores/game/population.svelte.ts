@@ -60,8 +60,7 @@ function initializeListeners() {
 			logger.debug('[POPULATION] State update:', data);
 			logger.debug(
 				'[POPULATION] DEBUG - Capacity value:',
-				data.capacity,
-				typeof data.capacity
+			{value: data.capacity, type: typeof data.capacity}
 			);
 
 			state.settlements.set(data.settlementId, {

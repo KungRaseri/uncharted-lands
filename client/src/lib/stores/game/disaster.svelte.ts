@@ -217,7 +217,7 @@ class DisasterStore {
 
 		// DAMAGE progress updates
 		socket.on('disaster-damage-update', (data: DisasterDamageUpdateData) => {
-			logger.debug('[DISASTER] Damage update:', data.progress, '%');
+			logger.debug('[DISASTER] Damage update:', {progress: data.progress});
 			// Could update progress bar here
 		});
 
