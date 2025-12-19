@@ -39,6 +39,7 @@
 	import { generateSuggestions } from '$lib/utils/settlement-suggestions';
 	import { calculateProduction } from '$lib/utils/production-calculator';
 	import type { StructureMetadata } from '$lib/api/structures';
+	import { logger } from '$lib/utils/logger';
 
 	// ✅ NEW: TypeScript interface for settlement structures
 	interface SettlementStructure {
@@ -280,31 +281,29 @@
 
 	// ✅ DEBUG: Log tile and extractor data
 	$effect(() => {
-		console.log('[Dashboard] ==== RENDER UPDATE ====');
-		console.log('[Dashboard] settlementStructures.length:', settlementStructures.length);
-		console.log('[Dashboard] Buildings.length:', buildings.length);
-		console.log('[Dashboard] Extractors.length:', extractors.length);
+		logger.debug('[Dashboard] ==== RENDER UPDATE ====');
+		logger.debug('[Dashboard] settlementStructures.length:', {
+			settlementStructuresLength: settlementStructures.length
+		});
+		logger.debug('[Dashboard] Buildings.length:', { buildingsLength: buildings.length });
+		logger.debug('[Dashboard] Extractors.length:', { extractorsLength: extractors.length });
 
 		if (settlementStructures.length > 0) {
-			console.log(
-				'[Dashboard] First structure:',
-				settlementStructures[0].name,
-				settlementStructures[0].category
-			);
+			logger.debug('[Dashboard] First structure:', {
+				name: settlementStructures[0].name,
+				category: settlementStructures[0].category
+			});
 		}
 
 		// Check which panels are visible
 		const structuresPanel = currentLayout.panels.find((p) => p.id === 'structures');
-		console.log(
-			'[Dashboard] Structures panel - visible:',
-			structuresPanel?.visible,
-			'collapsed:',
-			structuresPanel?.collapsed,
-			'column:',
-			structuresPanel?.column
-		);
-		console.log('[Dashboard] Current viewport:', viewport);
-		console.log('[Dashboard] ====================');
+		logger.debug('[Dashboard] Structures panel - visible:', {
+			visible: structuresPanel?.visible,
+			collapsed: structuresPanel?.collapsed,
+			column: structuresPanel?.column
+		});
+		logger.debug('[Dashboard] Current viewport:', { viewport });
+		logger.debug('[Dashboard] ====================');
 	});
 
 	// ✅ NEW: Group extractors by tile for grid display
@@ -353,15 +352,15 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error('[Dashboard] Failed to upgrade building:', result);
+				logger.error('[Dashboard] Failed to upgrade building:', result);
 				alert(result.message || 'Failed to upgrade building');
 				return;
 			}
 
-			console.log('[Dashboard] Building upgraded successfully');
+			logger.debug('[Dashboard] Building upgraded successfully');
 			// TODO: Add toast notification system
 		} catch (error) {
-			console.error('[Dashboard] Failed to upgrade building:', error);
+			logger.error('[Dashboard] Failed to upgrade building:', error);
 			alert('Network error - could not upgrade building');
 		}
 	}
@@ -379,14 +378,14 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error('[Dashboard] Failed to repair building:', result);
+				logger.error('[Dashboard] Failed to repair building:', result);
 				alert(result.message || 'Failed to repair building');
 				return;
 			}
 
-			console.log('[Dashboard] Building repaired successfully');
+			logger.debug('[Dashboard] Building repaired successfully');
 		} catch (error) {
-			console.error('[Dashboard] Failed to repair building:', error);
+			logger.error('[Dashboard] Failed to repair building:', error);
 			alert('Network error - could not repair building');
 		}
 	}
@@ -412,40 +411,28 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error('[Dashboard] Failed to demolish building:', result);
+				logger.error('[Dashboard] Failed to demolish building:', result);
 				alert(result.message || 'Failed to demolish building');
 				return;
 			}
 
-			console.log('[Dashboard] Building demolished successfully');
+			logger.debug('[Dashboard] Building demolished successfully');
 		} catch (error) {
-			console.error('[Dashboard] Failed to demolish building:', error);
+			logger.error('[Dashboard] Failed to demolish building:', error);
 			alert('Network error - could not demolish building');
 		}
 	}
 
 	// ✅ NEW: Handlers for plot slot interactions
 	function handleBuildExtractor(tileId: string, slotPosition: number) {
-		console.log(
-			'[Dashboard] Build extractor requested for tile:',
-			tileId,
-			'slot:',
-			slotPosition
-		);
+		logger.debug('[Dashboard] Build extractor requested for tile:', { tileId, slotPosition });
 		selectedSlot = slotPosition;
 		extractorSelectorOpen = true;
 	}
 
 	// ✅ FIXED: Use form submission to go through SvelteKit server-side action
 	async function handleExtractorBuild(tileId: string, slotPosition: number, structureId: string) {
-		console.log(
-			'[Dashboard] Building extractor:',
-			structureId,
-			'on tile:',
-			tileId,
-			'slot:',
-			slotPosition
-		);
+		logger.debug('[Dashboard] Building extractor:', { structureId, tileId, slotPosition });
 
 		try {
 			// Create a form and submit it to trigger the buildStructure action
@@ -463,24 +450,24 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error('[Dashboard] Failed to create extractor:', result);
+				logger.error('[Dashboard] Failed to create extractor:', result);
 				alert(result.message || 'Failed to create extractor');
 				return;
 			}
 
-			console.log('[Dashboard] Extractor created successfully');
+			logger.debug('[Dashboard] Extractor created successfully');
 			extractorSelectorOpen = false;
 			selectedSlot = null;
 			// TODO: Add toast notification system
 		} catch (error) {
-			console.error('[Dashboard] Failed to create extractor:', error);
+			logger.error('[Dashboard] Failed to create extractor:', error);
 			alert('Network error - could not create extractor');
 		}
 	}
 
 	// ✅ NEW: Debug logging
 	$effect(() => {
-		console.log('[Dashboard] Real structures loaded:', {
+		logger.debug('[Dashboard] Real structures loaded:', {
 			total: settlementStructures.length,
 			buildings: buildings.length,
 			extractors: extractors.length
@@ -601,11 +588,11 @@
 			{settlementId}
 			suggestions={realSuggestions}
 			onDismiss={(id) => {
-				console.log('Dismissed suggestion:', id);
+				logger.debug('Dismissed suggestion:', { id });
 				announcement = `Dismissed suggestion: ${realSuggestions.find((s) => s.id === id)?.title}`;
 			}}
 			onRefresh={() => {
-				console.log('Refreshing suggestions');
+				logger.debug('Refreshing suggestions');
 				announcement = 'Refreshing action suggestions';
 			}}
 		/>

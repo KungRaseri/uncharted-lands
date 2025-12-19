@@ -10,6 +10,7 @@
 	import { getAdminRegionTooltip } from '$lib/utils/admin-tooltips';
 	import { getBiomeNameForPreview } from '$lib/utils/biome-matcher';
 	import { getRegionTileTooltip, calculateRegionStats } from '$lib/utils/region-tile-utils';
+	import { logger } from '$lib/utils/logger';
 
 	type RegionWithElevationMap = {
 		id: string;
@@ -85,7 +86,7 @@
 			const cols = maxY - minY + 1;
 			const rows = maxX - minX + 1;
 
-			console.log('[WORLDMAP] Lazy load grid dimensions:', {
+			logger.debug('[WORLDMAP] Lazy load grid dimensions:', {
 				regionCount: displayRegions.length,
 				xRange: [minX, maxX],
 				yRange: [minY, maxY],

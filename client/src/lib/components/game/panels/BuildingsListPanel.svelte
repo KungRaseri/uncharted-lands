@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { logger } from '$lib/utils/logger';
 
 	/**
 	 * BuildingsListPanel Component
@@ -53,15 +54,14 @@
 
 	// ✅ DEBUG: Log when component renders and receives buildings
 	$effect(() => {
-		console.log('[BuildingsListPanel] ==== COMPONENT RENDER ====');
-		console.log('[BuildingsListPanel] Buildings.length:', buildings.length);
+		logger.debug('[BuildingsListPanel] ==== COMPONENT RENDER ====');
+		logger.debug('[BuildingsListPanel] Buildings.length:', { length: buildings.length });
 		if (buildings.length > 0) {
-			console.log(
-				'[BuildingsListPanel] Building names:',
-				buildings.map((b) => b.name).join(', ')
-			);
+			logger.debug('[BuildingsListPanel] Building names:', {
+				names: buildings.map((b) => b.name)
+			});
 		}
-		console.log('[BuildingsListPanel] ================');
+		logger.debug('[BuildingsListPanel] ================');
 	});
 
 	// Expanded building IDs for showing modifiers
@@ -135,7 +135,9 @@
 			{#each buildings as building (building.id)}
 				<li
 					data-testid="structure"
-					data-structure-id={building.buildingType || building.extractorType || building.structureId}
+					data-structure-id={building.buildingType ||
+						building.extractorType ||
+						building.structureId}
 					data-structure-type={building.buildingType || building.extractorType}
 					class="card variant-soft p-4 space-y-2"
 					transition:slide={{ duration: 300, easing: quintOut }}

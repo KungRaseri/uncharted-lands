@@ -6,6 +6,7 @@
 
 import { browser } from '$app/environment';
 import { socketStore } from './socket';
+import { logger } from '$lib/utils/logger'
 
 interface PopulationState {
 	settlementId: string;
@@ -56,8 +57,8 @@ function initializeListeners() {
 			status: 'Growing' | 'Stable' | 'Declining';
 			timestamp: number;
 		}) => {
-			console.log('[POPULATION] State update:', data);
-			console.log(
+			logger.debug('[POPULATION] State update:', data);
+			logger.debug(
 				'[POPULATION] DEBUG - Capacity value:',
 				data.capacity,
 				typeof data.capacity
@@ -90,7 +91,7 @@ function initializeListeners() {
 			growthRate: number;
 			timestamp: number;
 		}) => {
-			console.log('[POPULATION] Growth event:', data);
+			logger.debug('[POPULATION] Growth event:', data);
 
 			const change = data.newPopulation - data.oldPopulation;
 			const message =
@@ -124,7 +125,7 @@ function initializeListeners() {
 			happiness: number;
 			timestamp: number;
 		}) => {
-			console.log('[POPULATION] Immigration event:', data);
+			logger.debug('[POPULATION] Immigration event:', data);
 
 			addEvent({
 				type: 'immigration',
@@ -151,7 +152,7 @@ function initializeListeners() {
 			message: string;
 			timestamp: number;
 		}) => {
-			console.log('[POPULATION] Warning:', data);
+			logger.debug('[POPULATION] Warning:', data);
 
 			const icon = data.warning === 'low_happiness' ? '😟' : '⚠️';
 
@@ -261,7 +262,7 @@ export const populationStore = {
 			lastGrowthTick: number;
 		}
 	): void => {
-		console.log(
+		logger.debug(
 			'[PopulationStore] Initializing from server data for settlement:',
 			settlementId,
 			serverData
@@ -304,8 +305,8 @@ export const populationStore = {
 		// Trigger Svelte reactivity
 		state.settlements = new Map(state.settlements);
 
-		console.log('[PopulationStore] Initialized population for settlement:', settlementId);
-		console.log('[PopulationStore] Current settlements map size:', state.settlements.size);
+		logger.debug('[PopulationStore] Initialized population for settlement:', settlementId);
+		logger.debug('[PopulationStore] Current settlements map size:', state.settlements.size);
 	},
 
 	/**

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import type { StructureMetadata } from '$lib/api/structures';
+	import { logger } from '$lib/utils/logger';
 
 	interface Props {
 		open: boolean;
@@ -13,11 +14,11 @@
 
 	// Log prop changes
 	$effect(() => {
-		console.log('🔍 [MobileBuildMenu] Props changed:');
-		console.log('  - open:', open);
-		console.log('  - settlementId:', settlementId);
-		console.log('  - structures count:', structures.length);
-		console.log('  - onClose exists:', !!onClose);
+		logger.debug('🔍 [MobileBuildMenu] Props changed:');
+		logger.debug('  - open:', { open });
+		logger.debug('  - settlementId:', { settlementId });
+		logger.debug('  - structures count:', { count: structures.length });
+		logger.debug('  - onClose exists:', { exists: !!onClose });
 	});
 
 	// Filter to only show BUILDING category structures (extractors are built via ExtractorBuildModal)
@@ -40,10 +41,10 @@
 	let selectedCategory = $state<string>('BUILDING');
 
 	async function handleBuild(structure: StructureMetadata) {
-		console.log('Building:', structure.displayName, 'at settlement:', settlementId);
+		logger.debug('Building:', { structure: structure.displayName, settlementId });
 
 		try {
-			console.log('[MobileBuildMenu] Sending request:', {
+			logger.debug('[MobileBuildMenu] Sending request:', {
 				settlementId,
 				structureId: structure.id
 			});
@@ -59,7 +60,10 @@
 				credentials: 'include' // Include session cookie
 			});
 
-			console.log('[MobileBuildMenu] Response status:', response.status, response.statusText);
+			logger.debug('[MobileBuildMenu] Response status:', {
+				status: response.status,
+				statusText: response.statusText
+			});
 
 			const result = await response.json();
 
@@ -72,7 +76,7 @@
 				return;
 			}
 
-			console.log('[MobileBuildMenu] Structure created successfully:', result);
+			logger.debug('[MobileBuildMenu] Structure created successfully:', result);
 
 			onClose();
 		} catch (error) {

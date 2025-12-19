@@ -1,6 +1,7 @@
 <script lang="ts">
 	import StructureHealthBar from './StructureHealthBar.svelte';
 	import { disasterStore } from '$lib/stores/game/disaster.svelte';
+	import { logger } from '$lib/utils/logger';
 
 	interface DamagedStructure {
 		id: string;
@@ -85,7 +86,7 @@
 	});
 
 	function repairSelected() {
-		console.log('[REPAIR] Repairing', selectedStructures.size, 'structures');
+		logger.debug('[REPAIR] Repairing', { count: selectedStructures.size });
 		// TODO: Implement repair action
 		repairSuccess = true;
 		setTimeout(() => {
@@ -94,7 +95,7 @@
 	}
 
 	function activateShelter() {
-		console.log('[SHELTER] Activating emergency shelter');
+		logger.debug('[SHELTER] Activating emergency shelter');
 		shelterActivated = true;
 		// TODO: Implement shelter activation
 	}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { disasterStore } from '$lib/stores/game/disaster.svelte';
+	import { logger } from '$lib/utils/logger';
 
 	const aftermathSummary = $derived(disasterStore.aftermathSummary);
 	const modalOpen = $derived(disasterStore.aftermathModalOpen);
@@ -12,12 +13,12 @@
 
 	function repairAll() {
 		// TODO: Implement repair all action
-		console.log('[AFTERMATH] Repair all clicked');
+		logger.debug('[AFTERMATH] Repair all clicked');
 	}
 
 	function requestAid() {
 		// TODO: Implement request aid action
-		console.log('[AFTERMATH] Request aid clicked');
+		logger.debug('[AFTERMATH] Request aid clicked');
 	}
 </script>
 

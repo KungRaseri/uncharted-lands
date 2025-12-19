@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { logger } from '$lib/utils/logger';
 	import { fade } from 'svelte/transition';
 
 	/**
@@ -46,7 +47,7 @@
 
 	// ✅ DEBUG: Log when component renders
 	$effect(() => {
-		console.log('[TilePlotsPanel] Component rendering with:', {
+		logger.debug('[TilePlotsPanel] Component rendering with:', {
 			tile,
 			extractorsCount: extractors.length,
 			plotSlots: tile.plotSlots

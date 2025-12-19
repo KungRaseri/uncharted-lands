@@ -6,6 +6,7 @@
 
 import { browser } from '$app/environment';
 import { socketStore } from './socket';
+import { logger } from "$lib/utils/logger";
 
 type AlertSeverity = 'critical' | 'warning' | 'info';
 
@@ -52,7 +53,7 @@ function initializeListeners() {
 			};
 			timestamp: number;
 		}) => {
-			console.log('[ALERTS] New alert:', data);
+			logger.debug('[ALERTS] New alert:', data);
 
 			const alert: Alert = {
 				id: data.alert.id,
@@ -79,7 +80,7 @@ function initializeListeners() {
 	socket.on(
 		'alert-dismissed',
 		(data: { settlementId: string; alertId: string; timestamp: number }) => {
-			console.log('[ALERTS] Alert dismissed:', data);
+			logger.debug('[ALERTS] Alert dismissed:', data);
 
 			// Mark as dismissed in local state
 			state.dismissedAlerts.add(data.alertId);
@@ -101,7 +102,7 @@ function initializeListeners() {
 	socket.on(
 		'settlement-alerts',
 		(data: { settlementId: string; alerts: Alert[]; timestamp: number }) => {
-			console.log('[ALERTS] Bulk alert update:', data);
+			logger.debug('[ALERTS] Bulk alert update:', data);
 
 			state.settlements.set(data.settlementId, data.alerts);
 			state.settlements = new Map(state.settlements);
@@ -112,7 +113,7 @@ function initializeListeners() {
 	socket.on(
 		'alert-cleared',
 		(data: { settlementId: string; alertId: string; timestamp: number }) => {
-			console.log('[ALERTS] Alert cleared:', data);
+			logger.debug('[ALERTS] Alert cleared:', data);
 
 			// Remove from settlement alerts
 			const alerts = state.settlements.get(data.settlementId);

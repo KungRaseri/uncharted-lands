@@ -66,8 +66,8 @@ export interface RegionDataResponse {
  * });
  *
  * if (result.success) {
- *   console.log('World created:', result.worldId);
- *   console.log('Stats:', result.stats);
+ *   logger.debug('World created:', result.worldId);
+ *   logger.debug('Stats:', result.stats);
  * }
  * ```
  */
