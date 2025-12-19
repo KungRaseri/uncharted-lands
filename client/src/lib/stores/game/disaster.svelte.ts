@@ -114,7 +114,7 @@ class DisasterStore {
 
 		// WARNING phase
 		socket.on('disaster-warning', (data: DisasterWarningData) => {
-			logger.debug('[DISASTER] Warning received:', data);
+			logger.debug('[DISASTER] Warning received:', {data});
 			this.activeDisaster = {
 				id: data.disasterId,
 				type: data.type,
@@ -131,7 +131,7 @@ class DisasterStore {
 
 		// IMMINENT phase (30 min warning)
 		socket.on('disaster-imminent', (data: DisasterImminentData) => {
-			logger.debug('[DISASTER] Imminent:', data);
+			logger.debug('[DISASTER] Imminent:', {data});
 			
 			// Only update if significantly different (more than 2 seconds off)
 			// This prevents server updates from interfering with client-side countdown
@@ -143,7 +143,7 @@ class DisasterStore {
 
 		// IMPACT start
 		socket.on('disaster-impact-start', (data: DisasterImpactStartData) => {
-			logger.debug('[DISASTER] Impact started:', data);
+			logger.debug('[DISASTER] Impact started:', {data});
 			this.warningActive = false;
 			this.impactActive = true;
 			this.damageUpdates = [];
@@ -157,7 +157,7 @@ class DisasterStore {
 
 		// DAMAGE updates (individual structure damage)
 		socket.on('structure-damaged', (data: StructureDamagedData) => {
-			logger.debug('[DISASTER] Structure damaged:', data);
+			logger.debug('[DISASTER] Structure damaged:', {data});
 
 			// Calculate damage dealt
 			const oldHealth =
@@ -185,7 +185,7 @@ class DisasterStore {
 
 		// STRUCTURE DESTROYED (structure reaches 0% health)
 		socket.on('structure-destroyed', (data: StructureDestroyedData) => {
-			logger.debug('[DISASTER] Structure destroyed:', data);
+			logger.debug('[DISASTER] Structure destroyed:', {data});
 
 			// Add to damage feed
 			const update: DamageUpdate = {
@@ -207,7 +207,7 @@ class DisasterStore {
 
 		// CASUALTIES REPORT (population casualties from disaster)
 		socket.on('casualties-report', (data: CasualtiesReportData) => {
-			logger.debug('[DISASTER] Casualties reported:', data);
+			logger.debug('[DISASTER] Casualties reported:', {data});
 
 			// Update aftermath summary if available
 			if (this.aftermathSummary) {
@@ -223,7 +223,7 @@ class DisasterStore {
 
 		// IMPACT end
 		socket.on('disaster-impact-end', (data: DisasterImpactEndData) => {
-			logger.debug('[DISASTER] Impact ended:', data);
+			logger.debug('[DISASTER] Impact ended:', {data});
 			this.impactActive = false;
 
 			// Build aftermath summary from final data
@@ -245,7 +245,7 @@ class DisasterStore {
 
 		// AFTERMATH
 		socket.on('disaster-aftermath', (data: DisasterAftermathData) => {
-			logger.debug('[DISASTER] Aftermath phase:', data);
+			logger.debug('[DISASTER] Aftermath phase:', {data});
 			this.aftermathModalOpen = true;
 			this.emergencyRepairWindowActive = data.emergencyRepairDiscount;
 			this.emergencyRepairTimeRemaining = 48 * 60 * 60 * 1000; // 48 hours
@@ -253,7 +253,7 @@ class DisasterStore {
 
 		// RESOLVED (cleanup)
 		socket.on('disaster-resolved', (data: DisasterResolvedData) => {
-			logger.debug('[DISASTER] Resolved:', data);
+			logger.debug('[DISASTER] Resolved:', {data});
 			this.activeDisaster = null;
 			this.warningActive = false;
 			this.impactActive = false;
