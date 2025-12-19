@@ -19,8 +19,9 @@
 	onMount(() => {
 		console.log('[GAME LAYOUT] Initializing game connection...');
 
-		// Auto-connect Socket.IO if we have a session token
-		if (data.sessionToken) {
+		// Only connect Socket.IO if user has both session token AND profile
+		// Profile is created when user creates their first settlement
+		if (data.sessionToken && data.profileId) {
 			console.log('[GAME LAYOUT] Auto-connecting Socket.IO...');
 			socketStore.connect(undefined, data.sessionToken);
 
@@ -34,20 +35,37 @@
 				}
 			}
 
-			// Join world if we have both worldId and profileId
-			if (data.worldId && data.profileId) {
+			// Join world if we have worldId
+			if (data.worldId) {
 				console.log('[GAME LAYOUT] Joining world...', {
 					worldId: data.worldId,
 					profileId: data.profileId
 				});
 				gameSocket.joinWorld(data.worldId, data.profileId);
 			} else {
-				console.warn('[GAME LAYOUT] Cannot join world - missing worldId or profileId', {
-					hasWorldId: !!data.worldId,
-					hasProfileId: !!data.profileId
+				console.warn('[GAME LAYOUT] Cannot join world - missing worldId', {
+					hasWorldId: !!data.worldId
 				});
 			}
 		} else {
+			console.log(
+				'[GAME LAYOUT] Skipping Socket.IO connection - user needs to create settlement first',
+				{
+					hasSessionToken: !!data.sessionToken,
+					hasProfileId: !!data.profileId
+				}
+			);
+		}
+
+		// Fallback for E2E tests that need socket exposed even without profile
+		if (exposeSocketForTesting && !data.profileId && typeof window !== 'undefined') {
+			(window as any).__socket = null;
+			console.log(
+				'[GAME LAYOUT] Socket not connected (no profile), exposed null for E2E testing'
+			);
+		}
+
+		if (!data.sessionToken) {
 			console.warn('[GAME LAYOUT] No session token - Socket.IO will not auto-connect');
 		}
 
