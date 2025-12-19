@@ -504,6 +504,18 @@ jobs:
         working-directory: ./server
         run: npm run db:seed
 
+      - name: Start server (from build)
+        working-directory: ./server
+        run: |
+          npm start &
+          echo $! > server.pid
+          # Wait for server to be ready
+          timeout 30 bash -c 'until curl -f http://localhost:3001/health; do sleep 1; done'
+
+      - name: Install Playwright Browsers
+        working-directory: ./client
+        run: npx playwright install --with-deps
+
       - name: Install client dependencies (after server operations complete)
         working-directory: ./client
         run: |
@@ -514,18 +526,6 @@ jobs:
           rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
           rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
           npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
-
-      - name: Install Playwright Browsers
-        working-directory: ./client
-        run: npx playwright install --with-deps
-
-      - name: Start server (from build)
-        working-directory: ./server
-        run: |
-          npm start &
-          echo $! > server.pid
-          # Wait for server to be ready
-          timeout 30 bash -c 'until curl -f http://localhost:3001/health; do sleep 1; done'
 
       - name: Start client (preview mode)
         working-directory: ./client
