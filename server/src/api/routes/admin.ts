@@ -5,12 +5,14 @@
  */
 
 import { Router } from 'express';
+import type { Server as SocketIOServer } from 'socket.io';
 import { sql, eq, inArray } from 'drizzle-orm';
 import { db, servers, worlds, accounts, settlements, disasterEvents, regions, tiles } from '../../db/index.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 import { logger } from '../../utils/logger.js';
 import { getSeverityLevel, getVulnerableBiomes } from '../../game/disaster-scheduler.js';
 import type { DisasterType } from '../../db/schema.js';
+import type { DisasterWarningData } from '@uncharted-lands/shared';
 
 const router = Router();
 
@@ -316,6 +318,31 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 			format: isRegionFormat ? 'region-based' : (isSettlementFormat ? 'settlement-legacy' : 'e2e-legacy'),
 		});
 
+		// Emit disaster-warning event immediately (since we created with status='WARNING')
+		const io = req.app.get('io') as SocketIOServer;
+		if (io) {
+			const timeRemaining = scheduledAt.getTime() - currentTime;
+			const warningData: DisasterWarningData = {
+				disasterId: disasterEvent.id,
+				type: disasterTypeValue,
+				severity: disasterSeverity,
+				severityLevel: getSeverityLevel(disasterSeverity),
+				affectedRegions: affectedRegionIds,
+				affectedBiomes: vulnerableBiomes,
+				timeRemaining,
+				recommendedActions: getRecommendedActions(disasterTypeValue, getSeverityLevel(disasterSeverity)),
+				timestamp: currentTime,
+			};
+			
+			io.to(`world:${targetWorldId}`).emit('disaster-warning', warningData);
+			
+			logger.info('[API] Disaster warning emitted', {
+				disasterId: disasterEvent.id,
+				worldId: targetWorldId,
+				timeRemaining: `${(timeRemaining / 1000).toFixed(0)}s`,
+			});
+		}
+
 		res.json({
 			success: true,
 			disasterId: disasterEvent.id,
@@ -331,5 +358,81 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 		});
 	}
 });
+
+/**
+ * Get recommended actions for disaster type and severity
+ */
+function getRecommendedActions(disasterType: string, severity: string): string[] {
+	const actions: string[] = [
+		'Check settlement resources and stockpile food/water',
+		'Review emergency shelter capacity',
+	];
+
+	// Add disaster-specific recommendations
+	const disasterActions: Record<string, string[]> = {
+		EARTHQUAKE: [
+			'Inspect structure health (stone/ore production buildings at risk)',
+			'Consider seismic foundations if available',
+		],
+		LANDSLIDE: [
+			'Inspect structure health (stone/ore production buildings at risk)',
+			'Consider seismic foundations if available',
+		],
+		AVALANCHE: [
+			'Inspect structure health (stone/ore production buildings at risk)',
+			'Consider seismic foundations if available',
+		],
+		DROUGHT: ['Stockpile water reserves immediately', 'Activate water conservation measures'],
+		HEATWAVE: ['Stockpile water reserves immediately', 'Activate water conservation measures'],
+		FLOOD: [
+			'Move resources to higher ground if possible',
+			'Activate storm barriers if available',
+		],
+		HURRICANE: [
+			'Move resources to higher ground if possible',
+			'Activate storm barriers if available',
+		],
+		TSUNAMI: [
+			'Move resources to higher ground if possible',
+			'Activate storm barriers if available',
+		],
+		WILDFIRE: [
+			'Clear wood stockpiles from settlement center',
+			'Use fire-resistant structures if available',
+		],
+		BLIZZARD: ['Stockpile fuel and heating resources', 'Ensure population shelter capacity'],
+		EXTREME_COLD: [
+			'Stockpile fuel and heating resources',
+			'Ensure population shelter capacity',
+		],
+		PLAGUE: [
+			'Stockpile medicinal herbs and medical supplies',
+			'Activate hospitals and medical facilities',
+		],
+		INSECT_PLAGUE: [
+			'Stockpile medicinal herbs and medical supplies',
+			'Activate hospitals and medical facilities',
+		],
+		BLIGHT: [
+			'Stockpile medicinal herbs and medical supplies',
+			'Activate hospitals and medical facilities',
+		],
+	};
+
+	const specificActions = disasterActions[disasterType];
+	if (specificActions) {
+		actions.push(...specificActions);
+	}
+
+	// Add severity-specific recommendations
+	if (severity === 'MAJOR' || severity === 'CATASTROPHIC') {
+		actions.push(
+			'Consider requesting emergency aid from allies',
+			'Prepare for potential population evacuation'
+		);
+	}
+
+	return actions;
+}
 
 export default router;

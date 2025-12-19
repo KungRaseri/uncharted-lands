@@ -4,7 +4,7 @@
     "projectKey": "KungRaseri_uncharted-lands"
   },
   "chat.tools.terminal.autoApprove": {
-    "*": true
+    "*": true,
     // "/^npm run\\b/i": true,
     // "/^npx playwright\\b/i": true,
     // "cd": true,
@@ -13,7 +13,7 @@
     // "/^Select-Object\\b/i": true,
     // "/^ForEach-Object\\b/i": true,
     // "/^Move-Item\\b/i": true,
-    // "/^Start-Sleep\\b/i": true,
+    "/^Start-Sleep\\b/i": false,
     // "/^docker\\b/i": true,
     // "rm": false,
     // "rmdir": false,

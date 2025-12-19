@@ -121,8 +121,8 @@ class DisasterStore {
 				severity: data.severity,
 				severityLevel: data.severityLevel,
 				duration: 0, // Will be set on impact start
-				affectedRegions: data.affectedRegions, // Now array of region IDs
-				affectedBiomes: data.affectedBiomes
+				affectedRegions: data.affectedRegions || [], // Now array of region IDs (default to empty array)
+				affectedBiomes: data.affectedBiomes || []
 			};
 			this.warningActive = true;
 			this.warningDismissed = false;
