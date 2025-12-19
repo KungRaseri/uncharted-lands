@@ -508,10 +508,16 @@ jobs:
       - name: Start server (from build)
         working-directory: ./server
         run: |
-          npm start &
+          echo "Starting server with NODE_ENV=$NODE_ENV"
+          npm start > ../server-e2e.log 2>&1 &
           echo $! > server.pid
           # Wait for server to be ready
           timeout 30 bash -c 'until curl -f http://localhost:3001/health; do sleep 1; done'
+          # Verify test cleanup endpoint is available
+          echo "Verifying test cleanup endpoint..."
+          curl -i -X DELETE http://localhost:3001/api/test/cleanup/user/verify@test.local || echo "Test endpoint returned: $?"
+          echo "Server startup logs:"
+          head -n 50 ../server-e2e.log
 
       - name: Install client dependencies (after server is running)
         working-directory: ./client
@@ -545,6 +551,8 @@ jobs:
       - name: Stop server and client
         if: always()
         run: |
+          echo "=== Server logs (last 100 lines) ==="
+          tail -n 100 server-e2e.log || echo "No server logs found"
           if [ -f server/server.pid ]; then kill $(cat server/server.pid) || true; fi
           if [ -f client/client.pid ]; then kill $(cat client/client.pid) || true; fi
 
