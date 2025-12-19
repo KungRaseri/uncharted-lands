@@ -504,6 +504,17 @@ jobs:
         working-directory: ./server
         run: npm run db:seed
 
+      - name: Install client dependencies (after server operations complete)
+        working-directory: ./client
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug
+          rm -rf node_modules/rollup node_modules/@rollup
+          rm -rf node_modules/lightningcss node_modules/lightningcss-*
+          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
+          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
+
       - name: Install Playwright Browsers
         working-directory: ./client
         run: npx playwright install --with-deps
