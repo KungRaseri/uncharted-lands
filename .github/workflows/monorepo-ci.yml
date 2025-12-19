@@ -477,7 +477,8 @@ jobs:
           name: client-build
           path: client/.svelte-kit/
 
-      # Skip root npm ci - workspace links can interfere with individual package installs
+      - name: Install root dependencies
+        run: npm ci
 
       - name: Install shared package dependencies
         working-directory: ./shared
@@ -486,6 +487,7 @@ jobs:
       - name: Install server dependencies
         working-directory: ./server
         run: |
+          # Remove the file:../shared link installation attempt
           npm ci
           # Workaround for npm optional dependencies bug
           rm -rf node_modules/rollup node_modules/@rollup
@@ -534,7 +536,7 @@ jobs:
       - name: Start client (preview mode)
         working-directory: ./client
         run: |
-          npx vite preview --port 5173 &
+          npx vite preview &
           echo $! > client.pid
           # Wait for client to be ready
           timeout 30 bash -c 'until curl -f http://localhost:5173; do sleep 1; done'
