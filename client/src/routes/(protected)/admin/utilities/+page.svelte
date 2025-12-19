@@ -21,10 +21,18 @@
 
 	// Disaster trigger state
 	let selectedDisasterType = $state('EARTHQUAKE');
-	let selectedSettlementId = $state('');
+	let selectedWorldId = $state('');
+	let selectedRegionIds = $state<string[]>([]);
 	let severityLevel = $state(3);
 	let isTriggeringDisaster = $state(false);
 	let disasterResult = $state<{ success: boolean; message: string } | null>(null);
+
+	// Computed: regions for selected world
+	const availableRegions = $derived(
+		selectedWorldId
+			? data.regions.filter((r: { worldId: string }) => r.worldId === selectedWorldId)
+			: []
+	);
 
 	// Disaster types with icons and descriptions
 	const disasterTypes = [
@@ -65,9 +73,30 @@
 		}
 	];
 
+	function toggleRegion(regionId: string) {
+		if (selectedRegionIds.includes(regionId)) {
+			selectedRegionIds = selectedRegionIds.filter((id) => id !== regionId);
+		} else {
+			selectedRegionIds = [...selectedRegionIds, regionId];
+		}
+	}
+
+	function selectAllRegions() {
+		if (selectedRegionIds.length === availableRegions.length) {
+			selectedRegionIds = [];
+		} else {
+			selectedRegionIds = availableRegions.map((r: { id: string }) => r.id);
+		}
+	}
+
 	async function triggerDisaster() {
-		if (!selectedSettlementId) {
-			disasterResult = { success: false, message: 'Please select a settlement' };
+		if (!selectedWorldId) {
+			disasterResult = { success: false, message: 'Please select a world' };
+			return;
+		}
+
+		if (selectedRegionIds.length === 0) {
+			disasterResult = { success: false, message: 'Please select at least one region' };
 			return;
 		}
 
@@ -77,7 +106,8 @@
 		try {
 			logger.debug('[ADMIN UTILITIES] Triggering disaster:', {
 				type: selectedDisasterType,
-				settlementId: selectedSettlementId,
+				worldId: selectedWorldId,
+				regionIds: selectedRegionIds,
 				severity: severityLevel
 			});
 
@@ -87,7 +117,8 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					settlementId: selectedSettlementId,
+					worldId: selectedWorldId,
+					regionIds: selectedRegionIds,
 					disasterType: selectedDisasterType,
 					severity: severityLevel
 				}),
@@ -99,7 +130,7 @@
 			if (response.ok && result.success) {
 				disasterResult = {
 					success: true,
-					message: `Successfully triggered ${selectedDisasterType} disaster!`
+					message: `Successfully triggered ${selectedDisasterType} disaster affecting ${selectedRegionIds.length} region(s)!`
 				};
 				logger.info('[ADMIN UTILITIES] Disaster triggered successfully:', { result });
 			} else {
@@ -249,7 +280,7 @@
 						<h2 class="text-xl font-bold mb-2">Trigger Disasters</h2>
 						<p class="text-surface-600 dark:text-surface-400 text-sm">
 							Manually trigger disasters for testing and demonstration purposes. This will
-							create real disaster events that affect settlements.
+							create real disaster events that affect regions and all settlements within them.
 						</p>
 					</div>
 
@@ -275,27 +306,70 @@
 					<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 						<!-- Left Column: Configuration -->
 						<div class="space-y-6">
-							<!-- Settlement Selection -->
+							<!-- World Selection -->
 							<div class="card preset-filled-surface-200-700 p-4">
 								<label class="label">
-									<span class="font-semibold mb-2 block">Target Settlement *</span>
+									<span class="font-semibold mb-2 block">Target World *</span>
 									<select
-										bind:value={selectedSettlementId}
+										bind:value={selectedWorldId}
+										onchange={() => (selectedRegionIds = [])}
 										class="select preset-filled-surface-100-800 w-full"
 										required
 									>
-										<option value="">-- Select a settlement --</option>
-										{#each data.settlements as settlement}
-											<option value={settlement.id}>
-												{settlement.name} ({settlement.worldName})
+										<option value="">-- Select a world --</option>
+										{#each data.worlds as world}
+											<option value={world.id}>
+												{world.name}
 											</option>
 										{/each}
 									</select>
 									<p class="text-xs text-surface-600 dark:text-surface-400 mt-2">
-										Choose which settlement to target with the disaster
+										Choose which world to target with the disaster
 									</p>
 								</label>
 							</div>
+
+							<!-- Region Selection -->
+							{#if selectedWorldId}
+								<div class="card preset-filled-surface-200-700 p-4">
+									<div class="flex items-center justify-between mb-3">
+										<span class="font-semibold">Target Regions *</span>
+										<button
+											type="button"
+											onclick={selectAllRegions}
+											class="btn btn-sm variant-ghost-surface text-xs"
+										>
+											{selectedRegionIds.length === availableRegions.length
+												? 'Deselect All'
+												: 'Select All'}
+										</button>
+									</div>
+									{#if availableRegions.length > 0}
+										<div class="space-y-2 max-h-48 overflow-y-auto">
+											{#each availableRegions as region}
+												<label class="flex items-center gap-2 p-2 rounded hover:bg-surface-300/50 dark:hover:bg-surface-700/50 cursor-pointer">
+													<input
+														type="checkbox"
+														checked={selectedRegionIds.includes(
+															region.id
+														)}
+														onchange={() => toggleRegion(region.id)}
+														class="checkbox"
+													/>
+													<span class="text-sm">{region.name}</span>
+												</label>
+											{/each}
+										</div>
+										<p class="text-xs text-surface-600 dark:text-surface-400 mt-2">
+											Selected: {selectedRegionIds.length} region(s)
+										</p>
+									{:else}
+										<p class="text-sm text-surface-600 dark:text-surface-400">
+											No regions available in this world
+										</p>
+									{/if}
+								</div>
+							{/if}
 
 							<!-- Disaster Type Selection -->
 							<div class="card preset-filled-surface-200-700 p-4">
@@ -369,7 +443,9 @@
 							<!-- Trigger Button -->
 							<button
 								onclick={triggerDisaster}
-								disabled={isTriggeringDisaster || !selectedSettlementId}
+								disabled={isTriggeringDisaster ||
+									!selectedWorldId ||
+									selectedRegionIds.length === 0}
 								class="btn preset-filled-primary-500 w-full rounded-lg py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								{#if isTriggeringDisaster}
@@ -388,20 +464,36 @@
 							<div class="card preset-filled-surface-200-700 p-4">
 								<h3 class="font-semibold mb-3">Selected Configuration</h3>
 								<div class="space-y-3">
-									<div class="flex items-center justify-between py-2 border-b border-surface-300 dark:border-surface-600">
+									<div
+										class="flex items-center justify-between py-2 border-b border-surface-300 dark:border-surface-600"
+									>
 										<span class="text-surface-600 dark:text-surface-400"
-											>Settlement:</span
+											>World:</span
 										>
 										<span class="font-semibold">
-											{selectedSettlementId
-												? data.settlements.find(
-														(s: { id: string; name: string; worldId: string; worldName: string }) => 
-															s.id === selectedSettlementId
+											{selectedWorldId
+												? data.worlds.find(
+														(w: { id: string; name: string }) =>
+															w.id === selectedWorldId
 													)?.name || 'Unknown'
 												: 'Not selected'}
 										</span>
 									</div>
-									<div class="flex items-center justify-between py-2 border-b border-surface-300 dark:border-surface-600">
+									<div
+										class="flex items-center justify-between py-2 border-b border-surface-300 dark:border-surface-600"
+									>
+										<span class="text-surface-600 dark:text-surface-400"
+											>Regions:</span
+										>
+										<span class="font-semibold">
+											{selectedRegionIds.length > 0
+												? `${selectedRegionIds.length} selected`
+												: 'None selected'}
+										</span>
+									</div>
+									<div
+										class="flex items-center justify-between py-2 border-b border-surface-300 dark:border-surface-600"
+									>
 										<span class="text-surface-600 dark:text-surface-400"
 											>Disaster Type:</span
 										>
@@ -436,7 +528,7 @@
 										</h3>
 										<p class="text-sm text-warning-600 dark:text-warning-500">
 											Triggering disasters will create real events that affect
-											settlements, resources, and population. This action cannot be
+											regions, settlements, resources, and population. This action cannot be
 											undone.
 										</p>
 									</div>
