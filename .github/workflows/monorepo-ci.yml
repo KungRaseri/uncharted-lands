@@ -437,7 +437,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
-      PUBLIC_API_URL: http://localhost:3001
+      PUBLIC_API_URL: http://localhost:3001/api
       PUBLIC_WS_URL: http://localhost:3001
       PUBLIC_CLIENT_API_URL: http://localhost:3001/api
       SERVER_API_URL: http://localhost:3001/api

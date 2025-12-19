@@ -2,8 +2,8 @@
 
 > A browser-based multiplayer settlement-building game with real-time resource management, disasters, and strategic gameplay.
 
-[![CI Status](https://github.com/KungRaseri/uncharted-lands/actions/workflows/CI.yml/badge.svg)](https://github.com/KungRaseri/uncharted-lands/actions/workflows/CI.yml)
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=RedSyndicate_browser-game&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=RedSyndicate_browser-game)
+[![CI Status](https://github.com/KungRaseri/uncharted-lands/actions/workflows/monorepo-ci.yml/badge.svg)](https://github.com/KungRaseri/uncharted-lands/actions/workflows/monorepo-ci.yml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=KungRaseri_uncharted-lands&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=KungRaseri_uncharted-lands)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
