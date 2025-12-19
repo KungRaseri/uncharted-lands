@@ -487,78 +487,26 @@ jobs:
       - name: Install server dependencies
         working-directory: ./server
         run: |
-          # Remove the file:../shared link installation attempt
           npm ci
           # Workaround for npm optional dependencies bug
           rm -rf node_modules/rollup node_modules/@rollup
           npm install --no-save rollup
 
-      - name: Verify drizzle-kit installation
-        working-directory: ./server
-        run: |
-          echo "Checking for drizzle-kit..."
-          ls -la node_modules/.bin/ | grep drizzle || echo "drizzle-kit not found in .bin"
-          if [ -f "node_modules/.bin/drizzle-kit" ]; then
-            echo "✅ drizzle-kit binary exists"
-          else
-            echo "❌ drizzle-kit binary NOT found"
-            echo "Checking node_modules/drizzle-kit:"
-            ls -la node_modules/ | grep drizzle || echo "drizzle-kit package not installed"
-          fi
-
       - name: Build server (fresh build with all tooling)
         working-directory: ./server
         run: npm run build
 
-      - name: Install client dependencies for vite preview
-        working-directory: ./client
-        run: |
-          # Install all dependencies needed for vite preview
-          npm ci
-          # Workaround for npm optional dependencies bug
-          rm -rf node_modules/rollup node_modules/@rollup
-          rm -rf node_modules/lightningcss node_modules/lightningcss-*
-          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
-          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
-          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
-
-      - name: Install Playwright Browsers
-        working-directory: ./client
-        run: npx playwright install --with-deps
-
-      - name: Ensure drizzle-kit is installed (after all npm operations)
-        working-directory: ./server
-        run: |
-          echo "Installing drizzle-kit after all other dependencies..."
-          npm install --no-save drizzle-kit
-          ls -la node_modules/.bin/drizzle-kit
-
-      - name: Verify drizzle-kit still exists (right before use)
-        working-directory: ./server
-        run: |
-          echo "=== Checking drizzle-kit right before database schema step ==="
-          ls -la node_modules/.bin/ | grep drizzle || echo "❌ drizzle-kit NOT in .bin"
-          if [ -d "node_modules/drizzle-kit" ]; then
-            echo "✅ drizzle-kit package directory exists"
-          else
-            echo "❌ drizzle-kit package directory MISSING - reinstalling"
-            npm install --no-save drizzle-kit
-          fi
-          if [ -f "node_modules/.bin/drizzle-kit" ]; then
-            echo "✅ drizzle-kit binary exists"
-            ls -la node_modules/.bin/drizzle-kit
-          else
-            echo "❌ drizzle-kit binary MISSING - reinstalling"
-            npm install --no-save drizzle-kit
-          fi
-
       - name: Setup database schema
         working-directory: ./server
-        run: ./node_modules/.bin/drizzle-kit push --force
+        run: npx drizzle-kit push --force
 
       - name: Seed database
         working-directory: ./server
         run: npm run db:seed
+
+      - name: Install Playwright Browsers
+        working-directory: ./client
+        run: npx playwright install --with-deps
 
       - name: Start server (from build)
         working-directory: ./server
