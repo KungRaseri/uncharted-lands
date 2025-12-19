@@ -486,13 +486,25 @@ jobs:
 
       - name: Install server dependencies (all deps including dev)
         working-directory: ./server
-        env:
-          NODE_ENV: development  # Force devDependencies installation
         run: |
-          npm ci
+          # Use npm install to ensure devDependencies are installed
+          npm install
           # Workaround for npm optional dependencies bug
           rm -rf node_modules/rollup node_modules/@rollup
           npm install --no-save rollup
+
+      - name: Verify drizzle-kit installation
+        working-directory: ./server
+        run: |
+          echo "Checking for drizzle-kit..."
+          ls -la node_modules/.bin/ | grep drizzle || echo "drizzle-kit not found in .bin"
+          if [ -f "node_modules/.bin/drizzle-kit" ]; then
+            echo "✅ drizzle-kit binary exists"
+          else
+            echo "❌ drizzle-kit binary NOT found"
+            echo "Checking node_modules/drizzle-kit:"
+            ls -la node_modules/ | grep drizzle || echo "drizzle-kit package not installed"
+          fi
 
       - name: Build server (fresh build with all tooling)
         run: npm run build:server
