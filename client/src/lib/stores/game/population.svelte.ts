@@ -264,8 +264,8 @@ export const populationStore = {
 	): void => {
 		logger.debug(
 			'[PopulationStore] Initializing from server data for settlement:',
-			settlementId,
-			serverData
+			{settlementId,
+			serverData}
 		);
 
 		// Calculate happiness description and status
@@ -305,8 +305,8 @@ export const populationStore = {
 		// Trigger Svelte reactivity
 		state.settlements = new Map(state.settlements);
 
-		logger.debug('[PopulationStore] Initialized population for settlement:', settlementId);
-		logger.debug('[PopulationStore] Current settlements map size:', state.settlements.size);
+		logger.debug('[PopulationStore] Initialized population for settlement:', {settlementId});
+		logger.debug('[PopulationStore] Current settlements map size:', {size: state.settlements.size});
 	},
 
 	/**
