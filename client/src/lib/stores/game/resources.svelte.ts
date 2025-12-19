@@ -350,13 +350,14 @@ function initializeListeners() {
 				state.resources = new Map(state.resources);
 
 				logger.debug(
-					`[ResourcesStore] Deducted upgrade costs for ${data.structureName} to level ${data.level}:`,
-					data.resourcesDeducted,
-					'New resources:',
+					`[ResourcesStore] Deducted upgrade costs for ${data.structureName} to level ${data.level}`,
 					{
-						wood: existing.wood.current,
-						stone: existing.stone.current,
-						ore: existing.ore.current
+						resourcesDeducted: data.resourcesDeducted,
+						newResources: {
+							wood: existing.wood.current,
+							stone: existing.stone.current,
+							ore: existing.ore.current
+						}
 					}
 				);
 			} else if (!existing) {

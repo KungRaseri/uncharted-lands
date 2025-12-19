@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { deserialize } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { logger } from '$lib/utils/logger';
 	import type { ActionData, PageData } from './$types';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
 	import { generateMap } from '$lib/game/world-generator';
@@ -230,18 +231,21 @@
 				body: formData
 			});
 
-			logger.debug('[WORLD CREATE] Response status:', response.status, response.statusText);
-			logger.debug('[WORLD CREATE] Response ok:', response.ok);
+			logger.debug('[WORLD CREATE] Response status:', {
+				status: response.status,
+				statusText: response.statusText
+			});
+			logger.debug('[WORLD CREATE] Response ok:', { ok: response.ok });
 
 			// Use SvelteKit's deserialize to properly parse the response
 			const result = deserialize(await response.text());
 
-			logger.debug('[WORLD CREATE] Action result:', result);
-			logger.debug('[WORLD CREATE] Result type:', result.type);
+			logger.debug('[WORLD CREATE] Action result:', { result });
+			logger.debug('[WORLD CREATE] Result type:', { type: result.type });
 
 			// Type guard: Check result.type before accessing result.data
 			if (result.type === 'success') {
-				logger.debug('[WORLD CREATE] Result data:', result.data);
+				logger.debug('[WORLD CREATE] Result data:', { data: result.data });
 			}
 
 			if (result.type === 'failure' || result.type === 'error') {
@@ -264,17 +268,15 @@
 			const world = result.data.world;
 			const generationSettings = result.data.generationSettings;
 
-			logger.debug('[WORLD CREATE] Extracted world:', world);
-			logger.debug('[WORLD CREATE] Extracted settings:', generationSettings);
+			logger.debug('[WORLD CREATE] Extracted world:', { world });
+			logger.debug('[WORLD CREATE] Extracted settings:', { generationSettings });
 
 			if (!world || !generationSettings) {
-				logger.error(
-					'[WORLD CREATE] Missing data - world:',
-					!!world,
-					'settings:',
-					!!generationSettings
-				);
-				logger.error('[WORLD CREATE] Full result.data:', result.data);
+				logger.error('[WORLD CREATE] Missing data', {
+					hasWorld: !!world,
+					hasSettings: !!generationSettings
+				});
+				logger.error('[WORLD CREATE] Full result.data:', { data: result.data });
 				saveError = 'World was created but no data was returned';
 				generationProgress = '';
 				return;

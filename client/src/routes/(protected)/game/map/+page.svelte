@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { logger } from '$lib/utils/logger';
 	import World from '$lib/components/game/map/World.svelte';
 	import MapControls from '$lib/components/game/map/MapControls.svelte';
 	import type { PageData } from './$types';
