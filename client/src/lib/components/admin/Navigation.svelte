@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import { LayoutDashboard, Server, Globe, Users, Github } from 'lucide-svelte';
+	import { LayoutDashboard, Server, Globe, Users, Wrench, Github } from 'lucide-svelte';
 
 	let railTiles: Array<any> = [
 		{
@@ -24,6 +24,13 @@
 			href: '/admin/players',
 			value: '/admin/players',
 			icon: Users
+		},
+		{
+			label: 'Utilities',
+			title: 'Utilities',
+			href: '/admin/utilities',
+			value: '/admin/utilities',
+			icon: Wrench
 		}
 	];
 
