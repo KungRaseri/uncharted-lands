@@ -572,6 +572,14 @@ jobs:
           path: client/test-results/
           retention-days: 30
 
+      - name: Upload server logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: server-e2e-logs
+          path: server-e2e.log
+          retention-days: 7
+
   # ============================================
   # SonarCloud Analysis (Client)
   # ============================================
