@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { Snippet } from 'svelte';
+	import { logger } from '$lib/utils/logger';
 	import GameNavigation from '$lib/components/game/Navigation.svelte';
 	import GameFooter from '$lib/components/game/Footer.svelte';
 	import { socketStore, gameSocket } from '$lib/stores/game/socket';

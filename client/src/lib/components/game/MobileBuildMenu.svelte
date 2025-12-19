@@ -68,10 +68,7 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error(
-					'[MobileBuildMenu] API Error Response:',
-					JSON.stringify(result, null, 2)
-				);
+				logger.error('[MobileBuildMenu] API Error Response:', { result });
 				alert(result.message || 'Failed to create structure');
 				return;
 			}
@@ -80,7 +77,7 @@
 
 			onClose();
 		} catch (error) {
-			console.error('[MobileBuildMenu] Network error:', error);
+		logger.error('[MobileBuildMenu] Network error:', error);
 			alert('Network error - could not create structure');
 		}
 	}

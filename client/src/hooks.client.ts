@@ -1,6 +1,7 @@
 import type { HandleClientError } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
 import * as Sentry from '@sentry/svelte';
+import { logger } from '$lib/utils/logger';
 
 Sentry.init({
 	dsn: env.PUBLIC_SENTRY_DSN === 'disabled' ? undefined : env.PUBLIC_SENTRY_DSN,
@@ -57,22 +58,22 @@ export const handleError: HandleClientError = (async ({ error, event }) => {
 	const errorId = crypto.randomUUID();
 
 	// Comprehensive error logging
-	console.error('\n========================================');
-	console.error('🚨 CLIENT ERROR:', errorId);
-	console.error('========================================');
-	console.error('URL:', event.url?.pathname);
-	console.error('Error:', error);
+	logger.error('\n========================================')
+	logger.error('🚨 CLIENT ERROR:', { errorId });
+	logger.error('========================================')
+	logger.error('URL:', { pathname: event.url?.pathname });
+	logger.error('Error:', error);
 
 	if (error instanceof Error) {
-		console.error('Message:', error.message);
-		console.error('Stack:', error.stack);
+		logger.error('Message:', { message: error.message });
+		logger.error('Stack:', { stack: error.stack });
 	}
 
-	console.error('Event details:', {
+	logger.error('Event details:', {
 		url: event.url?.href,
 		params: event.params
 	});
-	console.error('========================================\n');
+	logger.error('========================================\n');
 
 	Sentry.withScope((scope) => {
 		scope.setExtra('event', event);

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { logger } from '$lib/utils/logger';
 	import SettlementDashboard from '$lib/components/game/SettlementDashboard.svelte';
 	// Disaster UI Components (Global overlays - keep these)
 	import DisasterWarningBanner from '$lib/components/game/DisasterWarningBanner.svelte';
@@ -23,30 +24,29 @@
 	let buildMenuOpen = $state(false);
 
 	function handleOpenBuildMenu() {
-		console.log('🔍 [SettlementPage] handleOpenBuildMenu CALLED');
-		console.log('🔍 [SettlementPage] buildMenuOpen BEFORE:', buildMenuOpen);
+		logger.debug('🔍 [SettlementPage] handleOpenBuildMenu CALLED');
+		logger.debug('🔍 [SettlementPage] buildMenuOpen BEFORE:', { buildMenuOpen });
 		buildMenuOpen = true;
-		console.log('🔍 [SettlementPage] buildMenuOpen AFTER:', buildMenuOpen);
+		logger.debug('🔍 [SettlementPage] buildMenuOpen AFTER:', { buildMenuOpen });
 	}
 
 	function handleCloseBuildMenu() {
-		console.log('🔍 [SettlementPage] handleCloseBuildMenu CALLED');
+		logger.debug('🔍 [SettlementPage] handleCloseBuildMenu CALLED');
 		buildMenuOpen = false;
 	}
 
 	// Set up auto-refresh for real-time data updates
 	onMount(() => {
-		console.log('[SETTLEMENT PAGE] Initializing stores from server data...');
-		console.log('[SETTLEMENT PAGE] Settlement data:', data.settlement);
+		logger.debug('[SETTLEMENT PAGE] Initializing stores from server data...');
+		logger.debug('[SETTLEMENT PAGE] Settlement data:', { settlement: data.settlement });
 
 		// Initialize stores from server-side loaded data
 		if (data.settlement) {
 			// Initialize resources store from storage data
 			if (data.settlement.storage) {
-				console.log(
-					'[SETTLEMENT PAGE] Initializing resources from storage:',
-					data.settlement.storage
-				);
+				logger.debug('[SETTLEMENT PAGE] Initializing resources from storage:', {
+					storage: data.settlement.storage
+				});
 				resourcesStore.initializeFromServerData(data.settlement.id, {
 					storage: data.settlement.storage,
 					capacity: data.settlement.storage.capacity || 1000
@@ -54,20 +54,18 @@
 
 				// Verify store was populated
 				const retrievedResources = resourcesStore.getResources(data.settlement.id);
-				console.log(
-					'[SETTLEMENT PAGE] Retrieved from store after init:',
+				logger.debug('[SETTLEMENT PAGE] Retrieved from store after init:', {
 					retrievedResources
-				);
+				});
 			} else {
-				console.warn('[SETTLEMENT PAGE] No storage data available in settlement');
+				logger.warn('[SETTLEMENT PAGE] No storage data available in settlement');
 			}
 
 			// Initialize population store from population data
 			if (data.settlement.population) {
-				console.log(
-					'[SETTLEMENT PAGE] Initializing population:',
-					data.settlement.population
-				);
+				logger.debug('[SETTLEMENT PAGE] Initializing population:', {
+					population: data.settlement.population
+				});
 				populationStore.initializeFromServerData(data.settlement.id, {
 					current: data.settlement.population.currentPopulation || 0,
 					capacity: 100, // TODO: Calculate from houses
@@ -78,33 +76,32 @@
 					lastGrowthTick: Date.now()
 				});
 			} else {
-				console.warn('[SETTLEMENT PAGE] No population data available in settlement');
+				logger.warn('[SETTLEMENT PAGE] No population data available in settlement');
 			}
 
 			// ✅ NEW: Initialize structures store from structures data
 			if (data.settlementStructures) {
-				console.log(
-					'[SETTLEMENT PAGE] Initializing structures:',
-					data.settlementStructures.length
-				);
+				logger.debug('[SETTLEMENT PAGE] Initializing structures:', {
+					count: data.settlementStructures.length
+				});
 				structuresStore.initializeStructures(
 					data.settlement.id,
 					data.settlementStructures
 				);
 			} else {
-				console.warn('[SETTLEMENT PAGE] No structures data available in settlementStructures');
+				logger.warn('[SETTLEMENT PAGE] No structures data available in settlementStructures');
 			}
 		} else {
-			console.error('[SETTLEMENT PAGE] No settlement data available!');
+			logger.error('[SETTLEMENT PAGE] No settlement data available!');
 		}
 
 		// Listen for structure:built events to refresh the page data
 		const handleStructureBuilt = (eventData: any) => {
-			console.log('[SETTLEMENT PAGE] structure:built event received:', eventData);
+			logger.debug('[SETTLEMENT PAGE] structure:built event received:', { eventData });
 
 			// Check if the structure was built in this settlement
 			if (eventData.settlementId === data.settlement?.id) {
-				console.log(
+				logger.debug(
 					'[SETTLEMENT PAGE] Structure built in current settlement, refreshing data...'
 				);
 
@@ -120,14 +117,14 @@
 		const unsubscribe = socketStore.subscribe((state) => {
 			const socket = state.socket;
 
-			console.log('[SETTLEMENT PAGE] Socket state changed:', {
+			logger.debug('[SETTLEMENT PAGE] Socket state changed:', {
 				hasSocket: !!socket,
 				connected: socket?.connected,
 				listenerAttached
 			});
 
 			if (socket && socket.connected && !listenerAttached) {
-				console.log(
+				logger.debug(
 					'[SETTLEMENT PAGE] Socket connected, setting up structure:built listener'
 				);
 				socket.on('structure:built', handleStructureBuilt);
@@ -144,7 +141,7 @@
 
 		// Cleanup function
 		return () => {
-			console.log('[SETTLEMENT PAGE] Cleaning up Socket.IO listeners...');
+			logger.debug('[SETTLEMENT PAGE] Cleaning up Socket.IO listeners...');
 
 			// Get current socket for cleanup
 			const currentSocket = socketStore.getSocket();
@@ -177,7 +174,7 @@
 <!-- Main Settlement Dashboard -->
 {#if data.settlement}
 	{@const tileData = (data as any).tile}
-	{@const _ = console.log('[SETTLEMENT PAGE] Passing tile to dashboard:', tileData)}
+	{@const _ = logger.debug('[SETTLEMENT PAGE] Passing tile to dashboard:', { tileData })}
 	<SettlementDashboard
 		settlementId={data.settlement.id}
 		settlementName={data.settlement.name}
