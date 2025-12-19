@@ -486,6 +486,8 @@ jobs:
 
       - name: Install server dependencies (all deps including dev)
         working-directory: ./server
+        env:
+          NODE_ENV: development  # Force devDependencies installation
         run: |
           npm ci
           # Workaround for npm optional dependencies bug
