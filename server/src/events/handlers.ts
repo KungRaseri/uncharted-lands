@@ -5,7 +5,6 @@
  */
 
 import type { Socket } from 'socket.io';
-import type { Server as SocketIOServer } from 'socket.io';
 import type {
 	AuthenticateData,
 	JoinWorldData,
@@ -41,11 +40,11 @@ import {
 } from '../game/resource-calculator.js';
 import { createWorld } from '../game/world-creator.js';
 import { aggregateSettlementModifiers } from '../game/settlement-modifier-aggregator.js';
-import { calculatePopulationState, getPopulationSummary } from '../game/population-calculator.js';
+import { calculatePopulationState, getPopulationSummary, getHappinessDescription } from '../game/population-calculator.js';
 import { calculateConsumption, calculatePopulation } from '../game/consumption-calculator.js';
 import { getWorldTemplateConfig } from '../types/world-templates.js';
 import { db } from '../db/index.js';
-import { settlementStructures, settlements, tiles as tilesSchema } from '../db/schema.js';
+import { settlementStructures, settlements } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -249,7 +248,23 @@ async function sendInitialResourceData(
 
 		// Send resource data for each settlement
 		for (const settlement of settlementsInWorld) {
-			if (!settlement.tile || !settlement.storage) continue;
+			if (!settlement.tile) {
+				logger.warn('[INITIAL DATA] Settlement missing tile data', {
+					settlementId: settlement.id,
+					settlementName: settlement.name,
+				});
+				continue;
+			}
+			
+			if (!settlement.storage) {
+				logger.error('[INITIAL DATA] Settlement missing storage! This is a critical database issue.', {
+					settlementId: settlement.id,
+					settlementName: settlement.name,
+					storageId: settlement.settlementStorageId,
+					fix: 'Run: npm run fix-storage in server directory',
+				});
+				continue;
+			}
 
 			// Get extractors (production structures)
 			const extractors = settlement.structures?.filter(
@@ -298,7 +313,32 @@ async function sendInitialResourceData(
 				ore: production.ore - consumption.ore,
 			};
 
-			// Send resource-update event with initial rates
+			// Convert rates to per-hour for client display
+			// Server calculates for interval (e.g., 10 seconds), convert to hourly rates
+			const intervalsPerHour = 3600 / RESOURCE_INTERVAL_SEC;
+			const productionPerHour = {
+				food: production.food * intervalsPerHour,
+				water: production.water * intervalsPerHour,
+				wood: production.wood * intervalsPerHour,
+				stone: production.stone * intervalsPerHour,
+				ore: production.ore * intervalsPerHour,
+			};
+			const consumptionPerHour = {
+				food: consumption.food * intervalsPerHour,
+				water: consumption.water * intervalsPerHour,
+				wood: consumption.wood * intervalsPerHour,
+				stone: consumption.stone * intervalsPerHour,
+				ore: consumption.ore * intervalsPerHour,
+			};
+			const netProductionPerHour = {
+				food: netProduction.food * intervalsPerHour,
+				water: netProduction.water * intervalsPerHour,
+				wood: netProduction.wood * intervalsPerHour,
+				stone: netProduction.stone * intervalsPerHour,
+				ore: netProduction.ore * intervalsPerHour,
+			};
+
+			// Send resource-update event with rates already converted to per-hour
 			socket.emit('resource-update', {
 				type: 'auto-production' as const,
 				settlementId: settlement.id,
@@ -309,27 +349,39 @@ async function sendInitialResourceData(
 					stone: settlement.storage.stone,
 					ore: settlement.storage.ore,
 				},
-				production,
-				consumption,
-				netProduction,
+				production: productionPerHour,
+				consumption: consumptionPerHour,
+				netProduction: netProductionPerHour,
 				population,
 				timestamp: Date.now(),
 			});
 
 			// Send population-state event with initial capacity
+			const currentPop = settlement.population?.currentPopulation || 0;
 			const popState = calculatePopulationState(
+				currentPop,
 				settlement.structures || [],
-				settlement.population?.currentPopulation || 0
+				{
+					food: settlement.storage.food,
+					water: settlement.storage.water,
+					wood: settlement.storage.wood,
+					stone: settlement.storage.stone,
+					ore: settlement.storage.ore,
+				},
+				settlement.population?.lastGrowthTick || Date.now()
 			);
+
+			const happinessDescription = getHappinessDescription(popState.happiness);
+			const popSummary = getPopulationSummary(popState);
 
 			socket.emit('population-state', {
 				settlementId: settlement.id,
 				current: popState.current,
 				capacity: popState.capacity,
 				happiness: popState.happiness,
-				happinessDescription: popState.happinessDescription,
+				happinessDescription,
 				growthRate: popState.growthRate,
-				status: popState.status,
+				status: popSummary.status,
 				timestamp: Date.now(),
 			});
 

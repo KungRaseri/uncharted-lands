@@ -10,7 +10,6 @@ import { browser } from '$app/environment';
 import { socketStore } from './socket';
 import { logger } from '$lib/utils/logger';
 import type { ResourceType, ResourceData, ResourceWithType } from '$lib/types/resources';
-import { RESOURCE_INTERVAL_SEC } from '$env/static/public';
 
 // Store-specific types
 export interface ResourcesState {
@@ -103,26 +102,18 @@ function initializeListeners() {
 				existing.stone.current = data.resources.stone;
 				existing.ore.current = data.resources.ore;
 
-				const secondsPerHour = 3600;
-				const intervalsPerHour = secondsPerHour / RESOURCE_INTERVAL_SEC;
+			// Rates are already per-hour from server
+			existing.food.productionRate = data.production.food;
+			existing.water.productionRate = data.production.water;
+			existing.wood.productionRate = data.production.wood;
+			existing.stone.productionRate = data.production.stone;
+			existing.ore.productionRate = data.production.ore;
 
-				existing.food.productionRate = data.production.food * intervalsPerHour;
-				existing.water.productionRate = data.production.water * intervalsPerHour;
-				existing.wood.productionRate = data.production.wood * intervalsPerHour;
-				existing.stone.productionRate = data.production.stone * intervalsPerHour;
-				existing.ore.productionRate = data.production.ore * intervalsPerHour;
-
-				existing.food.consumptionRate = data.consumption.food * intervalsPerHour;
-				existing.water.consumptionRate = data.consumption.water * intervalsPerHour;
-				existing.wood.consumptionRate = data.consumption.wood * intervalsPerHour;
-				existing.stone.consumptionRate = data.consumption.stone * intervalsPerHour;
-				existing.ore.consumptionRate = data.consumption.ore * intervalsPerHour;
-
-				existing.lastUpdate = Date.now();
-
-				// Trigger reactivity
-				state.resources = new Map(state.resources);
-
+			existing.food.consumptionRate = data.consumption.food;
+			existing.water.consumptionRate = data.consumption.water;
+			existing.wood.consumptionRate = data.consumption.wood;
+			existing.stone.consumptionRate = data.consumption.stone;
+			existing.ore.consumptionRate = data.consumption.ore;
 				logger.debug(
 					'[ResourcesStore] Updated all resources for settlement:',
 					{

@@ -405,10 +405,13 @@ export const settlementStorage = pgTable(
 	'SettlementStorage',
 	{
 		id: text('id').primaryKey(),
-		// @ts-expect-error - Circular reference to settlements table
-		settlementId: text('settlementId').references(() => settlements.id, {
-			onDelete: 'cascade',
-		}),
+		settlementId: text('settlementId')
+			.notNull()
+			.unique()
+			// @ts-expect-error - Circular reference to settlements table
+			.references(() => settlements.id, {
+				onDelete: 'cascade',
+			}),
 		food: integer('food').notNull(),
 		water: integer('water').notNull(),
 		wood: integer('wood').notNull(),
@@ -446,11 +449,8 @@ export const settlements = pgTable(
 		playerProfileId: text('playerProfileId')
 			.notNull()
 			.references(() => profiles.id, { onDelete: 'cascade' }),
-		settlementStorageId: text('settlementStorageId')
-			.notNull()
-			.unique()
-			// @ts-expect-error - Circular reference to settlementStorage table
-			.references(() => settlementStorage.id, { onDelete: 'cascade' }),
+		// NOTE: settlementStorageId removed - storage references settlement via settlementId
+		// This eliminates circular FK dependency (Settlement <-> SettlementStorage)
 		name: text('name').notNull().default('Home Settlement'),
 		// Settlement tier system (GDD Section 2.1)
 		settlementType: settlementTypeEnum('settlementType').notNull().default('OUTPOST'),
@@ -675,15 +675,15 @@ export const tilesRelations = relations(tiles, ({ one }) => ({
 
 export const settlementStorageRelations = relations(settlementStorage, ({ one }) => ({
 	settlement: one(settlements, {
-		fields: [settlementStorage.id],
-		references: [settlements.settlementStorageId],
+		fields: [settlementStorage.settlementId],
+		references: [settlements.id],
 	}),
 }));
 
 export const settlementsRelations = relations(settlements, ({ one, many }) => ({
 	storage: one(settlementStorage, {
-		fields: [settlements.settlementStorageId],
-		references: [settlementStorage.id],
+		fields: [settlements.id],
+		references: [settlementStorage.settlementId],
 	}),
 	population: one(settlementPopulation, {
 		fields: [settlements.id],

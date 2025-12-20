@@ -101,7 +101,7 @@ export async function getSettlementWithDetails(settlementId: string) {
 			world: worlds,
 		})
 		.from(settlements)
-		.leftJoin(settlementStorage, eq(settlements.settlementStorageId, settlementStorage.id))
+		.leftJoin(settlementStorage, eq(settlements.id, settlementStorage.settlementId))
 		.leftJoin(tiles, eq(settlements.tileId, tiles.id))
 		.leftJoin(biomes, eq(tiles.biomeId, biomes.id))
 		.leftJoin(regions, eq(tiles.regionId, regions.id))
@@ -121,16 +121,7 @@ export async function createSettlement(
 	name: string,
 	initialResources: { food: number; water: number; wood: number; stone: number; ore: number }
 ) {
-	// Create storage first
-	const [storage] = await db
-		.insert(settlementStorage)
-		.values({
-			id: createId(),
-			...initialResources,
-		})
-		.returning();
-
-	// Create settlement
+	// Create settlement first
 	// Note: plotId parameter is actually tileId (naming preserved for backward compatibility)
 	const [settlement] = await db
 		.insert(settlements)
@@ -138,8 +129,17 @@ export async function createSettlement(
 			id: createId(),
 			playerProfileId: profileId,
 			tileId: plotId, // FIXED: Changed from plotId to tileId
-			settlementStorageId: storage.id,
 			name,
+		})
+		.returning();
+
+	// Create storage linked to settlement
+	const [storage] = await db
+		.insert(settlementStorage)
+		.values({
+			id: createId(),
+			settlementId: settlement.id,
+			...initialResources,
 		})
 		.returning();
 

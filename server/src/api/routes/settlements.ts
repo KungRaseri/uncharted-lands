@@ -374,10 +374,24 @@ router.post('/', authenticate, async (req, res) => {
 			);
 		}
 
-		// Step 4: Create storage with starting resources (per GDD specification)
+		// Step 4: Create settlement ON THE TILE (not on a plot!)
+		const settlementId = createId();
+		await db.insert(settlements).values({
+			id: settlementId,
+			name: 'Home Settlement',
+			tileId: chosenTile.id, // Settlement claims the TILE
+			playerProfileId: profileId,
+		});
+
+		logger.info(
+			`[SETTLEMENT CREATE] Created settlement ${settlementId} for profile ${profileId} on tile ${chosenTile.id}`
+		);
+
+		// Step 5: Create storage with starting resources (per GDD specification)
 		const storageId = createId();
 		await db.insert(settlementStorage).values({
 			id: storageId,
+			settlementId, // Link to settlement
 			food: 50, // ~2.5 hours for 10 population at GDD rates
 			water: 100, // ~2.5 hours for 10 population
 			wood: 50, // Can build 2 FARMs (20 wood each) or 5 TENTs (10 wood each)
@@ -385,21 +399,7 @@ router.post('/', authenticate, async (req, res) => {
 			ore: 10, // Per GDD spec - starting ore for basic tools/equipment
 		});
 
-		logger.info(`[SETTLEMENT CREATE] Created storage ${storageId}`);
-
-		// Step 5: Create settlement ON THE TILE (not on a plot!)
-		const settlementId = createId();
-		await db.insert(settlements).values({
-			id: settlementId,
-			name: 'Home Settlement',
-			tileId: chosenTile.id, // Settlement claims the TILE
-			playerProfileId: profileId,
-			settlementStorageId: storageId,
-		});
-
-		logger.info(
-			`[SETTLEMENT CREATE] Created settlement ${settlementId} for profile ${profileId} on tile ${chosenTile.id}`
-		);
+		logger.info(`[SETTLEMENT CREATE] Created storage ${storageId} for settlement ${settlementId}`);
 
 		// Step 6: Update Tile.settlementId to point back to settlement (bidirectional FK)
 		await db.update(tiles).set({ settlementId }).where(eq(tiles.id, chosenTile.id));
