@@ -30,7 +30,7 @@ export interface StructureDefinition {
 	category: StructureCategory;
 	extractorType: ExtractorType;
 	buildingType: BuildingType;
-	maxLevel: number;
+	maxLevel?: number; // DEPRECATED: Kept for backwards compatibility, no longer enforced
 	requirements: {
 		food?: number;
 		water?: number;

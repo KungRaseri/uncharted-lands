@@ -931,19 +931,8 @@ async function handleUpgradeStructure(
 		}
 
 		const currentLevel = structureToUpgrade.structure.level;
-		const maxLevel = 5; // Default max level (could be from config)
 
-		// Check if already at max level
-		if (currentLevel >= maxLevel) {
-			const errorResponse = {
-				success: false,
-				error: `Structure already at maximum level (${maxLevel})`,
-				currentLevel,
-				maxLevel,
-				timestamp: Date.now(),
-			};
-			return callback ? callback(errorResponse) : undefined;
-		}
+		// No max level check - infinite progression via exponential cost curve (1.5^level)
 
 		// Get structure configuration from centralized source
 		const normalizedStructureType = data.structureType.toUpperCase();

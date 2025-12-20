@@ -127,7 +127,7 @@
 	// Get quality label
 	function getQualityLabel(quality: number): string {
 		if (quality >= 70) return 'Excellent';
-		if (quality >= 40) return 'Moderate';
+		if (quality >= 40) return 'Average';
 		return 'Poor';
 	}
 
