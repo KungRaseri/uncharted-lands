@@ -1026,10 +1026,24 @@ describe('Database Queries', () => {
 				testTileId = tileResult[0].id;
 
 				// Create settlement
+				const settlementResult = await db
+					.insert(settlements)
+					.values({
+						id: createId(),
+						playerProfileId: testProfileId,
+						tileId: testTileId,
+						name: 'Structure Settlement',
+						createdAt: new Date(),
+					})
+					.returning();
+				testSettlementId = settlementResult[0].id;
+
+				// Create storage AFTER settlement (settlementId is NOT NULL)
 				const storageResult = await db
 					.insert(settlementStorage)
 					.values({
 						id: createId(),
+						settlementId: testSettlementId, // REQUIRED: reference settlement
 						food: 200,
 						water: 200,
 						wood: 100,
@@ -1038,19 +1052,6 @@ describe('Database Queries', () => {
 					})
 					.returning();
 				testStorageId = storageResult[0].id;
-
-				const settlementResult = await db
-					.insert(settlements)
-					.values({
-						id: createId(),
-						playerProfileId: testProfileId,
-						tileId: testTileId,
-						settlementStorageId: testStorageId,
-						name: 'Structure Settlement',
-						createdAt: new Date(),
-					})
-					.returning();
-				testSettlementId = settlementResult[0].id;
 			});
 
 			afterAll(async () => {

@@ -51,7 +51,7 @@ export interface TestEntityChain {
 	regionId: string;
 	biomeId: string;
 	tileId: string;
-	settlementStorageId: string;
+	settlementStorageId?: string; // Optional: only exists when settlement is created
 	settlementId?: string;
 	structureId?: string;
 
@@ -63,7 +63,7 @@ export interface TestEntityChain {
 	region: any;
 	biome: any;
 	tile: any;
-	storage: any;
+	storage?: any; // Optional: only exists when settlement is created
 	settlement?: any;
 	structure?: any;
 }
@@ -273,14 +273,18 @@ export async function createTestProfile(accountId: string, options: TestEntityOp
 }
 
 /**
- * Create test settlement storage
+ * Create test settlement storage (requires settlementId due to NOT NULL constraint)
  */
-export async function createTestStorage(options: TestEntityOptions = {}) {
+export async function createTestStorage(
+	settlementId: string,
+	options: TestEntityOptions = {}
+) {
 	const settlementStorageId = createId();
 	const [storage] = await db
 		.insert(settlementStorage)
 		.values({
 			id: settlementStorageId,
+			settlementId, // REQUIRED: settlementId must be set on creation (NOT NULL constraint)
 			food: options.initialFood || 1000,
 			water: options.initialWater || 1000,
 			wood: options.initialWood || 1000,
@@ -293,13 +297,13 @@ export async function createTestStorage(options: TestEntityOptions = {}) {
 }
 
 /**
- * Create a test settlement entity (requires tileId, profileId, storageId)
- * NOTE: Schema change Bug #10 - Settlements are founded on tiles, not plots
+ * Create a test settlement entity (requires tileId, profileId)
+ * NOTE: Schema change - Settlements no longer have settlementStorageId field.
+ * Storage references settlement, not the other way around.
  */
 export async function createTestSettlementEntity(
 	tileId: string,
 	profileId: string,
-	storageId: string,
 	options: TestEntityOptions = {}
 ) {
 	const settlementId = createId();
@@ -307,9 +311,8 @@ export async function createTestSettlementEntity(
 		.insert(settlements)
 		.values({
 			id: settlementId,
-			tileId, // Bug #10 fix: Use tileId instead of plotId
+			tileId,
 			playerProfileId: profileId,
-			settlementStorageId: storageId,
 			name: options.settlementName || `Test Settlement - ${settlementId}`,
 		})
 		.returning();
@@ -379,6 +382,7 @@ export async function createTestStructure(
 
 /**
  * HIGH-LEVEL: Create full dependency chain up to tile (plot table removed)
+ * NOTE: Storage is NOT created here - it requires a settlement to exist first.
  */
 export async function createTestPlotChain(
 	options: TestEntityOptions = {}
@@ -390,7 +394,6 @@ export async function createTestPlotChain(
 	const { regionId, region } = await createTestRegion(worldId, options);
 	const { tileId, tile } = await createTestTile(regionId, biomeId, options);
 	const { profileId, profile } = await createTestProfile(accountId, options);
-	const { settlementStorageId, storage } = await createTestStorage(options);
 
 	return {
 		accountId,
@@ -400,7 +403,6 @@ export async function createTestPlotChain(
 		regionId,
 		biomeId,
 		tileId,
-		settlementStorageId,
 		account,
 		profile,
 		server,
@@ -408,36 +410,34 @@ export async function createTestPlotChain(
 		region,
 		biome,
 		tile,
-		storage,
 	};
 }
 
 /**
  * HIGH-LEVEL: Create full dependency chain up to settlement
+ * CORRECTED ORDER: Create settlement FIRST, then storage with settlementId
  */
 export async function createTestSettlement(
 	options: TestEntityOptions = {}
 ): Promise<TestEntityChain> {
 	const chain = await createTestPlotChain(options);
 
+	// Step 1: Create settlement (without storage reference)
 	const { settlementId, settlement } = await createTestSettlementEntity(
 		chain.tileId,
 		chain.profileId,
-		chain.settlementStorageId,
 		options
 	);
 
-	// ✅ CRITICAL FIX: Update storage to link it to the settlement
-	// The settlementStorage table has a settlementId foreign key that must be set
-	await db
-		.update(settlementStorage)
-		.set({ settlementId })
-		.where(eq(settlementStorage.id, chain.settlementStorageId));
+	// Step 2: Create storage with the settlementId (satisfies NOT NULL constraint)
+	const { settlementStorageId, storage } = await createTestStorage(settlementId, options);
 
 	return {
 		...chain,
 		settlementId,
 		settlement,
+		settlementStorageId, // Include storage ID
+		storage, // Include storage object
 	};
 }
 

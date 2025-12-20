@@ -75,9 +75,10 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 				1 // 1 tick
 			);
 
-			// BaseRate (0.01) × TileFood (100) × BiomeEff (1) × Level (1) × Effectiveness (1) × Ticks (1) × WorldMultiplier (1)
-			// = 0.01 × 100 × 1 × 1 × 1 × 1 × 1 = 1.0
-			expect(production.food).toBeCloseTo(1, 5);
+			// Base = (Quality/100) × BiomeEff × 0.2 = (100/100) × 1 × 0.2 = 0.2
+			// Tier 1 L1 = 0.5x multiplier
+			// Formula: 0.2 × 0.5 × 1 (effectiveness) × 1 (ticks) = 0.1
+			expect(production.food).toBeCloseTo(0.1, 5);
 		});
 
 		test('80% health → 95% production (excellent condition)', () => {
@@ -86,8 +87,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 
 			const production = calculateProduction(tile, [extractor], 1);
 
-			// Expected: 1.0 (full production) × 0.95 (95% effectiveness) = 0.95
-			expect(production.food).toBeCloseTo(0.95, 5);
+			// Expected: 0.1 (full production) × 0.95 (95% effectiveness) = 0.095
+			expect(production.food).toBeCloseTo(0.095, 5);
 		});
 
 		test('60% health → 85% production (good condition)', () => {
@@ -96,8 +97,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 
 			const production = calculateProduction(tile, [extractor], 1);
 
-			// Expected: 1.0 × 0.85 = 0.85
-			expect(production.food).toBeCloseTo(0.85, 5);
+			// Expected: 0.1 × 0.85 = 0.085
+			expect(production.food).toBeCloseTo(0.085, 5);
 		});
 
 		test('40% health → 70% production (damaged)', () => {
@@ -106,8 +107,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 
 			const production = calculateProduction(tile, [extractor], 1);
 
-			// Expected: 1.0 × 0.7 = 0.7
-			expect(production.food).toBeCloseTo(0.7, 5);
+			// Expected: 0.1 × 0.7 = 0.07
+			expect(production.food).toBeCloseTo(0.07, 5);
 		});
 
 		test('20% health → 50% production (poor condition)', () => {
@@ -116,8 +117,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 
 			const production = calculateProduction(tile, [extractor], 1);
 
-			// Expected: 1.0 × 0.5 = 0.5
-			expect(production.food).toBeCloseTo(0.5, 5);
+			// Expected: 0.1 × 0.5 = 0.05
+			expect(production.food).toBeCloseTo(0.05, 5);
 		});
 
 		test('10% health → 10% production (critical)', () => {
@@ -126,8 +127,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 
 			const production = calculateProduction(tile, [extractor], 1);
 
-			// Expected: 1.0 × 0.1 = 0.1
-			expect(production.food).toBeCloseTo(0.1, 5);
+			// Expected: 0.1 × 0.1 = 0.01
+			expect(production.food).toBeCloseTo(0.01, 5);
 		});
 
 		test('0% health → 0% production (destroyed)', () => {
@@ -150,7 +151,7 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 			const production = calculateProduction(tile, [extractor], 1);
 
 			// Null health should default to 100% effectiveness
-			expect(production.food).toBeCloseTo(1, 5);
+			expect(production.food).toBeCloseTo(0.1, 5);
 		});
 	});
 
@@ -158,9 +159,9 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 		test('should use highest-level extractor only (implementation changed to Highest-Level-Wins)', () => {
 			const tile = createMockTile();
 			const extractors: StructureWithInfo[] = [
-				createFarmExtractor(100), // 1.0 × 1.0 = 1.0
-				createFarmExtractor(60), // 1.0 × 0.85 = 0.85 (not used)
-				createFarmExtractor(20), // 1.0 × 0.5 = 0.5 (not used)
+				createFarmExtractor(100), // 0.1 × 1.0 = 0.1
+				createFarmExtractor(60), // 0.1 × 0.85 = 0.085 (not used)
+				createFarmExtractor(20), // 0.1 × 0.5 = 0.05 (not used)
 			];
 
 			const production = calculateProduction(tile, extractors, 1);
@@ -168,8 +169,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 			// Implementation uses "Highest-Level-Wins" logic (see resource-calculator.ts line 213-225)
 			// When multiple extractors of same type exist, only the one with highest level is used
 			// All three farms are level 1, so it picks the first one (100% health)
-			// Expected: Only the 100% health farm produces: 1.0
-			expect(production.food).toBeCloseTo(1, 5);
+			// Expected: Only the 100% health farm produces: 0.1
+			expect(production.food).toBeCloseTo(0.1, 5);
 		});
 	});
 	describe('Edge Cases & Real-World Scenarios', () => {
@@ -180,8 +181,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 			const production = calculateProduction(tile, [extractor], 1);
 
 			// 54% health is in 40-59% range → 0.7x effectiveness (flat rate, no interpolation)
-			// Formula: 1.0 × 0.7 = 0.7
-			expect(production.food).toBeCloseTo(0.7, 5);
+			// Formula: 0.1 × 0.7 = 0.07
+			expect(production.food).toBeCloseTo(0.07, 5);
 		});
 
 		test('multiple resource types with same health', () => {
@@ -196,12 +197,11 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 
 			const production = calculateProduction(tile, [farm, lumberMill], 1);
 
-			// Both extractors use same tile quality and tier multiplier (5x)
-			// Food (FARM): base (same tile) × tier (5) × effectiveness (0.85) × ticks (1) = 0.85
-			// Wood (LUMBER_MILL): base (same tile) × tier (5) × effectiveness (0.85) × ticks (1) = 0.255 (woodQuality is 30)
-			// Implementation does NOT have per-extractor base rates - uses tile quality
-			expect(production.food).toBeCloseTo(0.85, 5);
-			expect(production.wood).toBeCloseTo(0.255, 5); // 30% quality = 0.3 × 0.85 effectiveness
+			// Both extractors use same tier multiplier (0.5x for Tier 1 L1)
+			// Food (FARM): (100/100) × 1 × 0.2 × 0.5 × 0.85 × 1 = 0.085
+			// Wood (LUMBER_MILL): (30/100) × 1 × 0.2 × 0.5 × 0.85 × 1 = 0.0255
+			expect(production.food).toBeCloseTo(0.085, 5);
+			expect(production.wood).toBeCloseTo(0.0255, 5); // 30% quality = 0.3 × 0.085
 		});
 		test('health changes over time affect production proportionally', () => {
 			const tile = createMockTile();
@@ -209,29 +209,28 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 
 			// Start at full health
 			let production = calculateProduction(tile, [extractor], 1);
-			expect(production.food).toBeCloseTo(1, 5);
+			expect(production.food).toBeCloseTo(0.1, 5);
 
 			// Damage to 50%
 			extractor.health = 50;
 			production = calculateProduction(tile, [extractor], 1);
-			expect(production.food).toBeLessThan(1);
+			expect(production.food).toBeLessThan(0.1);
 			// 50% health is in 40-59% range → 0.7x effectiveness (flat rate)
-			expect(production.food).toBeCloseTo(0.7, 5);
+			expect(production.food).toBeCloseTo(0.07, 5);
 		});
 	});
 	describe('Integration with Other Multipliers', () => {
-		test('effectiveness stacks with tier multiplier (tier-based, not linear)', () => {
+		test('effectiveness stacks with tier multiplier (tier-based with level bonuses)', () => {
 			const tile = createMockTile();
 			const extractor = createFarmExtractor(60);
-			extractor.level = 3; // Level 3 = Tier 1 = 5x multiplier (not 1.4x)
+			extractor.level = 3; // Level 3 = Tier 1 = 0.5 + (3-1) × 0.05 = 0.6x multiplier
 
 			const production = calculateProduction(tile, [extractor], 1);
 
-			// Implementation uses tier-based multipliers, not linear
-			// Level 3 is in Tier 1 (levels 1-3) = 5x multiplier
-			// Formula: base × tier (5) × effectiveness (0.85) × ticks (1) = base × 4.25
-			// With base = 0.2 (tile quality 1 × biome 1 × 0.2): 0.2 × 5 × 0.85 = 0.85
-			expect(production.food).toBeCloseTo(0.85, 5);
+			// Implementation uses tier-based multipliers with level bonuses
+			// Level 3 is in Tier 1 (levels 1-5) = 0.5 + 0.10 = 0.6x multiplier
+			// Formula: (100/100) × 1 × 0.2 × 0.6 × 0.85 = 0.102
+			expect(production.food).toBeCloseTo(0.102, 5);
 		});
 
 		test('effectiveness stacks with world template multiplier', () => {
@@ -246,8 +245,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 				1.5 // world template multiplier (RELAXED mode)
 			);
 
-			// 1.0 × 0.85 (60% health) × 1.5 (relaxed mode) = 1.275
-			expect(production.food).toBeCloseTo(1.275, 5);
+			// 0.1 × 0.85 (60% health) × 1.5 (relaxed mode) = 0.1275
+			expect(production.food).toBeCloseTo(0.1275, 5);
 		});
 
 		test('effectiveness stacks with tick count', () => {
@@ -256,8 +255,8 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 
 			const production = calculateProduction(tile, [extractor], 60); // 1 second = 60 ticks
 
-			// 1.0 × 0.7 (40% health) × 60 (ticks) = 42
-			expect(production.food).toBeCloseTo(42, 5);
+			// 0.1 × 0.7 (40% health) × 60 (ticks) = 4.2
+			expect(production.food).toBeCloseTo(4.2, 5);
 		});
 	});
 
@@ -266,21 +265,21 @@ describe('Production Effectiveness Integration (Part 6.7)', () => {
 			const tile = createMockTile();
 
 			const testCases = [
-				{ health: 100, expectedMultiplier: 1 },
-				{ health: 80, expectedMultiplier: 0.95 },
-				{ health: 60, expectedMultiplier: 0.85 },
-				{ health: 40, expectedMultiplier: 0.7 }, // Implementation uses 0.7, not GDD's 0.6
-				{ health: 20, expectedMultiplier: 0.5 }, // Implementation uses 0.5, not GDD's 0.25
-				{ health: 10, expectedMultiplier: 0.1 },
-				{ health: 0, expectedMultiplier: 0 },
+				{ health: 100, expectedProduction: 0.1 }, // 0.1 × 1.0
+				{ health: 80, expectedProduction: 0.095 }, // 0.1 × 0.95
+				{ health: 60, expectedProduction: 0.085 }, // 0.1 × 0.85
+				{ health: 40, expectedProduction: 0.07 }, // 0.1 × 0.7
+				{ health: 20, expectedProduction: 0.05 }, // 0.1 × 0.5
+				{ health: 10, expectedProduction: 0.01 }, // 0.1 × 0.1
+				{ health: 0, expectedProduction: 0 }, // 0.1 × 0
 			];
 
-			for (const { health, expectedMultiplier } of testCases) {
+			for (const { health, expectedProduction } of testCases) {
 				const extractor = createFarmExtractor(health);
 				const production = calculateProduction(tile, [extractor], 1);
 
-				// Base production = 1.0, so effectiveness = final production
-				expect(production.food).toBeCloseTo(expectedMultiplier, 5);
+				// Base production = 0.1, so effectiveness = final production / 0.1
+				expect(production.food).toBeCloseTo(expectedProduction, 5);
 			}
 		});
 	});
