@@ -140,7 +140,10 @@ function initializeListeners(socket: Socket) {
 
 	// ✅ EVENT: structure:demolished - Structure removed
 	socket.on('structure:demolished', (data: { settlementId: string; structureId: string }) => {
-		logger.debug('[StructuresStore] Received structure:demolished:', data);
+		logger.info('[StructuresStore] 🗑️ Received structure:demolished EVENT:', {
+			settlementId: data.settlementId,
+			structureId: data.structureId
+		});
 
 		if (!data.settlementId || !data.structureId) {
 			logger.warn('[StructuresStore] Invalid structure:demolished data');
@@ -156,6 +159,11 @@ function initializeListeners(socket: Socket) {
 			return;
 		}
 
+		logger.info('[StructuresStore] Existing structures before removal:', {
+			count: existing.length,
+			ids: existing.map((s) => s.id)
+		});
+
 		// Remove the structure
 		const updated = existing.filter((structure) => structure.id !== data.structureId);
 
@@ -163,9 +171,10 @@ function initializeListeners(socket: Socket) {
 		state.structures.set(data.settlementId, updated);
 		state.structures = new Map(state.structures);
 
-		logger.debug('[StructuresStore] Structure removed:', {
+		logger.info('[StructuresStore] ✅ Structure removed - triggering reactivity:', {
 			structureId: data.structureId,
-			remainingStructures: updated.length
+			totalStructures: updated.length,
+			remainingIds: updated.map((s) => s.id)
 		});
 	});
 

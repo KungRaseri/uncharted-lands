@@ -262,7 +262,11 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			with: {
 				tile: {
 					with: {
-						region: true,
+						region: {
+							with: {
+								world: true,
+							},
+						},
 					},
 				},
 			},
@@ -434,7 +438,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 		});
 
 		// Emit Socket.IO event for real-time updates
-		const worldId = settlement.tile?.region?.worldId;
+		const worldId = settlement.tile?.region?.world?.id;
 		logger.debug('[SERVER] Attempting to emit structure:built event', {
 			worldId,
 			settlementId,
@@ -891,7 +895,19 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 			where: eq(settlementStructures.id, id),
 			with: {
 				structure: true,
-				settlement: true,
+				settlement: {
+					with: {
+						tile: {
+							with: {
+								region: {
+									with: {
+										world: true,
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		});
 
@@ -922,6 +938,30 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 			settlementId: structure.settlementId,
 			type: structureDef?.category,
 		});
+
+		// Emit Socket.IO event for real-time updates
+		const worldId = settlementData?.tile?.region?.world?.id;
+		logger.debug('[SERVER] Attempting to emit structure:demolished event', {
+			worldId,
+			settlementId: structure.settlementId,
+			structureName: structureDef?.name,
+		});
+		if (worldId && req.app.get('io')) {
+			const io = req.app.get('io');
+			logger.debug('[SERVER] Emitting structure:demolished to room:', {
+				world: `world:${worldId}`,
+			});
+
+			io.to(`world:${worldId}`).emit('structure:demolished', {
+				settlementId: structure.settlementId,
+				structureId: id,
+				structureName: structureDef?.name,
+				category: structureDef?.category,
+			});
+			logger.debug('[SERVER] structure:demolished event emitted successfully');
+		} else {
+			logger.debug('[SERVER] FAILED to emit - missing worldId or io instance');
+		}
 
 		// ✅ Phase 4: Trigger settlement modifier recalculation after structure deletion
 		try {

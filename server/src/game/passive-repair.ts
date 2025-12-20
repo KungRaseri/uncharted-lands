@@ -97,7 +97,11 @@ export async function processPassiveRepairs(worldId: string): Promise<PassiveRep
 				},
 				tile: {
 					with: {
-						region: true,
+						region: {
+							with: {
+								world: true,
+							},
+						},
 					},
 				},
 			},
@@ -105,7 +109,7 @@ export async function processPassiveRepairs(worldId: string): Promise<PassiveRep
 
 		// Filter settlements that belong to the specified world
 		const filteredSettlements = worldSettlements.filter(
-			(settlement) => settlement.tile?.region?.worldId === worldId
+			(settlement) => settlement.tile?.region?.world?.id === worldId
 		);
 
 		const settlementResults: PassiveRepairResult[] = [];
