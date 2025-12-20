@@ -228,6 +228,7 @@ async function sendInitialResourceData(
 				structures: {
 					with: {
 						structure: true,
+						modifiers: true, // Include modifiers for population capacity calculation
 					},
 				},
 			},

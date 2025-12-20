@@ -254,13 +254,14 @@
 											<span class="text-surface-400">Production:</span>
 											<span
 												class="text-success-400 font-semibold tabular-nums"
-											>
-												{formatRate(resource.productionRate)}
-											</span>
-										</div>
-										<div class="flex justify-between">
-											<span class="text-surface-400">Consumption:</span>
-											<span class="text-error-400 font-semibold tabular-nums">
+											data-testid="{resource.type}-production-rate"
+										>
+											{formatRate(resource.productionRate)}
+										</span>
+									</div>
+									<div class="flex justify-between">
+										<span class="text-surface-400">Consumption:</span>
+										<span class="text-error-400 font-semibold tabular-nums" data-testid="{resource.type}-consumption-rate">
 												{formatRate(-resource.consumptionRate)}
 											</span>
 										</div>
@@ -458,13 +459,14 @@
 											<span class="text-surface-400">Production:</span>
 											<span
 												class="text-success-400 font-semibold tabular-nums"
-											>
-												{formatRate(resource.productionRate)}
-											</span>
-										</div>
-										<div class="flex justify-between">
-											<span class="text-surface-400">Consumption:</span>
-											<span class="text-error-400 font-semibold tabular-nums">
+											data-testid="{resource.type}-production-rate"
+										>
+											{formatRate(resource.productionRate)}
+										</span>
+									</div>
+									<div class="flex justify-between">
+										<span class="text-surface-400">Consumption:</span>
+										<span class="text-error-400 font-semibold tabular-nums" data-testid="{resource.type}-consumption-rate">
 												{formatRate(-resource.consumptionRate)}
 											</span>
 										</div>

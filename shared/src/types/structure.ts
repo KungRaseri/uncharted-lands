@@ -80,6 +80,7 @@ export interface Structure {
  * From StructureModifier database table
  */
 export interface StructureModifier {
+	id: string;
 	type: string; // LINEAR, EXPONENTIAL, DIMINISHING
 	name: string;
 	description: string;
