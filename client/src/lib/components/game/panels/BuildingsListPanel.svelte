@@ -224,7 +224,11 @@
 											</p>
 										</div>
 										<span class="text-sm font-semibold shrink-0">
-											{modifier.value > 0 ? '+' : ''}{modifier.value}
+											{modifier.value > 0 ? '+' : ''}
+											{building.level * modifier.value}
+											<span class="text-xs font-semibold shrink-0">
+												({modifier.value} / Level)
+											</span>
 										</span>
 									</div>
 								{/each}

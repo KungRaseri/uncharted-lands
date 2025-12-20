@@ -249,7 +249,7 @@
 				buildingType: s.buildingType ?? null,
 				category: s.category,
 				modifiers: (s.modifiers ?? []).map((m) => ({
-					id: m.type, // BuildingsListPanel expects 'id', but canonical has 'type'
+					id: m.id, // BuildingsListPanel expects 'id', but canonical has 'type'
 					name: m.name,
 					description: m.description,
 					value: m.value
