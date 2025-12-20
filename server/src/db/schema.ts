@@ -400,7 +400,6 @@ export const tiles = pgTable(
 // Plots are no longer needed - settlements claim tiles directly
 // See: client/docs/game-design/SCHEMA-REFACTOR-ARTIFACT.md
 
-// @ts-expect-error - Circular reference between settlementStorage and settlements
 export const settlementStorage = pgTable(
 	'SettlementStorage',
 	{
@@ -408,7 +407,6 @@ export const settlementStorage = pgTable(
 		settlementId: text('settlementId')
 			.notNull()
 			.unique()
-			// @ts-expect-error - Circular reference to settlements table
 			.references(() => settlements.id, {
 				onDelete: 'cascade',
 			}),

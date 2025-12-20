@@ -35,6 +35,7 @@ class Logger {
 	private readonly isProd: boolean;
 	private readonly logDir: string;
 	private readonly logToFile: boolean;
+	private readonly logRetentionCount: number;
 	private currentLogFile: string | null = null;
 	private logStartTime: string | null = null;
 
@@ -47,6 +48,7 @@ class Logger {
 		// File logging configuration
 		this.logToFile = process.env.LOG_TO_FILE === 'true' || !this.isProd; // Always log to file in dev
 		this.logDir = path.join(process.cwd(), 'logs');
+		this.logRetentionCount = Number.parseInt(process.env.LOG_RETENTION_COUNT || '5', 10);
 
 		// Create logs directory if it doesn't exist
 		if (this.logToFile && !fs.existsSync(this.logDir)) {
@@ -101,25 +103,44 @@ class Logger {
 	}
 
 	/**
-	 * Clean up old log files, keeping only the 10 most recent
+	 * Clean up old log files, keeping only the configured number of most recent files
 	 */
 	private cleanupOldLogs(): void {
 		try {
-			const MAX_LOG_FILES = 10;
-			const files = fs
+			// Clean up regular logs
+			const regularLogs = fs
 				.readdirSync(this.logDir)
-				.filter((f) => f.endsWith('.log') && !f.endsWith('.latest.log'))
+				.filter((f) => f.endsWith('.log') && !f.endsWith('.latest.log') && !f.endsWith('.error.log'))
 				.sort((a, b) => b.localeCompare(a)); // Most recent first
 
-			// Remove old files beyond the limit
-			if (files.length > MAX_LOG_FILES) {
-				const filesToRemove = files.slice(MAX_LOG_FILES);
+			if (regularLogs.length > this.logRetentionCount) {
+				const filesToRemove = regularLogs.slice(this.logRetentionCount);
 				console.log(`[LOGGER] Cleaning up ${filesToRemove.length} old log file(s)...`);
 
 				for (const file of filesToRemove) {
 					try {
 						fs.unlinkSync(path.join(this.logDir, file));
 						console.log(`[LOGGER] Deleted old log: ${file}`);
+					} catch (err) {
+						console.error(`[LOGGER] Failed to delete ${file}:`, err);
+					}
+				}
+			}
+
+			// Clean up error logs
+			const errorLogs = fs
+				.readdirSync(this.logDir)
+				.filter((f) => f.endsWith('.error.log'))
+				.sort((a, b) => b.localeCompare(a)); // Most recent first
+
+			if (errorLogs.length > this.logRetentionCount) {
+				const filesToRemove = errorLogs.slice(this.logRetentionCount);
+				console.log(`[LOGGER] Cleaning up ${filesToRemove.length} old error log file(s)...`);
+
+				for (const file of filesToRemove) {
+					try {
+						fs.unlinkSync(path.join(this.logDir, file));
+						console.log(`[LOGGER] Deleted old error log: ${file}`);
 					} catch (err) {
 						console.error(`[LOGGER] Failed to delete ${file}:`, err);
 					}
