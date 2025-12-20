@@ -161,7 +161,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 
 		if (testUserEmail && sessionCookieValue) {
 			try {
-				await cleanupTestUser(request, testUserEmail, sessionCookieValue);
+				await cleanupTestUser(request, testUserEmail);
 				console.log('[E2E] Cleaned up test user:', testUserEmail);
 			} catch (error) {
 				console.warn('[E2E] Failed to cleanup user:', error);

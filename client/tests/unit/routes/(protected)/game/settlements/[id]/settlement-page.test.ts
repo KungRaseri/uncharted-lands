@@ -58,6 +58,7 @@ describe('Settlement Page - API Metadata Integration', () => {
 			populationRequired: 2,
 			modifiers: [
 				{
+					id: 'food_production_modifier',
 					name: 'Food Production',
 					description: '+10 food per tick',
 					value: 10,
