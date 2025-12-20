@@ -316,10 +316,28 @@ async function sendInitialResourceData(
 				timestamp: Date.now(),
 			});
 
-			logger.debug('[INITIAL DATA] Sent initial resource data', {
+			// Send population-state event with initial capacity
+			const popState = calculatePopulationState(
+				settlement.structures || [],
+				settlement.population?.currentPopulation || 0
+			);
+
+			socket.emit('population-state', {
+				settlementId: settlement.id,
+				current: popState.current,
+				capacity: popState.capacity,
+				happiness: popState.happiness,
+				happinessDescription: popState.happinessDescription,
+				growthRate: popState.growthRate,
+				status: popState.status,
+				timestamp: Date.now(),
+			});
+
+			logger.debug('[INITIAL DATA] Sent initial resource and population data', {
 				settlementId: settlement.id,
 				production,
 				consumption,
+				populationCapacity: popState.capacity,
 			});
 		}
 	} catch (error) {

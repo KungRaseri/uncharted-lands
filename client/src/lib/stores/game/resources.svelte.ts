@@ -10,6 +10,7 @@ import { browser } from '$app/environment';
 import { socketStore } from './socket';
 import { logger } from '$lib/utils/logger';
 import type { ResourceType, ResourceData, ResourceWithType } from '$lib/types/resources';
+import { RESOURCE_INTERVAL_SEC } from '$env/static/public';
 
 // Store-specific types
 export interface ResourcesState {
@@ -102,10 +103,6 @@ function initializeListeners() {
 				existing.stone.current = data.resources.stone;
 				existing.ore.current = data.resources.ore;
 
-				// Update production rates (convert from per-interval to per-hour)
-				// Production rates in the payload are for the tick interval, need to convert to hourly
-				// Note: In E2E this is 10 seconds, in production it's 3600 seconds (1 hour)
-				const RESOURCE_INTERVAL_SEC = 10; // From environment variable RESOURCE_INTERVAL_SEC
 				const secondsPerHour = 3600;
 				const intervalsPerHour = secondsPerHour / RESOURCE_INTERVAL_SEC;
 
