@@ -30,6 +30,8 @@ import {
 	getPrerequisitesForStructure,
 	validatePrerequisites,
 } from '../../game/modifier-calculator.js';
+import { validateBuildingPlacement } from '../../utils/building-validator.js';
+import { updateSettlementAreaUsage } from '../../utils/area-calculator.js';
 
 const router = Router();
 
@@ -308,6 +310,25 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			});
 		}
 
+		// ✅ Building Area System: Validate area, Town Hall level, and unique constraints
+		if (structureDefinition.category === 'BUILDING') {
+			const areaValidation = await validateBuildingPlacement(
+				db,
+				settlementId,
+				structureDefinition.name
+			);
+
+			if (!areaValidation.valid && areaValidation.error) {
+				return res.status(400).json({
+					success: false,
+					error: 'Bad Request',
+					code: areaValidation.error.type,
+					message: areaValidation.error.message,
+					details: areaValidation.error.details,
+				});
+			}
+		}
+
 		// 4. For extractors, validate tileId and slotPosition
 		if (structureDefinition.category === 'EXTRACTOR') {
 			if (!tileId) {
@@ -493,6 +514,23 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 					error: aggError instanceof Error ? aggError.message : 'Unknown error',
 				}
 			);
+		}
+
+		// ✅ Building Area System: Update settlement area usage after building
+		if (structureDefinition.category === 'BUILDING') {
+			try {
+				await updateSettlementAreaUsage(db, settlementId);
+				logger.debug('[API] Settlement area usage updated after structure creation', {
+					settlementId,
+					structureId: result.structure.id,
+				});
+			} catch (areaError) {
+				// Log error but don't fail the operation
+				logger.error('[API] Failed to update settlement area usage', {
+					settlementId,
+					error: areaError instanceof Error ? areaError.message : 'Unknown error',
+				});
+			}
 		}
 
 		// ✅ IMMEDIATE CAPACITY UPDATE: Emit population-state event with updated capacity
@@ -982,6 +1020,23 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 					error: aggError instanceof Error ? aggError.message : 'Unknown error',
 				}
 			);
+		}
+
+		// ✅ Building Area System: Update settlement area usage after demolition
+		if (structureDef?.category === 'BUILDING') {
+			try {
+				await updateSettlementAreaUsage(db, structure.settlementId);
+				logger.debug('[API] Settlement area usage updated after structure demolition', {
+					settlementId: structure.settlementId,
+					structureId: id,
+				});
+			} catch (areaError) {
+				// Log error but don't fail the operation
+				logger.error('[API] Failed to update settlement area usage', {
+					settlementId: structure.settlementId,
+					error: areaError instanceof Error ? areaError.message : 'Unknown error',
+				});
+			}
 		}
 
 		return res.json({

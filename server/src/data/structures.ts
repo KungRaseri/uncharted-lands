@@ -14,14 +14,13 @@ export type ExtractorType =
 	| 'HUNTING_LODGE'
 	| 'HERB_GARDEN'
 	| null;
+
 export type BuildingType =
 	| 'HOUSE'
 	| 'STORAGE'
-	| 'BARRACKS'
 	| 'WORKSHOP'
 	| 'MARKETPLACE'
 	| 'TOWN_HALL'
-	| 'WALL'
 	| null;
 
 export interface StructureDefinition {
@@ -38,12 +37,16 @@ export interface StructureDefinition {
 		stone?: number;
 		ore?: number;
 	};
+	// Building Area System properties
+	unique: boolean; // Can only build one per settlement?
+	areaCost: number; // Area consumed (0 for extractors)
+	minTownHallLevel: number; // Tier gating - minimum Town Hall level required
 }
 
 export const STRUCTURES: StructureDefinition[] = [
 	{
 		name: 'Tent',
-		description: 'Basic shelter for settlers',
+		description: 'Basic shelter for settlers (+2 population per level)',
 		category: 'BUILDING',
 		extractorType: null,
 		buildingType: 'HOUSE',
@@ -53,10 +56,13 @@ export const STRUCTURES: StructureDefinition[] = [
 			water: 2,
 			wood: 10,
 		},
+		unique: false,
+		areaCost: 25,
+		minTownHallLevel: 0, // Available immediately at Outpost tier
 	},
 	{
 		name: 'House',
-		description: 'Provides housing capacity for settlers',
+		description: 'Provides housing capacity for settlers (+5 population per level)',
 		category: 'BUILDING',
 		extractorType: null,
 		buildingType: 'HOUSE',
@@ -65,10 +71,13 @@ export const STRUCTURES: StructureDefinition[] = [
 			wood: 50,
 			stone: 20,
 		},
+		unique: false,
+		areaCost: 50,
+		minTownHallLevel: 1, // Requires Town Hall Level 1 (Village tier)
 	},
 	{
 		name: 'Warehouse',
-		description: 'Increases storage capacity',
+		description: 'Increases storage capacity (+500 storage per level)',
 		category: 'BUILDING',
 		extractorType: null,
 		buildingType: 'STORAGE',
@@ -77,23 +86,29 @@ export const STRUCTURES: StructureDefinition[] = [
 			wood: 40,
 			stone: 20,
 		},
+		unique: false,
+		areaCost: 50,
+		minTownHallLevel: 0, // Available immediately at Outpost tier
 	},
 	{
 		name: 'Town Hall',
-		description: 'Administrative center for the settlement',
+		description: 'Administrative center for the settlement (+100 area capacity per level)',
 		category: 'BUILDING',
 		extractorType: null,
 		buildingType: 'TOWN_HALL',
-		maxLevel: 5,
+		maxLevel: 10,
 		requirements: {
 			wood: 200,
 			stone: 150,
 			ore: 50,
 		},
+		unique: true,
+		areaCost: 100,
+		minTownHallLevel: 0, // Can build at Outpost tier
 	},
 	{
 		name: 'Workshop',
-		description: 'Allows upgrading structures',
+		description: 'Allows upgrading structures (+10% construction speed per level)',
 		category: 'BUILDING',
 		extractorType: null,
 		buildingType: 'WORKSHOP',
@@ -103,6 +118,9 @@ export const STRUCTURES: StructureDefinition[] = [
 			stone: 60,
 			ore: 30,
 		},
+		unique: true,
+		areaCost: 75,
+		minTownHallLevel: 1, // Requires Town Hall Level 1 (Village tier)
 	},
 	{
 		name: 'Farm',
@@ -110,11 +128,14 @@ export const STRUCTURES: StructureDefinition[] = [
 		category: 'EXTRACTOR',
 		extractorType: 'FARM',
 		buildingType: null,
-		maxLevel: 5,
+		// maxLevel removed - infinite progression enabled
 		requirements: {
 			wood: 20,
 			stone: 10,
 		},
+		unique: false,
+		areaCost: 0, // Extractors use plotSlots system, not building area
+		minTownHallLevel: 0,
 	},
 	{
 		name: 'Quarry',
@@ -122,11 +143,13 @@ export const STRUCTURES: StructureDefinition[] = [
 		category: 'EXTRACTOR',
 		extractorType: 'QUARRY',
 		buildingType: null,
-		maxLevel: 5,
 		requirements: {
 			wood: 30,
 			stone: 20,
 		},
+		unique: false,
+		areaCost: 0,
+		minTownHallLevel: 0,
 	},
 	{
 		name: 'Mine',
@@ -134,11 +157,13 @@ export const STRUCTURES: StructureDefinition[] = [
 		category: 'EXTRACTOR',
 		extractorType: 'MINE',
 		buildingType: null,
-		maxLevel: 5,
 		requirements: {
 			wood: 40,
 			stone: 30,
 		},
+		unique: false,
+		areaCost: 0,
+		minTownHallLevel: 1, // Advanced extractor - Village tier
 	},
 	{
 		name: 'Lumber Mill',
@@ -146,11 +171,13 @@ export const STRUCTURES: StructureDefinition[] = [
 		category: 'EXTRACTOR',
 		extractorType: 'LUMBER_MILL',
 		buildingType: null,
-		maxLevel: 5,
 		requirements: {
 			wood: 20,
 			stone: 10,
 		},
+		unique: false,
+		areaCost: 0,
+		minTownHallLevel: 0,
 	},
 	{
 		name: 'Fishing Dock',
@@ -158,11 +185,13 @@ export const STRUCTURES: StructureDefinition[] = [
 		category: 'EXTRACTOR',
 		extractorType: 'FISHING_DOCK',
 		buildingType: null,
-		maxLevel: 5,
 		requirements: {
 			wood: 30,
 			stone: 15,
 		},
+		unique: false,
+		areaCost: 0,
+		minTownHallLevel: 1, // Advanced extractor - Village tier
 	},
 	{
 		name: 'Hunting Lodge',
@@ -170,11 +199,13 @@ export const STRUCTURES: StructureDefinition[] = [
 		category: 'EXTRACTOR',
 		extractorType: 'HUNTING_LODGE',
 		buildingType: null,
-		maxLevel: 5,
 		requirements: {
 			wood: 25,
 			stone: 10,
 		},
+		unique: false,
+		areaCost: 0,
+		minTownHallLevel: 1, // Advanced extractor - Village tier
 	},
 	{
 		name: 'Well',
@@ -182,11 +213,13 @@ export const STRUCTURES: StructureDefinition[] = [
 		category: 'EXTRACTOR',
 		extractorType: 'WELL',
 		buildingType: null,
-		maxLevel: 5,
 		requirements: {
 			wood: 15,
 			stone: 20,
 		},
+		unique: false,
+		areaCost: 0,
+		minTownHallLevel: 0,
 	},
 	{
 		name: 'Herb Garden',
@@ -194,15 +227,17 @@ export const STRUCTURES: StructureDefinition[] = [
 		category: 'EXTRACTOR',
 		extractorType: 'HERB_GARDEN',
 		buildingType: null,
-		maxLevel: 5,
 		requirements: {
 			wood: 15,
 			stone: 5,
 		},
+		unique: false,
+		areaCost: 0,
+		minTownHallLevel: 1, // Advanced extractor - Village tier
 	},
 	{
 		name: 'Marketplace',
-		description: 'Enables trading with other settlements',
+		description: 'Enables trading with other settlements (NPC trade routes, guild recruitment)',
 		category: 'BUILDING',
 		extractorType: null,
 		buildingType: 'MARKETPLACE',
@@ -211,5 +246,8 @@ export const STRUCTURES: StructureDefinition[] = [
 			wood: 120,
 			stone: 80,
 		},
+		unique: true,
+		areaCost: 100,
+		minTownHallLevel: 3, // Requires Town Hall Level 3 (Town tier)
 	},
 ];

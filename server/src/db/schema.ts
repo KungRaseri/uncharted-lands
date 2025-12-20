@@ -74,11 +74,9 @@ export const extractorTypeEnum = pgEnum('ExtractorType', [
 export const buildingTypeEnum = pgEnum('BuildingType', [
 	'HOUSE',
 	'STORAGE',
-	'BARRACKS',
 	'WORKSHOP',
 	'MARKETPLACE',
 	'TOWN_HALL',
-	'WALL',
 ]);
 
 // Disaster system enums (Phase 4 - November 2025)
@@ -454,6 +452,9 @@ export const settlements = pgTable(
 		settlementType: settlementTypeEnum('settlementType').notNull().default('OUTPOST'),
 		tier: integer('tier').notNull().default(1), // 1-4 corresponding to OUTPOST/VILLAGE/TOWN/CITY
 		resilience: integer('resilience').notNull().default(0), // Disaster survival resilience score (0-100)
+		// Building Area System (December 2025)
+		areaUsed: integer('areaUsed').notNull().default(0), // Total area consumed by buildings
+		areaCapacity: integer('areaCapacity').notNull().default(500), // Base capacity = 500 + (TH level × 100)
 		createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 	},

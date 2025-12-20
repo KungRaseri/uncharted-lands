@@ -129,11 +129,8 @@ export interface StructureMetadata {
 		minimumLevel?: number;
 	}[];
 
-	// Requirements (area, solar, wind, etc.)
+	// Requirements
 	requirements?: {
-		area?: number;
-		solar?: number;
-		wind?: number;
 		food?: number;
 		water?: number;
 		wood?: number;

@@ -131,8 +131,8 @@ export const EXTRACTOR_STAFFING: Record<ExtractorType, StaffingRequirement> = {
  *
  * Buildings provide various benefits to settlements.
  *
- * Current schema supports 7 building types:
- * HOUSE, STORAGE, BARRACKS, WORKSHOP, MARKETPLACE, TOWN_HALL, WALL
+ * Current schema supports 5 building types:
+ * HOUSE, STORAGE, WORKSHOP, MARKETPLACE, TOWN_HALL
  */
 export const BUILDING_STAFFING: Record<BuildingType, StaffingRequirement> = {
 	// ===== HOUSING & STORAGE =====
@@ -175,24 +175,6 @@ export const BUILDING_STAFFING: Record<BuildingType, StaffingRequirement> = {
 		bonusPerWorker: 0.08, // +8% trade efficiency (future)
 		priority: 4, // Lower priority (trade not critical early)
 		description: 'Merchants facilitate trade and commerce',
-	},
-
-	// ===== MILITARY & DEFENSE =====
-
-	BARRACKS: {
-		required: 2,
-		optional: 5, // Max 7 workers total
-		bonusPerWorker: 0.1, // +10% defense effectiveness (future)
-		priority: 5, // Medium priority (defense structures)
-		description: 'Soldiers train and defend the settlement',
-	},
-
-	WALL: {
-		required: 1,
-		optional: 2, // Max 3 workers total
-		bonusPerWorker: 0.05, // +5% wall integrity maintenance
-		priority: 4, // Lower priority (passive defense)
-		description: 'Guards patrol and maintain defensive walls',
 	},
 };
 
