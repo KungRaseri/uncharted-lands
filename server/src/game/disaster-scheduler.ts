@@ -28,7 +28,7 @@ import {
 	type DisasterType,
 	type DisasterSeverity,
 } from '../db/schema.js';
-import { eq, inArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { logger } from '../utils/logger.js';
 
 /**

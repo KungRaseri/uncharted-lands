@@ -14,8 +14,7 @@ import {
 	accounts,
 	settlements,
 	disasterEvents,
-	regions,
-	tiles,
+	regions
 } from '../../db/index.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 import { logger } from '../../utils/logger.js';
