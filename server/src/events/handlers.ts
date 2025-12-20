@@ -5,6 +5,7 @@
  */
 
 import type { Socket } from 'socket.io';
+import type { Server as SocketIOServer } from 'socket.io';
 import type {
 	AuthenticateData,
 	JoinWorldData,
@@ -36,12 +37,15 @@ import {
 	subtractResources,
 	hasEnoughResources,
 	type Resources,
+	calculateProduction,
 } from '../game/resource-calculator.js';
 import { createWorld } from '../game/world-creator.js';
 import { aggregateSettlementModifiers } from '../game/settlement-modifier-aggregator.js';
 import { calculatePopulationState, getPopulationSummary } from '../game/population-calculator.js';
+import { calculateConsumption, calculatePopulation } from '../game/consumption-calculator.js';
+import { getWorldTemplateConfig } from '../types/world-templates.js';
 import { db } from '../db/index.js';
-import { settlementStructures } from '../db/schema.js';
+import { settlementStructures, settlements, tiles as tilesSchema } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -174,6 +178,9 @@ async function handleJoinWorld(socket: Socket, data: JoinWorldData): Promise<voi
 			timestamp: Date.now(),
 		});
 
+		// Send initial resource production/consumption rates for player's settlements
+		await sendInitialResourceData(socket, data.playerId, data.worldId);
+
 		// Notify others in the world
 		socket.to(`world:${data.worldId}`).emit('player-joined', {
 			playerId: data.playerId,
@@ -190,6 +197,132 @@ async function handleJoinWorld(socket: Socket, data: JoinWorldData): Promise<voi
 			message: 'Failed to join world',
 			timestamp: Date.now(),
 		});
+	}
+}
+
+/**
+ * Send initial resource production/consumption data for a player's settlements
+ * Called when player joins world to populate initial rates
+ */
+async function sendInitialResourceData(
+	socket: Socket,
+	playerId: string,
+	worldId: string
+): Promise<void> {
+	try {
+		// Get player's settlements in this world
+		const playerSettlements = await db.query.settlements.findMany({
+			where: eq(settlements.playerProfileId, playerId),
+			with: {
+				tile: {
+					with: {
+						biome: true,
+						region: {
+							with: {
+								world: true,
+							},
+						},
+					},
+				},
+				storage: true,
+				structures: {
+					with: {
+						structure: true,
+					},
+				},
+			},
+		});
+
+		// Filter to settlements in this world
+		const settlementsInWorld = playerSettlements.filter(
+			(s) => s.tile?.region?.worldId === worldId
+		);
+
+		if (settlementsInWorld.length === 0) {
+			logger.debug('[INITIAL DATA] No settlements found for player in world', {
+				playerId,
+				worldId,
+			});
+			return;
+		}
+
+		// Send resource data for each settlement
+		for (const settlement of settlementsInWorld) {
+			if (!settlement.tile || !settlement.storage) continue;
+
+			// Get extractors (production structures)
+			const extractors = settlement.structures?.filter(
+				(s: { extractorType: string | null }) => s.extractorType != null
+			) || [];
+
+			// Calculate TICK_RATE interval production (10 seconds = 600 ticks at 60Hz)
+			const TICK_RATE = 60;
+			const RESOURCE_INTERVAL_SEC = Number.parseInt(
+				process.env.RESOURCE_INTERVAL_SEC || '10',
+				10
+			);
+			const ticksForInterval = RESOURCE_INTERVAL_SEC * TICK_RATE;
+
+			// Get world template multipliers
+			const worldTemplate = getWorldTemplateConfig(
+				settlement.tile.region?.world?.worldTemplateType || 'STANDARD'
+			);
+			const productionMultiplier = worldTemplate.productionMultiplier;
+			const consumptionMultiplier = worldTemplate.consumptionMultiplier;
+
+			// Calculate production for the interval
+			const production = calculateProduction(
+				settlement.tile,
+				extractors,
+				ticksForInterval,
+				settlement.tile.biome?.name,
+				productionMultiplier
+			);
+
+			// Calculate consumption for the interval
+			const population = calculatePopulation(settlement.structures || []);
+			const consumption = calculateConsumption(
+				population,
+				settlement.structures?.length || 0,
+				ticksForInterval,
+				consumptionMultiplier
+			);
+
+			// Calculate net production
+			const netProduction = {
+				food: production.food - consumption.food,
+				water: production.water - consumption.water,
+				wood: production.wood - consumption.wood,
+				stone: production.stone - consumption.stone,
+				ore: production.ore - consumption.ore,
+			};
+
+			// Send resource-update event with initial rates
+			socket.emit('resource-update', {
+				type: 'auto-production' as const,
+				settlementId: settlement.id,
+				resources: {
+					food: settlement.storage.food,
+					water: settlement.storage.water,
+					wood: settlement.storage.wood,
+					stone: settlement.storage.stone,
+					ore: settlement.storage.ore,
+				},
+				production,
+				consumption,
+				netProduction,
+				population,
+				timestamp: Date.now(),
+			});
+
+			logger.debug('[INITIAL DATA] Sent initial resource data', {
+				settlementId: settlement.id,
+				production,
+				consumption,
+			});
+		}
+	} catch (error) {
+		logger.error('[INITIAL DATA] Error sending initial resource data:', error);
 	}
 }
 

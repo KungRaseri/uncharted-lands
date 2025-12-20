@@ -42,6 +42,19 @@
 
 		// Initialize stores from server-side loaded data
 		if (data.settlement) {
+			// ✅ NEW: Initialize structures store FIRST so we can calculate capacity
+			if (data.settlementStructures) {
+				logger.debug('[SETTLEMENT PAGE] Initializing structures:', {
+					count: data.settlementStructures.length
+				});
+				structuresStore.initializeStructures(
+					data.settlement.id,
+					data.settlementStructures
+				);
+			} else {
+				logger.warn('[SETTLEMENT PAGE] No structures data available in settlementStructures');
+			}
+
 			// Initialize resources store from storage data
 			if (data.settlement.storage) {
 				logger.debug('[SETTLEMENT PAGE] Initializing resources from storage:', {
@@ -61,14 +74,47 @@
 				logger.warn('[SETTLEMENT PAGE] No storage data available in settlement');
 			}
 
+			// ✅ FIXED: Calculate capacity from housing structures
+			// Base capacity is 10, each housing structure adds 7 (from GDD)
+			let calculatedCapacity = 10; // Base capacity
+			if (data.settlementStructures) {
+				// Get housing structures and sum their population_capacity modifiers
+				const housingStructures = data.settlementStructures.filter(
+					(s: any) => s.buildingType === 'HOUSING'
+				);
+				
+				for (const house of housingStructures) {
+					// Each housing structure has modifiers array with population_capacity
+					if (house.modifiers) {
+						const capacityMod = house.modifiers.find((m: any) => m.name === 'population_capacity');
+						if (capacityMod) {
+							calculatedCapacity += capacityMod.value;
+							logger.debug('[SETTLEMENT PAGE] Found housing capacity:', {
+								structureName: house.name,
+								level: house.level,
+								capacityValue: capacityMod.value,
+								totalCapacity: calculatedCapacity
+							});
+						}
+					}
+				}
+			}
+
+			logger.debug('[SETTLEMENT PAGE] Final calculated capacity:', {
+				baseCapacity: 10,
+				totalCapacity: calculatedCapacity,
+				housingCount: data.settlementStructures?.filter((s: any) => s.buildingType === 'HOUSING').length || 0
+			});
+
 			// Initialize population store from population data
 			if (data.settlement.population) {
 				logger.debug('[SETTLEMENT PAGE] Initializing population:', {
-					population: data.settlement.population
+					population: data.settlement.population,
+					calculatedCapacity
 				});
 				populationStore.initializeFromServerData(data.settlement.id, {
 					current: data.settlement.population.currentPopulation || 0,
-					capacity: 100, // TODO: Calculate from houses
+					capacity: calculatedCapacity, // ✅ FIXED: Use calculated capacity instead of hardcoded 100
 					happiness: data.settlement.population.happiness || 50,
 					growthRate: 0,
 					immigrationChance: 0,
@@ -77,19 +123,6 @@
 				});
 			} else {
 				logger.warn('[SETTLEMENT PAGE] No population data available in settlement');
-			}
-
-			// ✅ NEW: Initialize structures store from structures data
-			if (data.settlementStructures) {
-				logger.debug('[SETTLEMENT PAGE] Initializing structures:', {
-					count: data.settlementStructures.length
-				});
-				structuresStore.initializeStructures(
-					data.settlement.id,
-					data.settlementStructures
-				);
-			} else {
-				logger.warn('[SETTLEMENT PAGE] No structures data available in settlementStructures');
 			}
 		} else {
 			logger.error('[SETTLEMENT PAGE] No settlement data available!');

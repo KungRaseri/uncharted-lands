@@ -736,6 +736,77 @@ router.post('/:id/upgrade', authenticate, async (req: Request, res: Response) =>
 				structureName: structureDef?.name,
 			});
 			logger.debug('[SERVER] structure:upgraded event emitted successfully');
+
+			// ✅ IMMEDIATE CAPACITY UPDATE: Emit population-state event after upgrade
+			// This ensures the UI receives the new population capacity if housing was upgraded
+			try {
+				// Get current population data
+				const { getSettlementPopulation } = await import('../../db/queries.js');
+				const popData = await getSettlementPopulation(settlementData.id);
+
+				// Get all structures with modifiers to calculate new capacity
+				const structuresWithModifiers = await db.query.settlementStructures.findMany({
+					where: eq(settlementStructures.settlementId, settlementData.id),
+					with: {
+						structure: true,
+						modifiers: true,
+					},
+				});
+
+				// Map to Structure type expected by calculatePopulationState
+				const mappedStructures = structuresWithModifiers.map((s) => {
+					const struct = Array.isArray(s.structure) ? s.structure[0] : s.structure;
+					const rawMods = Array.isArray(s.modifiers)
+						? s.modifiers
+						: s.modifiers
+							? [s.modifiers]
+							: [];
+
+					return {
+						id: s.id,
+						name: struct?.name || 'Unknown',
+						category: struct?.category || 'BUILDING',
+						level: s.level,
+						modifiers: (rawMods as Array<{ name: string; value: number }>).map((m) => ({
+							name: m.name,
+							value: m.value,
+						})),
+					};
+				});
+
+				// Calculate updated population state with new capacity
+				const { calculatePopulationState } =
+					await import('../../game/population-calculator.js');
+				const popState = calculatePopulationState(
+					popData.currentPopulation,
+					mappedStructures,
+					{ food: 0, water: 0, wood: 0, stone: 0, ore: 0 },
+					popData.lastGrowthTick.getTime()
+				);
+
+				// Emit updated population state with new capacity
+				io.to(`world:${worldId}`).emit('population-state', {
+					settlementId: settlementData.id,
+					current: popData.currentPopulation,
+					capacity: popState.capacity,
+					happiness: Math.floor(popState.happiness),
+					growthRate: popState.growthRate,
+					timestamp: Date.now(),
+				});
+
+				logger.debug('[API] Population-state emitted after structure upgrade', {
+					settlementId: settlementData.id,
+					structureId: id,
+					capacity: popState.capacity,
+				});
+			} catch (popError) {
+				// Log error but don't fail the upgrade operation
+				logger.error('[API] Failed to emit population-state after structure upgrade', {
+					settlementId: settlementData.id,
+					structureId: id,
+					error: popError instanceof Error ? popError.message : 'Unknown error',
+				});
+			}
 		} else {
 			logger.debug('[SERVER] FAILED to emit - missing worldId or io instance');
 		}
