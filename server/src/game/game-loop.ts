@@ -191,7 +191,7 @@ async function processTick(io: SocketIOServer): Promise<void> {
 		// Get all active worlds to process their construction queues
 		const { worlds: worldsTable } = await import('../db/schema.js');
 		const activeWorlds = await db.query.worlds.findMany({
-			where: eq(worldsTable.status, 'READY'),
+			where: eq(worldsTable.status, 'ready'),
 		});
 
 		// Process each world's construction queue
@@ -221,7 +221,7 @@ async function processTick(io: SocketIOServer): Promise<void> {
 			// Get all active worlds (same pattern as disaster checks)
 			const { worlds: worldsTable } = await import('../db/schema.js');
 			const activeWorlds = await db.query.worlds.findMany({
-				where: eq(worldsTable.status, 'READY'),
+				where: eq(worldsTable.status, 'ready'),
 			});
 
 			logger.info(
@@ -374,7 +374,15 @@ async function processWorldBasedUpdates(
 			shouldEmitProjection: timing.shouldEmitProjection,
 		});
 
+		// TEMPORARY: Log world details to verify worlds are found
+		if (activeWorlds.length > 0) {
+			logger.info('[GAME LOOP] ✅ Found active worlds', {
+				worlds: activeWorlds.map((w) => ({ id: w.id, name: w.name, status: w.status })),
+			});
+		}
+
 		if (activeWorlds.length === 0) {
+			logger.warn('[GAME LOOP] ⚠️  No active worlds found!');
 			return; // No active worlds to process
 		}
 
@@ -432,13 +440,18 @@ async function processWorldBasedUpdates(
 					where: inArray(settlementsTable.tileId, tileIds),
 				});
 
-				logger.debug('[GAME LOOP] 🏘️  Processing world settlements', {
+				logger.info('[GAME LOOP] 🏘️  Processing world settlements', {
 					worldId: world.id,
 					worldName: world.name,
 					settlementCount: settlements.length,
+					isResourceProductionTime: timing.isResourceProductionTime,
+					isPopulationUpdateTime: timing.isPopulationUpdateTime,
+					shouldEmitProjection: timing.shouldEmitProjection,
+					settlements: settlements.map((s) => ({ id: s.id, name: s.name, tileId: s.tileId })),
 				});
 
 				if (settlements.length === 0) {
+					logger.warn('[GAME LOOP] ⚠️  No settlements found in world', { worldId: world.id });
 					continue; // No settlements in this world
 				}
 
@@ -808,9 +821,18 @@ async function processSettlementWorldBased(
 
 			if (roomSize > 0) {
 				io.to(`world:${worldId}`).emit('resource-update', resourceUpdatePayload);
-				logger.debug('[GAME LOOP] 📡 Emitted resource-update event', {
+				logger.info('[GAME LOOP] 📡 Emitted resource-update event', {
 					settlementId,
 					roomSize,
+					production: roundedProduction,
+					consumption: roundedConsumption,
+					netProduction: roundedNetProduction,
+					finalResources: roundedResources,
+				});
+			} else {
+				logger.warn('[GAME LOOP] ⚠️ Room empty, skipping emission', {
+					settlementId,
+					worldId,
 				});
 			}
 

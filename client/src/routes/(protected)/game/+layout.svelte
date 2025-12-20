@@ -26,27 +26,34 @@
 			logger.debug('[GAME LAYOUT] Auto-connecting Socket.IO...');
 			socketStore.connect(undefined, data.sessionToken);
 
-			// Expose socket to window for E2E testing
-			if (exposeSocketForTesting) {
-				const socket = socketStore.getSocket();
-				if (socket && typeof window !== 'undefined') {
-					(window as any).__socket = socket;
-					(window as any).disasterStore = disasterStore;
-					logger.debug('[GAME LAYOUT] Socket exposed to window for E2E testing');
-				}
-			}
+			// Wait for socket connection before joining world
+			const socket = socketStore.getSocket();
+			if (socket) {
+				socket.once('connect', () => {
+					logger.debug('[GAME LAYOUT] Socket connected, now joining world...');
 
-			// Join world if we have worldId
-			if (data.worldId) {
-				logger.debug('[GAME LAYOUT] Joining world...', {
-					worldId: data.worldId,
-					profileId: data.profileId
+					// Expose socket to window for E2E testing
+					if (exposeSocketForTesting && typeof window !== 'undefined') {
+						(window as any).__socket = socket;
+						(window as any).disasterStore = disasterStore;
+						logger.debug('[GAME LAYOUT] Socket exposed to window for E2E testing');
+					}
+
+					// Join world if we have worldId
+					if (data.worldId) {
+						logger.debug('[GAME LAYOUT] Joining world...', {
+							worldId: data.worldId,
+							profileId: data.profileId
+						});
+						gameSocket.joinWorld(data.worldId, data.profileId);
+					} else {
+						logger.warn('[GAME LAYOUT] Cannot join world - missing worldId', {
+							hasWorldId: !!data.worldId
+						});
+					}
 				});
-				gameSocket.joinWorld(data.worldId, data.profileId);
 			} else {
-				logger.warn('[GAME LAYOUT] Cannot join world - missing worldId', {
-					hasWorldId: !!data.worldId
-				});
+				logger.error('[GAME LAYOUT] Failed to get socket instance');
 			}
 		} else {
 			logger.debug(

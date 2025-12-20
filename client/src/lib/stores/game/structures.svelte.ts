@@ -52,7 +52,11 @@ function initializeListeners(socket: Socket) {
 			structureName: string;
 			resourcesDeducted?: { wood: number; stone: number; ore: number };
 		}) => {
-				logger.debug('[StructuresStore] Received structure:built:', data);
+			logger.info('[StructuresStore] 🎉 Received structure:built EVENT:', {
+				settlementId: data.settlementId,
+				structureName: data.structureName,
+				structure: data.structure
+			});
 
 			if (!data.settlementId || !data.structure) {
 				logger.warn(
@@ -63,17 +67,23 @@ function initializeListeners(socket: Socket) {
 
 			// Get existing structures for settlement
 			const existing = state.structures.get(data.settlementId) || [];
+			logger.info('[StructuresStore] Existing structures before add:', {
+				count: existing.length,
+				ids: existing.map((s) => s.id)
+			});
 
 			// Add new structure to list
 			const updated = [...existing, data.structure];
 
-			// Update map (create new Map to trigger Svelte reactivity)
-			state.structures = new Map(state.structures.set(data.settlementId, updated));
+			// Update map and trigger Svelte 5 reactivity
+			state.structures.set(data.settlementId, updated);
+			state.structures = new Map(state.structures);
 
-			logger.debug('[StructuresStore] Structure added to settlement:', {
+			logger.info('[StructuresStore] ✅ Structure added to settlement - triggering reactivity:', {
 				settlementId: data.settlementId,
 				structureId: data.structure.id,
-				totalStructures: updated.length
+				totalStructures: updated.length,
+				updatedIds: updated.map((s) => s.id)
 			});
 		}
 	);
@@ -118,7 +128,8 @@ function initializeListeners(socket: Socket) {
 			});
 
 			// Trigger reactivity
-			state.structures = new Map(state.structures.set(data.settlementId, updated));
+			state.structures.set(data.settlementId, updated);
+			state.structures = new Map(state.structures);
 
 			logger.debug('[StructuresStore] Structure upgraded:', {
 				structureId: data.structureId,
@@ -149,7 +160,8 @@ function initializeListeners(socket: Socket) {
 		const updated = existing.filter((structure) => structure.id !== data.structureId);
 
 		// Trigger reactivity
-		state.structures = new Map(state.structures.set(data.settlementId, updated));
+		state.structures.set(data.settlementId, updated);
+		state.structures = new Map(state.structures);
 
 		logger.debug('[StructuresStore] Structure removed:', {
 			structureId: data.structureId,
@@ -182,7 +194,8 @@ function initializeStructures(settlementId: string, structures: Structure[]) {
 		'[StructuresStore] Initializing structures for settlement:',
 		{ settlementId, count: structures.length }
 	);
-	state.structures = new Map(state.structures.set(settlementId, structures));
+	state.structures.set(settlementId, structures);
+	state.structures = new Map(state.structures);
 }
 
 /**
@@ -214,7 +227,8 @@ function getExtractors(settlementId: string): Structure[] {
 function addStructure(settlementId: string, structure: Structure) {
 	const existing = state.structures.get(settlementId) || [];
 	const updated = [...existing, structure];
-	state.structures = new Map(state.structures.set(settlementId, updated));
+	state.structures.set(settlementId, updated);
+	state.structures = new Map(state.structures);
 
 	logger.debug('[StructuresStore] Structure manually added:', { structureId: structure.id });
 }
@@ -233,7 +247,8 @@ function updateStructure(settlementId: string, structureId: string, updates: Par
 		return structure;
 	});
 
-	state.structures = new Map(state.structures.set(settlementId, updated));
+	state.structures.set(settlementId, updated);
+	state.structures = new Map(state.structures);
 
 	logger.debug('[StructuresStore] Structure manually updated:', { structureId });
 }
@@ -246,7 +261,8 @@ function removeStructure(settlementId: string, structureId: string) {
 	if (!existing) return;
 
 	const updated = existing.filter((structure) => structure.id !== structureId);
-	state.structures = new Map(state.structures.set(settlementId, updated));
+	state.structures.set(settlementId, updated);
+	state.structures = new Map(state.structures);
 
 	logger.debug('[StructuresStore] Structure manually removed:', { structureId });
 }

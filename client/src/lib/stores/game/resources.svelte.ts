@@ -114,6 +114,12 @@ function initializeListeners() {
 			existing.wood.consumptionRate = data.consumption.wood;
 			existing.stone.consumptionRate = data.consumption.stone;
 			existing.ore.consumptionRate = data.consumption.ore;
+
+				existing.lastUpdate = Date.now();
+
+				// Trigger reactivity by creating new Map reference
+				state.resources = new Map(state.resources);
+
 				logger.debug(
 					'[ResourcesStore] Updated all resources for settlement:',
 					{
