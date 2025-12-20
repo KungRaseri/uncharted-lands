@@ -164,9 +164,7 @@
 	<!-- Header -->
 	<div class="card preset-filled-surface-100-900 p-6">
 		<div class="flex items-center gap-3">
-			<div
-				class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center"
-			>
+			<div class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center">
 				<Zap size={28} class="text-primary-500" />
 			</div>
 			<div>
@@ -272,15 +270,16 @@
 						></div>
 					{/if}
 				</button>
-		</div>
+			</div>
 			{#if activeTab === 'disasters'}
 				<!-- Disaster Triggers Tab -->
 				<div class="space-y-6">
 					<div>
 						<h2 class="text-xl font-bold mb-2">Trigger Disasters</h2>
 						<p class="text-surface-600 dark:text-surface-400 text-sm">
-							Manually trigger disasters for testing and demonstration purposes. This will
-							create real disaster events that affect regions and all settlements within them.
+							Manually trigger disasters for testing and demonstration purposes. This
+							will create real disaster events that affect regions and all settlements
+							within them.
 						</p>
 					</div>
 
@@ -347,7 +346,9 @@
 									{#if availableRegions.length > 0}
 										<div class="space-y-2 max-h-48 overflow-y-auto">
 											{#each availableRegions as region}
-												<label class="flex items-center gap-2 p-2 rounded hover:bg-surface-300/50 dark:hover:bg-surface-700/50 cursor-pointer">
+												<label
+													class="flex items-center gap-2 p-2 rounded hover:bg-surface-300/50 dark:hover:bg-surface-700/50 cursor-pointer"
+												>
 													<input
 														type="checkbox"
 														checked={selectedRegionIds.includes(
@@ -360,7 +361,9 @@
 												</label>
 											{/each}
 										</div>
-										<p class="text-xs text-surface-600 dark:text-surface-400 mt-2">
+										<p
+											class="text-xs text-surface-600 dark:text-surface-400 mt-2"
+										>
 											Selected: {selectedRegionIds.length} region(s)
 										</p>
 									{:else}
@@ -384,7 +387,8 @@
 												disaster.type
 													? 'border-primary-500 bg-primary-500/10'
 													: 'border-surface-300 dark:border-surface-600 hover:border-surface-400 dark:hover:border-surface-500'}"
-												onclick={() => (selectedDisasterType = disaster.type)}
+												onclick={() =>
+													(selectedDisasterType = disaster.type)}
 											>
 												<div class="flex items-start gap-3">
 													<IconComponent
@@ -405,7 +409,9 @@
 														<div
 															class="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center"
 														>
-															<div class="w-2 h-2 rounded-full bg-white"></div>
+															<div
+																class="w-2 h-2 rounded-full bg-white"
+															></div>
 														</div>
 													{/if}
 												</div>
@@ -517,19 +523,19 @@
 							</div>
 
 							<!-- Warning Notice -->
-							<div
-								class="card bg-warning-500/10 border-2 border-warning-500 p-4"
-							>
+							<div class="card bg-warning-500/10 border-2 border-warning-500 p-4">
 								<div class="flex items-start gap-3">
 									<AlertTriangle size={20} class="text-warning-600 flex-none" />
 									<div class="flex-1">
-										<h3 class="font-semibold text-warning-700 dark:text-warning-400 mb-1">
+										<h3
+											class="font-semibold text-warning-700 dark:text-warning-400 mb-1"
+										>
 											Warning
 										</h3>
 										<p class="text-sm text-warning-600 dark:text-warning-500">
 											Triggering disasters will create real events that affect
-											regions, settlements, resources, and population. This action cannot be
-											undone.
+											regions, settlements, resources, and population. This
+											action cannot be undone.
 										</p>
 									</div>
 								</div>
@@ -551,7 +557,8 @@
 					<div>
 						<h2 class="text-xl font-bold mb-2">Event Triggers</h2>
 						<p class="text-surface-600 dark:text-surface-400 text-sm">
-							Trigger custom game events, population movements, and special occurrences.
+							Trigger custom game events, population movements, and special
+							occurrences.
 						</p>
 					</div>
 					<div

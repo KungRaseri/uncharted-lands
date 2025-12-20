@@ -528,7 +528,7 @@ test.describe('Resource Production Flow', () => {
 			expect(summary.casualties).toBeGreaterThanOrEqual(0);
 			expect(summary.structuresDamaged).toBeGreaterThanOrEqual(0);
 			expect(summary.resourcesLost).toBeGreaterThanOrEqual(0);
-			
+
 			console.log('[E2E] Disaster summary:', summary);
 		});
 	});
@@ -559,7 +559,7 @@ test.describe('Resource Production Flow', () => {
 
 			// 5. Verify structure exists (extractors may be tracked differently)
 			// await assertStructureExists(page, 'Farm'); // May need adjustment
-			
+
 			// 6. Verify game loop is running (resource tick every 10s in E2E mode)
 			await assertGameLoopRunning(page, 15000); // Wait up to 15s for first tick
 

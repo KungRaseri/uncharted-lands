@@ -502,7 +502,7 @@ export async function getResourceProductionRate(
 ): Promise<string | null> {
 	const selector = `[data-testid="${resource}-production-rate"]`;
 	const element = page.locator(selector);
-	
+
 	try {
 		await element.waitFor({ state: 'visible', timeout: 5000 });
 		return await element.textContent();
@@ -524,7 +524,7 @@ export async function getResourceConsumptionRate(
 ): Promise<string | null> {
 	const selector = `[data-testid="${resource}-consumption-rate"]`;
 	const element = page.locator(selector);
-	
+
 	try {
 		await element.waitFor({ state: 'visible', timeout: 5000 });
 		return await element.textContent();

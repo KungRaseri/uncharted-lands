@@ -40,7 +40,11 @@ import {
 } from '../game/resource-calculator.js';
 import { createWorld } from '../game/world-creator.js';
 import { aggregateSettlementModifiers } from '../game/settlement-modifier-aggregator.js';
-import { calculatePopulationState, getPopulationSummary, getHappinessDescription } from '../game/population-calculator.js';
+import {
+	calculatePopulationState,
+	getPopulationSummary,
+	getHappinessDescription,
+} from '../game/population-calculator.js';
 import { calculateConsumption, calculatePopulation } from '../game/consumption-calculator.js';
 import { getWorldTemplateConfig } from '../types/world-templates.js';
 import { db } from '../db/index.js';
@@ -255,21 +259,25 @@ async function sendInitialResourceData(
 				});
 				continue;
 			}
-			
+
 			if (!settlement.storage) {
-				logger.error('[INITIAL DATA] Settlement missing storage! This is a critical database issue.', {
-					settlementId: settlement.id,
-					settlementName: settlement.name,
-					storageId: settlement.settlementStorageId,
-					fix: 'Run: npm run fix-storage in server directory',
-				});
+				logger.error(
+					'[INITIAL DATA] Settlement missing storage! This is a critical database issue.',
+					{
+						settlementId: settlement.id,
+						settlementName: settlement.name,
+						storageId: settlement.settlementStorageId,
+						fix: 'Run: npm run fix-storage in server directory',
+					}
+				);
 				continue;
 			}
 
 			// Get extractors (production structures)
-			const extractors = settlement.structures?.filter(
-				(s: { extractorType: string | null }) => s.extractorType != null
-			) || [];
+			const extractors =
+				settlement.structures?.filter(
+					(s: { extractorType: string | null }) => s.extractorType != null
+				) || [];
 
 			// Calculate TICK_RATE interval production (10 seconds = 600 ticks at 60Hz)
 			const TICK_RATE = 60;

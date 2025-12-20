@@ -29,14 +29,14 @@
 
 				return async ({ result, update }) => {
 					isSubmitting = false;
-					
+
 					// If there's an error result (network failure, server error, etc.)
 					if (result.type === 'error') {
 						networkError = true;
 						// Don't navigate away - stay on the form
 						return;
 					}
-					
+
 					await applyAction(result);
 				};
 			}}
@@ -108,8 +108,7 @@
 			<button
 				type="submit"
 				class="w-full p-2 btn preset-filled-primary-500 rounded-md"
-				disabled={isSubmitting}
-				>{isSubmitting ? 'Registering...' : 'Register'}</button
+				disabled={isSubmitting}>{isSubmitting ? 'Registering...' : 'Register'}</button
 			>
 		</form>
 	</div>

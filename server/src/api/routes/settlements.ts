@@ -399,7 +399,9 @@ router.post('/', authenticate, async (req, res) => {
 			ore: 10, // Per GDD spec - starting ore for basic tools/equipment
 		});
 
-		logger.info(`[SETTLEMENT CREATE] Created storage ${storageId} for settlement ${settlementId}`);
+		logger.info(
+			`[SETTLEMENT CREATE] Created storage ${storageId} for settlement ${settlementId}`
+		);
 
 		// Step 6: Update Tile.settlementId to point back to settlement (bidirectional FK)
 		await db.update(tiles).set({ settlementId }).where(eq(tiles.id, chosenTile.id));

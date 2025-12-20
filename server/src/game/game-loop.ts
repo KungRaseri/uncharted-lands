@@ -447,11 +447,17 @@ async function processWorldBasedUpdates(
 					isResourceProductionTime: timing.isResourceProductionTime,
 					isPopulationUpdateTime: timing.isPopulationUpdateTime,
 					shouldEmitProjection: timing.shouldEmitProjection,
-					settlements: settlements.map((s) => ({ id: s.id, name: s.name, tileId: s.tileId })),
+					settlements: settlements.map((s) => ({
+						id: s.id,
+						name: s.name,
+						tileId: s.tileId,
+					})),
 				});
 
 				if (settlements.length === 0) {
-					logger.warn('[GAME LOOP] ⚠️  No settlements found in world', { worldId: world.id });
+					logger.warn('[GAME LOOP] ⚠️  No settlements found in world', {
+						worldId: world.id,
+					});
 					continue; // No settlements in this world
 				}
 

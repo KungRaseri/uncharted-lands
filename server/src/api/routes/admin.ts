@@ -7,7 +7,16 @@
 import { Router } from 'express';
 import type { Server as SocketIOServer } from 'socket.io';
 import { sql, eq, inArray } from 'drizzle-orm';
-import { db, servers, worlds, accounts, settlements, disasterEvents, regions, tiles } from '../../db/index.js';
+import {
+	db,
+	servers,
+	worlds,
+	accounts,
+	settlements,
+	disasterEvents,
+	regions,
+	tiles,
+} from '../../db/index.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 import { logger } from '../../utils/logger.js';
 import { getSeverityLevel, getVulnerableBiomes } from '../../game/disaster-scheduler.js';
@@ -121,13 +130,19 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
  */
 router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 	try {
-		const { worldId, regionIds, disasterType, severity, settlementId, type, duration } = req.body;
+		const { worldId, regionIds, disasterType, severity, settlementId, type, duration } =
+			req.body;
 
 		// Support three formats:
 		// 1. New region-based: worldId + regionIds + disasterType + severity
 		// 2. Legacy settlement-based: settlementId + disasterType + severity
 		// 3. E2E testing: worldId + type
-		const isRegionFormat = worldId && regionIds && Array.isArray(regionIds) && disasterType && typeof severity === 'number';
+		const isRegionFormat =
+			worldId &&
+			regionIds &&
+			Array.isArray(regionIds) &&
+			disasterType &&
+			typeof severity === 'number';
 		const isSettlementFormat = settlementId && disasterType && typeof severity === 'number';
 		const isE2EFormat = worldId && type && !regionIds;
 
@@ -135,7 +150,8 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 			return res.status(400).json({
 				error: 'Missing required fields',
 				code: 'MISSING_FIELDS',
-				required: 'Either (worldId, regionIds[], disasterType, severity) or (settlementId, disasterType, severity) or (worldId, type)',
+				required:
+					'Either (worldId, regionIds[], disasterType, severity) or (settlementId, disasterType, severity) or (worldId, type)',
 			});
 		}
 
@@ -181,7 +197,7 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 			}
 
 			// Verify all regions belong to the world
-			const invalidRegions = targetRegions.filter(r => r.worldId !== worldId);
+			const invalidRegions = targetRegions.filter((r) => r.worldId !== worldId);
 			if (invalidRegions.length > 0) {
 				return res.status(400).json({
 					error: 'Some regions do not belong to the specified world',
@@ -315,7 +331,11 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 			affectedRegionIds,
 			vulnerableBiomes,
 			scheduledAt: scheduledAt.toISOString(),
-			format: isRegionFormat ? 'region-based' : (isSettlementFormat ? 'settlement-legacy' : 'e2e-legacy'),
+			format: isRegionFormat
+				? 'region-based'
+				: isSettlementFormat
+					? 'settlement-legacy'
+					: 'e2e-legacy',
 		});
 
 		// Emit disaster-warning event immediately (since we created with status='WARNING')
@@ -330,12 +350,15 @@ router.post('/disasters/trigger', authenticateAdmin, async (req, res) => {
 				affectedRegions: affectedRegionIds,
 				affectedBiomes: vulnerableBiomes,
 				timeRemaining,
-				recommendedActions: getRecommendedActions(disasterTypeValue, getSeverityLevel(disasterSeverity)),
+				recommendedActions: getRecommendedActions(
+					disasterTypeValue,
+					getSeverityLevel(disasterSeverity)
+				),
 				timestamp: currentTime,
 			};
-			
+
 			io.to(`world:${targetWorldId}`).emit('disaster-warning', warningData);
-			
+
 			logger.info('[API] Disaster warning emitted', {
 				disasterId: disasterEvent.id,
 				worldId: targetWorldId,

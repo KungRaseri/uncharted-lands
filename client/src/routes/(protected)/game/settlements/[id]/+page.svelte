@@ -47,12 +47,11 @@
 				logger.debug('[SETTLEMENT PAGE] Initializing structures:', {
 					count: data.settlementStructures.length
 				});
-				structuresStore.initializeStructures(
-					data.settlement.id,
-					data.settlementStructures
-				);
+				structuresStore.initializeStructures(data.settlement.id, data.settlementStructures);
 			} else {
-				logger.warn('[SETTLEMENT PAGE] No structures data available in settlementStructures');
+				logger.warn(
+					'[SETTLEMENT PAGE] No structures data available in settlementStructures'
+				);
 			}
 
 			// Initialize resources store from storage data
@@ -82,11 +81,13 @@
 				const housingStructures = data.settlementStructures.filter(
 					(s: any) => s.buildingType === 'HOUSING'
 				);
-				
+
 				for (const house of housingStructures) {
 					// Each housing structure has modifiers array with population_capacity
 					if (house.modifiers) {
-						const capacityMod = house.modifiers.find((m: any) => m.name === 'population_capacity');
+						const capacityMod = house.modifiers.find(
+							(m: any) => m.name === 'population_capacity'
+						);
 						if (capacityMod) {
 							calculatedCapacity += capacityMod.value;
 							logger.debug('[SETTLEMENT PAGE] Found housing capacity:', {
@@ -103,7 +104,9 @@
 			logger.debug('[SETTLEMENT PAGE] Final calculated capacity:', {
 				baseCapacity: 10,
 				totalCapacity: calculatedCapacity,
-				housingCount: data.settlementStructures?.filter((s: any) => s.buildingType === 'HOUSING').length || 0
+				housingCount:
+					data.settlementStructures?.filter((s: any) => s.buildingType === 'HOUSING')
+						.length || 0
 			});
 
 			// Initialize population store from population data

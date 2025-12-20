@@ -77,7 +77,7 @@
 
 			onClose();
 		} catch (error) {
-		logger.error('[MobileBuildMenu] Network error:', error);
+			logger.error('[MobileBuildMenu] Network error:', error);
 			alert('Network error - could not create structure');
 		}
 	}

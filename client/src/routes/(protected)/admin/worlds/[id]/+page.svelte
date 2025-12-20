@@ -132,11 +132,15 @@
 		// Poll every 3 seconds
 		pollingInterval = setInterval(async () => {
 			try {
-				logger.debug('[WORLD DETAILS] Polling - current status:', { status: data.world?.status });
+				logger.debug('[WORLD DETAILS] Polling - current status:', {
+					status: data.world?.status
+				});
 				// Invalidate all data to refetch the world
 				await invalidateAll();
 
-				logger.debug('[WORLD DETAILS] After invalidate - status:', { status: data.world?.status });
+				logger.debug('[WORLD DETAILS] After invalidate - status:', {
+					status: data.world?.status
+				});
 
 				// Check world status
 				if (data.world?.status === 'ready') {

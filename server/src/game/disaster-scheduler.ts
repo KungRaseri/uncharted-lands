@@ -143,11 +143,7 @@ export function getVulnerableBiomes(disasterType: DisasterType): string[] {
 	const vulnerableBiomes: string[] = [];
 
 	for (const [biome, risks] of Object.entries(BIOME_DISASTER_MAP)) {
-		const allDisasters = [
-			...risks.highRisk,
-			...risks.moderateRisk,
-			...risks.lowRisk,
-		];
+		const allDisasters = [...risks.highRisk, ...risks.moderateRisk, ...risks.lowRisk];
 		if (allDisasters.includes(disasterType)) {
 			vulnerableBiomes.push(biome);
 		}

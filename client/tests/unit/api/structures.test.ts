@@ -508,7 +508,7 @@ describe('Structures API Wrapper', () => {
 						costs: { food: 0, water: 0, wood: 50, stone: 20, ore: 10 },
 						modifiers: [
 							{
-								id: 'test_modifier_linear_food_production',	
+								id: 'test_modifier_linear_food_production',
 								type: 'LINEAR',
 								name: MODIFIER_NAMES.FOOD_PRODUCTION,
 								description: 'Increases food',
@@ -566,7 +566,7 @@ describe('Structures API Wrapper', () => {
 						costs: { food: 0, water: 0, wood: 30, stone: 10, ore: 0 },
 						modifiers: [
 							{
-								id: 'test_modifier_linear_population_capacity',	
+								id: 'test_modifier_linear_population_capacity',
 								type: 'LINEAR',
 								name: MODIFIER_NAMES.POPULATION_CAPACITY,
 								description: 'Adds capacity',

@@ -450,7 +450,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			logger.debug('[SERVER] Emitting structure:built to room:', {
 				world: `world:${worldId}`,
 			});
-			
+
 			// ✅ FIX: Flatten the structure with master definition fields before emitting
 			const flattenedStructure = {
 				...result.structure,
@@ -461,7 +461,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				extractorType: result.structureDefinition.extractorType,
 				maxLevel: result.structureDefinition.maxLevel,
 			};
-			
+
 			io.to(`world:${worldId}`).emit('structure:built', {
 				settlementId,
 				structure: flattenedStructure,
@@ -846,7 +846,7 @@ router.get('/by-settlement/:settlementId', authenticate, async (req: Request, re
 		// Flatten master structure fields for each structure
 		const flattenedList = structureList.map((s) => {
 			const structureDef = s.structure as Structure | undefined;
-			
+
 			// DEBUG: Log structure data to diagnose category issue
 			logger.info('[API] Structure flattening:', {
 				settlementStructureId: s.id,
@@ -857,7 +857,7 @@ router.get('/by-settlement/:settlementId', authenticate, async (req: Request, re
 				buildingType: structureDef?.buildingType,
 				extractorType: structureDef?.extractorType,
 			});
-			
+
 			return {
 				...s,
 				name: structureDef?.name,

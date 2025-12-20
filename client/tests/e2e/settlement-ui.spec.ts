@@ -1,7 +1,7 @@
 /**
  * E2E Tests for Settlement UI Real-Time Updates
  * Tests for fixes applied on December 16, 2024
- * 
+ *
  * Verifies:
  * 1. Resource production/consumption rates display immediately on page load
  * 2. Population capacity calculated correctly from housing structures
@@ -152,7 +152,11 @@ test.describe('Settlement UI Real-Time Updates', () => {
 				if (deleteResponse.ok()) {
 					console.log('[E2E] Cleaned up test world:', testWorldId);
 				} else {
-					console.warn('[E2E] Failed to cleanup world:', testWorldId, deleteResponse.status());
+					console.warn(
+						'[E2E] Failed to cleanup world:',
+						testWorldId,
+						deleteResponse.status()
+					);
 				}
 			} catch (error) {
 				console.warn('[E2E] Failed to cleanup world:', error);
@@ -562,7 +566,9 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		await page.waitForTimeout(12000);
 
 		// Get updated food production rate
-		const newFoodRate = await page.locator('[data-testid="food-production-rate"]').textContent();
+		const newFoodRate = await page
+			.locator('[data-testid="food-production-rate"]')
+			.textContent();
 		console.log('[E2E] Updated food production rate:', newFoodRate);
 
 		// ✅ ASSERTION: Food production rate should increase after building farm

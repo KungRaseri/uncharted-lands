@@ -6,7 +6,7 @@
 
 import { browser } from '$app/environment';
 import { socketStore } from './socket';
-import { logger } from "$lib/utils/logger";
+import { logger } from '$lib/utils/logger';
 
 type AlertSeverity = 'critical' | 'warning' | 'info';
 

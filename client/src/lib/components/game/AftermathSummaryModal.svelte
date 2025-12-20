@@ -54,17 +54,21 @@
 				</div>
 				<div class="card p-4">
 					<p class="text-xs text-surface-600-300-token">Structures Destroyed</p>
-					<p class="text-2xl font-bold text-purple-600" data-testid="structures-destroyed">
+					<p
+						class="text-2xl font-bold text-purple-600"
+						data-testid="structures-destroyed"
+					>
 						{aftermathSummary.structuresDestroyed}
 					</p>
 				</div>
 				<div class="card p-4">
 					<p class="text-xs text-surface-600-300-token">Casualties</p>
-				<p class="text-2xl font-bold text-red-600" data-testid="total-casualties">
-					{aftermathSummary.casualties}
-				</p>
+					<p class="text-2xl font-bold text-red-600" data-testid="total-casualties">
+						{aftermathSummary.casualties}
+					</p>
+				</div>
 			</div>
-		</div>			<!-- Repair Costs -->
+			<!-- Repair Costs -->
 			<div class="card p-4 mb-6">
 				<h3 class="h4 mb-4">Estimated Repair Costs</h3>
 

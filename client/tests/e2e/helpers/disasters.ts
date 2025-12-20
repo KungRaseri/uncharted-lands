@@ -159,7 +159,10 @@ export async function waitForDisasterWarning(
 				const disasterStore = win.disasterStore;
 				if (disasterStore && disasterStore.warningActive && disasterStore.activeDisaster) {
 					clearInterval(pollInterval);
-					console.log('[E2E] Disaster warning detected from store:', disasterStore.activeDisaster);
+					console.log(
+						'[E2E] Disaster warning detected from store:',
+						disasterStore.activeDisaster
+					);
 					resolve({
 						disasterId: disasterStore.activeDisaster.id,
 						type: disasterStore.activeDisaster.type,
@@ -197,23 +200,23 @@ export async function assertWarningBannerVisible(page: Page, disasterType: strin
  */
 export async function getWarningTimeRemaining(page: Page): Promise<number> {
 	const countdown = page.locator('[data-testid="disaster-countdown"]');
-	
+
 	// Wait for countdown to be visible and have content
 	await countdown.waitFor({ state: 'visible', timeout: 5000 });
-	
+
 	const text = await countdown.textContent();
 
 	// Parse different formats:
 	// - "30s" (seconds only, for times < 60s)
 	// - "5m" (minutes only, for times < 1h)
 	// - "2h 15m" (hours and minutes, for times >= 1h)
-	
+
 	// Check for seconds-only format first
 	const secondsMatch = text?.match(/^(\d+)s$/);
 	if (secondsMatch) {
 		return Number.parseInt(secondsMatch[1], 10);
 	}
-	
+
 	// Parse hours and minutes
 	const hours = text?.match(/(\d+)h/)?.[1] || '0';
 	const minutes = text?.match(/(\d+)m/)?.[1] || '0';
@@ -258,7 +261,7 @@ export async function assertImpactBannerVisible(
 export async function openDamageFeed(page: Page): Promise<void> {
 	const toggleButton = page.locator('[data-testid="toggle-damage-feed-btn"]');
 	await toggleButton.click();
-	
+
 	// Wait for damage feed to appear
 	const damageFeed = page.locator('[data-testid="damage-feed"]');
 	await damageFeed.waitFor({ state: 'visible', timeout: 2000 });
@@ -358,7 +361,7 @@ export async function getDisasterSummary(
 	resourcesLost: number;
 }> {
 	const modal = page.locator('[data-testid="disaster-aftermath-modal"]');
-	
+
 	// Wait for modal to be visible first
 	await modal.waitFor({ state: 'visible', timeout: timeoutMs });
 

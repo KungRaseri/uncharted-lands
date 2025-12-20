@@ -12,7 +12,7 @@
 
 import { browser } from '$app/environment';
 import { invalidate } from '$app/navigation';
-import { logger } from '$lib/utils/logger'
+import { logger } from '$lib/utils/logger';
 
 /**
  * Auto-refresh game data every minute to catch tick updates

@@ -79,12 +79,15 @@ function initializeListeners(socket: Socket) {
 			state.structures.set(data.settlementId, updated);
 			state.structures = new Map(state.structures);
 
-			logger.info('[StructuresStore] ✅ Structure added to settlement - triggering reactivity:', {
-				settlementId: data.settlementId,
-				structureId: data.structure.id,
-				totalStructures: updated.length,
-				updatedIds: updated.map((s) => s.id)
-			});
+			logger.info(
+				'[StructuresStore] ✅ Structure added to settlement - triggering reactivity:',
+				{
+					settlementId: data.settlementId,
+					structureId: data.structure.id,
+					totalStructures: updated.length,
+					updatedIds: updated.map((s) => s.id)
+				}
+			);
 		}
 	);
 
@@ -108,10 +111,9 @@ function initializeListeners(socket: Socket) {
 
 			const existing = state.structures.get(data.settlementId);
 			if (!existing) {
-				logger.warn(
-					'[StructuresStore] No structures found for settlement:',
-					{ settlementId: data.settlementId }
-				);
+				logger.warn('[StructuresStore] No structures found for settlement:', {
+					settlementId: data.settlementId
+				});
 				return;
 			}
 
@@ -152,10 +154,9 @@ function initializeListeners(socket: Socket) {
 
 		const existing = state.structures.get(data.settlementId);
 		if (!existing) {
-			logger.warn(
-				'[StructuresStore] No structures found for settlement:',
-				{ settlementId: data.settlementId }
-			);
+			logger.warn('[StructuresStore] No structures found for settlement:', {
+				settlementId: data.settlementId
+			});
 			return;
 		}
 
@@ -199,10 +200,10 @@ function initialize() {
  * Initialize structures for a settlement from initial data
  */
 function initializeStructures(settlementId: string, structures: Structure[]) {
-	logger.debug(
-		'[StructuresStore] Initializing structures for settlement:',
-		{ settlementId, count: structures.length }
-	);
+	logger.debug('[StructuresStore] Initializing structures for settlement:', {
+		settlementId,
+		count: structures.length
+	});
 	state.structures.set(settlementId, structures);
 	state.structures = new Map(state.structures);
 }

@@ -50,7 +50,7 @@ function initializeListeners() {
 	 * Bulk resource data update (on page load or settlement switch)
 	 */
 	socket.on('resources-data', (data: ResourcesState) => {
-			logger.debug('[ResourcesStore] Received resources-data:', { data });
+		logger.debug('[ResourcesStore] Received resources-data:', { data });
 		if (!data.settlementId) {
 			logger.error('[ResourcesStore] Missing settlementId in resources-data');
 			return;
@@ -102,38 +102,35 @@ function initializeListeners() {
 				existing.stone.current = data.resources.stone;
 				existing.ore.current = data.resources.ore;
 
-			// Rates are already per-hour from server
-			existing.food.productionRate = data.production.food;
-			existing.water.productionRate = data.production.water;
-			existing.wood.productionRate = data.production.wood;
-			existing.stone.productionRate = data.production.stone;
-			existing.ore.productionRate = data.production.ore;
+				// Rates are already per-hour from server
+				existing.food.productionRate = data.production.food;
+				existing.water.productionRate = data.production.water;
+				existing.wood.productionRate = data.production.wood;
+				existing.stone.productionRate = data.production.stone;
+				existing.ore.productionRate = data.production.ore;
 
-			existing.food.consumptionRate = data.consumption.food;
-			existing.water.consumptionRate = data.consumption.water;
-			existing.wood.consumptionRate = data.consumption.wood;
-			existing.stone.consumptionRate = data.consumption.stone;
-			existing.ore.consumptionRate = data.consumption.ore;
+				existing.food.consumptionRate = data.consumption.food;
+				existing.water.consumptionRate = data.consumption.water;
+				existing.wood.consumptionRate = data.consumption.wood;
+				existing.stone.consumptionRate = data.consumption.stone;
+				existing.ore.consumptionRate = data.consumption.ore;
 
 				existing.lastUpdate = Date.now();
 
 				// Trigger reactivity by creating new Map reference
 				state.resources = new Map(state.resources);
 
-				logger.debug(
-					'[ResourcesStore] Updated all resources for settlement:',
-					{
-						settlementId: data.settlementId,
-						resources: data.resources,
-						productionRates: {
-							food: existing.food.productionRate,
-							water: existing.water.productionRate,
-							wood: existing.wood.productionRate,
-							stone: existing.stone.productionRate,
-							ore: existing.ore.productionRate
-						}
+				logger.debug('[ResourcesStore] Updated all resources for settlement:', {
+					settlementId: data.settlementId,
+					resources: data.resources,
+					productionRates: {
+						food: existing.food.productionRate,
+						water: existing.water.productionRate,
+						wood: existing.wood.productionRate,
+						stone: existing.stone.productionRate,
+						ore: existing.ore.productionRate
 					}
-				);
+				});
 			} else {
 				logger.warn(
 					`[ResourcesStore] Settlement ${data.settlementId} not found for resource update`
@@ -506,13 +503,10 @@ export const resourcesStore = {
 	): void {
 		const capacity = serverData.capacity || 1000;
 
-		logger.debug(
-			'[ResourcesStore] Initializing from server data for settlement:',
-			{
-				settlementId,
-				serverData
-			}
-		);
+		logger.debug('[ResourcesStore] Initializing from server data for settlement:', {
+			settlementId,
+			serverData
+		});
 
 		const resourcesState: ResourcesState = {
 			settlementId,
@@ -555,7 +549,9 @@ export const resourcesStore = {
 		state.resources = new Map(state.resources);
 
 		logger.debug('[ResourcesStore] Initialized resources for settlement:', { settlementId });
-		logger.debug('[ResourcesStore] Current resources map size:', { size: state.resources.size });
+		logger.debug('[ResourcesStore] Current resources map size:', {
+			size: state.resources.size
+		});
 	},
 
 	/**

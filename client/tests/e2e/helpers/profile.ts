@@ -38,7 +38,7 @@ export async function getProfileForAccount(
 		}
 
 		const account = await response.json();
-		
+
 		if (!account.profile) {
 			console.log('[PROFILE HELPER] Account has no profile yet');
 			return null;
@@ -55,7 +55,7 @@ export async function getProfileForAccount(
 /**
  * Create a profile by creating a settlement (which auto-creates profile)
  * This is the standard way to create a profile in the application flow
- * 
+ *
  * @param request - Playwright API request context
  * @param sessionToken - Session token for authentication
  * @param accountId - Account ID for the profile
@@ -76,13 +76,16 @@ export async function ensureProfileExists(
 	const existingProfile = await getProfileForAccount(request, sessionToken);
 	if (existingProfile) {
 		console.log('[PROFILE HELPER] Using existing profile:', existingProfile.id);
-		
+
 		// Get the settlement for this profile in this world
-		const settlementsResponse = await request.get(`${API_BASE_URL}/settlements?worldId=${worldId}`, {
-			headers: {
-				Cookie: `session=${sessionToken}`
+		const settlementsResponse = await request.get(
+			`${API_BASE_URL}/settlements?worldId=${worldId}`,
+			{
+				headers: {
+					Cookie: `session=${sessionToken}`
+				}
 			}
-		});
+		);
 
 		if (!settlementsResponse.ok()) {
 			throw new Error(`Failed to get settlements: ${settlementsResponse.status()}`);
@@ -137,9 +140,9 @@ export async function ensureProfileExists(
 /**
  * Ensure a profile exists for the account without creating a settlement
  * Uses a direct API endpoint (if available) or creates a temporary settlement
- * 
+ *
  * @param request - Playwright API request context
- * @param sessionToken - Session token for authentication  
+ * @param sessionToken - Session token for authentication
  * @param accountId - Account ID for the profile
  * @param username - Username for the profile
  * @returns Profile data

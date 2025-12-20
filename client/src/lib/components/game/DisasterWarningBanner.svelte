@@ -66,10 +66,10 @@
 						</h2>
 						<p class="text-sm opacity-90">
 							Impact in: <span class="font-semibold">{timeRemaining}</span>
-						{#if disaster.affectedRegions && disaster.affectedRegions.length > 0}
-							| Affected Regions: {disaster.affectedRegions.length === 1 
-								? disaster.affectedRegions[0] 
-								: `${disaster.affectedRegions.length} regions`}
+							{#if disaster.affectedRegions && disaster.affectedRegions.length > 0}
+								| Affected Regions: {disaster.affectedRegions.length === 1
+									? disaster.affectedRegions[0]
+									: `${disaster.affectedRegions.length} regions`}
 							{/if}
 						</p>
 					</div>

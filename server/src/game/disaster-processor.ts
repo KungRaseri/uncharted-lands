@@ -284,7 +284,13 @@ async function processImpactPhase(io: SocketIOServer, currentTime: number): Prom
 
 			// Apply incremental damage to settlements (only during ticks, not at completion)
 			if (elapsedTime < impactDurationMs) {
-				await applyIncrementalDamage(disaster, io, currentTime, tickIntervalMs, impactDurationMs);
+				await applyIncrementalDamage(
+					disaster,
+					io,
+					currentTime,
+					tickIntervalMs,
+					impactDurationMs
+				);
 			}
 		}
 
@@ -329,7 +335,7 @@ async function applyIncrementalDamage(
 			},
 		},
 	});
-	
+
 	// Filter settlements by worldId from tile.region.worldId
 	const settlementsInWorld = affectedSettlements.filter(
 		(s) => s.tile?.region?.worldId === disaster.worldId
@@ -388,7 +394,13 @@ async function applySettlementIncrementalDamage(
 		// Update structure health in database
 		for (const structure of damageToApply) {
 			if (structure.incrementalHealthLoss > 0) {
-				await applyStructureIncrementalDamage(structure, settlement, disaster, io, currentTime);
+				await applyStructureIncrementalDamage(
+					structure,
+					settlement,
+					disaster,
+					io,
+					currentTime
+				);
 			}
 		}
 	} catch (error) {
@@ -494,7 +506,7 @@ async function transitionToAftermath(
 			},
 		},
 	});
-	
+
 	// Filter settlements by worldId from tile.region.worldId
 	const settlementsInWorld = affectedSettlements.filter(
 		(s) => s.tile?.region?.worldId === disaster.worldId

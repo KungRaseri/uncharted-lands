@@ -58,9 +58,9 @@ export const handleError: HandleClientError = (async ({ error, event }) => {
 	const errorId = crypto.randomUUID();
 
 	// Comprehensive error logging
-	logger.error('\n========================================')
+	logger.error('\n========================================');
 	logger.error('🚨 CLIENT ERROR:', { errorId });
-	logger.error('========================================')
+	logger.error('========================================');
 	logger.error('URL:', { pathname: event.url?.pathname });
 	logger.error('Error:', error);
 

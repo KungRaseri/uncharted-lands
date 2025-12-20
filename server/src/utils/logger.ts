@@ -110,7 +110,12 @@ class Logger {
 			// Clean up regular logs
 			const regularLogs = fs
 				.readdirSync(this.logDir)
-				.filter((f) => f.endsWith('.log') && !f.endsWith('.latest.log') && !f.endsWith('.error.log'))
+				.filter(
+					(f) =>
+						f.endsWith('.log') &&
+						!f.endsWith('.latest.log') &&
+						!f.endsWith('.error.log')
+				)
 				.sort((a, b) => b.localeCompare(a)); // Most recent first
 
 			if (regularLogs.length > this.logRetentionCount) {
@@ -135,7 +140,9 @@ class Logger {
 
 			if (errorLogs.length > this.logRetentionCount) {
 				const filesToRemove = errorLogs.slice(this.logRetentionCount);
-				console.log(`[LOGGER] Cleaning up ${filesToRemove.length} old error log file(s)...`);
+				console.log(
+					`[LOGGER] Cleaning up ${filesToRemove.length} old error log file(s)...`
+				);
 
 				for (const file of filesToRemove) {
 					try {
@@ -347,7 +354,10 @@ class Logger {
 							if (error instanceof Error) {
 								captureException(error, context);
 							} else if (error) {
-								captureException(new Error(message), { ...context, originalError: error });
+								captureException(new Error(message), {
+									...context,
+									originalError: error,
+								});
 							}
 						})
 						.catch(() => {

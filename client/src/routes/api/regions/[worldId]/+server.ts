@@ -39,13 +39,13 @@ export const GET: RequestHandler = async ({ params, url, locals, fetch }) => {
 		accountId: locals.account.id
 	});
 
-		try {
-			// Proxy request to server REST API
-			const response = await fetch(`${SERVER_API_URL}/regions?${queryParams.toString()}`, {
-				headers: {
-					Cookie: `session=${locals.account.userAuthToken}`
-				}
-			});
+	try {
+		// Proxy request to server REST API
+		const response = await fetch(`${SERVER_API_URL}/regions?${queryParams.toString()}`, {
+			headers: {
+				Cookie: `session=${locals.account.userAuthToken}`
+			}
+		});
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));

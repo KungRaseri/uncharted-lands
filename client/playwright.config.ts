@@ -9,7 +9,7 @@ dotenv.config();
 
 /**
  * See https://playwright.dev/docs/test-configuration.
- * 
+ *
  * Parallelism Strategy:
  * - Local: 4 workers for faster feedback (~30-45s for full suite)
  * - CI: 1 worker to conserve resources
