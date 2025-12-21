@@ -34,6 +34,7 @@ let testSettlementId: string;
 let testUserEmail: string;
 let sessionCookieValue: string;
 let testServerId: string;
+let adminSessionToken: string;
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -107,6 +108,97 @@ test.describe('Population Management', () => {
 	// Increase timeout for E2E tests
 	test.setTimeout(60000); // 60 seconds
 
+	// ========================================================================
+	// SHARED SETUP: Create server and world ONCE for all tests
+	// ========================================================================
+	test.beforeAll(async ({ browser }) => {
+		console.log('[E2E] Setting up shared server and world...');
+		
+		// Create a temporary context for admin operations
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		
+		// Register and login admin user to get proper session
+		const adminEmail = generateUniqueEmail('pop-suite-admin');
+		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
+		
+		// Get session cookie
+		const cookies = await context.cookies();
+		const sessionCookie = cookies.find((c) => c.name === 'session');
+		
+		if (!sessionCookie) {
+			throw new Error('No session cookie found after admin registration');
+		}
+		
+		adminSessionToken = sessionCookie.value;
+		
+		// Elevate to admin (use page.request which is tied to page context)
+		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
+		
+		// Get or create test server
+		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
+			headers: { Cookie: `session=${adminSessionToken}` }
+		});
+		
+		const serversData = await serversResponse.json();
+		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
+		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+		
+		if (!testServer) {
+			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
+				headers: { Cookie: `session=${adminSessionToken}` },
+				data: {
+					name: 'E2E Test Server',
+					hostname: 'localhost',
+					port: 3001,
+					status: 'ONLINE'
+				}
+			});
+			testServer = await createServerResponse.json();
+		}
+		
+		testServerId = testServer.id;
+		
+		// Create shared world (use TINY for faster generation in E2E tests)
+		const sharedWorldName = `Population Shared World ${Date.now()}`;
+		const worldData = await createWorldViaAPI(
+			page.request, // Use page.request instead of context.request
+			testServerId,
+			adminSessionToken,
+			{
+				name: sharedWorldName,
+				size: 'TINY', // Use TINY (5x5) for fast generation
+				seed: Date.now()
+			},
+			true
+		);
+		testWorldId = worldData.id;
+		console.log('[E2E] Shared world created:', testWorldId);
+		
+		// Close temporary context AFTER world creation
+		await page.close();
+		await context.close();
+	});
+	
+	// Cleanup shared world after all tests
+	test.afterAll(async ({ browser }) => {
+		if (testWorldId && adminSessionToken) {
+			try {
+				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
+				const context = await browser.newContext();
+				const page = await context.newPage();
+				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await page.close();
+				await context.close();
+			} catch (error) {
+				console.error('[E2E] Failed to delete shared world:', error);
+			}
+		}
+	});
+
+	// ========================================================================
+	// PER-TEST SETUP: Create settlement for each test
+	// ========================================================================
 	test.beforeEach(async ({ page, request }) => {
 		// Capture browser console logs for debugging
 		page.on('console', (msg) => {
@@ -119,18 +211,7 @@ test.describe('Population Management', () => {
 		await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
 		await assertRedirectedToGettingStarted(page);
 
-		// 2. Elevate user to ADMINISTRATOR
-		console.log('[E2E] Elevating user to ADMINISTRATOR:', testUserEmail);
-		const elevateResponse = await request.put(
-			`${apiUrl}/test/elevate-admin/${encodeURIComponent(testUserEmail)}`
-		);
-
-		if (!elevateResponse.ok()) {
-			const errorText = await elevateResponse.text();
-			throw new Error(`Failed to elevate user: ${elevateResponse.status()} ${errorText}`);
-		}
-
-		// 3. Get session cookie
+		// 2. Get session cookie
 		const cookies = await page.context().cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
 
@@ -140,56 +221,7 @@ test.describe('Population Management', () => {
 
 		sessionCookieValue = sessionCookie.value;
 
-		// 4. Get or create test server
-		const serversResponse = await request.get(`${apiUrl}/servers`, {
-			headers: { Cookie: `session=${sessionCookie.value}` }
-		});
-
-		if (!serversResponse.ok()) {
-			throw new Error(`Failed to get servers: ${serversResponse.status()}`);
-		}
-
-		let servers = await serversResponse.json();
-		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-
-		if (!testServer) {
-			console.log('[E2E] Creating E2E test server...');
-			const createServerResponse = await request.post(`${apiUrl}/servers`, {
-				headers: { Cookie: `session=${sessionCookie.value}` },
-				data: {
-					name: 'E2E Test Server',
-					hostname: 'localhost',
-					port: 3001,
-					status: 'ONLINE'
-				}
-			});
-
-			if (!createServerResponse.ok()) {
-				throw new Error(`Failed to create server: ${createServerResponse.status()}`);
-			}
-
-			testServer = await createServerResponse.json();
-		}
-
-		testServerId = testServer.id;
-
-		// 5. Create world
-		const uniqueWorldName = `Population Test World ${Date.now()}`;
-		console.log('[E2E] Creating test world:', uniqueWorldName);
-		const worldData = await createWorldViaAPI(
-			request,
-			testServerId,
-			sessionCookie.value,
-			{
-				name: uniqueWorldName,
-				size: 'SMALL',
-				seed: Date.now()
-			},
-			true
-		);
-		testWorldId = worldData.id;
-
-		// 6. Get account details
+		// 3. Get account details
 		const accountResponse = await request.get(`${apiUrl}/account/me`, {
 			headers: { Cookie: `session=${sessionCookie.value}` }
 		});
@@ -200,8 +232,8 @@ test.describe('Population Management', () => {
 
 		const account = await accountResponse.json();
 
-		// 7. Create settlement
-		console.log('[E2E] Creating settlement via API...');
+		// 4. Create settlement in shared world
+		console.log('[E2E] Creating settlement via API in shared world:', testWorldId);
 		const settlementResponse = await request.post(`${apiUrl}/settlements`, {
 			headers: { Cookie: `session=${sessionCookie.value}` },
 			data: {
@@ -209,7 +241,7 @@ test.describe('Population Management', () => {
 				serverId: testServerId,
 				accountId: account.id,
 				username: account.profile?.username || testUserEmail,
-				name: 'Population Test Settlement'
+				name: `Settlement ${Date.now()}`
 			}
 		});
 
@@ -221,11 +253,11 @@ test.describe('Population Management', () => {
 		const settlement = await settlementResponse.json();
 		testSettlementId = settlement.id;
 
-		// 8. Navigate to settlement
+		// 5. Navigate to settlement
 		await page.goto(`/game/settlements/${testSettlementId}`);
 		await page.waitForLoadState('networkidle');
 
-		// 9. Wait for Socket.IO connection
+		// 6. Wait for Socket.IO connection
 		await waitForSocketConnection(page);
 		await joinWorldRoom(page, testWorldId);
 
