@@ -297,15 +297,43 @@ export async function buildStructure(
 	}
 
 	// Step 4: Click the structure button using data-testid
-	const structureButton = page.locator(
-		`[data-testid="build-structure-${structureName.toLowerCase()}"]`
+	// Use data-structure-name attribute to target the exact structure
+	const structureButton = page.locator(`[data-structure-name="${structureName.toUpperCase()}"]`);
+
+	// Debug: Check if button exists at all
+	const buttonCount = await structureButton.count();
+	console.log(
+		`[E2E Helper] Found ${buttonCount} buttons with data-structure-name: ${structureName.toUpperCase()}`
 	);
 
+	if (buttonCount === 0) {
+		// Debug: List all available structure buttons
+		const allButtons = await page.locator('[data-testid^="build-structure-"]').all();
+		console.log(`[E2E Helper] Available structure buttons: ${allButtons.length}`);
+		for (const btn of allButtons) {
+			const testid = await btn.getAttribute('data-testid');
+			const structureName = await btn.getAttribute('data-structure-name');
+			const disabled = await btn.isDisabled();
+			const visible = await btn.isVisible();
+			console.log(
+				`[E2E Helper]   - ${testid} (name: ${structureName}, disabled: ${disabled}, visible: ${visible})`
+			);
+		}
+		throw new Error(`Structure button not found with name: ${structureName.toUpperCase()}`);
+	}
+
+	// If multiple buttons found (e.g., two structures with same buildingType),
+	// use the first enabled one
+	const enabledButton =
+		buttonCount > 1
+			? structureButton.filter({ hasNot: page.locator(':disabled') }).first()
+			: structureButton;
+
 	// Wait for the button to be visible and enabled
-	await structureButton.waitFor({ state: 'visible', timeout: 5000 });
+	await enabledButton.waitFor({ state: 'visible', timeout: 5000 });
 
 	// Click the structure
-	await structureButton.click();
+	await enabledButton.click();
 
 	// Step 5: Wait for the build menu to close (indicates structure was built)
 	await page.waitForSelector(`[data-testid="build-structure-${structureName.toLowerCase()}"]`, {
