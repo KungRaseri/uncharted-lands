@@ -515,11 +515,13 @@ export function hasEnoughResources(storage: Resources, required: Resources): boo
 
 /**
  * Calculate consumption rates for a settlement
- * (Future: based on population, structures, etc.)
+ * 
+ * Only food and water are consumed by population.
+ * Wood, stone, and ore are stockpiled materials used only for construction.
  *
  * @param populationCount - Number of people in settlement
- * @param structureCount - Number of structures (for maintenance)
- * @returns Consumption rates per tick
+ * @param structureCount - Number of structures (not used for consumption anymore)
+ * @returns Consumption rates per tick (only food/water are non-zero)
  */
 export function calculateConsumption(
 	populationCount: number = 0,
@@ -529,15 +531,16 @@ export function calculateConsumption(
 	const FOOD_PER_PERSON_PER_TICK = 0.005;
 	const WATER_PER_PERSON_PER_TICK = 0.01;
 
-	// Maintenance cost per structure per tick
-	const MAINTENANCE_PER_STRUCTURE_PER_TICK = 0.001;
+	// Note: Wood/stone/ore are NOT consumed over time
+	// They are only spent when constructing/upgrading structures
+	// Only food and water are consumed by population
 
 	return {
 		food: populationCount * FOOD_PER_PERSON_PER_TICK,
 		water: populationCount * WATER_PER_PERSON_PER_TICK,
-		wood: structureCount * MAINTENANCE_PER_STRUCTURE_PER_TICK,
-		stone: structureCount * MAINTENANCE_PER_STRUCTURE_PER_TICK * 0.5,
-		ore: structureCount * MAINTENANCE_PER_STRUCTURE_PER_TICK * 0.25,
+		wood: 0, // Not consumed - only used for construction
+		stone: 0, // Not consumed - only used for construction
+		ore: 0, // Not consumed - only used for construction
 	};
 }
 
