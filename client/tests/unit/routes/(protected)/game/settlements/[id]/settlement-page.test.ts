@@ -28,10 +28,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 				stone: 0,
 				ore: 0
 			},
-			requirements: {
-				solar: 0,
-				wind: 0
-			},
 			constructionTime: 0,
 			populationRequired: 0,
 			modifiers: []
@@ -49,10 +45,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 				wood: 20,
 				stone: 10,
 				ore: 0
-			},
-			requirements: {
-				solar: 0,
-				wind: 0
 			},
 			constructionTime: 180,
 			populationRequired: 2,
@@ -79,10 +71,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 				wood: 40,
 				stone: 20,
 				ore: 0
-			},
-			requirements: {
-				solar: 0,
-				wind: 0
 			},
 			constructionTime: 300,
 			populationRequired: 0,
@@ -162,11 +150,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 						wood: 50,
 						stone: 20,
 						ore: 0
-					},
-					requirements: {
-						area: 15,
-						solar: 0,
-						wind: 0
 					},
 					constructionTime: 600,
 					populationRequired: 0,
@@ -293,10 +276,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 					stone: 100,
 					ore: 50
 				},
-				requirements: {
-					solar: 0,
-					wind: 0
-				},
 				constructionTime: 1000,
 				populationRequired: 0,
 				modifiers: []
@@ -401,12 +380,6 @@ describe('Settlement Page - API Metadata Integration', () => {
 			expect(structure.costs).toHaveProperty('wood');
 			expect(structure.costs).toHaveProperty('stone');
 			expect(structure.costs).toHaveProperty('ore');
-
-			// Requirements are now optional (legacy fields being phased out)
-			// When present, they may have area, solar, and/or wind
-			if (structure.requirements) {
-				expect(typeof structure.requirements).toBe('object');
-			}
 		});
 
 		it('should have all required StructureMetadata fields', () => {

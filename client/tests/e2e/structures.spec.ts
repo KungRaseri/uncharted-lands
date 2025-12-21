@@ -381,26 +381,21 @@ test.describe('Structure Management Lifecycle', () => {
 		const warehouseCard = page.locator('[data-structure-type="STORAGE"]').first();
 		await warehouseCard.waitFor({ state: 'visible', timeout: 3000 });
 
-		// Verify initial level is 1
-		const initialLevel = await warehouseCard.getAttribute('data-structure-level');
-		expect(initialLevel).toBe('1');
+		// Verify initial level is 1 (from text content)
+		const initialLevelText = await warehouseCard.locator('h4 span').first().textContent();
+		expect(initialLevelText).toContain('Level 1/');
 
-		// Click upgrade button (adjust selector based on implementation)
-		const upgradeButton = warehouseCard.locator('[data-testid="upgrade-structure-button"]').first();
+		// Click upgrade button (find by text since no data-testid exists)
+		const upgradeButton = warehouseCard.locator('button:has-text("Upgrade to Level")').first();
+		await upgradeButton.waitFor({ state: 'visible', timeout: 3000 });
 		await upgradeButton.click();
-
-		// Confirm upgrade (may have confirmation modal)
-		const confirmButton = page.locator('[data-testid="confirm-upgrade-button"]').first();
-		if (await confirmButton.isVisible({ timeout: 2000 })) {
-			await confirmButton.click();
-		}
 
 		// Wait for upgrade to complete
 		await page.waitForTimeout(2000);
 
-		// Verify level increased to 2
-		const finalLevel = await warehouseCard.getAttribute('data-structure-level');
-		expect(finalLevel).toBe('2');
+		// Verify level increased to 2 (check text content changed)
+		const finalLevelText = await warehouseCard.locator('h4 span').first().textContent();
+		expect(finalLevelText).toContain('Level 2/');
 
 		console.log('[TEST] ✅ WAREHOUSE upgraded successfully from level 1 to level 2');
 	});
@@ -424,21 +419,19 @@ test.describe('Structure Management Lifecycle', () => {
 		const warehouseCard = page.locator('[data-structure-type="STORAGE"]').first();
 		await warehouseCard.waitFor({ state: 'visible', timeout: 3000 });
 
-		// Click demolish button
-		const demolishButton = warehouseCard
-			.locator('[data-testid="demolish-structure-button"]')
-			.first();
-		await demolishButton.click();
+		// Click demolish button (find by text since no data-testid exists)
+		const demolishButton = warehouseCard.locator('button:has-text("Demolish")').first();
+		await demolishButton.waitFor({ state: 'visible', timeout: 3000 });
 
-		// Confirm demolition
-		const confirmDemolishButton = page.locator('[data-testid="confirm-demolish-button"]').first();
-		await confirmDemolishButton.waitFor({ state: 'visible', timeout: 3000 });
-		await confirmDemolishButton.click();
+	// Set up dialog handler for browser confirm() dialog
+	page.once('dialog', async (dialog) => {
+		console.log('[TEST] Accepting demolish confirmation dialog');
+		await dialog.accept();
+	});
 
-		// Wait for demolition to complete
-		await page.waitForTimeout(2000);
+	await demolishButton.click();
 
-		// Verify STORAGE is removed
+	// Wait for demolition to complete
 		const warehouseCount = await countStructures(page, 'STORAGE');
 		expect(warehouseCount).toBe(0);
 
