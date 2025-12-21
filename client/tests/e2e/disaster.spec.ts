@@ -46,6 +46,8 @@ let testSettlementId: string;
 let testUserEmail: string;
 let sessionCookieValue: string;
 let disasterId: string;
+let testServerId: string;
+let adminSessionToken: string;
 
 // ============================================================================
 // DISASTER LIFECYCLE FLOW TESTS
@@ -58,6 +60,89 @@ test.describe('Disaster Lifecycle Flow', () => {
 	// Increase timeout for E2E tests (disasters can take 60-90 seconds)
 	test.setTimeout(120000); // 2 minutes
 
+	// ========================================================================
+	// SHARED SETUP: Create server and world ONCE for all tests
+	// ========================================================================
+	test.beforeAll(async ({ browser }) => {
+		console.log('[E2E] Setting up shared server and world...');
+		
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		
+		const adminEmail = generateUniqueEmail('disaster-admin');
+		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
+		
+		const cookies = await context.cookies();
+		const sessionCookie = cookies.find((c) => c.name === 'session');
+		
+		if (!sessionCookie) {
+			throw new Error('No session cookie found after admin registration');
+		}
+		
+		adminSessionToken = sessionCookie.value;
+		
+		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
+		
+		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
+			headers: { Cookie: `session=${adminSessionToken}` }
+		});
+		
+		const serversData = await serversResponse.json();
+		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
+		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+		
+		if (!testServer) {
+			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
+				headers: { Cookie: `session=${adminSessionToken}` },
+				data: {
+					name: 'E2E Test Server',
+					hostname: 'localhost',
+					port: 3001,
+					status: 'ONLINE'
+				}
+			});
+			testServer = await createServerResponse.json();
+		}
+		
+		testServerId = testServer.id;
+		
+		const sharedWorldName = `Disaster Shared World ${Date.now()}`;
+		const worldData = await createWorldViaAPI(
+			page.request,
+			testServerId,
+			adminSessionToken,
+			{
+				name: sharedWorldName,
+				size: 'TINY',
+				seed: Date.now()
+			},
+			true
+		);
+		testWorldId = worldData.id;
+		console.log('[E2E] Shared world created:', testWorldId);
+		
+		await page.close();
+		await context.close();
+	});
+	
+	test.afterAll(async ({ browser }) => {
+		if (testWorldId && adminSessionToken) {
+			try {
+				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
+				const context = await browser.newContext();
+				const page = await context.newPage();
+				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await page.close();
+				await context.close();
+			} catch (error) {
+				console.error('[E2E] Failed to delete shared world:', error);
+			}
+		}
+	});
+
+	// ========================================================================
+	// PER-TEST SETUP: Create settlement for each test
+	// ========================================================================
 	test.beforeEach(async ({ page, request }) => {
 		// Capture all browser console logs for debugging
 		const consoleMessages: string[] = [];
@@ -72,97 +157,59 @@ test.describe('Disaster Lifecycle Flow', () => {
 		await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
 		await assertRedirectedToGettingStarted(page);
 
-		// 2. Elevate user to ADMINISTRATOR via test API endpoint
-		console.log('[E2E] Elevating user to ADMINISTRATOR:', testUserEmail);
-
-		const elevateResponse = await request.put(
-			`${apiUrl}/test/elevate-admin/${encodeURIComponent(testUserEmail)}`
-		);
-
-		if (!elevateResponse.ok()) {
-			const errorText = await elevateResponse.text();
-			throw new Error(
-				`Failed to elevate user to admin: ${elevateResponse.status()} ${errorText}`
-			);
-		}
-
-		const elevateData = await elevateResponse.json();
-		console.log('[E2E] User elevated to ADMINISTRATOR:', elevateData);
-
-		// 3. Get session cookies from page context
+		// 2. Get session cookies
 		const cookies = await page.context().cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
 		if (!sessionCookie) {
 			throw new Error('No session cookie found after registration');
 		}
-
-		// Store cookie value for cleanup in afterEach
 		sessionCookieValue = sessionCookie.value;
 
-		// 4. Get account information
+		// 3. Get account information
 		const accountResponse = await request.get(`${apiUrl}/account/me`, {
-			headers: {
-				Cookie: `session=${sessionCookie.value}`
-			}
+			headers: { Cookie: `session=${sessionCookieValue}` }
 		});
-
 		if (!accountResponse.ok()) {
-			throw new Error(
-				`Failed to get account: ${accountResponse.status()} ${await accountResponse.text()}`
-			);
+			throw new Error(`Failed to get account: ${accountResponse.status()}`);
 		}
-
 		const account = await accountResponse.json();
 		const accountId = account.id;
 		const username = account.profile?.username || testUserEmail;
 
-		// 5. Clean up old test worlds before creating new ones
-		console.log('[E2E] Cleaning up old test worlds...');
-		try {
-			const worldsResponse = await request.get(`${apiUrl}/worlds`, {
-				headers: {
-					Cookie: `session=${sessionCookie.value}`
-				}
-			});
-
-			if (worldsResponse.ok()) {
-				const worlds = await worldsResponse.json();
-				const oldTestWorlds = worlds.filter((w: { name: string }) =>
-					w.name.startsWith('E2E Disaster Test')
-				);
-
-				console.log(`[E2E] Found ${oldTestWorlds.length} old test worlds to clean up`);
-
-				for (const world of oldTestWorlds) {
-					try {
-						await request.delete(`${apiUrl}/worlds/${world.id}`, {
-							headers: {
-								Cookie: `session=${sessionCookie.value}`
-							}
-						});
-						console.log(`[E2E] Deleted old test world: ${world.name}`);
-					} catch (error) {
-						console.warn(`[E2E] Failed to delete old test world ${world.id}:`, error);
-					}
-				}
-			}
-		} catch (error) {
-			console.warn('[E2E] Failed to clean up old test worlds:', error);
-			// Continue with test - cleanup failure is not critical
-		}
-
-		// 6. Get or create test server
-		const serversResponse = await request.get(`${apiUrl}/servers`, {
-			headers: {
-				Cookie: `session=${sessionCookie.value}`
+		// 4. Create settlement in shared world
+		console.log(`[E2E] Creating settlement in shared world: ${testWorldId}`);
+		const settlementResponse = await request.post(`${apiUrl}/settlements`, {
+			headers: { Cookie: `session=${sessionCookieValue}` },
+			data: {
+				worldId: testWorldId,
+				serverId: testServerId,
+				accountId: accountId,
+				username: username,
+				name: TEST_SETTLEMENTS.BASIC.name
 			}
 		});
 
-		if (!serversResponse.ok()) {
-			throw new Error(`Failed to get servers: ${serversResponse.status()}`);
+		if (!settlementResponse.ok()) {
+			const errorText = await settlementResponse.text();
+			throw new Error(`Failed to create settlement: ${settlementResponse.status()} ${errorText}`);
 		}
 
-		let servers = await serversResponse.json();
+		const settlement = await settlementResponse.json();
+		testSettlementId = settlement.id;
+		console.log('[E2E] Test setup complete:', {
+			worldId: testWorldId,
+			settlementId: testSettlementId,
+			email: testUserEmail
+		});
+
+		// 5. Navigate to settlement page
+		await page.goto(`/game/settlements/${testSettlementId}`);
+		await page.waitForLoadState('networkidle');
+
+		// 6. Wait for Socket.IO connection
+		await waitForSocketConnection(page);
+		await joinWorldRoom(page, testWorldId);
+	});
 		let testServer;
 
 		// Look for existing E2E test server
@@ -265,28 +312,14 @@ test.describe('Disaster Lifecycle Flow', () => {
 	});
 
 	test.afterEach(async ({ request }) => {
-		// Clean up test settlements
-		if (testSettlementId && sessionCookieValue) {
-			await request.delete(`${apiUrl}/settlements/${testSettlementId}`, {
-				headers: {
-					Cookie: `session=${sessionCookieValue}`
-				}
-			});
-		}
-
-		// Clean up test world
-		if (testWorldId && sessionCookieValue) {
-			await deleteWorld(request, testWorldId);
-		}
-
-		// Clear any active disasters
-		if (testWorldId && sessionCookieValue) {
-			await clearActiveDisasters(request, testWorldId);
-		}
-
-		// Clean up test user immediately after THIS test completes
+		// Clean up test user only (world is shared)
 		if (testUserEmail) {
-			await cleanupTestUser(request, testUserEmail);
+			try {
+				await cleanupTestUser(request, testUserEmail);
+				console.log('[E2E] Cleaned up test user:', testUserEmail);
+			} catch (error) {
+				console.warn('[E2E] Failed to cleanup user:', error);
+			}
 		}
 	});
 

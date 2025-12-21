@@ -36,6 +36,8 @@ let testWorldId: string;
 let testSettlementId: string;
 let testUserEmail: string;
 let sessionCookieValue: string;
+let testServerId: string;
+let adminSessionToken: string;
 
 // ============================================================================
 // BUILDING AREA SYSTEM E2E TESTS
@@ -45,6 +47,89 @@ test.describe('Building Area System', () => {
 	test.describe.configure({ mode: 'serial' });
 	test.setTimeout(120000); // 120 seconds for complex multi-step tests
 
+	// ========================================================================
+	// SHARED SETUP: Create server and world ONCE for all tests
+	// ========================================================================
+	test.beforeAll(async ({ browser }) => {
+		console.log('[E2E] Setting up shared server and world...');
+		
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		
+		const adminEmail = generateUniqueEmail('area-system-admin');
+		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
+		
+		const cookies = await context.cookies();
+		const sessionCookie = cookies.find((c) => c.name === 'session');
+		
+		if (!sessionCookie) {
+			throw new Error('No session cookie found after admin registration');
+		}
+		
+		adminSessionToken = sessionCookie.value;
+		
+		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
+		
+		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
+			headers: { Cookie: `session=${adminSessionToken}` }
+		});
+		
+		const serversData = await serversResponse.json();
+		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
+		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+		
+		if (!testServer) {
+			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
+				headers: { Cookie: `session=${adminSessionToken}` },
+				data: {
+					name: 'E2E Test Server',
+					hostname: 'localhost',
+					port: 3001,
+					status: 'ONLINE'
+				}
+			});
+			testServer = await createServerResponse.json();
+		}
+		
+		testServerId = testServer.id;
+		
+		const sharedWorldName = `Building Area Shared World ${Date.now()}`;
+		const worldData = await createWorldViaAPI(
+			page.request,
+			testServerId,
+			adminSessionToken,
+			{
+				name: sharedWorldName,
+				size: 'TINY',
+				seed: Date.now()
+			},
+			true
+		);
+		testWorldId = worldData.id;
+		console.log('[E2E] Shared world created:', testWorldId);
+		
+		await page.close();
+		await context.close();
+	});
+	
+	test.afterAll(async ({ browser }) => {
+		if (testWorldId && adminSessionToken) {
+			try {
+				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
+				const context = await browser.newContext();
+				const page = await context.newPage();
+				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await page.close();
+				await context.close();
+			} catch (error) {
+				console.error('[E2E] Failed to delete shared world:', error);
+			}
+		}
+	});
+
+	// ========================================================================
+	// PER-TEST SETUP: Create settlement for each test
+	// ========================================================================
 	test.beforeEach(async ({ page, request }) => {
 		// Capture console logs
 		page.on('console', (msg) => {
@@ -56,14 +141,7 @@ test.describe('Building Area System', () => {
 		await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
 		await assertRedirectedToGettingStarted(page);
 
-		// 2. Elevate to admin
-		console.log('[E2E] Elevating user to ADMINISTRATOR:', testUserEmail);
-		const elevateResponse = await request.put(
-			`${apiUrl}/test/elevate-admin/${encodeURIComponent(testUserEmail)}`
-		);
-		expect(elevateResponse.ok()).toBeTruthy();
-
-		// 3. Get session cookies
+		// 2. Get session cookies
 		const cookies = await page.context().cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
 		if (!sessionCookie?.value) {
@@ -71,7 +149,7 @@ test.describe('Building Area System', () => {
 		}
 		sessionCookieValue = sessionCookie.value;
 
-		// 4. Get account information
+		// 3. Get account information
 		const accountResponse = await request.get(`${apiUrl}/account/me`, {
 			headers: { Cookie: `session=${sessionCookieValue}` }
 		});
@@ -80,104 +158,41 @@ test.describe('Building Area System', () => {
 		const accountId = account.id;
 		const username = account.profile?.username || testUserEmail;
 
-		// 5. Get or create test server
-		const serversResponse = await request.get(`${apiUrl}/servers`, {
-			headers: { Cookie: `session=${sessionCookieValue}` }
+		// 4. Create settlement in shared world
+		console.log(`[E2E] Creating settlement in shared world: ${testWorldId}`);
+		const settlementResponse = await request.post(`${apiUrl}/settlements`, {
+			headers: { Cookie: `session=${sessionCookieValue}` },
+			data: {
+				worldId: testWorldId,
+				serverId: testServerId,
+				accountId: accountId,
+				username: username,
+				name: 'Area Test Settlement'
+			}
 		});
-		expect(serversResponse.ok()).toBeTruthy();
-		let servers = await serversResponse.json();
-		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-
-		if (!testServer) {
-			console.log('[E2E] Creating E2E test server...');
-			const createServerResponse = await request.post(`${apiUrl}/servers`, {
-				headers: { Cookie: `session=${sessionCookieValue}` },
-				data: {
-					name: 'E2E Test Server',
-					hostname: 'localhost',
-					port: 3001,
-					status: 'ONLINE'
-				}
-			});
-			expect(createServerResponse.ok()).toBeTruthy();
-			testServer = await createServerResponse.json();
-		}
-
-		// 6. Create test world
-		const world = await createWorldViaAPI(
-			request,
-			testServer.id,
-			sessionCookieValue,
-			{ name: `Building Area Test ${Date.now()}`, size: 'TINY', seed: Date.now() },
-			true
-		);
-		testWorldId = world.id;
-		console.log('[E2E] Test world created:', testWorldId);
-
-		// 7. Create settlement in the world (with retries for random tile generation)
-		console.log('[E2E] Creating settlement...');
-		let createSettlementResponse;
-		let retries = 3;
-		let settlementCreated = false;
-
-		for (let i = 0; i < retries && !settlementCreated; i++) {
-			if (i > 0) {
-				console.log(`[E2E] Retry ${i}/${retries} - Creating new world...`);
-				// Delete previous world and create a new one
-				await deleteWorld(request, sessionCookieValue, testWorldId);
-				const newWorld = await createWorldViaAPI(
-					request,
-					testServer.id,
-					sessionCookieValue,
-					{ name: `Building Area Test ${Date.now()}`, size: 'TINY', seed: Date.now() + i },
-					true
-				);
-				testWorldId = newWorld.id;
-			}
-
-			createSettlementResponse = await request.post(`${apiUrl}/settlements`, {
-				headers: { Cookie: `session=${sessionCookieValue}` },
-				data: {
-					worldId: testWorldId,
-					serverId: testServer.id,
-					accountId: accountId,
-					username: username,
-					name: 'Area Test Settlement'
-				}
-			});
-
-			if (createSettlementResponse.ok()) {
-				settlementCreated = true;
-			} else {
-				const errorText = await createSettlementResponse.text();
-				console.log(`[E2E] Settlement creation attempt ${i + 1} failed:`, errorText);
-			}
-		}
-
-		if (!settlementCreated) {
-			console.error('[E2E] Failed to create settlement after', retries, 'attempts');
-		}
-		expect(createSettlementResponse!.ok()).toBeTruthy();
-		const settlementData = await createSettlementResponse!.json();
+		expect(settlementResponse.ok()).toBeTruthy();
+		const settlementData = await settlementResponse.json();
 		testSettlementId = settlementData.id;
 		console.log('[E2E] Settlement created:', testSettlementId);
 
-		// 8. Navigate to settlement page
+		// 5. Navigate to settlement page
 		await page.goto(`/game/settlements/${testSettlementId}`);
 		await page.waitForLoadState('networkidle');
 
-		// 9. Wait for Socket.IO connection
+		// 6. Wait for Socket.IO connection
 		await waitForSocketConnection(page);
 		await joinWorldRoom(page, testWorldId);
 	});
 
 	test.afterEach(async ({ request }) => {
-		// Cleanup
-		if (testWorldId) {
-			await deleteWorld(request, sessionCookieValue, testWorldId);
-		}
+		// Cleanup test user only (world is shared)
 		if (testUserEmail) {
-			await cleanupTestUser(request, testUserEmail);
+			try {
+				await cleanupTestUser(request, testUserEmail);
+				console.log('[E2E] Cleaned up test user:', testUserEmail);
+			} catch (error) {
+				console.warn('[E2E] Failed to cleanup user:', error);
+			}
 		}
 	});
 

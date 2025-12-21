@@ -22,8 +22,6 @@ import { TEST_SETTLEMENTS } from './helpers/settlements';
 import {
 	waitForSocketConnection,
 	joinWorldRoom,
-	getResourceAmount,
-	getPopulation,
 	getPopulationCapacity
 } from './helpers/game-state';
 
@@ -37,6 +35,8 @@ let testWorldId: string;
 let testSettlementId: string;
 let testUserEmail: string;
 let sessionCookieValue: string;
+let testServerId: string;
+let adminSessionToken: string;
 
 // ============================================================================
 // SETTLEMENT UI REAL-TIME UPDATE TESTS
@@ -46,6 +46,89 @@ test.describe('Settlement UI Real-Time Updates', () => {
 	test.describe.configure({ mode: 'serial' });
 	test.setTimeout(60000); // 60 seconds
 
+	// ========================================================================
+	// SHARED SETUP: Create server and world ONCE for all tests
+	// ========================================================================
+	test.beforeAll(async ({ browser }) => {
+		console.log('[E2E] Setting up shared server and world...');
+		
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		
+		const adminEmail = generateUniqueEmail('settlement-ui-admin');
+		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
+		
+		const cookies = await context.cookies();
+		const sessionCookie = cookies.find((c) => c.name === 'session');
+		
+		if (!sessionCookie) {
+			throw new Error('No session cookie found after admin registration');
+		}
+		
+		adminSessionToken = sessionCookie.value;
+		
+		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
+		
+		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
+			headers: { Cookie: `session=${adminSessionToken}` }
+		});
+		
+		const serversData = await serversResponse.json();
+		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
+		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+		
+		if (!testServer) {
+			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
+				headers: { Cookie: `session=${adminSessionToken}` },
+				data: {
+					name: 'E2E Test Server',
+					hostname: 'localhost',
+					port: 3001,
+					status: 'ONLINE'
+				}
+			});
+			testServer = await createServerResponse.json();
+		}
+		
+		testServerId = testServer.id;
+		
+		const sharedWorldName = `Settlement UI Shared World ${Date.now()}`;
+		const worldData = await createWorldViaAPI(
+			page.request,
+			testServerId,
+			adminSessionToken,
+			{
+				name: sharedWorldName,
+				size: 'TINY',
+				seed: Date.now()
+			},
+			true
+		);
+		testWorldId = worldData.id;
+		console.log('[E2E] Shared world created:', testWorldId);
+		
+		await page.close();
+		await context.close();
+	});
+	
+	test.afterAll(async ({ browser }) => {
+		if (testWorldId && adminSessionToken) {
+			try {
+				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
+				const context = await browser.newContext();
+				const page = await context.newPage();
+				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await page.close();
+				await context.close();
+			} catch (error) {
+				console.error('[E2E] Failed to delete shared world:', error);
+			}
+		}
+	});
+
+	// ========================================================================
+	// PER-TEST SETUP: Create settlement for each test
+	// ========================================================================
 	test.beforeEach(async ({ page, request }) => {
 		// Capture console logs
 		page.on('console', (msg) => {
@@ -57,14 +140,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
 		await assertRedirectedToGettingStarted(page);
 
-		// 2. Elevate to admin
-		console.log('[E2E] Elevating user to ADMINISTRATOR:', testUserEmail);
-		const elevateResponse = await request.put(
-			`${apiUrl}/test/elevate-admin/${encodeURIComponent(testUserEmail)}`
-		);
-		expect(elevateResponse.ok()).toBeTruthy();
-
-		// 3. Get session cookies
+		// 2. Get session cookies
 		const cookies = await page.context().cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
 		if (!sessionCookie?.value) {
@@ -72,7 +148,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		}
 		sessionCookieValue = sessionCookie.value;
 
-		// 4. Get account information
+		// 3. Get account information
 		const accountResponse = await request.get(`${apiUrl}/account/me`, {
 			headers: { Cookie: `session=${sessionCookieValue}` }
 		});
@@ -81,51 +157,13 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		const accountId = account.id;
 		const username = account.profile?.username || testUserEmail;
 
-		// 5. Get or create test server
-		const serversResponse = await request.get(`${apiUrl}/servers`, {
-			headers: { Cookie: `session=${sessionCookieValue}` }
-		});
-		expect(serversResponse.ok()).toBeTruthy();
-		let servers = await serversResponse.json();
-		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-
-		if (!testServer) {
-			console.log('[E2E] Creating E2E test server...');
-			const createServerResponse = await request.post(`${apiUrl}/servers`, {
-				headers: { Cookie: `session=${sessionCookieValue}` },
-				data: {
-					name: 'E2E Test Server',
-					hostname: 'localhost',
-					port: 3001,
-					status: 'ONLINE'
-				}
-			});
-			expect(createServerResponse.ok()).toBeTruthy();
-			testServer = await createServerResponse.json();
-		}
-
-		// 6. Create test world
-		console.log('[E2E] Creating test world...');
-		const world = await createWorldViaAPI(
-			request,
-			testServer.id,
-			sessionCookieValue,
-			{
-				name: `E2E UI Test ${Date.now()}`,
-				size: 'TINY',
-				seed: Date.now()
-			},
-			true
-		);
-		testWorldId = world.id;
-
-		// 7. Create settlement
-		console.log('[E2E] Creating settlement...');
+		// 4. Create settlement in shared world
+		console.log(`[E2E] Creating settlement in shared world: ${testWorldId}`);
 		const settlementResponse = await request.post(`${apiUrl}/settlements`, {
 			headers: { Cookie: `session=${sessionCookieValue}` },
 			data: {
 				worldId: testWorldId,
-				serverId: testServer.id,
+				serverId: testServerId,
 				accountId: accountId,
 				username: username,
 				name: TEST_SETTLEMENTS.BASIC.name
@@ -140,6 +178,14 @@ test.describe('Settlement UI Real-Time Updates', () => {
 			settlementId: testSettlementId,
 			email: testUserEmail
 		});
+
+		// 5. Navigate to settlement page
+		await page.goto(`/game/settlements/${testSettlementId}`);
+		await page.waitForLoadState('networkidle');
+
+		// 6. Wait for Socket.IO connection
+		await waitForSocketConnection(page);
+		await joinWorldRoom(page, testWorldId);
 	});
 
 	test.afterEach(async ({ request }) => {
