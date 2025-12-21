@@ -1,4 +1,4 @@
-/**
+﻿/**
  * E2E Tests for Population Management
  * Created: December 21, 2024
  *
@@ -232,18 +232,6 @@ test.describe('Population Management', () => {
 		console.log('[E2E] Setup complete - ready for tests');
 	});
 
-	test.afterEach(async ({ request }) => {
-		// Cleanup
-		if (testWorldId) {
-			try {
-				console.log(`[E2E] Cleaning up world: ${testWorldId}`);
-				await deleteWorld(request, sessionCookieValue, testWorldId);
-			} catch (error) {
-				console.error('[E2E] Failed to delete world:', error);
-			}
-		}
-	});
-
 	// ========================================================================
 	// TEST 1: Display population and capacity
 	// ========================================================================
@@ -267,7 +255,7 @@ test.describe('Population Management', () => {
 		expect(currentPopulation).toBeLessThanOrEqual(capacity);
 
 		console.log(
-			`[TEST] ✅ Population display verified: ${currentPopulation}/${capacity} citizens`
+			`[TEST] âœ… Population display verified: ${currentPopulation}/${capacity} citizens`
 		);
 	});
 
@@ -289,7 +277,7 @@ test.describe('Population Management', () => {
 		expect(happiness).toBeGreaterThanOrEqual(0);
 		expect(happiness).toBeLessThanOrEqual(100);
 
-		console.log(`[TEST] ✅ Happiness displayed: ${happiness}%`);
+		console.log(`[TEST] âœ… Happiness displayed: ${happiness}%`);
 	});
 
 	// ========================================================================
@@ -313,6 +301,6 @@ test.describe('Population Management', () => {
 		expect(initialPopulation).toBeGreaterThanOrEqual(0);
 		expect(initialPopulation).toBeLessThanOrEqual(1000); // Sanity check
 
-		console.log(`[TEST] ✅ Population system active with ${initialPopulation} citizens`);
+		console.log(`[TEST] âœ… Population system active with ${initialPopulation} citizens`);
 	});
 });
