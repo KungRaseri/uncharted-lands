@@ -23,6 +23,18 @@
 	// Build menu state
 	let buildMenuOpen = $state(false);
 
+	// Area stats for build menu
+	let areaStats = $state<{
+		areaUsed: number;
+		areaCapacity: number;
+		townHallLevel: number;
+	} | null>(null);
+
+	// Track existing structure IDs for unique constraint
+	let existingStructureIds = $derived(
+		data.settlementStructures?.map((s: any) => s.structureId) || []
+	);
+
 	function handleOpenBuildMenu() {
 		logger.debug('🔍 [SettlementPage] handleOpenBuildMenu CALLED');
 		logger.debug('🔍 [SettlementPage] buildMenuOpen BEFORE:', { buildMenuOpen });
@@ -35,10 +47,29 @@
 		buildMenuOpen = false;
 	}
 
+	// Fetch area statistics
+	async function fetchAreaStats() {
+		if (!data.settlement?.id) return;
+
+		try {
+			const response = await fetch(`/api/settlement-area/${data.settlement.id}`);
+			if (response.ok) {
+				const result = await response.json();
+				areaStats = result.data;
+				logger.debug('[SettlementPage] Area stats loaded:', { areaStats: result.data });
+			}
+		} catch (error) {
+			logger.error('[SettlementPage] Failed to fetch area stats:', error);
+		}
+	}
+
 	// Set up auto-refresh for real-time data updates
 	onMount(() => {
 		logger.debug('[SETTLEMENT PAGE] Initializing stores from server data...');
 		logger.debug('[SETTLEMENT PAGE] Settlement data:', { settlement: data.settlement });
+
+		// Fetch area statistics for build menu
+		fetchAreaStats();
 
 		// Initialize stores from server-side loaded data
 		if (data.settlement) {
@@ -143,6 +174,24 @@
 
 				// Invalidate the page data to trigger a reload
 				invalidate('game:settlement');
+
+				// Refresh area stats immediately
+				fetchAreaStats();
+			}
+		};
+
+		// Listen for area:updated events for real-time area display updates
+		const handleAreaUpdated = (eventData: any) => {
+			logger.debug('[SETTLEMENT PAGE] area:updated event received:', { eventData });
+
+			// Check if the update is for this settlement
+			if (eventData.settlementId === data.settlement?.id) {
+				logger.debug('[SETTLEMENT PAGE] Updating area stats from socket event');
+				areaStats = {
+					areaUsed: eventData.areaUsed,
+					areaCapacity: eventData.areaCapacity,
+					townHallLevel: eventData.townHallLevel
+				};
 			}
 		};
 
@@ -164,6 +213,7 @@
 					'[SETTLEMENT PAGE] Socket connected, setting up structure:built listener'
 				);
 				socket.on('structure:built', handleStructureBuilt);
+				socket.on('area:updated', handleAreaUpdated);
 				listenerAttached = true;
 
 				// Initialize store socket listeners now that socket is connected
@@ -183,6 +233,7 @@
 			const currentSocket = socketStore.getSocket();
 			if (currentSocket) {
 				currentSocket.off('structure:built', handleStructureBuilt);
+				currentSocket.off('area:updated', handleAreaUpdated);
 			}
 
 			unsubscribe();
@@ -204,6 +255,10 @@
 		onClose={handleCloseBuildMenu}
 		settlementId={data.settlement.id}
 		structures={data.structures}
+		currentAreaUsed={areaStats?.areaUsed || 0}
+		currentAreaCapacity={areaStats?.areaCapacity || 500}
+		townHallLevel={areaStats?.townHallLevel || 0}
+		existingStructures={existingStructureIds}
 	/>
 {/if}
 

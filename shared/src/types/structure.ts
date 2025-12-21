@@ -111,6 +111,11 @@ export interface StructureMetadata {
 		ore: number;
 	};
 
+	// Building Area System: Placement constraints
+	areaCost?: number; // Area consumed (0 for extractors)
+	unique?: boolean; // Can only build one per settlement
+	minTownHallLevel?: number; // Minimum Town Hall level required
+
 	// Additional metadata
 	baseCost?: {
 		food: number;

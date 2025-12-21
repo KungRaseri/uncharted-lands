@@ -102,14 +102,11 @@ export async function calculateAreaUsed(
 	let totalArea = 0;
 
 	for (const building of settlementBuildings) {
+		if (!building.structure) continue;
 		const structure = building.structure as typeof schema.structures.$inferSelect;
-		// Find the structure definition
-		const structureDefinition = STRUCTURES.find(
-			(s) => s.name === structure.name
-		);
-
-		if (structureDefinition) {
-			totalArea += structureDefinition.areaCost;
+		// Use areaCost from database (0 for extractors)
+		if (structure && structure.areaCost != null && structure.areaCost > 0) {
+			totalArea += structure.areaCost;
 		}
 	}
 
@@ -167,12 +164,12 @@ export async function getAreaStatistics(
 		throw new Error('Settlement not found');
 	}
 
-	const areaUsed = settlement.areaUsed ?? 0;
-	const areaCapacity = settlement.areaCapacity ?? 500;
+	// Calculate area used on-the-fly (always fresh for validation)
+	const areaUsed = await calculateAreaUsed(db, settlementId);
+	const townHallLevel = await getTownHallLevel(db, settlementId);
+	const areaCapacity = calculateAreaCapacity(townHallLevel);
 	const areaAvailable = Math.max(0, areaCapacity - areaUsed);
 	const percentUsed = areaCapacity > 0 ? (areaUsed / areaCapacity) * 100 : 0;
-
-	const townHallLevel = await getTownHallLevel(db, settlementId);
 
 	return {
 		areaUsed,

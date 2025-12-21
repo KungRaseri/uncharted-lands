@@ -10,6 +10,7 @@ import {
 	uniqueIndex,
 	unique,
 	index,
+	boolean,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
@@ -225,6 +226,10 @@ export const structures = pgTable('Structure', {
 	constructionTimeSeconds: integer('constructionTimeSeconds').notNull().default(0), // Build time in seconds
 	populationRequired: integer('populationRequired').notNull().default(0), // Population needed to operate
 	displayName: text('displayName').notNull(), // User-friendly name
+	// ✅ Building Area System: Area management and placement constraints
+	areaCost: integer('areaCost').notNull().default(0), // Area consumed (0 for extractors)
+	unique: boolean('unique').notNull().default(false), // Can only build one per settlement
+	minTownHallLevel: integer('minTownHallLevel').notNull().default(0), // Minimum Town Hall level required
 	createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });

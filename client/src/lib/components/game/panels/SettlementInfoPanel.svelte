@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Tile } from '@uncharted-lands/shared';
+	import SettlementAreaDisplay from '$lib/components/game/SettlementAreaDisplay.svelte';
+	import { onMount } from 'svelte';
 
 	/**
 	 * Settlement Info Panel Component
@@ -10,6 +12,7 @@
 	 * - Happiness overview
 	 * - Location coordinates
 	 * - Settlement type/tier
+	 * - Building area capacity (December 2025)
 	 *
 	 * Part of left sidebar (position 1, 300px width)
 	 */
@@ -33,6 +36,43 @@
 	}
 
 	let { settlementId, settlement, tile, collapsed = false, onToggleCollapse }: Props = $props();
+
+	// Building Area System state
+	let areaStats = $state<{
+		areaUsed: number;
+		areaCapacity: number;
+		areaAvailable: number;
+		percentUsed: number;
+		townHallLevel: number;
+	} | null>(null);
+	let areaLoading = $state(false);
+
+	// Fetch area statistics from API
+	async function fetchAreaStats() {
+		if (!settlementId) return;
+
+		areaLoading = true;
+		try {
+			const response = await fetch(`/api/settlement-area/${settlementId}`, {
+				credentials: 'include', // Ensure cookies are sent
+			});
+			if (response.ok) {
+				const result = await response.json();
+				areaStats = result.data;
+			} else {
+				console.error('[SettlementInfoPanel] Failed to fetch area stats:', response.statusText);
+			}
+		} catch (error) {
+			console.error('[SettlementInfoPanel] Error fetching area stats:', error);
+		} finally {
+			areaLoading = false;
+		}
+	}
+
+	// Fetch area stats on mount
+	onMount(() => {
+		fetchAreaStats();
+	});
 
 	// Format date as "X days ago"
 	function formatDaysAgo(dateInput: string | Date): string {
@@ -179,6 +219,17 @@
 						></div>
 					</div>
 				</div>
+			{/if}
+
+			<!-- Building Area System -->
+			{#if areaStats}
+				<SettlementAreaDisplay
+					{settlementId}
+					areaUsed={areaStats.areaUsed}
+					areaCapacity={areaStats.areaCapacity}
+					townHallLevel={areaStats.townHallLevel}
+					loading={areaLoading}
+				/>
 			{/if}
 		{/if}
 	</div>

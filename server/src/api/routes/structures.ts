@@ -121,6 +121,10 @@ router.get('/metadata', async (req: Request, res: Response) => {
 					costs, // ✅ From database (StructureRequirement join)
 					constructionTimeSeconds: dbStructure.constructionTimeSeconds, // ✅ From database
 					populationRequired: dbStructure.populationRequired, // ✅ From database
+					// ✅ Building Area System: Include area constraints
+					areaCost: dbStructure.areaCost ?? 0, // Area consumed (0 for extractors)
+					unique: dbStructure.unique ?? false, // Can only build one per settlement
+					minTownHallLevel: dbStructure.minTownHallLevel ?? 0, // Minimum TH level required
 					modifiers, // ✅ Phase 3: Calculated modifiers (config-based)
 					prerequisites, // ✅ Phase 3: Config-based prerequisites
 				};
@@ -514,6 +518,29 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 					error: aggError instanceof Error ? aggError.message : 'Unknown error',
 				}
 			);
+		}
+
+		// ✅ Building Area System: Emit area update event for real-time UI updates
+		if (worldId && req.app.get('io')) {
+			try {
+				const { getAreaStatistics } = await import('../../game/utils/area-calculator.js');
+				const areaStats = await getAreaStatistics(settlementId);
+
+				const io = req.app.get('io');
+				io.to(`world:${worldId}`).emit('area:updated', {
+					settlementId,
+					...areaStats,
+				});
+				logger.debug('[SERVER] area:updated event emitted', {
+					settlementId,
+					areaUsed: areaStats.areaUsed,
+					areaCapacity: areaStats.areaCapacity,
+				});
+			} catch (areaError) {
+				logger.error('[SERVER] Failed to emit area:updated event', {
+					error: areaError instanceof Error ? areaError.message : 'Unknown error',
+				});
+			}
 		}
 
 		// ✅ Building Area System: Update settlement area usage after building
@@ -1030,6 +1057,23 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 					settlementId: structure.settlementId,
 					structureId: id,
 				});
+
+				// Emit area update event for real-time UI updates
+				if (worldId && req.app.get('io')) {
+					const { getAreaStatistics } = await import('../../game/utils/area-calculator.js');
+					const areaStats = await getAreaStatistics(structure.settlementId);
+
+					const io = req.app.get('io');
+					io.to(`world:${worldId}`).emit('area:updated', {
+						settlementId: structure.settlementId,
+						...areaStats,
+					});
+					logger.debug('[SERVER] area:updated event emitted after demolition', {
+						settlementId: structure.settlementId,
+						areaUsed: areaStats.areaUsed,
+						areaCapacity: areaStats.areaCapacity,
+					});
+				}
 			} catch (areaError) {
 				// Log error but don't fail the operation
 				logger.error('[API] Failed to update settlement area usage', {
