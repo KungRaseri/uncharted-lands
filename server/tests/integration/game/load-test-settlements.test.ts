@@ -216,8 +216,6 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
                         id: createId(),
                         settlementId,
                         structureId: structureTypes[i].id,
-                        category: 'EXTRACTOR',
-                        type: structureTypes[i].name.toUpperCase(),
                         level: 1,
                         health: 100,
                     })

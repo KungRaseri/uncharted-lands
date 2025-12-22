@@ -1060,8 +1060,8 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
 				// Emit area update event for real-time UI updates
 				if (worldId && req.app.get('io')) {
-					const { getAreaStatistics } = await import('../../game/utils/area-calculator.js');
-					const areaStats = await getAreaStatistics(structure.settlementId);
+					const { getAreaStatistics } = await import('../../utils/area-calculator.js');
+					const areaStats = await getAreaStatistics(db, structure.settlementId);
 
 					const io = req.app.get('io');
 					io.to(`world:${worldId}`).emit('area:updated', {
