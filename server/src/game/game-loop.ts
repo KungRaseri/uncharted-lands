@@ -59,8 +59,9 @@ const TICK_INTERVAL_MS = 1000 / TICK_RATE; // ~16.67ms per tick (at 60 ticks/sec
 
 // Configurable game loop intervals (in seconds)
 const RESOURCE_INTERVAL_SEC = Number.parseInt(process.env.RESOURCE_INTERVAL_SEC || '3600', 10); // Default: 1 hour (production)
-const SOCKET_EMIT_INTERVAL_SEC = Number.parseInt(process.env.SOCKET_EMIT_INTERVAL_SEC || '1', 10); // Default: 1 second (real-time projection)
-const POPULATION_INTERVAL_SEC = Number.parseInt(process.env.POPULATION_INTERVAL_SEC || '1800', 10); // Default: 30 minutes (half-hour offset)
+const SOCKET_EMIT_INTERVAL_SEC = Number.parseInt(process.env.SOCKET_EMIT_INTERVAL_SEC || '5', 10); // Default: 1 second (real-time projection)
+const POPULATION_INTERVAL_SEC = Number.parseInt(process.env.POPULATION_INTERVAL_SEC || '3600', 10); // Default: 1 hour (population updates)
+const DISASTER_INTERVAL_SEC = Number.parseInt(process.env.DISASTER_INTERVAL_SEC || '3600', 10); // Default: 1 hour (disaster checks)
 
 // Track active game loop
 /* eslint-disable-next-line no-undef */
@@ -68,11 +69,12 @@ let gameLoopInterval: NodeJS.Timeout | null = null;
 let currentTick = 0;
 let isRunning = false;
 let lastStatusLog = 0;
-const STATUS_LOG_INTERVAL = TICK_RATE * 300; // Log status every 5 minutes (300 seconds)
+const STATUS_LOG_INTERVAL_SEC = TICK_RATE * Number.parseInt(process.env.STATUS_LOG_INTERVAL_SEC || '300', 10); // Log status every 5 minutes (300 seconds)
 
 // Track last production/population ticks to prevent multiple triggers per interval
 let lastResourceProductionTick = 0;
 let lastPopulationUpdateTick = 0;
+let lastDisasterCheckTick = 0;
 
 // NOTE: activeSettlements Map REMOVED in December 2025 refactor
 // Game loop now processes ALL settlements in READY worlds (world-based processing)
@@ -159,13 +161,57 @@ async function processTick(io: SocketIOServer): Promise<void> {
 	currentTick++;
 
 	// Log status periodically
-	if (currentTick - lastStatusLog >= STATUS_LOG_INTERVAL) {
-		logger.info('[GAME LOOP] 📊 Status update', {
+	if (currentTick - lastStatusLog >= STATUS_LOG_INTERVAL_SEC) {
+		logger.debug('[GAME LOOP] 📊 Status update', {
 			tick: currentTick,
 			uptime: `${Math.floor(currentTick / TICK_RATE / 60)}m ${Math.floor((currentTick / TICK_RATE) % 60)}s`,
 			connections: io.engine.clientsCount,
 		});
 		lastStatusLog = currentTick;
+	}
+
+	// ===== RESOURCE PRODUCTION & POPULATION UPDATES (Refactored December 2025) =====
+
+	// Calculate current time for alignment checks
+	const currentTime = Date.now();
+	const secondsSinceEpoch = Math.floor(currentTime / 1000);
+
+	// FIX: Use tick-based intervals instead of time-based modulo to prevent multiple triggers
+	// Problem: All 60 ticks within a second share the same secondsSinceEpoch value
+	// If that second % interval === 0, all 60 ticks trigger (600x multiplier bug!)
+	// Solution: Track last tick we fired and ensure RESOURCE_INTERVAL_SEC has passed
+	const ticksSinceLastResource = currentTick - lastResourceProductionTick;
+	const ticksSinceLastPopulation = currentTick - lastPopulationUpdateTick;
+	const ticksSinceLastDisaster = currentTick - lastDisasterCheckTick;
+
+	const RESOURCE_TICKS_INTERVAL = TICK_RATE * RESOURCE_INTERVAL_SEC;
+	const POPULATION_TICKS_INTERVAL = TICK_RATE * POPULATION_INTERVAL_SEC;
+	const DISASTER_TICKS_INTERVAL = TICK_RATE * DISASTER_INTERVAL_SEC;
+
+	const isResourceProductionTime = ticksSinceLastResource >= RESOURCE_TICKS_INTERVAL;
+	const isPopulationUpdateTime = ticksSinceLastPopulation >= POPULATION_TICKS_INTERVAL;
+	const isDisasterCheckTime = ticksSinceLastDisaster >= DISASTER_TICKS_INTERVAL;
+
+	// Emit real-time projections every SOCKET_EMIT_INTERVAL_SEC (default: 1 second)
+	const shouldEmitProjection = currentTick % (TICK_RATE * SOCKET_EMIT_INTERVAL_SEC) === 0;
+
+	// ===== DEBUG LOGGING FOR PRODUCTION TICKS =====
+	// Log timing checks every 60 ticks (every second)
+	if (currentTick % 60 === 0) {
+		logger.debug('[GAME LOOP] ⏰ Timing Check', {
+			tick: currentTick,
+			secondsSinceEpoch,
+			isResourceProductionTime,
+			isPopulationUpdateTime,
+			isDisasterCheckTime,
+			shouldEmitProjection,
+			resourceIntervalSec: RESOURCE_INTERVAL_SEC,
+			populationIntervalSec: POPULATION_INTERVAL_SEC,
+			disasterIntervalSec: DISASTER_INTERVAL_SEC,
+			nextResourceTick: RESOURCE_INTERVAL_SEC - (secondsSinceEpoch % RESOURCE_INTERVAL_SEC),
+			nextPopulationTick: POPULATION_INTERVAL_SEC - (secondsSinceEpoch % POPULATION_INTERVAL_SEC),
+			nextDisasterTick: DISASTER_INTERVAL_SEC - (secondsSinceEpoch % DISASTER_INTERVAL_SEC),
+		});
 	}
 
 	// ===== DISASTER SYSTEM PROCESSING (Phase 4 - November 2025) =====
@@ -185,7 +231,7 @@ async function processTick(io: SocketIOServer): Promise<void> {
 	// - Constructions complete at second-level precision (acceptable for UX)
 	// - Reduces database queries from 900/sec to 15/sec (60x improvement)
 	// - Prevents heap overflow with multiple active worlds
-	if (currentTick % 60 === 0) {
+	if (currentTick % TICK_RATE === 0) {
 		const currentTime = Date.now();
 
 		// Get all active worlds to process their construction queues
@@ -208,10 +254,10 @@ async function processTick(io: SocketIOServer): Promise<void> {
 		}
 	}
 
+
 	// Check for new disasters hourly (every 3600 seconds)
 	// GDD Reference: Section 3.5.4 (Disaster System)
-	const HOURLY_TICKS = TICK_RATE * 3600; // 60 ticks/sec × 3600 sec = 216,000 ticks
-	if (currentTick % HOURLY_TICKS === 0) {
+	if (isDisasterCheckTime) {
 		const currentTime = Date.now();
 		await processHourlyDisasterChecks(currentTime);
 
@@ -247,45 +293,7 @@ async function processTick(io: SocketIOServer): Promise<void> {
 				stack: error instanceof Error ? error.stack : undefined,
 			});
 		}
-	}
-
-	// ===== RESOURCE PRODUCTION & POPULATION UPDATES (Refactored December 2025) =====
-
-	// Calculate current time for alignment checks
-	const currentTime = Date.now();
-	const secondsSinceEpoch = Math.floor(currentTime / 1000);
-
-	// FIX: Use tick-based intervals instead of time-based modulo to prevent multiple triggers
-	// Problem: All 60 ticks within a second share the same secondsSinceEpoch value
-	// If that second % interval === 0, all 60 ticks trigger (600x multiplier bug!)
-	// Solution: Track last tick we fired and ensure RESOURCE_INTERVAL_SEC has passed
-	const ticksSinceLastResource = currentTick - lastResourceProductionTick;
-	const ticksSinceLastPopulation = currentTick - lastPopulationUpdateTick;
-
-	const RESOURCE_TICKS_INTERVAL = TICK_RATE * RESOURCE_INTERVAL_SEC; // e.g., 60 * 10 = 600 ticks
-	const POPULATION_TICKS_INTERVAL = TICK_RATE * POPULATION_INTERVAL_SEC; // e.g., 60 * 10 = 600 ticks
-
-	const isResourceProductionTime = ticksSinceLastResource >= RESOURCE_TICKS_INTERVAL;
-	const isPopulationUpdateTime = ticksSinceLastPopulation >= POPULATION_TICKS_INTERVAL;
-
-	// Emit real-time projections every SOCKET_EMIT_INTERVAL_SEC (default: 1 second)
-	const shouldEmitProjection = currentTick % (TICK_RATE * SOCKET_EMIT_INTERVAL_SEC) === 0;
-
-	// ===== DEBUG LOGGING FOR PRODUCTION TICKS =====
-	// Log timing checks every 60 ticks (every second)
-	if (currentTick % 60 === 0) {
-		logger.debug('[GAME LOOP] ⏰ Timing Check', {
-			tick: currentTick,
-			secondsSinceEpoch,
-			isResourceProductionTime,
-			isPopulationUpdateTime,
-			shouldEmitProjection,
-			resourceIntervalSec: RESOURCE_INTERVAL_SEC,
-			populationIntervalSec: POPULATION_INTERVAL_SEC,
-			nextResourceTick: RESOURCE_INTERVAL_SEC - (secondsSinceEpoch % RESOURCE_INTERVAL_SEC),
-			nextPopulationTick:
-				POPULATION_INTERVAL_SEC - (secondsSinceEpoch % POPULATION_INTERVAL_SEC),
-		});
+		lastDisasterCheckTick = currentTick;
 	}
 
 	// ===== LOG CRITICAL EVENTS =====

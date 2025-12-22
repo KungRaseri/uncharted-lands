@@ -6,6 +6,7 @@
  * Writes logs to files for debugging
  */
 
+import 'dotenv/config'; // Load environment variables FIRST
 import fs from 'fs';
 import path from 'path';
 
@@ -40,9 +41,18 @@ class Logger {
 	private logStartTime: string | null = null;
 
 	constructor() {
+		// Debug: Check if env vars are loaded
+		console.log('[Logger Init] process.env.LOG_LEVEL:', process.env.LOG_LEVEL);
+		console.log('[Logger Init] process.env.NODE_ENV:', process.env.NODE_ENV);
+		
 		// Set log level from environment or default to INFO
-		const envLevel = process.env.LOG_LEVEL?.toUpperCase();
-		this.minLevel = LogLevel[envLevel as keyof typeof LogLevel] ?? LogLevel.INFO;
+		const envLogLevel = process.env.LOG_LEVEL as keyof typeof LogLevel;
+		console.log('[Logger Init] envLogLevel:', envLogLevel);
+		console.log('[Logger Init] LogLevel[envLogLevel]:', LogLevel[envLogLevel]);
+		
+		this.minLevel = LogLevel[envLogLevel] ?? LogLevel.INFO;
+		console.log('[Logger Init] Final minLevel:', this.minLevel, `(${LogLevel[this.minLevel]})`);
+		
 		this.isProd = process.env.NODE_ENV === 'production';
 
 		// File logging configuration
@@ -274,9 +284,8 @@ class Logger {
 			const timestamp = this.timestamp();
 
 			// Write to the current .latest.log file
-			const logEntry = `[${timestamp}] [${level.padEnd(5)}] ${message}${
-				context ? ' ' + JSON.stringify(context) : ''
-			}\n`;
+			const logEntry = `[${timestamp}] [${level.padEnd(5)}] ${message}${context ? ' ' + JSON.stringify(context) : ''
+				}\n`;
 
 			fs.appendFileSync(this.currentLogFile, logEntry, 'utf8');
 
@@ -458,7 +467,7 @@ class ChildLogger {
 	constructor(
 		private parent: Logger,
 		private defaultContext: LogContext
-	) {}
+	) { }
 
 	private mergeContext(context?: LogContext): LogContext {
 		return { ...this.defaultContext, ...context };
