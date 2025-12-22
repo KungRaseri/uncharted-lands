@@ -37,13 +37,19 @@ import {
     createTestBiome,
     createTestTile,
     createTestAccount,
-	createTestProfile,
+    createTestProfile,
+} from '../../helpers/integration-test-factory';
+
+interface LoadTestResult {
+    settlementCount: number;
+    duration: number; // milliseconds
+    databaseOperations: {
         selects: number;
         inserts: number;
         updates: number;
         deletes: number;
         total: number;
-    }
+    };
     performance: {
         avgQueryTime: number; // ms
         maxQueryTime: number; // ms
@@ -70,8 +76,11 @@ interface DatabaseStats {
 
 describe('Game Loop Load Test - Multiple Settlements', () => {
     // Shared test data - created once in beforeAll
+    let testServerId: string;
+    let testWorldId: string;
+    let testRegionId: string;
     let testAccountId: string;
-	let testProfileId: string;
+    let testProfileId: string;
     let testBiomeId: string;
 
     // Per-test data - created in beforeEach
@@ -86,8 +95,13 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
         });
         testAccountId = accountId;
 
-		const { profileId } = await createTestProfile(testAccountId, {});
-		testProfileId = profileId;
+        const { profileId } = await createTestProfile(testAccountId, {});
+        testProfileId = profileId;
+
+        const { serverId } = await createTestServer({
+            serverName: 'Load Test Server',
+        });
+        testServerId = serverId;
         const { worldId } = await createTestWorld(testServerId, {
             worldName: 'Load Test World',
         });
@@ -133,12 +147,28 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
     afterAll(async () => {
         // Clean up core entities in reverse order
         await db.delete(tiles).where(eq(tiles.regionId, testRegionId));
-		const { regions, biomes, worlds, servers, accounts, profiles } = await import('../../../src/db/schema.js');
-		await db.delete(regions).where(eq(regions.id, testRegionId));
-		await db.delete(biomes).where(eq(biomes.id, testBiomeId));
-		await db.delete(worlds).where(eq(worlds.id, testWorldId));
-		await db.delete(servers).where(eq(servers.id, testServerId));
-		await db.delete(profiles).where(eq(profiles.id, testProfileId));
+        const { regions, biomes, worlds, servers, accounts, profiles } = await import('../../../src/db/schema.js');
+        await db.delete(regions).where(eq(regions.id, testRegionId));
+        await db.delete(biomes).where(eq(biomes.id, testBiomeId));
+        await db.delete(worlds).where(eq(worlds.id, testWorldId));
+        await db.delete(servers).where(eq(servers.id, testServerId));
+        await db.delete(profiles).where(eq(profiles.id, testProfileId));
+        await db.delete(accounts).where(eq(accounts.id, testAccountId));
+    });
+
+    /**
+     * Get operation statistics from tracked database operations
+     */
+    function getOperationStats() {
+        return {
+            selects: dbOperations.filter(op => op.operationType === 'SELECT').length,
+            inserts: dbOperations.filter(op => op.operationType === 'INSERT').length,
+            updates: dbOperations.filter(op => op.operationType === 'UPDATE').length,
+            deletes: dbOperations.filter(op => op.operationType === 'DELETE').length,
+            total: dbOperations.length,
+        };
+    }
+
     /**
      * Create settlements for load testing (uses shared world/region/biome)
      */
@@ -166,7 +196,13 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
                 id: createId(),
                 name: `Settlement ${index + 1}`,
                 tileId,
-				playerProfileId: testProfileId,
+                playerProfileId: testProfileId,
+            }).returning()
+        );
+
+        const settlementResults = await Promise.all(settlementPromises);
+        const settlementIds = settlementResults.map(([settlement]) => settlement.id);
+
         // Add basic structures to each settlement (for realistic load)
         const structureTypes = await db.select().from(structures).limit(4);
         const structurePromises = [];
@@ -206,30 +242,44 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
             table: 'settlements',
         });
 
-		// Simulate batch update operation count (settlements are queried and updated)
-		for (const id of settlementIds) {
-			dbOperations.push({
-				operationType: 'UPDATE',
-				timestamp: Date.now(),
-				duration: 0,
-				table: 'settlementStorage',
-			});
-		}
+        // Simulate batch update operation count (settlements are queried and updated)
+        for (const id of settlementIds) {
+            dbOperations.push({
+                operationType: 'UPDATE',
+                timestamp: Date.now(),
+                duration: 0,
+                table: 'settlementStorage',
+            });
+        }
 
-		return Promise.resolve();
+        return Promise.resolve();
+    }
+
+    /**
+     * Simulate population updates for all settlements
+     */
+    function simulatePopulationUpdates(settlementIds: string[]): Promise<void> {
+        // Track database operations
+        dbOperations.push({
+            operationType: 'SELECT',
+            timestamp: Date.now(),
+            duration: 0,
+            table: 'settlements',
         });
 
-		// Simulate batch update operation count
-		for (const id of settlementIds) {
-			dbOperations.push({
-				operationType: 'UPDATE',
-				timestamp: Date.now(),
-				duration: 0,
-				table: 'settlementPopulation',
-			});
-		}
+        // Simulate batch update operation count
+        for (const id of settlementIds) {
+            dbOperations.push({
+                operationType: 'UPDATE',
+                timestamp: Date.now(),
+                duration: 0,
+                table: 'settlementPopulation',
+            });
+        }
 
-		return Promise.resolve();
+        return Promise.resolve();
+    }
+
     /**
      * Run load test with specified settlement count
      */
