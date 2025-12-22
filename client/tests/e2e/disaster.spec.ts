@@ -23,8 +23,7 @@ import {
 	assertWarningBannerVisible,
 	getWarningTimeRemaining,
 	assertImpactBannerVisible,
-	getDisasterSummary,
-	clearActiveDisasters
+	getDisasterSummary
 } from './helpers/disasters';
 import {
 	TEST_USERS,
@@ -33,7 +32,6 @@ import {
 	generateUniqueEmail,
 	assertRedirectedToGettingStarted
 } from './auth/auth.helpers';
-import { ensureProfileExists } from './helpers/profile';
 import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
 
 // ============================================================================

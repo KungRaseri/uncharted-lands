@@ -31,7 +31,12 @@ import {
 	assertRedirectedToGettingStarted,
 	TEST_USERS
 } from './auth/auth.helpers';
-import { getPopulationCount, getPopulationCapacity, getHappiness, getResourceAmount } from './helpers/population';
+import {
+	getPopulationCount,
+	getPopulationCapacity,
+	getHappiness,
+	getResourceAmount
+} from './helpers/population';
 import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
 import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state';
 
@@ -47,7 +52,6 @@ let testUserEmail: string;
 let sessionCookieValue: string;
 let testServerId: string;
 let adminSessionToken: string;
-
 
 // ============================================================================
 // POPULATION MANAGEMENT TESTS
