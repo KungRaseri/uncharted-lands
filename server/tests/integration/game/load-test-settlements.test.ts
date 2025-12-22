@@ -29,6 +29,8 @@ import {
     settlements,
     settlementStructures,
     structures,
+    settlementStorage,
+    settlementPopulation
 } from '../../../src/db/schema.js';
 import {
     createTestServer,
@@ -231,7 +233,7 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
     /**
      * Simulate resource production for all settlements
      */
-    function simulateResourceProduction(settlementIds: string[]): Promise<void> {
+    async function simulateResourceProduction(settlementIds: string[]): Promise<void> {
         // Track database operations
         dbOperations.push({
             operationType: 'SELECT',
@@ -240,23 +242,33 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
             table: 'settlements',
         });
 
-        // Simulate batch update operation count (settlements are queried and updated)
-        for (const id of settlementIds) {
-            dbOperations.push({
-                operationType: 'UPDATE',
-                timestamp: Date.now(),
-                duration: 0,
-                table: 'settlementStorage',
-            });
-        }
-
-        return Promise.resolve();
+        // Perform real DB updates for each settlement's storage
+        await Promise.all(
+            settlementIds.map(async (id) => {
+                const start = Date.now();
+                await db.update(settlementStorage)
+                    .set({
+                        food: db.raw('"food" + 1'),
+                        water: db.raw('"water" + 1'),
+                        wood: db.raw('"wood" + 1'),
+                        stone: db.raw('"stone" + 1'),
+                        ore: db.raw('"ore" + 1'),
+                    })
+                    .where(eq(settlementStorage.settlementId, id));
+                dbOperations.push({
+                    operationType: 'UPDATE',
+                    timestamp: Date.now(),
+                    duration: Date.now() - start,
+                    table: 'settlementStorage',
+                });
+            })
+        );
     }
 
     /**
      * Simulate population updates for all settlements
      */
-    function simulatePopulationUpdates(settlementIds: string[]): Promise<void> {
+    async function simulatePopulationUpdates(settlementIds: string[]): Promise<void> {
         // Track database operations
         dbOperations.push({
             operationType: 'SELECT',
@@ -265,17 +277,25 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
             table: 'settlements',
         });
 
-        // Simulate batch update operation count
-        for (const id of settlementIds) {
-            dbOperations.push({
-                operationType: 'UPDATE',
-                timestamp: Date.now(),
-                duration: 0,
-                table: 'settlementPopulation',
-            });
-        }
-
-        return Promise.resolve();
+        // Perform real DB updates for each settlement's population
+        await Promise.all(
+            settlementIds.map(async (id) => {
+                const start = Date.now();
+                await db.update(settlementPopulation)
+                    .set({
+                        currentPopulation: db.raw('"currentPopulation" + 1'),
+                        happiness: db.raw('"happiness" + 1'),
+                        lastGrowthTick: new Date(),
+                    })
+                    .where(eq(settlementPopulation.settlementId, id));
+                dbOperations.push({
+                    operationType: 'UPDATE',
+                    timestamp: Date.now(),
+                    duration: Date.now() - start,
+                    table: 'settlementPopulation',
+                });
+            })
+        );
     }
 
     /**
