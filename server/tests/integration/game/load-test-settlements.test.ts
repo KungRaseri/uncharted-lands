@@ -22,7 +22,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { db } from '../../../src/db/index.js';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 import {
     tiles,
@@ -248,11 +248,11 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
                 const start = Date.now();
                 await db.update(settlementStorage)
                     .set({
-                        food: db.raw('"food" + 1'),
-                        water: db.raw('"water" + 1'),
-                        wood: db.raw('"wood" + 1'),
-                        stone: db.raw('"stone" + 1'),
-                        ore: db.raw('"ore" + 1'),
+                        food: sql`"food" + 1`,
+                        water: sql`"water" + 1`,
+                        wood: sql`"wood" + 1`,
+                        stone: sql`"stone" + 1`,
+                        ore: sql`"ore" + 1`,
                     })
                     .where(eq(settlementStorage.settlementId, id));
                 dbOperations.push({
@@ -283,8 +283,8 @@ describe('Game Loop Load Test - Multiple Settlements', () => {
                 const start = Date.now();
                 await db.update(settlementPopulation)
                     .set({
-                        currentPopulation: db.raw('"currentPopulation" + 1'),
-                        happiness: db.raw('"happiness" + 1'),
+                        currentPopulation: sql`"currentPopulation" + 1`,
+                        happiness: sql`"happiness" + 1`,
                         lastGrowthTick: new Date(),
                     })
                     .where(eq(settlementPopulation.settlementId, id));
