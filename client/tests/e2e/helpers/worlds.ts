@@ -84,6 +84,8 @@ export async function createWorldViaAPI(
 		name: string;
 		size?: 'TINY' | 'SMALL' | 'MEDIUM' | 'LARGE' | 'MASSIVE'; // Added TINY for E2E tests
 		seed?: number;
+		width?: number; // Optional override for custom dimensions
+		height?: number; // Optional override for custom dimensions
 	},
 	waitForGeneration: boolean = true
 ): Promise<any> {
@@ -105,8 +107,8 @@ export async function createWorldViaAPI(
 		serverId,
 		name: worldData.name,
 		generate: true, // Enable server-side world generation
-		width: dimensions.width,
-		height: dimensions.height,
+		width: worldData.width || dimensions.width, // Use custom width if provided
+		height: worldData.height || dimensions.height, // Use custom height if provided
 		// Use crypto.randomInt for secure random seed generation (GHSA finding fix)
 		elevationSeed: worldData.seed || crypto.randomInt(0, 1000000),
 		worldTemplateType: 'STANDARD' // Use standard game template
