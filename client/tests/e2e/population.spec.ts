@@ -1,4 +1,4 @@
-﻿/**
+/**
  * E2E Tests for Population Management
  * Created: December 21, 2024
  *
@@ -13,24 +13,25 @@
  * 8. Capacity limits enforcement
  *
  * PHASE COMPLETION STATUS:
- * ✅ Phase 2.1: Population Display (3/3 tests passing)
- * ✅ Phase 2.2: Growth & Decline (3/3 tests passing)
- * ✅ Phase 2.3: Events & Limits (2/2 tests passing)
- * ✅ Phase 2.4: Resource Consumption (3/3 tests passing)
- * ✅ Phase 3: Resource Depletion Effects (3/3 tests passing)
+ * ? Phase 2.1: Population Display (3/3 tests passing)
+ * ? Phase 2.2: Growth & Decline (3/3 tests passing)
+ * ? Phase 2.3: Events & Limits (2/2 tests passing)
+ * ? Phase 2.4: Resource Consumption (3/3 tests passing)
+ * ? Phase 3: Resource Depletion Effects (3/3 tests passing)
  *
  * TEST API ENDPOINTS AVAILABLE:
  * - POST /api/test/set-resources - Manipulate settlement resources for testing
  * - POST /api/test/set-population - Manipulate population/happiness for testing
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import {
 	generateUniqueEmail,
 	registerUser,
 	assertRedirectedToGettingStarted,
 	TEST_USERS
 } from './auth/auth.helpers';
+import { getPopulationCount, getPopulationCapacity, getHappiness, getResourceAmount } from './helpers/population';
 import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
 import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state';
 
@@ -47,78 +48,6 @@ let sessionCookieValue: string;
 let testServerId: string;
 let adminSessionToken: string;
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Get current population count from the UI
- * Uses data-testid="current-population" which contains "10 / 20" format
- */
-async function getPopulationCount(page: Page): Promise<number> {
-	const populationText = await page
-		.locator('[data-testid="current-population"]')
-		.textContent();
-	// Extract first number from "10 / 20" format
-	const match = populationText?.match(/^(\d+(?:,\d{3})*)/);
-	return match ? Number.parseInt(match[1].replaceAll(',', ''), 10) : 0;
-}
-
-/**
- * Get population capacity from the UI
- * Uses data-testid="current-population" which contains "10 / 20" format
- */
-async function getPopulationCapacity(page: Page): Promise<number> {
-	const populationText = await page
-		.locator('[data-testid="current-population"]')
-		.textContent();
-	// Extract second number from "10 / 20" format
-	const match = populationText?.match(/\/\s*(\d+(?:,\d{3})*)/);
-	return match ? Number.parseInt(match[1].replaceAll(',', ''), 10) : 0;
-}
-
-/**
- * Get happiness value from the UI (as percentage)
- * Uses data-testid="happiness" which contains the percentage
- */
-async function getHappiness(page: Page): Promise<number> {
-	const happinessText = await page.locator('[data-testid="happiness"]').textContent();
-	// Extract number from the text (could be just "50" or "50%")
-	const match = happinessText?.match(/(\d+)/);
-	return match ? Number.parseInt(match[1], 10) : 0;
-}
-
-/**
- * Get growth rate from the UI (as percentage)
- * Look for text containing "Growth Rate" or growth rate display
- */
-async function getGrowthRate(page: Page): Promise<number> {
-	// Try to find growth rate in the population details section
-	const growthElement = page.locator('text=/Growth Rate|population.*rate/i').first();
-	const isVisible = await growthElement.isVisible().catch(() => false);
-	
-	if (!isVisible) {
-		// Growth rate might not be displayed yet, return 0
-		return 0;
-	}
-	
-	const growthText = await growthElement.textContent();
-	// Extract number from "+2.1%" or "-1.5%" format
-	const match = growthText?.match(/([+-]?\d+\.?\d*)\s*%/);
-	return match ? Number.parseFloat(match[1]) : 0;
-}
-
-/**
- * Get resource amount from the UI
- * Uses data-resource attribute to identify resource type
- */
-async function getResourceAmount(page: Page, resourceType: string): Promise<number> {
-	const resourceElement = page.locator(`[data-resource="${resourceType}"]`);
-	const resourceText = await resourceElement.textContent();
-	// Extract first number from "50 / 1000" format
-	const match = resourceText?.match(/(\d+(?:,\d{3})*)/);
-	return match ? Number.parseInt(match[1].replaceAll(',', ''), 10) : 0;
-}
 
 // ============================================================================
 // POPULATION MANAGEMENT TESTS
@@ -136,37 +65,37 @@ test.describe('Population Management', () => {
 	// ========================================================================
 	test.beforeAll(async ({ browser }) => {
 		console.log('[E2E] Setting up shared server and world...');
-		
+
 		// Create a temporary context for admin operations
 		const context = await browser.newContext();
 		const page = await context.newPage();
-		
+
 		// Register and login admin user to get proper session
 		const adminEmail = generateUniqueEmail('pop-suite-admin');
 		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-		
+
 		// Get session cookie
 		const cookies = await context.cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
-		
+
 		if (!sessionCookie) {
 			throw new Error('No session cookie found after admin registration');
 		}
-		
+
 		adminSessionToken = sessionCookie.value;
-		
+
 		// Elevate to admin (use page.request which is tied to page context)
 		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-		
+
 		// Get or create test server
 		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
 			headers: { Cookie: `session=${adminSessionToken}` }
 		});
-		
+
 		const serversData = await serversResponse.json();
 		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
 		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-		
+
 		if (!testServer) {
 			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
 				headers: { Cookie: `session=${adminSessionToken}` },
@@ -179,9 +108,9 @@ test.describe('Population Management', () => {
 			});
 			testServer = await createServerResponse.json();
 		}
-		
+
 		testServerId = testServer.id;
-		
+
 		// Create shared world (use TINY for fast synchronous generation)
 		// Note: TINY worlds may not always have suitable settlement tiles,
 		// but we handle retries in beforeEach if needed
@@ -199,12 +128,12 @@ test.describe('Population Management', () => {
 		);
 		testWorldId = worldData.id;
 		console.log('[E2E] Shared world created:', testWorldId);
-		
+
 		// Close temporary context AFTER world creation
 		await page.close();
 		await context.close();
 	});
-	
+
 	// Cleanup shared world after all tests
 	test.afterAll(async ({ browser }) => {
 		if (testWorldId && adminSessionToken) {
@@ -212,7 +141,7 @@ test.describe('Population Management', () => {
 				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await deleteWorld(page.request, adminSessionToken);
 				await page.close();
 				await context.close();
 			} catch (error) {
@@ -259,12 +188,12 @@ test.describe('Population Management', () => {
 
 		// 4. Create settlement in shared world (with world recreation for TINY worlds that lack viable tiles)
 		console.log('[E2E] Creating settlement via API in shared world:', testWorldId);
-		
+
 		let settlementCreated = false;
 		let worldRecreateCount = 0;
 		const maxWorldRecreates = 3;
 		let currentWorldId = testWorldId;
-		
+
 		while (!settlementCreated && worldRecreateCount <= maxWorldRecreates) {
 			const settlementResponse = await request.post(`${apiUrl}/settlements`, {
 				headers: { Cookie: `session=${sessionCookie.value}` },
@@ -286,18 +215,26 @@ test.describe('Population Management', () => {
 				console.log('[E2E] Settlement created successfully:', testSettlementId);
 			} else {
 				const errorText = await settlementResponse.text();
-				console.log(`[E2E] Settlement creation failed (attempt ${worldRecreateCount + 1}):`, errorText);
-				
+				console.log(
+					`[E2E] Settlement creation failed (attempt ${worldRecreateCount + 1}):`,
+					errorText
+				);
+
 				// If NO_SUITABLE_TILES error, try recreating the world with a different seed
-				if (errorText.includes('NO_SUITABLE_TILES') && worldRecreateCount < maxWorldRecreates) {
+				if (
+					errorText.includes('NO_SUITABLE_TILES') &&
+					worldRecreateCount < maxWorldRecreates
+				) {
 					worldRecreateCount++;
-					console.log(`[E2E] TINY world has no suitable tiles, recreating world (attempt ${worldRecreateCount}/${maxWorldRecreates})...`);
-					
+					console.log(
+						`[E2E] TINY world has no suitable tiles, recreating world (attempt ${worldRecreateCount}/${maxWorldRecreates})...`
+					);
+
 					// Delete old world
 					await request.delete(`${apiUrl}/worlds/${currentWorldId}`, {
 						headers: { Cookie: `session=${adminSessionToken}` }
 					});
-					
+
 					// Create new world with different seed
 					const context = await page.context().browser()?.newContext();
 					if (!context) {
@@ -320,13 +257,17 @@ test.describe('Population Management', () => {
 					await tempPage.close();
 					await context.close();
 				} else {
-					throw new Error(`Failed to create settlement: ${settlementResponse.status()} ${errorText}`);
+					throw new Error(
+						`Failed to create settlement: ${settlementResponse.status()} ${errorText}`
+					);
 				}
 			}
 		}
-		
+
 		if (!settlementCreated) {
-			throw new Error(`Failed to create settlement after ${maxWorldRecreates + 1} world recreation attempts`);
+			throw new Error(
+				`Failed to create settlement after ${maxWorldRecreates + 1} world recreation attempts`
+			);
 		}
 
 		// 5. Navigate to settlement
@@ -335,9 +276,7 @@ test.describe('Population Management', () => {
 
 		// 6. Wait for Socket.IO connection
 		await waitForSocketConnection(page);
-		await joinWorldRoom(page, testWorldId);
-
-		console.log('[E2E] Setup complete - ready for tests');
+		await joinWorldRoom(page, testWorldId, account.id);
 	});
 
 	// ========================================================================
@@ -363,7 +302,7 @@ test.describe('Population Management', () => {
 		expect(currentPopulation).toBeLessThanOrEqual(capacity);
 
 		console.log(
-			`[TEST] âœ… Population display verified: ${currentPopulation}/${capacity} citizens`
+			`[TEST] ✅ Population display verified: ${currentPopulation}/${capacity} citizens`
 		);
 	});
 
@@ -385,7 +324,7 @@ test.describe('Population Management', () => {
 		expect(happiness).toBeGreaterThanOrEqual(0);
 		expect(happiness).toBeLessThanOrEqual(100);
 
-		console.log(`[TEST] âœ… Happiness displayed: ${happiness}%`);
+		console.log(`[TEST] ✅ Happiness displayed: ${happiness}%`);
 	});
 
 	// ========================================================================
@@ -401,15 +340,15 @@ test.describe('Population Management', () => {
 
 		// Get initial population
 		const initialPopulation = await getPopulationCount(page);
-		
+
 		// Wait a moment for potential growth calculations
 		await page.waitForTimeout(1000);
-		
+
 		// Verify population value is valid
 		expect(initialPopulation).toBeGreaterThanOrEqual(0);
 		expect(initialPopulation).toBeLessThanOrEqual(1000); // Sanity check
 
-		console.log(`[TEST] âœ… Population system active with ${initialPopulation} citizens`);
+		console.log(`[TEST] ✅ Population system active with ${initialPopulation} citizens`);
 	});
 	// ========================================================================
 	// PHASE 2.2: POPULATION GROWTH & DECLINE
@@ -441,7 +380,7 @@ test.describe('Population Management', () => {
 			await page.reload();
 			await page.waitForLoadState('networkidle');
 			await page.waitForTimeout(3000); // Wait for happiness to recalculate
-			
+
 			const initialPopulation = await getPopulationCount(page);
 			const capacity = await getPopulationCapacity(page);
 			const happiness = await getHappiness(page);
@@ -455,12 +394,12 @@ test.describe('Population Management', () => {
 			expect(capacity).toBeGreaterThanOrEqual(10); // At least base capacity
 			expect(initialPopulation).toBe(10); // Default starting population
 			expect(capacity).toBeGreaterThanOrEqual(initialPopulation); // Room to grow (even if just from built structures)
-			
+
 			// With 10k food/water, happiness should remain stable or increase
 			// Note: Happiness calculation may take time to reflect resource changes
 			expect(happiness).toBeGreaterThanOrEqual(40); // Should maintain reasonable happiness with resources
 
-			console.log('[TEST] ✅ Growth conditions verified (high resources, capacity available)');
+			console.log('[TEST] ? Growth conditions verified (high resources, capacity available)');
 		});
 
 		test('should display initial happiness value', async ({ page }) => {
@@ -474,11 +413,11 @@ test.describe('Population Management', () => {
 			expect(happiness).toBeGreaterThanOrEqual(0);
 			expect(happiness).toBeLessThanOrEqual(100);
 
-		// Happiness should be positive for a newly created settlement
-		// (actual value is ~40% after first resource tick based on resource balance)
-		expect(happiness).toBeGreaterThanOrEqual(30);
+			// Happiness should be positive for a newly created settlement
+			// (actual value is ~40% after first resource tick based on resource balance)
+			expect(happiness).toBeGreaterThanOrEqual(30);
 
-			console.log('[TEST] ✅ Happiness system initialized correctly');
+			console.log('[TEST] ? Happiness system initialized correctly');
 		});
 
 		test('should display population capacity', async ({ page }) => {
@@ -493,7 +432,7 @@ test.describe('Population Management', () => {
 			expect(capacity).toBeGreaterThan(0); // Base capacity is 10
 			expect(population).toBeLessThanOrEqual(capacity); // Population never exceeds capacity
 
-			console.log(`[TEST] ✅ Capacity system working: ${population}/${capacity}`);
+			console.log(`[TEST] ? Capacity system working: ${population}/${capacity}`);
 		});
 	});
 
@@ -513,18 +452,18 @@ test.describe('Population Management', () => {
 			const setPopulationResponse = await request.post(`${apiUrl}/test/set-population`, {
 				data: {
 					settlementId: testSettlementId,
-					happiness: 80,
+					happiness: 80
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			expect(setPopulationResponse.ok()).toBeTruthy();
 
 			// Reload page to see updated happiness
 			await page.reload();
-		await page.waitForTimeout(1000); // Give time for page to fully load
+			await page.waitForTimeout(1000); // Give time for page to fully load
 			const happiness = await getHappiness(page);
 			const currentPopulation = await getPopulationCount(page);
 
@@ -537,7 +476,7 @@ test.describe('Population Management', () => {
 			// Verify UI shows high happiness (immigration conditions met)
 			expect(currentPopulation).toBeLessThanOrEqual(capacity);
 
-			console.log('[TEST] ✅ Immigration conditions verified (high happiness)');
+			console.log('[TEST] ? Immigration conditions verified (high happiness)');
 		});
 
 		test('should enforce population capacity limits', async ({ page, request }) => {
@@ -550,18 +489,18 @@ test.describe('Population Management', () => {
 			const setPopulationResponse = await request.post(`${apiUrl}/test/set-population`, {
 				data: {
 					settlementId: testSettlementId,
-					population: capacity + 5, // Exceed capacity
+					population: capacity + 5 // Exceed capacity
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			expect(setPopulationResponse.ok()).toBeTruthy();
 
 			// Reload page to see updated population
 			await page.reload();
-		await page.waitForTimeout(1000); // Give time for page to fully load
+			await page.waitForTimeout(1000); // Give time for page to fully load
 			const currentPopulation = await getPopulationCount(page);
 			console.log(`[TEST] Population after setting above capacity: ${currentPopulation}`);
 
@@ -569,7 +508,7 @@ test.describe('Population Management', () => {
 			// but the UI should still display it correctly
 			expect(currentPopulation).toBeGreaterThanOrEqual(0);
 
-			console.log('[TEST] ✅ Capacity enforcement tested');
+			console.log('[TEST] ? Capacity enforcement tested');
 		});
 	});
 
@@ -586,17 +525,17 @@ test.describe('Population Management', () => {
 			await request.post(`${apiUrl}/test/set-resources`, {
 				data: {
 					settlementId: testSettlementId,
-					resources: { food: 500 },
+					resources: { food: 500 }
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			// Reload to see updated resources
 			await page.reload();
 			await page.waitForTimeout(1000);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			const startFood = await getResourceAmount(page, 'food');
 			console.log(`[TEST] Food at start: ${startFood}`);
@@ -616,7 +555,7 @@ test.describe('Population Management', () => {
 			// 2. Food unchanged (equilibrium: production = consumption)
 			const actualChange = endFood - startFood;
 			const expectedConsumptionPerSec = population * 3; // 3 food per person per second
-			
+
 			console.log(
 				`[TEST] Food change: ${actualChange}, Expected consumption rate: ${expectedConsumptionPerSec}/sec`
 			);
@@ -629,11 +568,17 @@ test.describe('Population Management', () => {
 
 			// Log result based on net change
 			if (actualChange < 0) {
-				console.log('[TEST] ✅ Food consumption verified (net negative - consumption > production)');
+				console.log(
+					'[TEST] ? Food consumption verified (net negative - consumption > production)'
+				);
 			} else if (actualChange > 0) {
-				console.log('[TEST] ✅ Food consumption verified (net positive - production > consumption)');
+				console.log(
+					'[TEST] ? Food consumption verified (net positive - production > consumption)'
+				);
 			} else {
-				console.log('[TEST] ✅ Food consumption verified (equilibrium - production = consumption)');
+				console.log(
+					'[TEST] ? Food consumption verified (equilibrium - production = consumption)'
+				);
 			}
 		});
 
@@ -648,17 +593,17 @@ test.describe('Population Management', () => {
 			await request.post(`${apiUrl}/test/set-resources`, {
 				data: {
 					settlementId: testSettlementId,
-					resources: { water: 500 },
+					resources: { water: 500 }
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			// Reload to see updated resources
 			await page.reload();
 			await page.waitForTimeout(1000);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			const startWater = await getResourceAmount(page, 'water');
 			console.log(`[TEST] Water at start: ${startWater}`);
@@ -674,7 +619,7 @@ test.describe('Population Management', () => {
 			// Verify water consumption occurred
 			const actualChange = endWater - startWater;
 			const expectedConsumptionPerSec = population * 6; // 6 water per person per second
-			
+
 			console.log(
 				`[TEST] Water change: ${actualChange}, Expected consumption rate: ${expectedConsumptionPerSec}/sec`
 			);
@@ -686,11 +631,17 @@ test.describe('Population Management', () => {
 
 			// Log result based on net change
 			if (actualChange < 0) {
-				console.log('[TEST] ✅ Water consumption verified (net negative - consumption > production)');
+				console.log(
+					'[TEST] ? Water consumption verified (net negative - consumption > production)'
+				);
 			} else if (actualChange > 0) {
-				console.log('[TEST] ✅ Water consumption verified (net positive - production > consumption)');
+				console.log(
+					'[TEST] ? Water consumption verified (net positive - production > consumption)'
+				);
 			} else {
-				console.log('[TEST] ✅ Water consumption verified (equilibrium - production = consumption)');
+				console.log(
+					'[TEST] ? Water consumption verified (equilibrium - production = consumption)'
+				);
 			}
 		});
 
@@ -701,17 +652,17 @@ test.describe('Population Management', () => {
 			await request.post(`${apiUrl}/test/set-resources`, {
 				data: {
 					settlementId: testSettlementId,
-					resources: { food: 1000, water: 1000 },
+					resources: { food: 1000, water: 1000 }
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			// Reload to see updated resources
 			await page.reload();
 			await page.waitForTimeout(1000);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			const initialFood = await getResourceAmount(page, 'food');
 			const initialWater = await getResourceAmount(page, 'water');
@@ -741,9 +692,11 @@ test.describe('Population Management', () => {
 
 			// Log the outcome
 			if (atEquilibrium) {
-				console.log('[TEST] ✅ Real-time updates verified (equilibrium - production = consumption)');
+				console.log(
+					'[TEST] ? Real-time updates verified (equilibrium - production = consumption)'
+				);
 			} else {
-				console.log('[TEST] ✅ Real-time resource updates verified (net changes observed)');
+				console.log('[TEST] ? Real-time resource updates verified (net changes observed)');
 			}
 		});
 	});
@@ -761,17 +714,17 @@ test.describe('Population Management', () => {
 			await request.post(`${apiUrl}/test/set-resources`, {
 				data: {
 					settlementId: testSettlementId,
-					resources: { food: 0, water: 1000 }, // Keep water high to isolate food effect
+					resources: { food: 0, water: 1000 } // Keep water high to isolate food effect
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			// Reload to see updated resources
 			await page.reload();
 			await page.waitForTimeout(1000);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			const foodAfterReset = await getResourceAmount(page, 'food');
 			console.log(`[TEST] Food after reset: ${foodAfterReset}`);
@@ -800,10 +753,10 @@ test.describe('Population Management', () => {
 			//
 			// Expected behavior: happiness stays in the 45-55% range (near baseline)
 			// because other factors compensate for food depletion.
-			// Test verifies happiness doesn't increase significantly (stays ≤ 55%).
+			// Test verifies happiness doesn't increase significantly (stays = 55%).
 			expect(finalHappiness).toBeLessThanOrEqual(55);
 			console.log(
-				`[TEST] ✅ Starvation mechanics verified - happiness at ${finalHappiness}% (within expected range)`
+				`[TEST] ? Starvation mechanics verified - happiness at ${finalHappiness}% (within expected range)`
 			);
 		});
 
@@ -818,17 +771,17 @@ test.describe('Population Management', () => {
 			await request.post(`${apiUrl}/test/set-resources`, {
 				data: {
 					settlementId: testSettlementId,
-					resources: { food: 1000, water: 0 }, // Keep food high to isolate water effect
+					resources: { food: 1000, water: 0 } // Keep food high to isolate water effect
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			// Reload to see updated resources
 			await page.reload();
 			await page.waitForTimeout(1000);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			const waterAfterReset = await getResourceAmount(page, 'water');
 			console.log(`[TEST] Water after reset: ${waterAfterReset}`);
@@ -850,10 +803,10 @@ test.describe('Population Management', () => {
 			// - resourceSufficiency = (100 + 0) / 2 = 50
 			// - Expected happiness stays in 45-55% range
 			//
-			// Test verifies happiness doesn't increase significantly (stays ≤ 55%)
+			// Test verifies happiness doesn't increase significantly (stays = 55%)
 			expect(finalHappiness).toBeLessThanOrEqual(55);
 			console.log(
-				`[TEST] ✅ Dehydration mechanics verified - happiness at ${finalHappiness}% (within expected range)`
+				`[TEST] ? Dehydration mechanics verified - happiness at ${finalHappiness}% (within expected range)`
 			);
 		});
 
@@ -864,16 +817,16 @@ test.describe('Population Management', () => {
 			await request.post(`${apiUrl}/test/set-resources`, {
 				data: {
 					settlementId: testSettlementId,
-					resources: { food: 0, water: 0 },
+					resources: { food: 0, water: 0 }
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			await page.reload();
 			await page.waitForTimeout(1000);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			// Wait for stress effects
 			await page.waitForTimeout(10500);
@@ -885,20 +838,22 @@ test.describe('Population Management', () => {
 			await request.post(`${apiUrl}/test/set-resources`, {
 				data: {
 					settlementId: testSettlementId,
-					resources: { food: 1000, water: 1000 },
+					resources: { food: 1000, water: 1000 }
 				},
 				headers: {
-					Cookie: `session=${sessionCookieValue}`,
-				},
+					Cookie: `session=${sessionCookieValue}`
+				}
 			});
 
 			await page.reload();
 			await page.waitForTimeout(1000);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			const foodRestored = await getResourceAmount(page, 'food');
 			const waterRestored = await getResourceAmount(page, 'water');
-			console.log(`[TEST] Resources restored - Food: ${foodRestored}, Water: ${waterRestored}`);
+			console.log(
+				`[TEST] Resources restored - Food: ${foodRestored}, Water: ${waterRestored}`
+			);
 
 			// Wait for happiness to recover
 			console.log('[TEST] Waiting for recovery (20 seconds)...');
@@ -913,7 +868,7 @@ test.describe('Population Management', () => {
 			// Happiness should improve after resources restored
 			// (May not fully recover, but should be better than stressed state)
 			expect(recoveredHappiness).toBeGreaterThanOrEqual(stressedHappiness);
-			console.log('[TEST] ✅ Population recovery verified');
+			console.log('[TEST] ? Population recovery verified');
 		});
 	});
 });

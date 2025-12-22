@@ -464,8 +464,8 @@ export async function waitForSocketEvent(
 				socket.once(event, (data: unknown) => {
 					clearTimeout(timer);
 					console.log('[E2E DEBUG] Target event received:', event, 'Data:', data);
-				// Return the actual event data
-				resolve(data);
+					// Return the actual event data
+					resolve(data);
 				});
 			});
 		},

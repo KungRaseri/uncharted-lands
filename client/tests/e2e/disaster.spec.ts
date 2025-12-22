@@ -15,6 +15,7 @@ import {
 	waitForSocketConnection,
 	waitForSocketEvent
 } from './helpers/game-state';
+import { TEST_SETTLEMENTS } from './helpers/settlements';
 import {
 	TEST_DISASTERS,
 	triggerDisaster,
@@ -65,32 +66,32 @@ test.describe('Disaster Lifecycle Flow', () => {
 	// ========================================================================
 	test.beforeAll(async ({ browser }) => {
 		console.log('[E2E] Setting up shared server and world...');
-		
+
 		const context = await browser.newContext();
 		const page = await context.newPage();
-		
+
 		const adminEmail = generateUniqueEmail('disaster-admin');
 		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-		
+
 		const cookies = await context.cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
-		
+
 		if (!sessionCookie) {
 			throw new Error('No session cookie found after admin registration');
 		}
-		
+
 		adminSessionToken = sessionCookie.value;
-		
+
 		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-		
+
 		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
 			headers: { Cookie: `session=${adminSessionToken}` }
 		});
-		
+
 		const serversData = await serversResponse.json();
 		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
 		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-		
+
 		if (!testServer) {
 			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
 				headers: { Cookie: `session=${adminSessionToken}` },
@@ -103,9 +104,9 @@ test.describe('Disaster Lifecycle Flow', () => {
 			});
 			testServer = await createServerResponse.json();
 		}
-		
+
 		testServerId = testServer.id;
-		
+
 		const sharedWorldName = `Disaster Shared World ${Date.now()}`;
 		const worldData = await createWorldViaAPI(
 			page.request,
@@ -120,18 +121,18 @@ test.describe('Disaster Lifecycle Flow', () => {
 		);
 		testWorldId = worldData.id;
 		console.log('[E2E] Shared world created:', testWorldId);
-		
+
 		await page.close();
 		await context.close();
 	});
-	
+
 	test.afterAll(async ({ browser }) => {
 		if (testWorldId && adminSessionToken) {
 			try {
 				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await deleteWorld(page.request, adminSessionToken);
 				await page.close();
 				await context.close();
 			} catch (error) {
@@ -191,7 +192,9 @@ test.describe('Disaster Lifecycle Flow', () => {
 
 		if (!settlementResponse.ok()) {
 			const errorText = await settlementResponse.text();
-			throw new Error(`Failed to create settlement: ${settlementResponse.status()} ${errorText}`);
+			throw new Error(
+				`Failed to create settlement: ${settlementResponse.status()} ${errorText}`
+			);
 		}
 
 		const settlement = await settlementResponse.json();
@@ -208,107 +211,7 @@ test.describe('Disaster Lifecycle Flow', () => {
 
 		// 6. Wait for Socket.IO connection
 		await waitForSocketConnection(page);
-		await joinWorldRoom(page, testWorldId);
-	});
-		let testServer;
-
-		// Look for existing E2E test server
-		testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-
-		if (testServer) {
-			console.log('[E2E] Using existing test server:', testServer.id);
-		} else {
-			console.log('[E2E] Creating E2E test server...');
-			const createServerResponse = await request.post(`${apiUrl}/servers`, {
-				headers: {
-					Cookie: `session=${sessionCookie.value}`
-				},
-				data: {
-					name: 'E2E Test Server',
-					hostname: 'localhost',
-					port: 3001,
-					status: 'ONLINE'
-				}
-			});
-
-			if (!createServerResponse.ok()) {
-				throw new Error(
-					`Failed to create server: ${createServerResponse.status()} ${await createServerResponse.text()}`
-				);
-			}
-
-			testServer = await createServerResponse.json();
-			console.log('[E2E] Created test server:', testServer.id);
-		}
-
-		// 7. Create test world (with async generation polling)
-		const uniqueWorldName = `E2E Disaster Test ${Date.now()}`;
-		console.log('[E2E] Creating test world:', uniqueWorldName);
-		const world = await createWorldViaAPI(
-			request,
-			testServer.id,
-			sessionCookie.value,
-			{
-				name: uniqueWorldName,
-				size: 'SMALL', // Use SMALL (10x10 = 100 tiles) for E2E tests
-				seed: Date.now()
-			},
-			true // Wait for generation to complete
-		);
-
-		testWorldId = world.id;
-
-		console.log('[E2E] Test world ready:', {
-			id: world.id,
-			status: world.status,
-			regionCount: world.regionCount,
-			tileCount: world.tileCount
-		});
-
-		// 8. Ensure profile exists and create test settlement
-		// Using ensureProfileExists which creates both profile and settlement in one call
-		console.log('[E2E] Creating profile and settlement...');
-		const { profile, settlementId } = await ensureProfileExists(
-			request,
-			sessionCookie.value,
-			accountId,
-			testWorldId,
-			testServer.id,
-			username
-		);
-
-		testSettlementId = settlementId;
-		console.log('[E2E] Profile created:', profile.id);
-		console.log('[E2E] Using settlement:', testSettlementId);
-
-		// Navigate to settlement and wait for page load
-		await page.goto(`/game/settlements/${testSettlementId}`, { waitUntil: 'load' });
-
-		// Wait for Socket.IO to connect before attempting to join world
-		try {
-			await waitForSocketConnection(page);
-		} catch (error) {
-			// Dump all browser console logs if socket connection fails
-			console.log('\n=== BROWSER CONSOLE LOGS (captured during beforeEach) ===');
-			consoleMessages.forEach((msg) => console.log(msg));
-			console.log('=== END BROWSER CONSOLE LOGS ===\n');
-			throw error;
-		}
-
-		// Manually join world room (workaround for automatic join not working in E2E)
-		await joinWorldRoom(page, testWorldId, account.id);
-
-		// DEBUG: Check if page data is loaded
-		const pageData = await page.evaluate(() => {
-			const win = globalThis as any;
-			return {
-				hasWindowSocket: win.__socket !== undefined,
-				socketConnected: win.__socket?.connected,
-				socketId: win.__socket?.id,
-				hasPageData: win.pageData !== undefined
-			};
-		});
-		console.log('[E2E DEBUG] Page state after navigation:', pageData);
+		await joinWorldRoom(page, testWorldId, accountId);
 	});
 
 	test.afterEach(async ({ request }) => {

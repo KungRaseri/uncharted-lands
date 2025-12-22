@@ -169,7 +169,7 @@ export function calculatePopulation(structures: Structure[], _currentPopulation?
  */
 export function calculateConsumption(
 	population: number,
-	structureCount: number = 0,
+	_structureCount: number = 0,
 	tickCount: number = 1,
 	worldTemplateMultiplier: number = 1
 ): Resources {

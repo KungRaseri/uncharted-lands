@@ -51,32 +51,32 @@ test.describe('Settlement UI Real-Time Updates', () => {
 	// ========================================================================
 	test.beforeAll(async ({ browser }) => {
 		console.log('[E2E] Setting up shared server and world...');
-		
+
 		const context = await browser.newContext();
 		const page = await context.newPage();
-		
+
 		const adminEmail = generateUniqueEmail('settlement-ui-admin');
 		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-		
+
 		const cookies = await context.cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
-		
+
 		if (!sessionCookie) {
 			throw new Error('No session cookie found after admin registration');
 		}
-		
+
 		adminSessionToken = sessionCookie.value;
-		
+
 		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-		
+
 		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
 			headers: { Cookie: `session=${adminSessionToken}` }
 		});
-		
+
 		const serversData = await serversResponse.json();
 		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
 		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-		
+
 		if (!testServer) {
 			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
 				headers: { Cookie: `session=${adminSessionToken}` },
@@ -89,9 +89,9 @@ test.describe('Settlement UI Real-Time Updates', () => {
 			});
 			testServer = await createServerResponse.json();
 		}
-		
+
 		testServerId = testServer.id;
-		
+
 		const sharedWorldName = `Settlement UI Shared World ${Date.now()}`;
 		const worldData = await createWorldViaAPI(
 			page.request,
@@ -106,18 +106,18 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		);
 		testWorldId = worldData.id;
 		console.log('[E2E] Shared world created:', testWorldId);
-		
+
 		await page.close();
 		await context.close();
 	});
-	
+
 	test.afterAll(async ({ browser }) => {
 		if (testWorldId && adminSessionToken) {
 			try {
 				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await deleteWorld(page.request, adminSessionToken);
 				await page.close();
 				await context.close();
 			} catch (error) {
@@ -185,7 +185,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 
 		// 6. Wait for Socket.IO connection
 		await waitForSocketConnection(page);
-		await joinWorldRoom(page, testWorldId);
+		await joinWorldRoom(page, testWorldId, accountId);
 	});
 
 	test.afterEach(async ({ request }) => {

@@ -54,13 +54,16 @@
 		areaLoading = true;
 		try {
 			const response = await fetch(`/api/settlement-area/${settlementId}`, {
-				credentials: 'include', // Ensure cookies are sent
+				credentials: 'include' // Ensure cookies are sent
 			});
 			if (response.ok) {
 				const result = await response.json();
 				areaStats = result.data;
 			} else {
-				console.error('[SettlementInfoPanel] Failed to fetch area stats:', response.statusText);
+				console.error(
+					'[SettlementInfoPanel] Failed to fetch area stats:',
+					response.statusText
+				);
 			}
 		} catch (error) {
 			console.error('[SettlementInfoPanel] Error fetching area stats:', error);

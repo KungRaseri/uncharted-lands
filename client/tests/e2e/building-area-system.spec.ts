@@ -21,10 +21,7 @@ import {
 	assertRedirectedToGettingStarted
 } from './auth/auth.helpers';
 import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
-import {
-	waitForSocketConnection,
-	joinWorldRoom
-} from './helpers/game-state';
+import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state';
 
 // ============================================================================
 // TEST CONFIGURATION
@@ -52,32 +49,32 @@ test.describe('Building Area System', () => {
 	// ========================================================================
 	test.beforeAll(async ({ browser }) => {
 		console.log('[E2E] Setting up shared server and world...');
-		
+
 		const context = await browser.newContext();
 		const page = await context.newPage();
-		
+
 		const adminEmail = generateUniqueEmail('area-system-admin');
 		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-		
+
 		const cookies = await context.cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
-		
+
 		if (!sessionCookie) {
 			throw new Error('No session cookie found after admin registration');
 		}
-		
+
 		adminSessionToken = sessionCookie.value;
-		
+
 		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-		
+
 		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
 			headers: { Cookie: `session=${adminSessionToken}` }
 		});
-		
+
 		const serversData = await serversResponse.json();
 		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
 		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-		
+
 		if (!testServer) {
 			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
 				headers: { Cookie: `session=${adminSessionToken}` },
@@ -90,9 +87,9 @@ test.describe('Building Area System', () => {
 			});
 			testServer = await createServerResponse.json();
 		}
-		
+
 		testServerId = testServer.id;
-		
+
 		const sharedWorldName = `Building Area Shared World ${Date.now()}`;
 		const worldData = await createWorldViaAPI(
 			page.request,
@@ -107,18 +104,18 @@ test.describe('Building Area System', () => {
 		);
 		testWorldId = worldData.id;
 		console.log('[E2E] Shared world created:', testWorldId);
-		
+
 		await page.close();
 		await context.close();
 	});
-	
+
 	test.afterAll(async ({ browser }) => {
 		if (testWorldId && adminSessionToken) {
 			try {
 				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await deleteWorld(page.request, adminSessionToken);
 				await page.close();
 				await context.close();
 			} catch (error) {
@@ -181,7 +178,7 @@ test.describe('Building Area System', () => {
 
 		// 6. Wait for Socket.IO connection
 		await waitForSocketConnection(page);
-		await joinWorldRoom(page, testWorldId);
+		await joinWorldRoom(page, testWorldId, accountId);
 	});
 
 	test.afterEach(async ({ request }) => {
@@ -246,27 +243,29 @@ test.describe('Building Area System', () => {
 
 		// Open build menu from BuildingsListPanel
 		await page.click('button[data-testid="build-structure-btn"]');
-		
+
 		// Wait for build menu dialog to be visible
 		await page.waitForSelector('[role="dialog"]', { timeout: 5000 });
-		
+
 		// Wait for structure buttons to render
 		await page.waitForTimeout(1000);
 
 		// Get all available structure buttons with area costs
-		const structureButtons = await page.locator('button[data-structure-name][data-testid^="build-structure-"]').all();
+		const structureButtons = await page
+			.locator('button[data-structure-name][data-testid^="build-structure-"]')
+			.all();
 		console.log('[E2E] Found', structureButtons.length, 'structure buttons');
-		
+
 		// Find first non-disabled building button (should be affordable with 10k resources)
 		let buildButton = null;
 		let structureName = '';
-		
+
 		for (const button of structureButtons) {
 			const isDisabled = await button.isDisabled();
 			const testId = await button.getAttribute('data-testid');
 			const buttonName = testId?.replace('build-structure-', '') || 'unknown';
 			console.log('[E2E] Button:', buttonName, 'disabled:', isDisabled);
-			
+
 			if (!isDisabled) {
 				buildButton = button;
 				structureName = buttonName;
@@ -280,119 +279,136 @@ test.describe('Building Area System', () => {
 			// Click to build the structure
 			await buildButton.click();
 
-		// Wait for structure to be built
-		await page.waitForTimeout(3000);
-		
-		// Verify area usage via API (backend tracks correctly even if UI display lags)
-		const areaStatsResponse = await request.get(`${apiUrl}/settlement-area/${testSettlementId}`, {
+			// Wait for structure to be built
+			await page.waitForTimeout(3000);
+
+			// Verify area usage via API (backend tracks correctly even if UI display lags)
+			const areaStatsResponse = await request.get(
+				`${apiUrl}/settlement-area/${testSettlementId}`,
+				{
+					headers: { Cookie: `session=${sessionCookieValue}` }
+				}
+			);
+			expect(areaStatsResponse.ok()).toBeTruthy();
+
+			const areaStatsResult = await areaStatsResponse.json();
+			console.log('[E2E] Area stats from API:', areaStatsResult.data);
+
+			// Backend should track area correctly (initial 25 + new structure 25 = 50)
+			expect(areaStatsResult.data.areaUsed).toBeGreaterThan(25);
+			expect(areaStatsResult.data.buildings.length).toBe(2); // Initial Tent + new structure
+			console.log(
+				'[E2E] ✅ Area usage tracked correctly:',
+				areaStatsResult.data.areaUsed,
+				'/ 500'
+			);
+		} else {
+			throw new Error('No buildable structures found in menu');
+		}
+	});
+
+	// ========================================================================
+	// TEST 3: Progress Bar Color Coding
+	// ========================================================================
+
+	test('should show green progress bar at low usage (<80%)', async ({ page }) => {
+		console.log('[E2E] TEST: Progress bar color at low usage');
+
+		// Wait for area display
+		await page.waitForSelector('text=Building Area', { timeout: 10000 });
+
+		// At initial state (0-50 area used), bar should be green
+		// Find progress bar by its aria-label attribute directly
+		const progressBar = page.locator(
+			'[role="progressbar"][aria-label="Building area usage percentage"]'
+		);
+
+		// Wait for it to be visible
+		await progressBar.waitFor({ state: 'visible', timeout: 5000 });
+
+		// Check for success/green color class
+		const hasGreenClass = await progressBar.evaluate((el) => {
+			const innerBar = el.querySelector('div[class*="bg-"]');
+			const className = innerBar?.className || '';
+			return className.includes('bg-success');
+		});
+
+		expect(hasGreenClass).toBeTruthy();
+		console.log('[E2E] ✅ Progress bar shows green at low usage');
+	});
+
+	// ========================================================================
+	// TEST 4: Build Menu Shows Area Costs and Constraints
+	// ========================================================================
+
+	test('should display area costs and constraints in build menu', async ({ page, request }) => {
+		console.log('[E2E] TEST: Build menu area costs and constraints');
+
+		// Open build menu
+		await page.click('button[data-testid="build-structure-btn"]');
+		await page.waitForSelector('[role="dialog"]', { timeout: 5000 });
+		console.log('[E2E] Build menu opened');
+
+		// Wait a moment for menu to render
+		await page.waitForTimeout(1000);
+
+		// Check for area cost badges
+		const areaBadge = page.locator('span:has-text("area")').first();
+		await expect(areaBadge).toBeVisible({ timeout: 5000 });
+		console.log('[E2E] ✅ Area cost badge visible');
+
+		// Get structure metadata
+		const structuresResponse = await request.get(`${apiUrl}/structures/metadata`, {
 			headers: { Cookie: `session=${sessionCookieValue}` }
 		});
-		expect(areaStatsResponse.ok()).toBeTruthy();
-		
-		const areaStatsResult = await areaStatsResponse.json();
-		console.log('[E2E] Area stats from API:', areaStatsResult.data);
-		
-		// Backend should track area correctly (initial 25 + new structure 25 = 50)
-		expect(areaStatsResult.data.areaUsed).toBeGreaterThan(25);
-		expect(areaStatsResult.data.buildings.length).toBe(2); // Initial Tent + new structure
-		console.log('[E2E] ✅ Area usage tracked correctly:', areaStatsResult.data.areaUsed, '/ 500');
-	} else {
-		throw new Error('No buildable structures found in menu');
-	}
-});
+		const structures = await structuresResponse.json();
 
-// ========================================================================
-// TEST 3: Progress Bar Color Coding
-// ========================================================================
+		// Find a unique building
+		const uniqueBuilding = structures.data.find((s: any) => s.unique === true);
+		if (uniqueBuilding) {
+			console.log('[E2E] Checking unique building:', uniqueBuilding.displayName);
 
-test('should show green progress bar at low usage (<80%)', async ({ page }) => {
-	console.log('[E2E] TEST: Progress bar color at low usage');
+			// Check for unique badge (⭐ Unique)
+			const uniqueBadge = page.locator('span:has-text("Unique")').first();
+			await expect(uniqueBadge).toBeVisible();
+			console.log('[E2E] ✅ Unique badge displayed');
+		}
 
-	// Wait for area display
-	await page.waitForSelector('text=Building Area', { timeout: 10000 });
+		// Find a building with TH requirement
+		const thRequiredBuilding = structures.data.find(
+			(s: any) => s.minTownHallLevel && s.minTownHallLevel > 0
+		);
+		if (thRequiredBuilding) {
+			console.log('[E2E] Checking TH requirement:', thRequiredBuilding.displayName);
 
-	// At initial state (0-50 area used), bar should be green
-	// Find progress bar by its aria-label attribute directly
-	const progressBar = page.locator('[role="progressbar"][aria-label="Building area usage percentage"]');
-	
-	// Wait for it to be visible
-	await progressBar.waitFor({ state: 'visible', timeout: 5000 });
-	
-	// Check for success/green color class
-	const hasGreenClass = await progressBar.evaluate((el) => {
-		const innerBar = el.querySelector('div[class*="bg-"]');
-		const className = innerBar?.className || '';
-		return className.includes('bg-success');
+			// Check for TH level badge
+			const thBadge = page
+				.locator(`span:has-text("TH Lv.${thRequiredBuilding.minTownHallLevel}")`)
+				.first();
+			await expect(thBadge).toBeVisible();
+			console.log('[E2E] ✅ Town Hall requirement displayed');
+		}
+
+		console.log('[E2E] ✅ Build menu constraints validated');
 	});
-
-	expect(hasGreenClass).toBeTruthy();
-	console.log('[E2E] ✅ Progress bar shows green at low usage');
-});
-
-// ========================================================================
-// TEST 4: Build Menu Shows Area Costs and Constraints
-// ========================================================================
-
-test('should display area costs and constraints in build menu', async ({ page, request }) => {
-	console.log('[E2E] TEST: Build menu area costs and constraints');
-
-	// Open build menu
-	await page.click('button[data-testid="build-structure-btn"]');
-	await page.waitForSelector('[role="dialog"]', { timeout: 5000 });
-	console.log('[E2E] Build menu opened');
-
-	// Wait a moment for menu to render
-	await page.waitForTimeout(1000);
-
-	// Check for area cost badges
-	const areaBadge = page.locator('span:has-text("area")').first();
-	await expect(areaBadge).toBeVisible({ timeout: 5000 });
-	console.log('[E2E] ✅ Area cost badge visible');
-
-	// Get structure metadata
-	const structuresResponse = await request.get(`${apiUrl}/structures/metadata`, {
-		headers: { Cookie: `session=${sessionCookieValue}` }
-	});
-	const structures = await structuresResponse.json();
-
-	// Find a unique building
-	const uniqueBuilding = structures.data.find((s: any) => s.unique === true);
-	if (uniqueBuilding) {
-		console.log('[E2E] Checking unique building:', uniqueBuilding.displayName);
-
-		// Check for unique badge (⭐ Unique)
-		const uniqueBadge = page.locator('span:has-text("Unique")').first();
-		await expect(uniqueBadge).toBeVisible();
-		console.log('[E2E] ✅ Unique badge displayed');
-	}
-
-	// Find a building with TH requirement
-	const thRequiredBuilding = structures.data.find(
-		(s: any) => s.minTownHallLevel && s.minTownHallLevel > 0
-	);
-	if (thRequiredBuilding) {
-		console.log('[E2E] Checking TH requirement:', thRequiredBuilding.displayName);
-
-		// Check for TH level badge
-		const thBadge = page.locator(`span:has-text("TH Lv.${thRequiredBuilding.minTownHallLevel}")`).first();
-		await expect(thBadge).toBeVisible();
-		console.log('[E2E] ✅ Town Hall requirement displayed');
-	}
-
-	console.log('[E2E] ✅ Build menu constraints validated');
-});
 
 	// ========================================================================
 	// TEST 5: Cannot Build With Insufficient Area
 	// ========================================================================
 
-	test('should prevent building when area capacity is insufficient', async ({ page, request }) => {
+	test('should prevent building when area capacity is insufficient', async ({
+		page,
+		request
+	}) => {
 		console.log('[E2E] TEST: Area constraint enforcement');
 
 		// Get current area stats
-		const areaStatsResponse = await request.get(`${apiUrl}/settlement-area/${testSettlementId}`, {
-			headers: { Cookie: `session=${sessionCookieValue}` }
-		});
+		const areaStatsResponse = await request.get(
+			`${apiUrl}/settlement-area/${testSettlementId}`,
+			{
+				headers: { Cookie: `session=${sessionCookieValue}` }
+			}
+		);
 		expect(areaStatsResponse.ok()).toBeTruthy();
 		const areaStats = await areaStatsResponse.json();
 		const availableArea = areaStats.data.areaAvailable;
@@ -410,7 +426,12 @@ test('should display area costs and constraints in build menu', async ({ page, r
 		);
 
 		if (tooLargeBuilding) {
-			console.log('[E2E] Structure too large:', tooLargeBuilding.displayName, 'requires', tooLargeBuilding.areaCost);
+			console.log(
+				'[E2E] Structure too large:',
+				tooLargeBuilding.displayName,
+				'requires',
+				tooLargeBuilding.areaCost
+			);
 
 			// Add resources
 			await request.post(`${apiUrl}/test/add-resources`, {
@@ -432,12 +453,16 @@ test('should display area costs and constraints in build menu', async ({ page, r
 			await page.waitForTimeout(500);
 
 			// Find the building button
-			const buildButton = page.locator(`button[data-structure-name="${tooLargeBuilding.name}"]`);
+			const buildButton = page.locator(
+				`button[data-structure-name="${tooLargeBuilding.name}"]`
+			);
 			await expect(buildButton).toBeVisible();
 
 			// Button should be disabled or show constraint message
 			const isDisabled = await buildButton.isDisabled();
-			const hasConstraintMessage = await page.locator('text=/Insufficient area/i').isVisible();
+			const hasConstraintMessage = await page
+				.locator('text=/Insufficient area/i')
+				.isVisible();
 
 			expect(isDisabled || hasConstraintMessage).toBeTruthy();
 			console.log('[E2E] ✅ Building prevented due to insufficient area');
@@ -460,7 +485,9 @@ test('should display area costs and constraints in build menu', async ({ page, r
 		const structures = await structuresResponse.json();
 
 		// Find Town Hall (unique building)
-		const townHall = structures.data.find((s: any) => s.name === 'TOWN_HALL' || s.unique === true);
+		const townHall = structures.data.find(
+			(s: any) => s.name === 'TOWN_HALL' || s.unique === true
+		);
 
 		if (townHall) {
 			console.log('[E2E] Testing unique constraint with:', townHall.displayName);
@@ -474,11 +501,13 @@ test('should display area costs and constraints in build menu', async ({ page, r
 
 			// Find Town Hall button
 			const thButton = page.locator(`button[data-structure-name="${townHall.name}"]`);
-			
+
 			if (await thButton.isVisible()) {
 				// Check if disabled or shows "Already built" message
 				const isDisabled = await thButton.isDisabled();
-				const hasAlreadyBuilt = await page.locator('text=/Already built.*unique/i').isVisible();
+				const hasAlreadyBuilt = await page
+					.locator('text=/Already built.*unique/i')
+					.isVisible();
 
 				expect(isDisabled || hasAlreadyBuilt).toBeTruthy();
 				console.log('[E2E] ✅ Unique building constraint enforced');
@@ -492,17 +521,28 @@ test('should display area costs and constraints in build menu', async ({ page, r
 	// TEST 7: Real-Time Socket.IO Updates
 	// ========================================================================
 
-	test('should update area display via Socket.IO when structure built', async ({ page, request }) => {
+	test('should update area display via Socket.IO when structure built', async ({
+		page,
+		request
+	}) => {
 		console.log('[E2E] TEST: Socket.IO real-time area updates');
 
 		// Get initial area stats via API
-		const initialStatsResponse = await request.get(`${apiUrl}/settlement-area/${testSettlementId}`, {
-			headers: { Cookie: `session=${sessionCookieValue}` }
-		});
+		const initialStatsResponse = await request.get(
+			`${apiUrl}/settlement-area/${testSettlementId}`,
+			{
+				headers: { Cookie: `session=${sessionCookieValue}` }
+			}
+		);
 		const initialStats = await initialStatsResponse.json();
 		const initialAreaUsed = initialStats.data.areaUsed;
 		const initialBuildingCount = initialStats.data.buildings.length;
-		console.log('[E2E] Initial area:', initialAreaUsed, '/ 500, buildings:', initialBuildingCount);
+		console.log(
+			'[E2E] Initial area:',
+			initialAreaUsed,
+			'/ 500, buildings:',
+			initialBuildingCount
+		);
 
 		// Add resources
 		await request.post(`${apiUrl}/test/add-resources`, {
@@ -529,7 +569,12 @@ test('should display area costs and constraints in build menu', async ({ page, r
 		);
 
 		if (building) {
-			console.log('[E2E] Building:', building.displayName, 'with area cost:', building.areaCost);
+			console.log(
+				'[E2E] Building:',
+				building.displayName,
+				'with area cost:',
+				building.areaCost
+			);
 
 			// Build via API - backend will emit Socket.IO event
 			const buildResponse = await request.post(`${apiUrl}/structures/create`, {
@@ -545,18 +590,28 @@ test('should display area costs and constraints in build menu', async ({ page, r
 			await page.waitForTimeout(2000);
 
 			// Validate via API that backend updated correctly (Socket.IO events fired)
-			const updatedStatsResponse = await request.get(`${apiUrl}/settlement-area/${testSettlementId}`, {
-				headers: { Cookie: `session=${sessionCookieValue}` }
-			});
+			const updatedStatsResponse = await request.get(
+				`${apiUrl}/settlement-area/${testSettlementId}`,
+				{
+					headers: { Cookie: `session=${sessionCookieValue}` }
+				}
+			);
 			const updatedStats = await updatedStatsResponse.json();
 			const updatedAreaUsed = updatedStats.data.areaUsed;
 			const updatedBuildingCount = updatedStats.data.buildings.length;
-			console.log('[E2E] Updated area:', updatedAreaUsed, '/ 500, buildings:', updatedBuildingCount);
+			console.log(
+				'[E2E] Updated area:',
+				updatedAreaUsed,
+				'/ 500, buildings:',
+				updatedBuildingCount
+			);
 
 			// Verify area increased and building count increased
 			expect(updatedAreaUsed).toBeGreaterThan(initialAreaUsed);
 			expect(updatedBuildingCount).toBeGreaterThan(initialBuildingCount);
-			console.log('[E2E] ✅ Socket.IO real-time update working (backend state updated correctly)');
+			console.log(
+				'[E2E] ✅ Socket.IO real-time update working (backend state updated correctly)'
+			);
 		}
 	});
 
@@ -609,8 +664,11 @@ test('should display area costs and constraints in build menu', async ({ page, r
 			await page.waitForSelector('text=Buildings', { timeout: 10000 });
 
 			// Check for area badge in building card
-			const areaBadge = page.locator('[data-testid="structure"]').locator('span:has-text("📐")').first();
-			
+			const areaBadge = page
+				.locator('[data-testid="structure"]')
+				.locator('span:has-text("📐")')
+				.first();
+
 			// Should be visible
 			await expect(areaBadge).toBeVisible({ timeout: 5000 });
 			console.log('[E2E] ✅ Area cost badge visible on building card');

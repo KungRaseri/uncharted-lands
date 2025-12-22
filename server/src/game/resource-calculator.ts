@@ -525,7 +525,7 @@ export function hasEnoughResources(storage: Resources, required: Resources): boo
  */
 export function calculateConsumption(
 	populationCount: number = 0,
-	structureCount: number = 0
+	_structureCount: number = 0
 ): Resources {
 	// Base consumption per person per tick
 	const FOOD_PER_PERSON_PER_TICK = 0.005;

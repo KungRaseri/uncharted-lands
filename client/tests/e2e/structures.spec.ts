@@ -12,11 +12,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import {
-	buildStructure,
-	getCurrentResources,
-	TEST_SETTLEMENTS
-} from './helpers/settlements';
+import { buildStructure, getCurrentResources, TEST_SETTLEMENTS } from './helpers/settlements';
 import {
 	waitForSocketConnection,
 	joinWorldRoom,
@@ -61,37 +57,37 @@ test.describe('Structure Management Lifecycle', () => {
 	// ========================================================================
 	test.beforeAll(async ({ browser }) => {
 		console.log('[E2E] Setting up shared server and world...');
-		
+
 		// Create a temporary context for admin operations
 		const context = await browser.newContext();
 		const page = await context.newPage();
-		
+
 		// Register and login admin user to get proper session
 		const adminEmail = generateUniqueEmail('structures-admin');
 		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-		
+
 		// Get session cookie
 		const cookies = await context.cookies();
 		const sessionCookie = cookies.find((c) => c.name === 'session');
-		
+
 		if (!sessionCookie) {
 			throw new Error('No session cookie found after admin registration');
 		}
-		
+
 		adminSessionToken = sessionCookie.value;
-		
+
 		// Elevate to admin
 		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-		
+
 		// Get or create test server
 		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
 			headers: { Cookie: `session=${adminSessionToken}` }
 		});
-		
+
 		const serversData = await serversResponse.json();
 		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
 		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-		
+
 		if (!testServer) {
 			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
 				headers: { Cookie: `session=${adminSessionToken}` },
@@ -104,9 +100,9 @@ test.describe('Structure Management Lifecycle', () => {
 			});
 			testServer = await createServerResponse.json();
 		}
-		
+
 		testServerId = testServer.id;
-		
+
 		// Create shared world (use TINY for fast generation)
 		const sharedWorldName = `Structures Shared World ${Date.now()}`;
 		const worldData = await createWorldViaAPI(
@@ -122,12 +118,12 @@ test.describe('Structure Management Lifecycle', () => {
 		);
 		testWorldId = worldData.id;
 		console.log('[E2E] Shared world created:', testWorldId);
-		
+
 		// Close temporary context
 		await page.close();
 		await context.close();
 	});
-	
+
 	// Cleanup shared world after all tests
 	test.afterAll(async ({ browser }) => {
 		if (testWorldId && adminSessionToken) {
@@ -135,7 +131,7 @@ test.describe('Structure Management Lifecycle', () => {
 				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, adminSessionToken, testWorldId);
+				await deleteWorld(page.request, adminSessionToken);
 				await page.close();
 				await context.close();
 			} catch (error) {
@@ -187,7 +183,9 @@ test.describe('Structure Management Lifecycle', () => {
 
 		if (!settlementResponse.ok()) {
 			const errorText = await settlementResponse.text();
-			throw new Error(`Failed to create settlement: ${settlementResponse.status()} ${errorText}`);
+			throw new Error(
+				`Failed to create settlement: ${settlementResponse.status()} ${errorText}`
+			);
 		}
 
 		const settlement = await settlementResponse.json();
@@ -204,7 +202,7 @@ test.describe('Structure Management Lifecycle', () => {
 
 		// Wait for Socket.IO connection
 		await waitForSocketConnection(page);
-		await joinWorldRoom(page, testWorldId);
+		await joinWorldRoom(page, testWorldId, accountId);
 	});
 
 	test.afterEach(async ({ request }) => {
@@ -236,9 +234,7 @@ test.describe('Structure Management Lifecycle', () => {
 		await expect(buildMenu).toBeVisible({ timeout: 3000 });
 
 		// DEBUG: Log all available structure buttons
-		const allStructureButtons = await page
-			.locator('[data-testid^="build-structure-"]')
-			.all();
+		const allStructureButtons = await page.locator('[data-testid^="build-structure-"]').all();
 		console.log('[TEST] Found structure buttons:', allStructureButtons.length);
 		for (const button of allStructureButtons) {
 			const testId = await button.getAttribute('data-testid');
@@ -439,8 +435,10 @@ test.describe('Structure Management Lifecycle', () => {
 		await buildStructure(page, 'Storage');
 
 		// Wait for Socket.IO event
-		const eventData = await structureBuiltPromise;
-
+		const eventData = (await structureBuiltPromise) as {
+			structure: { buildingType: string };
+			settlementId: string;
+		};
 		// Verify event data contains structure info
 		expect(eventData).toBeDefined();
 		expect(eventData.structure.buildingType).toBe('STORAGE');

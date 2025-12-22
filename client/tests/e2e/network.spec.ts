@@ -19,11 +19,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import {
-	generateUniqueEmail,
-	registerUser,
-	TEST_USERS
-} from './auth/auth.helpers';
+import { generateUniqueEmail, registerUser, TEST_USERS } from './auth/auth.helpers';
 import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
 import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state';
 
@@ -62,34 +58,12 @@ async function navigateToSettlement(page: Page, settlementId: string) {
 }
 
 /**
- * Get settlement name from page
- */
-async function getSettlementName(page: Page): Promise<string> {
-	// Try multiple selectors in case UI structure varies
-	const selectors = [
-		'[data-testid="settlement-name"]',
-		'h1:has-text("Settlement")',
-		'.settlement-name',
-		'header h1'
-	];
-
-	for (const selector of selectors) {
-		const element = page.locator(selector).first();
-		if (await element.isVisible({ timeout: 2000 }).catch(() => false)) {
-			const text = await element.textContent();
-			return text?.trim() || '';
-		}
-	}
-
-	throw new Error('Could not find settlement name on page');
-}
-
-/**
  * Get settlement ID from current URL
  */
 async function getCurrentSettlementId(page: Page): Promise<string> {
 	const url = page.url();
-	const match = url.match(/\/settlements\/([a-z0-9]+)/);
+	const regex = /\/settlements\/([a-z0-9]+)/;
+	const match = regex.exec(url);
 	if (!match) {
 		throw new Error(`Could not extract settlement ID from URL: ${url}`);
 	}
@@ -169,7 +143,9 @@ test.describe('Multi-Settlement Network Management', () => {
 			});
 			if (!createServerResponse.ok()) {
 				const errorText = await createServerResponse.text();
-				throw new Error(`Failed to create server: ${createServerResponse.status()} - ${errorText}`);
+				throw new Error(
+					`Failed to create server: ${createServerResponse.status()} - ${errorText}`
+				);
 			}
 			testServer = await createServerResponse.json();
 		}
@@ -206,7 +182,7 @@ test.describe('Multi-Settlement Network Management', () => {
 				console.log(`[E2E] Cleaning up shared world: ${sharedWorldId}`);
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, sessionCookieValue, sharedWorldId);
+				await deleteWorld(page.request, sessionCookieValue);
 				await context.close();
 			} catch (error) {
 				console.log('[E2E] Failed to delete world:', error);
@@ -259,7 +235,9 @@ test.describe('Multi-Settlement Network Management', () => {
 
 			if (!settlementResponse.ok()) {
 				const errorText = await settlementResponse.text();
-				throw new Error(`Failed to create settlement: ${settlementResponse.status()} ${errorText}`);
+				throw new Error(
+					`Failed to create settlement: ${settlementResponse.status()} ${errorText}`
+				);
 			}
 			const settlement = await settlementResponse.json();
 			console.log(`[TEST] Created settlement: ${settlement.name} (ID: ${settlement.id})`);
@@ -297,7 +275,9 @@ test.describe('Multi-Settlement Network Management', () => {
 
 			if (!settlementResponse.ok()) {
 				const errorText = await settlementResponse.text();
-				throw new Error(`Failed to create settlement: ${settlementResponse.status()} ${errorText}`);
+				throw new Error(
+					`Failed to create settlement: ${settlementResponse.status()} ${errorText}`
+				);
 			}
 			const settlement = await settlementResponse.json();
 			console.log(`[TEST] Created settlement: ${settlement.name} (ID: ${settlement.id})`);
@@ -326,7 +306,6 @@ test.describe('Multi-Settlement Network Management', () => {
 			expect(settlements.length).toBeGreaterThanOrEqual(2);
 
 			// NOTE: Server creates all settlements as "Home Settlement"
-			const names = settlements.map((s: any) => s.name);
 			const homeSettlements = settlements.filter((s: any) => s.name === 'Home Settlement');
 			expect(homeSettlements.length).toBeGreaterThanOrEqual(2);
 
@@ -394,14 +373,10 @@ test.describe('Multi-Settlement Network Management', () => {
 
 			// Navigate to settlement
 			await navigateToSettlement(page, settlement.id);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			// Join world room (should be same world for all settlements in this test)
-			const joinResult = await joinWorldRoom(page, sharedWorldId);
-			expect(joinResult.success).toBe(true);
-			expect(joinResult.worldJoined?.worldId).toBe(sharedWorldId);
-
-			console.log('[TEST] ✅ Socket.IO connected and joined world room');
+			await joinWorldRoom(page, sharedWorldId, accountId);
 		});
 
 		// NOTE: Socket.IO doesn't connect reliably in E2E tests - skipping for now
@@ -416,22 +391,20 @@ test.describe('Multi-Settlement Network Management', () => {
 
 			// Navigate to first settlement
 			await navigateToSettlement(page, settlements[0].id);
-			await waitForSocketConnection(page, true);
+			await waitForSocketConnection(page);
 
 			// Get first socket ID
 			const socketId1 = await page.evaluate(() => {
-				const socket = (window as any).socket;
+				const socket = (globalThis as any).socket;
 				return socket?.id;
 			});
 			expect(socketId1).toBeTruthy();
 
 			// Navigate to second settlement (triggers page reload)
 			await navigateToSettlement(page, settlements[1].id);
-			await waitForSocketConnection(page, true);
-
-			// Get second socket ID
+			await waitForSocketConnection(page);
 			const socketId2 = await page.evaluate(() => {
-				const socket = (window as any).socket;
+				const socket = (globalThis as any).socket;
 				return socket?.id;
 			});
 			expect(socketId2).toBeTruthy();

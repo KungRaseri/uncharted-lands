@@ -1,7 +1,7 @@
 /**
  * Settlement Area API Proxy
  * Proxies client-side requests to backend API
- * 
+ *
  * December 2025 - Building Area System Implementation
  */
 
@@ -19,20 +19,17 @@ export const GET: RequestHandler = async ({ params, cookies, fetch }) => {
 	try {
 		const response = await fetch(`${SERVER_API_URL}/settlement-area/${settlementId}`, {
 			headers: {
-				Cookie: `session=${sessionCookie}`,
-			},
+				Cookie: `session=${sessionCookie}`
+			}
 		});
 
 		const data = await response.json();
 
 		return json(data, {
-			status: response.status,
+			status: response.status
 		});
 	} catch (error) {
 		console.error('[API Proxy] Failed to fetch area stats:', error);
-		return json(
-			{ error: 'Failed to fetch area statistics' },
-			{ status: 500 }
-		);
+		return json({ error: 'Failed to fetch area statistics' }, { status: 500 });
 	}
 };
