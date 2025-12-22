@@ -375,11 +375,14 @@ httpServer.listen(PORT, HOST, () => {
 	logger.info(`  🧪 Environment Variables:`);
 	logger.info(`     NODE_ENV: ${NODE_ENV}`);
 	logger.info(`     LOG_LEVEL: ${process.env.LOG_LEVEL || 'info'}`);
-	logger.info(`     TICK_RATE: ${process.env.TICK_RATE || '60'}`);
-	logger.info(`     RESOURCE_INTERVAL_SEC: ${process.env.RESOURCE_INTERVAL_SEC || '3600'}`);
-	logger.info(`     SOCKET_EMIT_INTERVAL_SEC: ${process.env.SOCKET_EMIT_INTERVAL_SEC || '5'}`);
-	logger.info(`     POPULATION_INTERVAL_SEC: ${process.env.POPULATION_INTERVAL_SEC || '3600'}`);
-	logger.info(`     DISASTER_INTERVAL_SEC: ${process.env.DISASTER_INTERVAL_SEC || '3600'}`);
+	logger.info('');
+	logger.info(`  ⏰ Game Loop Configuration (Phase 1 - Real-World Time Aligned):`);
+	logger.info(`     TICK_RATE: ${process.env.TICK_RATE || '60'} Hz`);
+	logger.info(`     RESOURCE_INTERVAL_SEC: ${process.env.RESOURCE_INTERVAL_SEC || '3600'}s (Every hour at :00)`);
+	logger.info(`     SOCKET_EMIT_INTERVAL_SEC: ${process.env.SOCKET_EMIT_INTERVAL_SEC || '1'}s`);
+	logger.info(`     POPULATION_INTERVAL_SEC: ${process.env.POPULATION_INTERVAL_SEC || '3600'}s (Every hour at :30)`);
+	logger.info(`     DISASTER_INTERVAL_SEC: ${process.env.DISASTER_INTERVAL_SEC || '900'}s (Every 15 minutes)`);
+	logger.info(`     REPAIR_SCHEDULE: Every hour at :45`);
 
 	logger.info('═'.repeat(80));
 
