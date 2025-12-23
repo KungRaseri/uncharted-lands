@@ -43,29 +43,33 @@
 		return cleanup;
 	});
 
-	// Calculate total resources across all settlements
-	let totalResources = $derived({
-		food: data.settlements.reduce(
-			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.food || 0),
-			0
-		),
-		water: data.settlements.reduce(
-			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.water || 0),
-			0
-		),
-		wood: data.settlements.reduce(
-			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.wood || 0),
-			0
-		),
-		stone: data.settlements.reduce(
-			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.stone || 0),
-			0
-		),
-		ore: data.settlements.reduce(
-			(sum: number, s: SettlementWithStorage) => sum + (s.storage?.ore || 0),
-			0
-		)
-	});
+	// Use aggregate data from server if available, fallback to client calculation
+	let totalResources = $derived(
+		data.aggregateData?.totalResources || {
+			food: data.settlements.reduce(
+				(sum: number, s: SettlementWithStorage) => sum + (s.storage?.food || 0),
+				0
+			),
+			water: data.settlements.reduce(
+				(sum: number, s: SettlementWithStorage) => sum + (s.storage?.water || 0),
+				0
+			),
+			wood: data.settlements.reduce(
+				(sum: number, s: SettlementWithStorage) => sum + (s.storage?.wood || 0),
+				0
+			),
+			stone: data.settlements.reduce(
+				(sum: number, s: SettlementWithStorage) => sum + (s.storage?.stone || 0),
+				0
+			),
+			ore: data.settlements.reduce(
+				(sum: number, s: SettlementWithStorage) => sum + (s.storage?.ore || 0),
+				0
+			)
+		}
+	);
+
+	let totalPopulation = $derived(data.aggregateData?.totalPopulation || 0);
 
 	let totalStructures = $derived(
 		data.settlements.reduce(
@@ -73,6 +77,9 @@
 			0
 		)
 	);
+
+	// State for expandable resource breakdown
+	let showResourceBreakdown = $state(false);
 </script>
 
 <div class="max-w-7xl mx-auto p-6 space-y-6">
@@ -184,6 +191,146 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Aggregate Resources Breakdown (Expandable) -->
+	{#if data.aggregateData}
+		<div class="card preset-filled-surface-100-900">
+			<div class="p-6 border-b border-surface-300 dark:border-surface-700">
+				<div class="flex items-center justify-between">
+					<h2 class="text-xl font-bold text-surface-900 dark:text-surface-100">
+						Total Resources (All Settlements)
+					</h2>
+					<button
+						onclick={() => (showResourceBreakdown = !showResourceBreakdown)}
+						class="btn btn-sm preset-tonal-surface-500 rounded-md"
+					>
+						{showResourceBreakdown ? 'Hide' : 'Show'} Breakdown
+					</button>
+				</div>
+			</div>
+
+			<div class="p-6 space-y-4">
+				<!-- Total Resources Grid -->
+				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+					<div class="text-center">
+						<div class="text-2xl font-bold text-success-500">
+							{data.aggregateData.totalResources.food.toLocaleString()}
+						</div>
+						<div class="text-sm text-surface-600 dark:text-surface-400">Food</div>
+					</div>
+					<div class="text-center">
+						<div class="text-2xl font-bold text-info-500">
+							{data.aggregateData.totalResources.water.toLocaleString()}
+						</div>
+						<div class="text-sm text-surface-600 dark:text-surface-400">Water</div>
+					</div>
+					<div class="text-center">
+						<div class="text-2xl font-bold text-warning-500">
+							{data.aggregateData.totalResources.wood.toLocaleString()}
+						</div>
+						<div class="text-sm text-surface-600 dark:text-surface-400">Wood</div>
+					</div>
+					<div class="text-center">
+						<div class="text-2xl font-bold text-surface-500">
+							{data.aggregateData.totalResources.stone.toLocaleString()}
+						</div>
+						<div class="text-sm text-surface-600 dark:text-surface-400">Stone</div>
+					</div>
+					<div class="text-center">
+						<div class="text-2xl font-bold text-tertiary-500">
+							{data.aggregateData.totalResources.ore.toLocaleString()}
+						</div>
+						<div class="text-sm text-surface-600 dark:text-surface-400">Ore</div>
+					</div>
+				</div>
+
+				<!-- Total Stats -->
+				<div class="flex items-center justify-around pt-4 border-t border-surface-300 dark:border-surface-700">
+					<div class="text-center">
+						<div class="text-xl font-bold text-surface-900 dark:text-surface-100">
+							{data.aggregateData.settlementCount}
+						</div>
+						<div class="text-xs text-surface-600 dark:text-surface-400">Settlements</div>
+					</div>
+					<div class="text-center">
+						<div class="text-xl font-bold text-surface-900 dark:text-surface-100">
+							{data.aggregateData.totalPopulation.toLocaleString()}
+						</div>
+						<div class="text-xs text-surface-600 dark:text-surface-400">Total Population</div>
+					</div>
+					<div class="text-center">
+						<div class="text-xl font-bold text-surface-900 dark:text-surface-100">
+							{data.aggregateData.totalCapacity.toLocaleString()}
+						</div>
+						<div class="text-xs text-surface-600 dark:text-surface-400">Total Capacity</div>
+					</div>
+				</div>
+
+				<!-- Per-Settlement Breakdown (Expandable) -->
+				{#if showResourceBreakdown}
+					<div class="pt-4 border-t border-surface-300 dark:border-surface-700 space-y-3">
+						<h3 class="text-sm font-semibold text-surface-700 dark:text-surface-300">
+							Per-Settlement Breakdown
+						</h3>
+						{#each data.aggregateData.settlements as settlement}
+							<div class="card preset-filled-surface-50-950 p-4">
+								<div class="flex items-center justify-between mb-2">
+									<h4 class="font-semibold text-surface-900 dark:text-surface-100">
+										{settlement.name}
+									</h4>
+									<span class="text-xs text-surface-600 dark:text-surface-400">
+										Pop: {settlement.population}/{settlement.capacity}
+									</span>
+								</div>
+								<div class="grid grid-cols-5 gap-2 text-sm">
+									<div class="text-center">
+										<div class="font-bold text-success-500">
+											{settlement.resources.food.toLocaleString()}
+										</div>
+										<div class="text-xs text-surface-600 dark:text-surface-400">
+											Food
+										</div>
+									</div>
+									<div class="text-center">
+										<div class="font-bold text-info-500">
+											{settlement.resources.water.toLocaleString()}
+										</div>
+										<div class="text-xs text-surface-600 dark:text-surface-400">
+											Water
+										</div>
+									</div>
+									<div class="text-center">
+										<div class="font-bold text-warning-500">
+											{settlement.resources.wood.toLocaleString()}
+										</div>
+										<div class="text-xs text-surface-600 dark:text-surface-400">
+											Wood
+										</div>
+									</div>
+									<div class="text-center">
+										<div class="font-bold text-surface-500">
+											{settlement.resources.stone.toLocaleString()}
+										</div>
+										<div class="text-xs text-surface-600 dark:text-surface-400">
+											Stone
+										</div>
+									</div>
+									<div class="text-center">
+										<div class="font-bold text-tertiary-500">
+											{settlement.resources.ore.toLocaleString()}
+										</div>
+										<div class="text-xs text-surface-600 dark:text-surface-400">
+											Ore
+										</div>
+									</div>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	<!-- Settlements List -->
 	<div class="card preset-filled-surface-100-900">

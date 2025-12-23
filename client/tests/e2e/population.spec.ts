@@ -91,16 +91,19 @@ test.describe('Population Management', () => {
 		// Elevate to admin (use page.request which is tied to page context)
 		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
 
-		// Get or create test server
+		// Get or create test server (find by hostname/port to avoid duplicates)
 		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
 			headers: { Cookie: `session=${adminSessionToken}` }
 		});
 
 		const serversData = await serversResponse.json();
 		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
-		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+		let testServer = servers.find(
+			(s: { hostname: string; port: number }) => s.hostname === 'localhost' && s.port === 3001
+		);
 
 		if (!testServer) {
+			// Server doesn't exist, create it
 			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
 				headers: { Cookie: `session=${adminSessionToken}` },
 				data: {
@@ -110,7 +113,27 @@ test.describe('Population Management', () => {
 					status: 'ONLINE'
 				}
 			});
-			testServer = await createServerResponse.json();
+
+			if (!createServerResponse.ok()) {
+				// Retry logic: server might have been created by another test
+				await page.waitForTimeout(500);
+				const retryResponse = await page.request.get(`${apiUrl}/servers`, {
+					headers: { Cookie: `session=${adminSessionToken}` }
+				});
+				const retryData = await retryResponse.json();
+				const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
+				testServer = retryServers.find(
+					(s: { hostname: string; port: number }) => s.hostname === 'localhost' && s.port === 3001
+				);
+				if (!testServer) {
+					const errorText = await createServerResponse.text();
+					throw new Error(
+						`Failed to create server: ${createServerResponse.status()} - ${errorText}`
+					);
+				}
+			} else {
+				testServer = await createServerResponse.json();
+			}
 		}
 
 		testServerId = testServer.id;

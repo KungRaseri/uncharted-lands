@@ -117,7 +117,7 @@ test.describe('Multi-Settlement Network Management', () => {
 		// Elevate to admin
 		await page.request.put(`${API_URL}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
 
-		// Get or create test server
+		// Get or create test server (find by hostname/port to avoid duplicates)
 		const serversResponse = await page.request.get(`${API_URL}/servers`, {
 			headers: { Cookie: `session=${sessionCookieValue}` }
 		});
@@ -129,9 +129,12 @@ test.describe('Multi-Settlement Network Management', () => {
 
 		const serversData = await serversResponse.json();
 		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
-		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+		let testServer = servers.find(
+			(s: { hostname: string; port: number }) => s.hostname === 'localhost' && s.port === 3001
+		);
 
 		if (!testServer) {
+			// Server doesn't exist, create it
 			const createServerResponse = await page.request.post(`${API_URL}/servers`, {
 				headers: { Cookie: `session=${sessionCookieValue}` },
 				data: {
@@ -141,13 +144,27 @@ test.describe('Multi-Settlement Network Management', () => {
 					status: 'ONLINE'
 				}
 			});
+
 			if (!createServerResponse.ok()) {
-				const errorText = await createServerResponse.text();
-				throw new Error(
-					`Failed to create server: ${createServerResponse.status()} - ${errorText}`
+				// Retry logic: server might have been created by another test
+				await page.waitForTimeout(500);
+				const retryResponse = await page.request.get(`${API_URL}/servers`, {
+					headers: { Cookie: `session=${sessionCookieValue}` }
+				});
+				const retryData = await retryResponse.json();
+				const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
+				testServer = retryServers.find(
+					(s: { hostname: string; port: number }) => s.hostname === 'localhost' && s.port === 3001
 				);
+				if (!testServer) {
+					const errorText = await createServerResponse.text();
+					throw new Error(
+						`Failed to create server: ${createServerResponse.status()} - ${errorText}`
+					);
+				}
+			} else {
+				testServer = await createServerResponse.json();
 			}
-			testServer = await createServerResponse.json();
 		}
 
 		sharedServerId = testServer.id;
@@ -518,6 +535,78 @@ test.describe('Multi-Settlement Network Management', () => {
 			expect(bodyText).toContain('25'); // Population
 
 			console.log('[TEST] ✅ Population correctly isolated between settlements');
+		});
+
+		test('should display aggregate resources across all settlements', async ({
+			page,
+			request
+		}) => {
+			console.log('[TEST] Testing aggregate resources display...');
+
+			// Ensure we have at least 2 settlements
+			const settlements = await getPlayerSettlements(request, sessionCookieValue);
+			console.log(`[TEST] Player has ${settlements.length} settlements before test`);
+			expect(settlements.length).toBeGreaterThanOrEqual(2);
+
+			// Navigate to dashboard/game home
+			await page.goto('/game');
+			await page.waitForLoadState('networkidle');
+			await page.waitForTimeout(2000); // Wait for data to load and render
+
+			// Check that aggregate section exists (look for the heading)
+			const aggregateHeading = page.locator('h2', {
+				hasText: 'Total Resources (All Settlements)'
+			});
+			await expect(aggregateHeading).toBeVisible({ timeout: 10000 });
+
+			console.log('[TEST] ✅ Aggregate resources section found');
+
+			// Verify resource totals are displayed
+			const foodTotal = page.locator('text=/\\d+/').first(); // At least one numeric value
+			await expect(foodTotal).toBeVisible();
+
+			console.log('[TEST] ✅ Resource totals displayed');
+
+			// Check that we can expand the breakdown
+			const showBreakdownButton = page.locator('button', { hasText: /Show Breakdown/i });
+			await expect(showBreakdownButton).toBeVisible();
+			await showBreakdownButton.click();
+
+			console.log('[TEST] ✅ Clicked show breakdown button');
+
+			// Wait for breakdown to appear
+			await page.waitForTimeout(500);
+
+			// Verify per-settlement breakdown is visible
+			const breakdownHeading = page.locator('h3', {
+				hasText: 'Per-Settlement Breakdown'
+			});
+			await expect(breakdownHeading).toBeVisible();
+
+			console.log('[TEST] ✅ Per-settlement breakdown displayed');
+
+			// Verify at least one settlement card is shown in breakdown
+			// Looking for the settlement name in the breakdown
+			const firstSettlementName = settlements[0].name;
+			const settlementNameInBreakdown = page.locator('h4', {
+				hasText: firstSettlementName
+			});
+			await expect(settlementNameInBreakdown).toBeVisible();
+
+			console.log(
+				`[TEST] ✅ Found settlement "${firstSettlementName}" in breakdown`
+			);
+
+			// Check that hide button works
+			const hideBreakdownButton = page.locator('button', { hasText: /Hide Breakdown/i });
+			await expect(hideBreakdownButton).toBeVisible();
+			await hideBreakdownButton.click();
+			await page.waitForTimeout(500);
+
+			// Breakdown should be hidden
+			await expect(breakdownHeading).not.toBeVisible();
+
+			console.log('[TEST] ✅ Aggregate resources display working correctly');
 		});
 	});
 });

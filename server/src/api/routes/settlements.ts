@@ -200,6 +200,97 @@ router.get('/:id/disaster-history', authenticate, async (req, res) => {
 });
 
 /**
+ * GET /api/settlements/aggregate
+ * Get aggregated resources and stats across all player settlements
+ *
+ * Auth: Requires authentication
+ * Response: {
+ *   totalResources: { food, water, wood, stone, ore },
+ *   totalPopulation: number,
+ *   totalCapacity: number,
+ *   settlementCount: number,
+ *   settlements: Array<{ id, name, resources, population, capacity }>
+ * }
+ */
+router.get('/aggregate', authenticate, async (req, res) => {
+	try {
+		if (!req.user || !req.user.profileId) {
+			return res.status(401).json({ error: 'Unauthorized: No profile found' });
+		}
+
+		const playerProfileId = req.user.profileId;
+
+		// Query all settlements for this player with storage and population
+		const playerSettlements = await db.query.settlements.findMany({
+			where: eq(settlements.playerProfileId, playerProfileId),
+			with: {
+				storage: true,
+				population: true,
+			},
+		});
+
+		// Calculate aggregates
+		const totalResources = {
+			food: 0,
+			water: 0,
+			wood: 0,
+			stone: 0,
+			ore: 0,
+		};
+
+		let totalPopulation = 0;
+		let totalCapacity = 0;
+
+		const settlementDetails = playerSettlements.map((settlement) => {
+			// Aggregate resources
+			if (settlement.storage) {
+				totalResources.food += settlement.storage.food;
+				totalResources.water += settlement.storage.water;
+				totalResources.wood += settlement.storage.wood;
+				totalResources.stone += settlement.storage.stone;
+				totalResources.ore += settlement.storage.ore;
+			}
+
+			// Aggregate population
+			const currentPopulation = settlement.population?.currentPopulation || 0;
+			totalPopulation += currentPopulation;
+
+			// Area capacity used as housing capacity proxy
+			totalCapacity += settlement.areaCapacity;
+
+			return {
+				id: settlement.id,
+				name: settlement.name,
+				resources: settlement.storage
+					? {
+							food: settlement.storage.food,
+							water: settlement.storage.water,
+							wood: settlement.storage.wood,
+							stone: settlement.storage.stone,
+							ore: settlement.storage.ore,
+						}
+					: totalResources,
+				population: currentPopulation,
+				capacity: settlement.areaCapacity,
+			};
+		});
+
+		const aggregateData = {
+			totalResources,
+			totalPopulation,
+			totalCapacity,
+			settlementCount: playerSettlements.length,
+			settlements: settlementDetails,
+		};
+
+		res.json(aggregateData);
+	} catch (error) {
+		logger.error('[API] Error fetching aggregate settlements data', error);
+		res.status(500).json({ error: 'Failed to fetch aggregate data' });
+	}
+});
+
+/**
  * POST /api/settlements
  * Create a new settlement with profile and storage
  *
