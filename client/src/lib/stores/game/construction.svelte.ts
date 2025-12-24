@@ -48,17 +48,28 @@ function initializeListeners(): void {
 	// Listen for construction started event (project begins building)
 	socket.on(
 		'construction-started',
-		(data: { settlementId: string; project: ConstructionProject }) => {
+		(data: { settlementId: string; constructionId: string; structureType: string; category?: string; completesAt: Date; isEmergency?: boolean; timestamp: number }) => {
 			const currentState = state.construction.get(data.settlementId) || {
 				active: [],
 				queued: []
 			};
 
-			// Add to active projects
-			const updatedActive = [...currentState.active, data.project];
+			// Convert server data to ConstructionProject format
+			const project: ConstructionProject = {
+				id: data.constructionId,
+				name: data.structureType,
+				type: (data.category as BuildingType) || 'OTHER',
+				progress: 0,
+				startTime: data.timestamp,
+				completionTime: new Date(data.completesAt).getTime(),
+				resources: { wood: 0, stone: 0 }
+			};
 
-			// Remove from queued if it was there
-			const updatedQueued = currentState.queued.filter((p) => p.id !== data.project.id);
+			// Add to active projects
+			const updatedActive = [...currentState.active, project];
+
+			// Remove from queued if it was there (by structure type since ID changes)
+			const updatedQueued = currentState.queued.filter((p) => p.name !== data.structureType);
 
 			state.construction.set(data.settlementId, {
 				active: updatedActive,
@@ -108,8 +119,8 @@ function initializeListeners(): void {
 
 	// Listen for construction completed event
 	socket.on(
-		'construction-completed',
-		(data: { settlementId: string; projectId: string; structureId?: string }) => {
+		'construction-complete',
+		(data: { settlementId: string; structureId: string; structureType: string; constructionTime: number; timestamp: number }) => {
 			const currentState = state.construction.get(data.settlementId);
 			if (!currentState) return;
 
@@ -139,14 +150,25 @@ function initializeListeners(): void {
 	// Listen for new project queued
 	socket.on(
 		'construction-queued',
-		(data: { settlementId: string; project: ConstructionProject }) => {
+		(data: { settlementId: string; constructionId: string; structureType: string; category?: string; position: number; status: string; completesAt?: Date; resourcesCost?: ResourceCost; timestamp: number }) => {
 			const currentState = state.construction.get(data.settlementId) || {
 				active: [],
 				queued: []
 			};
 
+			// Convert server data to ConstructionProject format
+			const project: ConstructionProject = {
+				id: data.constructionId,
+				name: data.structureType,
+				type: (data.category as BuildingType) || 'OTHER',
+				progress: 0,
+				startTime: data.timestamp,
+				completionTime: data.completesAt ? new Date(data.completesAt).getTime() : 0,
+				resources: data.resourcesCost || { wood: 0, stone: 0 }
+			};
+
 			// Add to queued projects
-			const updatedQueued = [...currentState.queued, data.project];
+			const updatedQueued = [...currentState.queued, project];
 
 			state.construction.set(data.settlementId, {
 				...currentState,

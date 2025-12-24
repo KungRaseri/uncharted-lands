@@ -102,6 +102,9 @@ async function completeConstruction(
 				level: 1,
 				health: 100, // Structures start at full health
 				populationAssigned: 0, // Population assignment (future)
+				// For extractors: include tileId and slotPosition from construction queue
+				tileId: construction.tileId || null,
+				slotPosition: construction.slotPosition !== null ? construction.slotPosition : null,
 			})
 			.returning();
 

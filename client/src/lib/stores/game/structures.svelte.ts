@@ -140,6 +140,21 @@ function initializeListeners(socket: Socket) {
 		}
 	);
 
+	// ✅ EVENT: construction-complete - Structure finished building and added to settlement
+	socket.on('construction-complete', (data: { settlementId: string; structureId: string; structureType: string; constructionTime: number; timestamp: number }) => {
+		logger.info('[StructuresStore] 🏗️ Received construction-complete EVENT:', {
+			settlementId: data.settlementId,
+			structureId: data.structureId,
+			structureType: data.structureType
+		});
+
+		// Fetch updated structures for this settlement to get the complete structure data
+		// We need to do this because the event only gives us basic info
+		if (browser) {
+			fetchStructures(data.settlementId);
+		}
+	});
+
 	// ✅ EVENT: structure:demolished - Structure removed
 	socket.on('structure:demolished', (data: { settlementId: string; structureId: string }) => {
 		logger.info('[StructuresStore] 🗑️ Received structure:demolished EVENT:', {

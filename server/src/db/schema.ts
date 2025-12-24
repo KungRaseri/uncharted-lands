@@ -894,6 +894,10 @@ export const constructionQueue = pgTable(
 
 		// Structure Details
 		structureType: text('structureType').notNull(), // 'FARM', 'HOUSE', etc.
+		
+		// Extractor-specific fields (for placement)
+		tileId: text('tileId').references(() => tiles.id, { onDelete: 'cascade' }), // NULL for buildings
+		slotPosition: integer('slotPosition'), // NULL for buildings, 0-N for extractors
 
 		// Timing
 		startedAt: timestamp('startedAt', { mode: 'date' }), // NULL if queued but not started

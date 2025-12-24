@@ -16,7 +16,9 @@ import {
 	structures,
 	tiles,
 	structureModifiers,
+	constructionQueue,
 } from '../../db/index.js';
+import { STRUCTURE_COSTS } from '../../data/structure-costs.js';
 import type { Structure, Settlement } from '../../db/schema.js';
 import { authenticate } from '../middleware/auth.js';
 import { logger } from '../../utils/logger.js';
@@ -441,6 +443,10 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				throw error;
 			}
 
+			// Get construction time from STRUCTURE_COSTS (single source of truth)
+			const structureCost = STRUCTURE_COSTS.find(s => s.name === structureDefinition.name);
+			const constructionTimeSeconds = structureCost?.constructionTimeSeconds || 60;
+
 			// Add to construction queue
 			const [queueItem] = await tx
 				.insert(constructionQueue)
@@ -452,9 +458,12 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 					status: position < 3 ? 'IN_PROGRESS' : 'QUEUED',
 					position,
 					isEmergency: 0,
+					// Store tileId and slotPosition for extractors
+					tileId: structureDefinition.category === 'EXTRACTOR' ? tileId : null,
+					slotPosition: structureDefinition.category === 'EXTRACTOR' ? slotPosition : null,
 					startedAt: position < 3 ? new Date() : null,
 					completesAt: position < 3 
-						? new Date(Date.now() + (structureDefinition.constructionTimeSeconds * 1000))
+						? new Date(Date.now() + (constructionTimeSeconds * 1000))
 						: null,
 				})
 				.returning();
@@ -495,6 +504,9 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 		}
 
 		// Return success response
+		const structureCost = STRUCTURE_COSTS.find(s => s.name === result.structureDefinition.name);
+		const constructionTimeSeconds = structureCost?.constructionTimeSeconds || 60;
+		
 		res.status(201).json({
 			success: true,
 			message: 'Structure queued for construction',
@@ -506,7 +518,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				position: result.queueItem.position,
 				status: result.queueItem.status,
 				completesAt: result.queueItem.completesAt,
-				constructionTime: result.structureDefinition.constructionTimeSeconds,
+				constructionTime: constructionTimeSeconds,
 			},
 			resourcesDeducted: result.validation.deductedResources,
 		});
@@ -531,6 +543,8 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			errorMessage: error instanceof Error ? error.message : String(error),
 			errorStack: error instanceof Error ? error.stack : undefined,
 			body: req.body,
+			structureDefinition: structureDefinition?.name,
+			settlementId: req.body.settlementId,
 		});
 		return res.status(500).json({
 			error: 'Internal Server Error',
