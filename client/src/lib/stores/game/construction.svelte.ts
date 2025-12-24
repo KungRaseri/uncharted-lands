@@ -318,6 +318,67 @@ export const constructionStore = {
 	},
 
 	/**
+	 * Fetch construction queue from API (for initial page load)
+	 */
+	async fetchConstructionQueue(settlementId: string): Promise<void> {
+		if (!browser) return;
+
+		try {
+			const { PUBLIC_CLIENT_API_URL } = await import('$env/static/public');
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/construction-queue/${settlementId}`, {
+				credentials: 'include',
+			});
+
+			if (!response.ok) {
+				logger.error('[ConstructionStore] Failed to fetch construction queue', {
+					status: response.status,
+					settlementId,
+				});
+				return;
+			}
+
+			const data = await response.json();
+			
+			if (data.success) {
+				// Convert API data to ConstructionProject format
+				const active: ConstructionProject[] = data.active.map((item: any) => ({
+					id: item.id,
+					name: item.structureType,
+					type: 'OTHER' as BuildingType,
+					progress: 0,
+					startTime: item.startedAt ? new Date(item.startedAt).getTime() : Date.now(),
+					completionTime: item.completesAt ? new Date(item.completesAt).getTime() : 0,
+					resources: item.resourcesCost || { wood: 0, stone: 0 },
+				}));
+
+				const queued: ConstructionProject[] = data.queued.map((item: any) => ({
+					id: item.id,
+					name: item.structureType,
+					type: 'OTHER' as BuildingType,
+					progress: 0,
+					startTime: item.createdAt ? new Date(item.createdAt).getTime() : Date.now(),
+					completionTime: 0,
+					resources: item.resourcesCost || { wood: 0, stone: 0 },
+				}));
+
+				state.construction.set(settlementId, { active, queued });
+				state.construction = new Map(state.construction);
+
+				logger.debug('[ConstructionStore] Construction queue loaded', {
+					settlementId,
+					activeCount: active.length,
+					queuedCount: queued.length,
+				});
+			}
+		} catch (error) {
+			logger.error('[ConstructionStore] Error fetching construction queue', {
+				error,
+				settlementId,
+			});
+		}
+	},
+
+	/**
 	 * Request construction state from server
 	 */
 	requestConstructionState(settlementId: string): void {

@@ -159,6 +159,69 @@ router.get('/metadata', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/structures/construction-queue/:settlementId
+ * Get construction queue for a settlement
+ * Returns active (IN_PROGRESS) and queued (QUEUED) construction projects
+ */
+router.get('/construction-queue/:settlementId', authenticate, async (req: Request, res: Response) => {
+	try {
+		const { settlementId } = req.params;
+
+		// Verify settlement exists and user owns it
+		const settlement = await db.query.settlements.findFirst({
+			where: eq(settlements.id, settlementId),
+		});
+
+		if (!settlement) {
+			return res.status(404).json({
+				success: false,
+				error: 'Settlement not found',
+			});
+		}
+
+		if (!req.user || settlement.playerProfileId !== req.user.profileId) {
+			return res.status(403).json({
+				success: false,
+				error: 'You do not own this settlement',
+			});
+		}
+
+		// Fetch construction queue items (exclude COMPLETE and CANCELLED)
+		const queueItems = await db.query.constructionQueue.findMany({
+			where: and(
+				eq(constructionQueue.settlementId, settlementId),
+				// Only include active and queued items (not complete/cancelled)
+			),
+		});
+
+		// Filter to only IN_PROGRESS and QUEUED (exclude COMPLETE)
+		const activeItems = queueItems.filter(item => item.status === 'IN_PROGRESS');
+		const queuedItems = queueItems.filter(item => item.status === 'QUEUED');
+
+		logger.debug('[API] Fetched construction queue', {
+			settlementId,
+			activeCount: activeItems.length,
+			queuedCount: queuedItems.length,
+		});
+
+		return res.json({
+			success: true,
+			active: activeItems,
+			queued: queuedItems,
+		});
+	} catch (error) {
+		logger.error('[API] Failed to fetch construction queue', { 
+			error,
+			settlementId: req.params.settlementId,
+		});
+		return res.status(500).json({
+			success: false,
+			error: 'Failed to fetch construction queue',
+		});
+	}
+});
+
+/**
  * GET /api/structures/:id
  * Get structure details
  */

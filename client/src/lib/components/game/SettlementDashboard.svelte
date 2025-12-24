@@ -164,8 +164,10 @@
 
 	// Real construction queue data from constructionStore
 	const realConstruction = $derived.by(() => {
-		const active = constructionStore.getActiveProjects(settlementId);
-		const queued = constructionStore.getQueuedProjects(settlementId);
+		// Access state directly to ensure reactivity
+		const stateSnapshot = constructionStore.state;
+		const active = stateSnapshot.construction.get(settlementId)?.active || [];
+		const queued = stateSnapshot.construction.get(settlementId)?.queued || [];
 
 		// Map store BuildingType to panel BuildingType
 		// Store: 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER'

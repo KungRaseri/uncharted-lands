@@ -15,6 +15,7 @@ import {
 	constructionQueue,
 	settlements,
 	settlementStructures,
+	structures,
 	tiles,
 	regions,
 	type ConstructionQueue,
@@ -41,7 +42,11 @@ export async function processConstructionQueues(
 	// Note: settlements.worldId doesn't exist in schema
 	// Hierarchy: Settlement → Tile → Region → World
 	const activeConstructions = await db
-		.select()
+		.select({
+			construction: constructionQueue,
+			settlement: settlements,
+			worldId: regions.worldId,
+		})
 		.from(constructionQueue)
 		.innerJoin(settlements, eq(constructionQueue.settlementId, settlements.id))
 		.innerJoin(tiles, eq(settlements.tileId, tiles.id))
@@ -55,12 +60,8 @@ export async function processConstructionQueues(
 		);
 
 	// 2. Complete finished constructions
-	for (const {
-		constructionQueue: construction,
-		settlements: settlement,
-		regions: region,
-	} of activeConstructions) {
-		await completeConstruction(settlement, construction, region.worldId, currentTime, io);
+	for (const { construction, settlement, worldId: wId } of activeConstructions) {
+		await completeConstruction(settlement, construction, wId, currentTime, io);
 	}
 
 	// 3. Start next queued constructions (if slots available)
@@ -92,13 +93,27 @@ async function completeConstruction(
 	io: SocketIOServer
 ): Promise<void> {
 	try {
-		// 1. Create the actual structure in database
+		// 1. Look up the Structure record to get the actual structure ID
+		const structureRecord = await db
+			.select({ id: structures.id })
+			.from(structures)
+			.where(eq(structures.name, construction.structureType))
+			.limit(1);
+
+		if (!structureRecord.length) {
+			logger.error(`[CONSTRUCTION] Structure not found: ${construction.structureType}`, {
+				constructionId: construction.id,
+			});
+			return;
+		}
+
+		// 2. Create the actual structure in database
 		const newStructure = await db
 			.insert(settlementStructures)
 			.values({
 				id: createId(),
 				settlementId: settlement.id,
-				structureId: construction.structureType, // FK to structures table
+				structureId: structureRecord[0].id, // FK to structures table (actual ID)
 				level: 1,
 				health: 100, // Structures start at full health
 				populationAssigned: 0, // Population assignment (future)

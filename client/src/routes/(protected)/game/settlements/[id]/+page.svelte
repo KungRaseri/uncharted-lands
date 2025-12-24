@@ -13,6 +13,7 @@
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { populationStore } from '$lib/stores/game/population.svelte';
 	import { structuresStore } from '$lib/stores/game/structures.svelte';
+	import { constructionStore } from '$lib/stores/game/construction.svelte';
 	import { disasterStore } from '$lib/stores/game/disaster.svelte';
 	import { socketStore } from '$lib/stores/game/socket';
 	import { invalidate } from '$app/navigation';
@@ -70,6 +71,11 @@
 
 		// Fetch area statistics for build menu
 		fetchAreaStats();
+
+		// Fetch construction queue for this settlement
+		if (data.settlement?.id) {
+			constructionStore.fetchConstructionQueue(data.settlement.id);
+		}
 
 		// Initialize stores from server-side loaded data
 		if (data.settlement) {
