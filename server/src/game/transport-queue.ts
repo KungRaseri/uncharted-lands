@@ -66,12 +66,15 @@ async function processCompletedTransfers() {
 		// Process each completed transfer
 		for (const transfer of completedTransfers) {
 			try {
-			// Type guard: ensure settlements are objects (Drizzle relations can be arrays)
-			if (Array.isArray(transfer.fromSettlement) || Array.isArray(transfer.toSettlement)) {
-				logger.error('Invalid settlement relation type', { transferId: transfer.id });
-				continue;
-			}
+				// Type guard: ensure settlements are objects (Drizzle relations can be arrays)
+				if (Array.isArray(transfer.fromSettlement) || Array.isArray(transfer.toSettlement)) {
+					logger.error('Invalid settlement relation type', { transferId: transfer.id });
+					continue;
+				}
 
+				const storage = transfer.toSettlement.storage;
+				if (!storage) {
+					logger.error('Destination settlement storage not found', {
 						transferId: transfer.id,
 						settlementId: transfer.toSettlementId,
 					});
@@ -108,15 +111,16 @@ async function processCompletedTransfers() {
 
 				// Emit Socket.IO event to both sender and receiver
 				if (io) {
-					// Notify sender
-				const fromProfile = !Array.isArray(transfer.fromSettlement.playerProfile) 
-					? transfer.fromSettlement.playerProfile 
-					: transfer.fromSettlement.playerProfile[0];
-				const toProfile = !Array.isArray(transfer.toSettlement.playerProfile) 
-					? transfer.toSettlement.playerProfile 
-					: transfer.toSettlement.playerProfile[0];
+					// Type guard for playerProfile (could be array)
+					const fromProfile = !Array.isArray(transfer.fromSettlement.playerProfile)
+						? transfer.fromSettlement.playerProfile
+						: transfer.fromSettlement.playerProfile[0];
+					const toProfile = !Array.isArray(transfer.toSettlement.playerProfile)
+						? transfer.toSettlement.playerProfile
+						: transfer.toSettlement.playerProfile[0];
 
-				io.to(`account:${fromProfile.accountId}`).emit('transfer-completed', {
+					// Notify sender
+					io.to(`account:${fromProfile.accountId}`).emit('transfer-completed', {
 						transferId: transfer.id,
 						fromSettlementId: transfer.fromSettlementId,
 						toSettlementId: transfer.toSettlementId,
@@ -130,7 +134,7 @@ async function processCompletedTransfers() {
 					});
 
 					// Notify receiver
-				io.to(`account:${toProfile.accountId}`).emit('transfer-completed', {
+					io.to(`account:${toProfile.accountId}`).emit('transfer-completed', {
 						transferId: transfer.id,
 						fromSettlementId: transfer.fromSettlementId,
 						toSettlementId: transfer.toSettlementId,
@@ -151,45 +155,40 @@ async function processCompletedTransfers() {
 			}
 		}
 	} catch (error) {
-		logger.error('Failed to process completed transfers', {
-			error: error instanceof Error ? error.message : 'Unknown error',
-		});
+		logger.error('Error processing completed transfers:', error);
 	}
 }
 
 /**
  * Start the transport queue processor
- * Checks for completed transfers every 10 seconds
- *
- * @param socketIo - Socket.IO server instance for emitting events
+ * @param socketIO - Socket.IO server instance for emitting events
  */
-export function startTransportQueue(socketIo: SocketServer) {
+export function startTransportQueue(socketIO: SocketServer): void {
 	if (intervalId) {
 		logger.warn('Transport queue already running');
 		return;
 	}
 
-	io = socketIo;
+	io = socketIO;
 
-	// Process immediately on start
-	processCompletedTransfers();
+	// Process completed transfers every 10 seconds
+	intervalId = setInterval(() => {
+		processCompletedTransfers().catch((error) => {
+			logger.error('Transport queue processing error:', error);
+		});
+	}, 10000);
 
-	// Check every 10 seconds
-	intervalId = setInterval(processCompletedTransfers, 10000);
-
-	logger.info('Transport queue started', {
-		interval: '10 seconds',
-	});
+	logger.info('Transport queue started (10s interval)');
 }
 
 /**
  * Stop the transport queue processor
- * Called during graceful shutdown
  */
-export function stopTransportQueue() {
+export function stopTransportQueue(): void {
 	if (intervalId) {
 		clearInterval(intervalId);
 		intervalId = null;
+		io = null;
 		logger.info('Transport queue stopped');
 	}
 }

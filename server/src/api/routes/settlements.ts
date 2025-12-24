@@ -988,4 +988,80 @@ router.post('/:id/transfer', authenticate, async (req, res) => {
 	}
 });
 
+/**
+ * GET /api/settlements/network/:playerProfileId
+ * Get settlement network data for visualization
+ * Returns all settlements with coordinates + active transfers
+ * ARTIFACT-05 Option 1: Settlement Network Map
+ */
+router.get('/network/:playerProfileId', authenticate, async (req, res) => {
+	try {
+		const { playerProfileId } = req.params;
+
+		// Get all settlements for this player with tile coordinates
+		const playerSettlements = await db.query.settlements.findMany({
+			where: eq(settlements.playerProfileId, playerProfileId),
+			columns: {
+				id: true,
+				name: true,
+			},
+			with: {
+				tile: {
+					columns: {
+						xCoord: true,
+						yCoord: true,
+					},
+				},
+			},
+		});
+
+		// Get active transfers between player's settlements
+		const settlementIds = playerSettlements.map((s) => s.id);
+		const activeTransfers = await db.query.settlementTransfers.findMany({
+			where: and(
+				eq(settlementTransfers.status, 'in_transit'),
+				// Filter to only show transfers between player's settlements
+			),
+			columns: {
+				id: true,
+				fromSettlementId: true,
+				toSettlementId: true,
+				resourceType: true,
+				amountSent: true,
+				amountReceived: true,
+				lossPercentage: true,
+				distance: true,
+				transportTime: true,
+				startedAt: true,
+				completedAt: true,
+			},
+		});
+
+		// Filter transfers to only those involving player's settlements
+		const filteredTransfers = activeTransfers.filter(
+			(t) => settlementIds.includes(t.fromSettlementId) || settlementIds.includes(t.toSettlementId)
+		);
+
+		// Format settlements with coordinates
+		const settlementsWithCoords = playerSettlements.map((s) => ({
+			id: s.id,
+			name: s.name,
+			x: s.tile?.xCoord ?? 0,
+			y: s.tile?.yCoord ?? 0,
+		}));
+
+		res.json({
+			success: true,
+			settlements: settlementsWithCoords,
+			activeTransfers: filteredTransfers,
+		});
+	} catch (error) {
+		logger.error('Failed to fetch settlement network', {
+			playerProfileId: req.params.playerProfileId,
+			error: error instanceof Error ? error.message : 'Unknown error',
+		});
+		res.status(500).json({ error: 'Failed to fetch settlement network' });
+	}
+});
+
 export default router;

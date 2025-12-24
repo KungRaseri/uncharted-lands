@@ -36,6 +36,8 @@
 			onClose();
 		}
 	}
+	
+	// Form state
 	let selectedSettlementId = $state('');
 	let selectedResourceType = $state<ResourceType>('FOOD');
 	let amount = $state(0);
@@ -66,13 +68,6 @@
 		amount > 0 &&
 		amount <= availableAmount
 	);
-	
-	// Close modal
-	function close() {
-		if (modalStore) {
-			modalStore.close();
-		}
-	}
 	
 	// Handle form submission
 	async function handleSubmit() {

@@ -403,9 +403,8 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			}
 		}
 
-		// 6. Start transaction to validate resources and create structure
+		// 6. Start transaction to validate resources and add to construction queue
 		const result = await db.transaction(async (tx) => {
-			// ✅ Phase 4: Pass full Structure object (not string)
 			// Validate and deduct resources using the structureDefinition object
 			const validation = await validateAndDeductResources(
 				tx,
@@ -421,255 +420,99 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				throw error;
 			}
 
-			// Create the settlement structure instance
-			const [structure] = await tx
-				.insert(settlementStructures)
+			// Count existing constructions to determine position
+			const existingConstructions = await tx
+				.select()
+				.from(constructionQueue)
+				.where(eq(constructionQueue.settlementId, settlementId));
+
+			const position = existingConstructions.length;
+			
+			// Check if queue is full (max 13: 3 active + 10 queued)
+			if (position >= 13) {
+				const error = new Error('QUEUE_FULL') as Error & {
+					validation: ValidationResult;
+				};
+				error.validation = {
+					success: false,
+					errors: ['Construction queue is full (max 13 projects)'],
+					deductedResources: {},
+				};
+				throw error;
+			}
+
+			// Add to construction queue
+			const [queueItem] = await tx
+				.insert(constructionQueue)
 				.values({
 					id: createId(),
-					structureId: structureDefinition.id,
 					settlementId,
-					tileId: structureDefinition.category === 'EXTRACTOR' ? tileId : null,
-					slotPosition:
-						structureDefinition.category === 'EXTRACTOR' ? slotPosition : null,
-					level: 1,
+					structureType: structureDefinition.name,
+					resourcesCost: validation.deductedResources,
+					status: position < 3 ? 'IN_PROGRESS' : 'QUEUED',
+					position,
+					isEmergency: 0,
+					startedAt: position < 3 ? new Date() : null,
+					completesAt: position < 3 
+						? new Date(Date.now() + (structureDefinition.constructionTimeSeconds * 1000))
+						: null,
 				})
 				.returning();
 
-			// Create structure modifiers
-			// Convert type (e.g., 'POPULATION_CAPACITY') to snake_case name (e.g., 'population_capacity')
-			// This matches the MODIFIER_NAMES constants used by game logic calculators
-			const modifiers = calculateStructureModifiers(structureDefinition.name, 1);
-			if (modifiers.length > 0) {
-				await tx.insert(structureModifiers).values(
-					modifiers.map((mod) => ({
-						id: createId(),
-						settlementStructureId: structure.id,
-						name: mod.type.toLowerCase(), // Use snake_case type, not human-readable name
-						description: mod.description,
-						value: mod.value,
-					}))
-				);
-			}
-
-			return { structure, structureDefinition, validation };
+			return { queueItem, structureDefinition, validation };
 		});
 
-		logger.info('[API] Structure created', {
-			structureId: result.structure.id,
+		logger.info('[API] Structure queued for construction', {
+			queueItemId: result.queueItem.id,
 			settlementId,
 			category: result.structureDefinition.category,
 			structureName: result.structureDefinition.name,
+			position: result.queueItem.position,
+			status: result.queueItem.status,
 			resourcesDeducted: result.validation.deductedResources,
 		});
 
 		// Emit Socket.IO event for real-time updates
 		const worldId = settlement.tile?.region?.world?.id;
-		logger.debug('[SERVER] Attempting to emit structure:built event', {
-			worldId,
-			settlementId,
-			hasIo: !!req.app.get('io'),
-			structureName: result.structureDefinition.name,
-		});
 		if (worldId && req.app.get('io')) {
 			const io = req.app.get('io');
-			logger.debug('[SERVER] Emitting structure:built to room:', {
-				world: `world:${worldId}`,
-			});
+			
+			const eventName = result.queueItem.status === 'IN_PROGRESS' 
+				? 'construction-started' 
+				: 'construction-queued';
 
-			// ✅ FIX: Flatten the structure with master definition fields before emitting
-			const flattenedStructure = {
-				...result.structure,
-				name: result.structureDefinition.name,
-				description: result.structureDefinition.description,
-				category: result.structureDefinition.category,
-				buildingType: result.structureDefinition.buildingType,
-				extractorType: result.structureDefinition.extractorType,
-				maxLevel: result.structureDefinition.maxLevel,
-			};
-
-			io.to(`world:${worldId}`).emit('structure:built', {
+			io.to(`world:${worldId}`).emit(eventName, {
 				settlementId,
-				structure: flattenedStructure,
+				constructionId: result.queueItem.id,
+				structureType: result.structureDefinition.name,
 				category: result.structureDefinition.category,
-				structureName: result.structureDefinition.name,
-				resourcesDeducted: result.validation.deductedResources,
+				position: result.queueItem.position,
+				status: result.queueItem.status,
+				completesAt: result.queueItem.completesAt,
+				resourcesCost: result.validation.deductedResources,
+				timestamp: Date.now(),
 			});
-			logger.debug('[SERVER] structure:built event emitted successfully');
-		} else {
-			logger.debug('[SERVER] FAILED to emit - missing worldId or io instance');
 		}
 
-		// ✅ Phase 4: Trigger settlement modifier recalculation after structure creation
-		try {
-			const { aggregateSettlementModifiers } =
-				await import('../../game/settlement-modifier-aggregator.js');
-			await aggregateSettlementModifiers(settlementId);
-			logger.debug('[API] Settlement modifiers recalculated after structure creation', {
-				settlementId,
-				structureId: result.structure.id,
-			});
-		} catch (aggError) {
-			// Log error but don't fail the structure creation operation
-			logger.error(
-				'[API] Failed to recalculate settlement modifiers after structure creation',
-				{
-					settlementId,
-					structureId: result.structure.id,
-					error: aggError instanceof Error ? aggError.message : 'Unknown error',
-				}
-			);
-		}
-
-		// ✅ Building Area System: Emit area update event for real-time UI updates
-		if (worldId && req.app.get('io')) {
-			try {
-				const { getAreaStatistics } = await import('../../utils/area-calculator.js');
-				const areaStats = await getAreaStatistics(db, settlementId);
-
-				const io = req.app.get('io');
-				io.to(`world:${worldId}`).emit('area:updated', {
-					settlementId,
-					...areaStats,
-				});
-				logger.debug('[SERVER] area:updated event emitted', {
-					settlementId,
-					areaUsed: areaStats.areaUsed,
-					areaCapacity: areaStats.areaCapacity,
-				});
-			} catch (areaError) {
-				logger.error('[SERVER] Failed to emit area:updated event', {
-					error: areaError instanceof Error ? areaError.message : 'Unknown error',
-				});
-			}
-		}
-
-		// ✅ Building Area System: Update settlement area usage after building
-		if (structureDefinition.category === 'BUILDING') {
-			try {
-				await updateSettlementAreaUsage(db, settlementId);
-				logger.debug('[API] Settlement area usage updated after structure creation', {
-					settlementId,
-					structureId: result.structure.id,
-				});
-			} catch (areaError) {
-				// Log error but don't fail the operation
-				logger.error('[API] Failed to update settlement area usage', {
-					settlementId,
-					error: areaError instanceof Error ? areaError.message : 'Unknown error',
-				});
-			}
-		}
-
-		// ✅ IMMEDIATE CAPACITY UPDATE: Emit population-state event with updated capacity
-		// This ensures the UI receives the new population capacity immediately after building
-		// The population interval tick will still handle growth/immigration/emigration
-		if (worldId && req.app.get('io')) {
-			try {
-				const io = req.app.get('io');
-
-				// Get current population data
-				const { getSettlementPopulation } = await import('../../db/queries.js');
-				const popData = await getSettlementPopulation(settlementId);
-
-				// Get all structures with modifiers to calculate new capacity
-				const structuresWithModifiers = await db.query.settlementStructures.findMany({
-					where: eq(settlementStructures.settlementId, settlementId),
-					with: {
-						structure: true,
-						modifiers: true,
-					},
-				});
-
-				// Map to Structure type expected by calculatePopulationState
-				// Handle Drizzle relation result (can be array or single object)
-				const mappedStructures = structuresWithModifiers.map((s) => {
-					const struct = Array.isArray(s.structure) ? s.structure[0] : s.structure;
-
-					// Handle modifiers relation (Drizzle returns loosely typed objects)
-					const rawMods = Array.isArray(s.modifiers)
-						? s.modifiers
-						: s.modifiers
-							? [s.modifiers]
-							: [];
-
-					return {
-						id: s.id,
-						name: struct?.name || 'Unknown',
-						category: struct?.category || 'BUILDING',
-						level: s.level,
-						modifiers: (rawMods as Array<{ name: string; value: number }>).map((m) => ({
-							name: m.name,
-							value: m.value,
-						})),
-					};
-				});
-
-				// DEBUG: Log mapped structures to see modifiers
-				logger.debug('[API] Structures mapped for capacity calculation:', {
-					settlementId,
-					structureCount: mappedStructures.length,
-					structures: mappedStructures.map((s) => ({
-						id: s.id,
-						name: s.name,
-						level: s.level,
-						modifierCount: s.modifiers?.length || 0,
-						modifiers: s.modifiers || [],
-					})),
-				});
-
-				// Calculate updated population state with new capacity
-				const { calculatePopulationState } =
-					await import('../../game/population-calculator.js');
-				const popState = calculatePopulationState(
-					popData.currentPopulation,
-					mappedStructures,
-					{ food: 0, water: 0, wood: 0, stone: 0, ore: 0 }, // Resources not needed for capacity calc
-					popData.lastGrowthTick.getTime()
-				);
-
-				// DEBUG: Log capacity calculation result
-				logger.debug('[API] Capacity calculation completed:', {
-					settlementId,
-					currentPopulation: popData.currentPopulation,
-					calculatedCapacity: popState.capacity,
-					expectedAfterHouse: 17,
-					capacityDifference: 17 - popState.capacity,
-				});
-
-				// Emit updated population state with new capacity
-				io.to(`world:${worldId}`).emit('population-state', {
-					settlementId,
-					current: popData.currentPopulation,
-					capacity: popState.capacity,
-					happiness: Math.floor(popState.happiness),
-					growthRate: popState.growthRate,
-					timestamp: Date.now(),
-				});
-
-				logger.debug(
-					'[API] Emitted population-state with updated capacity after structure creation',
-					{
-						settlementId,
-						newCapacity: popState.capacity,
-						currentPopulation: popData.currentPopulation,
-					}
-				);
-			} catch (popError) {
-				// Log error but don't fail the structure creation operation
-				logger.error('[API] Failed to emit population-state after structure creation', {
-					settlementId,
-					error: popError instanceof Error ? popError.message : 'Unknown error',
-				});
-			}
-		}
-
-		return res.status(201).json({
+		// Return success response
+		res.status(201).json({
 			success: true,
-			structure: result.structure,
+			message: 'Structure queued for construction',
+			construction: {
+				id: result.queueItem.id,
+				structureName: result.structureDefinition.displayName,
+				structureType: result.structureDefinition.name,
+				category: result.structureDefinition.category,
+				position: result.queueItem.position,
+				status: result.queueItem.status,
+				completesAt: result.queueItem.completesAt,
+				constructionTime: result.structureDefinition.constructionTimeSeconds,
+			},
+			resourcesDeducted: result.validation.deductedResources,
 		});
 	} catch (error) {
-		// Handle validation errors (insufficient resources)
-		if (error instanceof Error && error.message === 'INSUFFICIENT_RESOURCES') {
+		// Handle validation errors (insufficient resources or queue full)
+		if (error instanceof Error && (error.message === 'INSUFFICIENT_RESOURCES' || error.message === 'QUEUE_FULL')) {
 			const validationError = (error as Error & { validation: ValidationResult }).validation;
 			logger.warn('[API] Insufficient resources for structure', {
 				settlementId: req.body.settlementId,

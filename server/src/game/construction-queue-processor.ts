@@ -10,6 +10,7 @@
  */
 
 import { db } from '../db/index.js';
+import { STRUCTURE_COSTS } from '../data/structure-costs.js';
 import {
 	constructionQueue,
 	settlements,
@@ -218,56 +219,18 @@ async function startNextQueuedConstruction(
 /**
  * Get construction time for structure type (in milliseconds)
  *
- * Based on GDD Section 6.3 - Construction Time Balance
+ * Single source of truth: server/src/data/structure-costs.ts
  */
 export function getConstructionTime(structureType: string): number {
-	const times: Record<string, number> = {
-		// Tier 1: Basic (0-5 minutes)
-		TENT: 0, // Instant
-		FARM: 180000, // 3 minutes
-		LUMBER_MILL: 180000, // 3 minutes
-		QUARRY: 180000, // 3 minutes
-		MINE: 240000, // 4 minutes
-		STORAGE: 300000, // 5 minutes
-		WELL: 180000, // 3 minutes
-
-		// Tier 2: Intermediate (5-30 minutes)
-		HOUSE: 600000, // 10 minutes
-		WORKSHOP: 900000, // 15 minutes
-		MARKETPLACE: 1800000, // 30 minutes
-		NPC_EMBASSY: 1200000, // 20 minutes
-		TRADE_CARAVAN_STATION: 1200000, // 20 minutes
-
-		// Tier 3: Advanced (1-4 hours)
-		TOWN_HALL: 3600000, // 1 hour
-		RESEARCH_LAB: 5400000, // 1.5 hours
-		HOSPITAL: 7200000, // 2 hours
-		LIBRARY: 3600000, // 1 hour
-		RELIEF_CENTER: 4800000, // 1.3 hours
-		DISASTER_COMMAND_CENTER: 14400000, // 4 hours
-
-		// Tier 4: Disaster Defense (2-8 hours)
-		EMERGENCY_SHELTER: 7200000, // 2 hours
-		WATCHTOWER: 10800000, // 3 hours
-		SEISMOLOGY_STATION: 21600000, // 6 hours
-		METEOROLOGY_CENTER: 21600000, // 6 hours
-		NPC_GUEST_QUARTERS: 7200000, // 2 hours
-
-		// Tier 5: Guild & Specialization (12 hours - 30 days)
-		GUILD_HEADQUARTERS: 86400000, // 24 hours
-		GUILD_OUTPOST: 7200000, // 2 hours
-		GUILD_WORKSHOP: 43200000, // 12 hours
-		GUILD_MONUMENT: 2592000000, // 30 days
-		ALLIANCE_PAVILION: 28800000, // 8 hours
-		ADVANCED_GREENHOUSE: 43200000, // 12 hours
-		DEEP_MINING_COMPLEX: 57600000, // 16 hours
-		FORTRESS: 86400000, // 24 hours
-		GRAND_MARKET: 43200000, // 12 hours
-		ADVANCED_ACADEMY: 57600000, // 16 hours
-	};
+	const structureDef = STRUCTURE_COSTS.find((s) => s.id === structureType || s.name === structureType);
+	
+	if (structureDef) {
+		// Convert seconds to milliseconds
+		return structureDef.constructionTimeSeconds * 1000;
+	}
 
 	// Default: 10 minutes for unknown structures
-	return times[structureType] || 600000;
+	return 600000;
 }
 
 /**
