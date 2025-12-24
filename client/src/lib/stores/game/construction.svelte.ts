@@ -124,8 +124,8 @@ function initializeListeners(): void {
 			const currentState = state.construction.get(data.settlementId);
 			if (!currentState) return;
 
-			// Remove from active projects
-			const updatedActive = currentState.active.filter((p) => p.id !== data.projectId);
+			// Remove from active projects by structure type (since completion event only has structureType)
+			const updatedActive = currentState.active.filter((p) => p.name !== data.structureType);
 
 			// If there are queued projects, move the first one to active
 			let updatedQueued = [...currentState.queued];
@@ -220,16 +220,67 @@ function initializeListeners(): void {
 	);
 }
 
+// Progress ticker - update construction progress every second
+let progressInterval: ReturnType<typeof setInterval> | null = null;
+
+function startProgressTicker() {
+	if (progressInterval) return; // Already running
+	
+	progressInterval = setInterval(() => {
+		const now = Date.now();
+		let hasChanges = false;
+		
+		// Update progress for all active constructions
+		state.construction.forEach((constructionState, settlementId) => {
+			if (constructionState.active.length > 0) {
+				const updatedActive = constructionState.active.map((project) => {
+					const totalTime = project.completionTime - project.startTime;
+					const elapsed = now - project.startTime;
+					const progress = Math.min(100, Math.max(0, Math.floor((elapsed / totalTime) * 100)));
+					
+					if (progress !== project.progress) {
+						hasChanges = true;
+						return { ...project, progress };
+					}
+					return project;
+				});
+				
+				if (hasChanges) {
+					state.construction.set(settlementId, {
+						...constructionState,
+						active: updatedActive
+					});
+				}
+			}
+		});
+		
+		if (hasChanges) {
+			// Trigger reactivity
+			state.construction = new Map(state.construction);
+		}
+	}, 1000); // Update every second
+}
+
+function stopProgressTicker() {
+	if (progressInterval) {
+		clearInterval(progressInterval);
+		progressInterval = null;
+	}
+}
+
 // Subscribe to socket connection state (only in browser)
 if (browser) {
 	socketStore.subscribe(($socket) => {
 		if ($socket.connectionState === 'connected' && $socket.socket) {
 			initializeListeners();
+			startProgressTicker();
 
 			// Request initial construction state for all settlements we have in the map
 			if (state.construction.size === 0) {
 				// Will be populated when settlement page loads and requests state
 			}
+		} else {
+			stopProgressTicker();
 		}
 	});
 }
@@ -340,16 +391,26 @@ export const constructionStore = {
 			const data = await response.json();
 			
 			if (data.success) {
+				const now = Date.now();
+				
 				// Convert API data to ConstructionProject format
-				const active: ConstructionProject[] = data.active.map((item: any) => ({
-					id: item.id,
-					name: item.structureType,
-					type: 'OTHER' as BuildingType,
-					progress: 0,
-					startTime: item.startedAt ? new Date(item.startedAt).getTime() : Date.now(),
-					completionTime: item.completesAt ? new Date(item.completesAt).getTime() : 0,
-					resources: item.resourcesCost || { wood: 0, stone: 0 },
-				}));
+				const active: ConstructionProject[] = data.active.map((item: any) => {
+					const startTime = item.startedAt ? new Date(item.startedAt).getTime() : now;
+					const completionTime = item.completesAt ? new Date(item.completesAt).getTime() : 0;
+					const totalTime = completionTime - startTime;
+					const elapsed = now - startTime;
+					const progress = totalTime > 0 ? Math.min(100, Math.max(0, Math.floor((elapsed / totalTime) * 100))) : 0;
+					
+					return {
+						id: item.id,
+						name: item.structureType,
+						type: 'OTHER' as BuildingType,
+						progress,
+						startTime,
+						completionTime,
+						resources: item.resourcesCost || { wood: 0, stone: 0 },
+					};
+				});
 
 				const queued: ConstructionProject[] = data.queued.map((item: any) => ({
 					id: item.id,

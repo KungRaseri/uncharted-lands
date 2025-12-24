@@ -6,7 +6,7 @@
  */
 
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { settlementStructures, structures } from '../db/schema.js';
 import type * as schema from '../db/schema.js';
 import { STRUCTURES } from '../data/structures.js';
@@ -112,15 +112,34 @@ export async function validateBuildingPlacement(
 	if (structureDefinition.category === 'BUILDING' && structureDefinition.areaCost > 0) {
 		const areaStats = await getAreaStatistics(db, settlementId);
 
-		if (areaStats.areaAvailable < structureDefinition.areaCost) {
+		// Calculate area reserved by buildings in construction queue
+		const queuedBuildings = await db.query.constructionQueue.findMany({
+			where: and(
+				eq(schema.constructionQueue.settlementId, settlementId),
+				sql`${schema.constructionQueue.status} != 'COMPLETE'` // Exclude completed constructions
+			),
+		});
+
+		let reservedArea = 0;
+		for (const queuedItem of queuedBuildings) {
+			// Look up structure definition for each queued building
+			const queuedStructure = STRUCTURES.find(s => s.name === queuedItem.structureType);
+			if (queuedStructure && queuedStructure.category === 'BUILDING') {
+				reservedArea += queuedStructure.areaCost;
+			}
+		}
+
+		const availableAreaAfterQueue = areaStats.areaAvailable - reservedArea;
+
+		if (availableAreaAfterQueue < structureDefinition.areaCost) {
 			return {
 				valid: false,
 				error: {
 					type: 'INSUFFICIENT_AREA',
-					message: `Insufficient area: need ${structureDefinition.areaCost}, have ${areaStats.areaAvailable}`,
+					message: `Insufficient area: need ${structureDefinition.areaCost}, have ${availableAreaAfterQueue} (${reservedArea} reserved by queue)`,
 					details: {
 						required: structureDefinition.areaCost,
-						available: areaStats.areaAvailable,
+						available: availableAreaAfterQueue,
 					},
 				},
 			};

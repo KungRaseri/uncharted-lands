@@ -399,6 +399,62 @@ export async function buildExtractor(
 }
 
 // ============================================================================
+// SETTLEMENT RESOURCE MANAGEMENT
+// ============================================================================
+
+/**
+ * Update settlement resources via API (for test setup)
+ * @param api - Playwright APIRequestContext
+ * @param settlementId - Settlement ID
+ * @param sessionToken - Session cookie value
+ * @param resources - Resource amounts to set
+ */
+export async function updateSettlementResources(
+	api: APIRequestContext,
+	settlementId: string,
+	sessionToken: string,
+	resources: {
+		food?: number;
+		water?: number;
+		wood?: number;
+		stone?: number;
+		ore?: number;
+	}
+): Promise<void> {
+	const API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+	
+	const response = await api.put(`${API_URL}/settlements/${settlementId}/storage`, {
+		headers: { Cookie: `session=${sessionToken}` },
+		data: resources
+	});
+
+	if (!response.ok()) {
+		const errorText = await response.text();
+		throw new Error(`Failed to update settlement resources: ${errorText || response.status()}`);
+	}
+}
+
+/**
+ * Add generous test resources to a settlement (for E2E testing)
+ * @param api - Playwright APIRequestContext
+ * @param settlementId - Settlement ID
+ * @param sessionToken - Session cookie value
+ */
+export async function addGenerousTestResources(
+	api: APIRequestContext,
+	settlementId: string,
+	sessionToken: string
+): Promise<void> {
+	await updateSettlementResources(api, settlementId, sessionToken, {
+		food: 1000,
+		water: 1000,
+		wood: 500,
+		stone: 500,
+		ore: 200
+	});
+}
+
+// ============================================================================
 // SETTLEMENT CLEANUP
 // ============================================================================
 

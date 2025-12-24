@@ -8,7 +8,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import {
 	db,
 	settlementStructures,
@@ -464,6 +464,25 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 					error: 'Bad Request',
 					code: 'SLOT_OCCUPIED',
 					message: `Slot ${slotPosition} on tile ${tileId} is already occupied by another extractor`,
+				});
+			}
+
+			// 5b. Check if slot is reserved by an extractor in the construction queue
+			const queuedExtractorInSlot = await db.query.constructionQueue.findFirst({
+				where: and(
+					eq(constructionQueue.settlementId, settlementId),
+					eq(constructionQueue.tileId, tileId),
+					eq(constructionQueue.slotPosition, slotPosition),
+					sql`${constructionQueue.status} != 'COMPLETE'` // Exclude completed constructions
+				),
+			});
+
+			if (queuedExtractorInSlot) {
+				return res.status(400).json({
+					success: false,
+					error: 'Bad Request',
+					code: 'SLOT_RESERVED',
+					message: `Slot ${slotPosition} on tile ${tileId} is reserved by a queued construction`,
 				});
 			}
 		}

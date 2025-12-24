@@ -85,6 +85,7 @@
 					onclick={onOpenBuildMenu}
 					aria-label="Open build menu (B)"
 					title="Build new structures (B)"
+					data-testid="build-menu-button"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

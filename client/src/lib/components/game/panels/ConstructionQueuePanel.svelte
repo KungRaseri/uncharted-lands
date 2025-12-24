@@ -60,27 +60,18 @@
 		}
 	}
 
-	// Format time remaining
+	// Format time remaining as HH:MM:SS
 	function formatTimeRemaining(seconds: number): string {
-		if (seconds < 60) {
-			return `${seconds}s`;
-		}
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
+		const secs = seconds % 60;
 
-		const minutes = Math.floor(seconds / 60);
-		const hours = Math.floor(minutes / 60);
-		const days = Math.floor(hours / 24);
+		// Zero-pad to 2 digits
+		const hh = hours.toString().padStart(2, '0');
+		const mm = minutes.toString().padStart(2, '0');
+		const ss = secs.toString().padStart(2, '0');
 
-		if (days > 0) {
-			const remainingHours = hours % 24;
-			return `${days}d ${remainingHours}h`;
-		}
-
-		if (hours > 0) {
-			const remainingMinutes = minutes % 60;
-			return `${hours}h ${remainingMinutes}m`;
-		}
-
-		return `${minutes}m`;
+		return `${hh}:${mm}:${ss}`;
 	}
 
 	// Format resource costs
@@ -161,6 +152,9 @@
 							<div
 								class="bg-primary-50 dark:bg-primary-950 rounded-md p-4 md:p-3 border border-primary-300 dark:border-primary-700 flex flex-col gap-3"
 								role="listitem"
+								data-testid="construction-queue-item"
+								data-status="active"
+								data-structure-name="{project.buildingName}"
 							>
 								<div
 									class="flex items-start justify-between gap-4 flex-col md:flex-row"
@@ -189,6 +183,7 @@
 									>
 										<span
 											class="text-lg font-bold text-primary-600 dark:text-primary-400 tabular-nums"
+											data-testid="time-remaining"
 											>{formatTimeRemaining(project.timeRemaining)}</span
 										>
 										<span
@@ -206,7 +201,9 @@
 									aria-valuemin="0"
 									aria-valuemax="100"
 									aria-label="{project.buildingName} construction progress: {project.progress}%, {formatTimeRemaining(
-										project.timeRemaining
+										project.timeRemaining"
+									data-testid="progress-bar"
+									data-progress="{project.progress}"
 									)} remaining"
 								>
 									<div
@@ -248,8 +245,9 @@
 						{#each queuedProjects as project (project.id)}
 							<div
 								class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 md:p-3 border border-surface-200 dark:border-surface-700 flex flex-col gap-3"
-								role="listitem"
-							>
+								role="listitem"								data-testid="construction-queue-item"
+								data-status="queued"
+								data-structure-name="{project.buildingName}"							>
 								<div
 									class="flex items-start justify-between gap-4 flex-col md:flex-row"
 								>
