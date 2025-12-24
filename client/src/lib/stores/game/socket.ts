@@ -10,6 +10,7 @@ import { browser } from '$app/environment';
 import * as worldApi from '$lib/game/world-api';
 import { PUBLIC_WS_URL } from '$env/static/public';
 import { logger } from '$lib/utils/logger';
+import { presenceStore } from './presence.svelte';
 
 // Connection state
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -75,6 +76,9 @@ function createSocketStore() {
 					connectionState: 'connected',
 					error: null
 				}));
+
+				// Initialize presence tracking (ARTIFACT-05 Phase 2)
+				presenceStore.initialize(socket!);
 			});
 
 			// Server welcome message
@@ -126,6 +130,8 @@ function createSocketStore() {
 		disconnect: () => {
 			if (socket) {
 				logger.debug('[SOCKET] Disconnecting...');
+				// Cleanup presence tracking (ARTIFACT-05 Phase 2)
+				presenceStore.cleanup();
 				socket.disconnect();
 				socket = null;
 				set({

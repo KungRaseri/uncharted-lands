@@ -25,6 +25,7 @@ import type {
 	SocketData,
 } from '@uncharted-lands/shared';
 import { registerEventHandlers } from './events/handlers.js';
+import { setupPresenceTracking } from './events/presence.js';
 import {
 	authenticationMiddleware,
 	loggingMiddleware,
@@ -132,6 +133,9 @@ app.set('io', io);
 io.use(loggingMiddleware);
 io.use(authenticationMiddleware);
 io.use(errorHandlingMiddleware);
+
+// Setup presence tracking (ARTIFACT-05 Phase 2)
+setupPresenceTracking(io);
 
 // Handle new connections
 io.on('connection', (socket) => {

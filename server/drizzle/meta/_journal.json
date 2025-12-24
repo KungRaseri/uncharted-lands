@@ -15,6 +15,13 @@
       "when": 1766267055587,
       "tag": "0001_sour_meggan",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1766536817049,
+      "tag": "0002_calm_greymalkin",
+      "breakpoints": true
     }
   ]
 }

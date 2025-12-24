@@ -252,6 +252,9 @@ export const accounts = pgTable('Account', {
 	passwordHash: text('passwordHash').notNull(),
 	userAuthToken: text('userAuthToken').notNull().unique(),
 	role: accountRoleEnum('role').default('MEMBER').notNull(),
+	// Player presence tracking (ARTIFACT-05 Phase 2)
+	lastSeen: timestamp('lastSeen', { mode: 'date' }).defaultNow().notNull(),
+	isOnline: boolean('isOnline').default(false).notNull(),
 	createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
