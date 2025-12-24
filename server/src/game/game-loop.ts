@@ -406,12 +406,12 @@ async function processTick(io: SocketIOServer): Promise<void> {
 
 	// Process world-based updates if it's time
 	if (isResourceProductionTime || isPopulationUpdateTime || shouldEmitProjection) {
-		logger.debug('[GAME LOOP] 🔄 Processing world-based updates', {
-			tick: currentTick,
-			isResourceProductionTime,
-			isPopulationUpdateTime,
-			shouldEmitProjection,
-		});
+		// logger.debug('[GAME LOOP] 🔄 Processing world-based updates', {
+		// 	tick: currentTick,
+		// 	isResourceProductionTime,
+		// 	isPopulationUpdateTime,
+		// 	shouldEmitProjection,
+		// });
 
 		await processWorldBasedUpdates(io, {
 			isResourceProductionTime,
@@ -454,18 +454,18 @@ async function processWorldBasedUpdates(
 			where: eq(worldsTable.status, 'ready'),
 		});
 
-		logger.debug('[GAME LOOP] 🌍 Active worlds check', {
-			worldCount: activeWorlds.length,
-			isResourceTime: timing.isResourceProductionTime,
-			isPopulationTime: timing.isPopulationUpdateTime,
-			shouldEmitProjection: timing.shouldEmitProjection,
-		});
+		// logger.debug('[GAME LOOP] 🌍 Active worlds check', {
+		// 	worldCount: activeWorlds.length,
+		// 	isResourceTime: timing.isResourceProductionTime,
+		// 	isPopulationTime: timing.isPopulationUpdateTime,
+		// 	shouldEmitProjection: timing.shouldEmitProjection,
+		// });
 
 		// TEMPORARY: Log world details to verify worlds are found
 		if (activeWorlds.length > 0) {
-			logger.info('[GAME LOOP] ✅ Found active worlds', {
-				worlds: activeWorlds.map((w) => ({ id: w.id, name: w.name, status: w.status })),
-			});
+			// logger.debug('[GAME LOOP] ✅ Found active worlds', {
+			// 	worlds: activeWorlds.map((w) => ({ id: w.id, name: w.name, status: w.status })),
+			// });
 		}
 
 		if (activeWorlds.length === 0) {
@@ -527,27 +527,25 @@ async function processWorldBasedUpdates(
 					where: inArray(settlementsTable.tileId, tileIds),
 				});
 
-				logger.info('[GAME LOOP] 🏘️  Processing world settlements', {
-					worldId: world.id,
-					worldName: world.name,
-					settlementCount: settlements.length,
-					isResourceProductionTime: timing.isResourceProductionTime,
-					isPopulationUpdateTime: timing.isPopulationUpdateTime,
-					shouldEmitProjection: timing.shouldEmitProjection,
-					settlements: settlements.map((s) => ({
-						id: s.id,
-						name: s.name,
-						tileId: s.tileId,
-					})),
-				});
-
+				// Skip worlds with no settlements (common for test/temporary worlds)
 				if (settlements.length === 0) {
-					logger.warn('[GAME LOOP] ⚠️  No settlements found in world', {
-						worldId: world.id,
-					});
-					continue; // No settlements in this world
-				}
+				// Commented out to reduce log spam during local development
+				// logger.debug('[GAME LOOP] Skipping world with no settlements', {
+				// 	worldId: world.id,
+				// 	worldName: world.name,
+				// });
+				continue;
+			}
 
+			// Commented out to reduce log spam during local development
+			// logger.debug('[GAME LOOP] 🏘️  Processing world settlements', {
+			// 	worldId: world.id,
+			// 	worldName: world.name,
+			// 	settlementCount: settlements.length,
+			// 	isResourceProductionTime: timing.isResourceProductionTime,
+			// 	isPopulationUpdateTime: timing.isPopulationUpdateTime,
+			// 	shouldEmitProjection: timing.shouldEmitProjection,
+			// });
 				// Process settlements in batches to avoid overwhelming database
 				const batchSize = 10;
 				for (let i = 0; i < settlements.length; i += batchSize) {

@@ -627,5 +627,116 @@ test.describe('Multi-Settlement Network Management', () => {
 
 			console.log('[TEST] ✅ Aggregate resources display working correctly');
 		});
+
+		test('should transfer resources between settlements', async ({
+			page,
+			request
+		}) => {
+			console.log('[TEST] Testing resource transfers...');
+
+			// Get settlements
+			const settlements = await getPlayerSettlements(request, sessionCookieValue);
+			expect(settlements.length).toBeGreaterThanOrEqual(2);
+
+			const settlement1 = settlements[0];
+			const settlement2 = settlements[1];
+
+			// Ensure settlement 1 has resources to transfer
+			await request.post(`${API_URL}/api/test/set-resources`, {
+				data: {
+					settlementId: settlement1.id,
+					food: 1000,
+					wood: 500,
+					stone: 300
+				},
+				headers: { Cookie: `session=${sessionCookieValue}` }
+			});
+
+			console.log(`[TEST] Set initial resources for settlement ${settlement1.id}`);
+
+			// Initiate transfer via API
+			const transferResponse = await request.post(
+				`${API_URL}/api/settlements/${settlement1.id}/transfer`,
+				{
+					data: {
+						toSettlementId: settlement2.id,
+						resourceType: 'FOOD',
+						amount: 100
+					},
+					headers: { Cookie: `session=${sessionCookieValue}` }
+				}
+			);
+
+			expect(transferResponse.ok()).toBeTruthy();
+			const transferData = await transferResponse.json();
+			expect(transferData.success).toBe(true);
+			expect(transferData.transfer).toBeDefined();
+
+			console.log('[TEST] ✅ Transfer initiated successfully');
+			console.log(`[TEST] Transfer ID: ${transferData.transfer.id}`);
+			console.log(`[TEST] Distance: ${transferData.transfer.distance} tiles`);
+			console.log(`[TEST] Loss: ${transferData.transfer.lossPercentage}%`);
+			console.log(`[TEST] Amount sent: ${transferData.transfer.amountSent}`);
+			console.log(`[TEST] Amount received: ${transferData.transfer.amountReceived}`);
+
+			// Navigate to settlement page
+			await navigateToSettlement(page, settlement1.id);
+			await page.waitForTimeout(1000);
+
+			// Check that source settlement resources were deducted
+			const bodyText = await page.textContent('body');
+			expect(bodyText).toContain('900'); // 1000 - 100 = 900 food remaining
+
+			console.log('[TEST] ✅ Resources deducted from source settlement');
+		});
+
+		test('should show transport time based on distance', async ({
+			page,
+			request
+		}) => {
+			console.log('[TEST] Testing transport time calculations...');
+
+			// Get settlements
+			const settlements = await getPlayerSettlements(request, sessionCookieValue);
+			expect(settlements.length).toBeGreaterThanOrEqual(2);
+
+			const settlement1 = settlements[0];
+			const settlement2 = settlements[1];
+
+			// Ensure settlement 1 has resources
+			await request.post(`${API_URL}/api/test/set-resources`, {
+				data: {
+					settlementId: settlement1.id,
+					wood: 500
+				},
+				headers: { Cookie: `session=${sessionCookieValue}` }
+			});
+
+			// Initiate transfer
+			const transferResponse = await request.post(
+				`${API_URL}/api/settlements/${settlement1.id}/transfer`,
+				{
+					data: {
+						toSettlementId: settlement2.id,
+						resourceType: 'WOOD',
+						amount: 50
+					},
+					headers: { Cookie: `session=${sessionCookieValue}` }
+				}
+			);
+
+			expect(transferResponse.ok()).toBeTruthy();
+			const transferData = await transferResponse.json();
+
+			// Verify transport time is calculated (10 min per 100 tiles)
+			const expectedMinTime = (transferData.transfer.distance / 100) * 10 * 60 * 1000; // Convert to ms
+			expect(transferData.transfer.transportTime).toBeGreaterThanOrEqual(expectedMinTime * 0.95); // Allow 5% tolerance
+			expect(transferData.transfer.transportTime).toBeLessThanOrEqual(expectedMinTime * 1.05);
+
+			console.log('[TEST] ✅ Transport time calculated correctly');
+			console.log(`[TEST] Distance: ${transferData.transfer.distance} tiles`);
+			console.log(`[TEST] Transport time: ${transferData.transfer.transportTime}ms`);
+			console.log(`[TEST] Expected time: ~${expectedMinTime}ms`);
+		});
 	});
 });

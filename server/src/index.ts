@@ -34,6 +34,7 @@ import {
 import { logger } from './utils/logger.js';
 import { closeDatabase, isDatabaseConnected } from './db/index.js';
 import { startGameLoop, stopGameLoop, getGameLoopStatus } from './game/game-loop.js';
+import { startTransportQueue, stopTransportQueue } from './game/transport-queue.js';
 import apiRouter from './api/index.js';
 import { apiLimiter } from './api/middleware/rateLimit.js';
 import { requestLogger, errorLogger } from './api/middleware/request-logger.js';
@@ -136,6 +137,9 @@ io.use(errorHandlingMiddleware);
 
 // Setup presence tracking (ARTIFACT-05 Phase 2)
 setupPresenceTracking(io);
+
+// Start transport queue processor (ARTIFACT-05 Phase 3)
+startTransportQueue(io);
 
 // Handle new connections
 io.on('connection', (socket) => {
@@ -409,6 +413,9 @@ const shutdown = async (signal: string) => {
 	// Stop game loop first
 	logger.info('[SHUTDOWN] Stopping game loop...');
 	stopGameLoop();
+
+	logger.info('[SHUTDOWN] Stopping transport queue...');
+	stopTransportQueue();
 
 	logger.info('[SHUTDOWN] Closing Socket.IO server...');
 

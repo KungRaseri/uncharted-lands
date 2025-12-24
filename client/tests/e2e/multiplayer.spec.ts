@@ -27,6 +27,7 @@ import {
 } from './auth/auth.helpers';
 import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
 import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state';
+import { createSettlementViaAPI } from './helpers/settlements';
 
 // ============================================================================
 // TEST CONFIGURATION
@@ -365,34 +366,55 @@ test.describe('Multiplayer Real-Time Interactions', () => {
 			await registerUser(page, email, TEST_USERS.VALID.password);
 			await assertRedirectedToGettingStarted(page);
 
-			// Create a settlement and go to settlement page
-			const result = await createSettlementFlow(page, sharedWorldId, sharedServerId);
-			const settlementId = result.settlementId;
+		// Get session cookie and account details
+		const cookies = await page.context().cookies();
+		const sessionCookie = cookies.find((c) => c.name === 'session');
+		if (!sessionCookie) {
+			throw new Error('No session cookie found after registration');
+		}
 
-			await page.goto(`/game/settlements/${settlementId}`);
-			await page.waitForLoadState('networkidle');
-
-			// Initial connection should be established
-			console.log('[TEST] Initial connection established');
-
-			// Simulate disconnect by going offline (browser context)
-			await page.context().setOffline(true);
-			await page.waitForTimeout(1000);
-
-			console.log('[TEST] Simulated offline mode');
-
-			// Reconnect
-			await page.context().setOffline(false);
-			await page.waitForTimeout(2000); // Wait for reconnection
-
-			// Verify page still works after reconnect
-			const bodyText = await page.textContent('body');
-			if (bodyText && bodyText.includes(result.settlementName)) {
-				console.log('[TEST] ✅ Page content loaded after reconnect');
-			}
-
-			console.log('[TEST] ✅ Disconnect/reconnect test completed');
+		const accountResponse = await page.request.get(`${API_URL}/account/me`, {
+			headers: { Cookie: `session=${sessionCookie.value}` }
 		});
+		const account = await accountResponse.json();
+
+		// Create a settlement via API
+		const settlement = await createSettlementViaAPI(
+			page.request,
+			sharedWorldId,
+			sharedServerId,
+			account.id,
+			sessionCookie.value,
+			{
+				username: account.profile?.username || email
+			}
+		);
+
+		await page.goto(`/game/settlements/${settlement.id}`);
+		await page.waitForLoadState('networkidle');
+
+		// Initial connection should be established
+		console.log('[TEST] Initial connection established');
+
+		// Simulate disconnect by going offline (browser context)
+		await page.context().setOffline(true);
+		await page.waitForTimeout(1000);
+
+		console.log('[TEST] Simulated offline mode');
+
+		// Reconnect
+		await page.context().setOffline(false);
+		await page.waitForTimeout(2000); // Wait for reconnection
+
+		// Verify content still loads after reconnect
+		await page.waitForTimeout(1000);
+		const bodyText = await page.textContent('body');
+		if (bodyText && bodyText.includes(settlement.name)) {
+			console.log('[TEST] ✅ Page content loaded after reconnect');
+		}
+
+		console.log('[TEST] ✅ Disconnect/reconnect test completed');
+	});
 
 		test.skip('should queue actions during disconnect and sync on reconnect', async ({
 			page

@@ -706,6 +706,9 @@ export const settlementsRelations = relations(settlements, ({ one, many }) => ({
 	}),
 	structures: many(settlementStructures),
 	// ❌ REMOVED: plots: many(plots) - Plot table deleted
+	// Phase 3: Resource transfer relations
+	transfersFrom: many(settlementTransfers, { relationName: 'transfersFrom' }),
+	transfersTo: many(settlementTransfers, { relationName: 'transfersTo' }),
 }));
 
 export const structureRequirementsRelations = relations(structureRequirements, ({ one }) => ({
@@ -932,6 +935,63 @@ export const constructionQueueRelations = relations(constructionQueue, ({ one })
 }));
 
 // ===========================
+// SETTLEMENT TRANSFERS (Phase 3 - Resource Transfer System)
+// ===========================
+
+/**
+ * Settlement Transfer System
+ * 
+ * Tracks resource transfers between settlements with:
+ * - Distance-based transport time (10 minutes per 100 tiles)
+ * - Dynamic loss calculation (distance penalty + disaster zones)
+ * - Real-time progress tracking via Socket.IO
+ * - Automatic completion via transport queue processor
+ */
+export const settlementTransfers = pgTable(
+	'SettlementTransfer',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => createId()),
+		fromSettlementId: text('fromSettlementId')
+			.notNull()
+			.references(() => settlements.id, { onDelete: 'cascade' }),
+		toSettlementId: text('toSettlementId')
+			.notNull()
+			.references(() => settlements.id, { onDelete: 'cascade' }),
+		resourceType: text('resourceType').notNull(), // 'food', 'wood', 'stone', 'ore', 'water'
+		amountSent: integer('amountSent').notNull(),
+		amountReceived: integer('amountReceived').notNull(),
+		lossPercentage: integer('lossPercentage').notNull().default(0),
+		distance: integer('distance').notNull(),
+		transportTime: integer('transportTime').notNull(), // milliseconds
+		status: text('status').notNull().default('in_transit'), // 'in_transit', 'completed', 'failed'
+		startedAt: timestamp('startedAt', { mode: 'date' }).defaultNow().notNull(),
+		completedAt: timestamp('completedAt', { mode: 'date' }),
+		createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+	},
+	(table) => [
+		index('settlement_transfers_from_idx').on(table.fromSettlementId),
+		index('settlement_transfers_to_idx').on(table.toSettlementId),
+		index('settlement_transfers_status_idx').on(table.status),
+	]
+);
+
+// Relations for settlement transfers
+export const settlementTransfersRelations = relations(settlementTransfers, ({ one }) => ({
+	fromSettlement: one(settlements, {
+		fields: [settlementTransfers.fromSettlementId],
+		references: [settlements.id],
+		relationName: 'transfersFrom',
+	}),
+	toSettlement: one(settlements, {
+		fields: [settlementTransfers.toSettlementId],
+		references: [settlements.id],
+		relationName: 'transfersTo',
+	}),
+}));
+
+// ===========================
 // TYPE EXPORTS
 // ===========================
 
@@ -996,3 +1056,6 @@ export type NewDisasterHistory = typeof disasterHistory.$inferInsert;
 
 export type ConstructionQueue = typeof constructionQueue.$inferSelect;
 export type NewConstructionQueue = typeof constructionQueue.$inferInsert;
+
+export type SettlementTransfer = typeof settlementTransfers.$inferSelect;
+export type NewSettlementTransfer = typeof settlementTransfers.$inferInsert;

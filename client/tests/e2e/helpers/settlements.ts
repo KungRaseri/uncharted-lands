@@ -95,27 +95,37 @@ export async function createSettlement(
  * Create settlement via API (faster for setup)
  * @param api - Playwright APIRequestContext
  * @param worldId - World to create settlement in
+ * @param serverId - Server ID the world belongs to
  * @param settlementData - Settlement configuration
  * @returns Settlement object from API
  */
 export async function createSettlementViaAPI(
 	api: APIRequestContext,
 	worldId: string,
+	serverId: string,
+	accountId: string,
+	sessionToken: string,
 	settlementData: {
-		name: string;
-		tileId?: string;
+		username: string;
+		picture?: string;
 	}
 ): Promise<Settlement> {
-	const response = await api.post('/api/settlements', {
+	const API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+	
+	const response = await api.post(`${API_URL}/settlements`, {
+		headers: { Cookie: `session=${sessionToken}` },
 		data: {
 			worldId,
-			name: settlementData.name,
-			tileId: settlementData.tileId
+			serverId,
+			accountId,
+			username: settlementData.username,
+			picture: settlementData.picture
 		}
 	});
 
 	if (!response.ok()) {
-		throw new Error(`Failed to create settlement: ${response.status()}`);
+		const errorText = await response.text();
+		throw new Error(`Failed to create settlement: ${errorText || response.status()}`);
 	}
 
 	return response.json();

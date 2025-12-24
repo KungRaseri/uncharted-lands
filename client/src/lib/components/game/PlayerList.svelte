@@ -84,7 +84,8 @@
 					<!-- Status badge -->
 					<span 
 						class="text-xs px-2 py-1 rounded-full"
-						class:bg-success-500/10={player.isOnline}
+					class:bg-success-100={player.isOnline}
+					class:dark:bg-success-900={player.isOnline}
 						class:text-success-600={player.isOnline}
 						class:dark:text-success-400={player.isOnline}
 						class:bg-surface-300={!player.isOnline}

@@ -10,12 +10,14 @@ import {
 	profileServerData,
 	tiles,
 	disasterHistory,
+	settlementTransfers,
 } from '../../db/schema.js';
 import { eq, desc, and } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 import { authenticate } from '../middleware/auth.js';
 import { logger } from '../../utils/logger.js';
 import { MODIFIER_NAMES } from '../../game/modifier-names.js';
+import { calculateTransferParameters } from '../../game/transfers.js';
 
 const router = Router();
 
@@ -691,6 +693,298 @@ router.post('/:id/modifiers/recalculate', async (req, res) => {
 			error: error instanceof Error ? error.message : 'Unknown error',
 		});
 		res.status(500).json({ error: 'Failed to recalculate settlement modifiers' });
+	}
+});
+
+/**
+ * GET /api/settlements/:id/transfers
+ * Get all transfers (incoming and outgoing) for a settlement
+ *
+ * Response:
+ * {
+ *   transfers: [
+ *     {
+ *       id: string,
+ *       fromSettlementId: string,
+ *       fromSettlementName: string,
+ *       toSettlementId: string,
+ *       toSettlementName: string,
+ *       resourceType: string,
+ *       amountSent: number,
+ *       amountReceived: number,
+ *       lossPercentage: number,
+ *       distance: number,
+ *       transportTime: number,
+ *       status: 'in_transit' | 'completed',
+ *       startedAt: Date,
+ *       completedAt: Date | null,
+ *       direction: 'incoming' | 'outgoing'
+ *     }
+ *   ]
+ * }
+ */
+router.get('/:id/transfers', authenticate, async (req, res) => {
+	try {
+		const { id: settlementId } = req.params;
+
+		// Verify settlement exists and user owns it
+		const settlement = await db.query.settlements.findFirst({
+			where: eq(settlements.id, settlementId),
+			with: {
+				playerProfile: true,
+			},
+		});
+
+		if (!settlement) {
+			return res.status(404).json({ error: 'Settlement not found' });
+		}
+
+		if (settlement.playerProfile.accountId !== req.accountId) {
+			return res.status(403).json({ error: 'You do not own this settlement' });
+		}
+
+		// Get all transfers where this settlement is the source or destination
+		const [outgoingTransfers, incomingTransfers] = await Promise.all([
+			db.query.settlementTransfers.findMany({
+				where: eq(settlementTransfers.fromSettlementId, settlementId),
+				with: {
+					fromSettlement: {
+						columns: {
+							name: true,
+						},
+					},
+					toSettlement: {
+						columns: {
+							name: true,
+						},
+					},
+				},
+				orderBy: desc(settlementTransfers.startedAt),
+			}),
+			db.query.settlementTransfers.findMany({
+				where: eq(settlementTransfers.toSettlementId, settlementId),
+				with: {
+					fromSettlement: {
+						columns: {
+							name: true,
+						},
+					},
+					toSettlement: {
+						columns: {
+							name: true,
+						},
+					},
+				},
+				orderBy: desc(settlementTransfers.startedAt),
+			}),
+		]);
+
+		// Format transfers with direction indicator
+		const formattedOutgoing = outgoingTransfers.map((t) => ({
+			id: t.id,
+			fromSettlementId: t.fromSettlementId,
+			fromSettlementName: t.fromSettlement.name,
+			toSettlementId: t.toSettlementId,
+			toSettlementName: t.toSettlement.name,
+			resourceType: t.resourceType,
+			amountSent: t.amountSent,
+			amountReceived: t.amountReceived,
+			lossPercentage: t.lossPercentage,
+			distance: t.distance,
+			transportTime: t.transportTime,
+			status: t.status,
+			startedAt: t.startedAt,
+			completedAt: t.completedAt,
+			direction: 'outgoing' as const,
+		}));
+
+		const formattedIncoming = incomingTransfers.map((t) => ({
+			id: t.id,
+			fromSettlementId: t.fromSettlementId,
+			fromSettlementName: t.fromSettlement.name,
+			toSettlementId: t.toSettlementId,
+			toSettlementName: t.toSettlement.name,
+			resourceType: t.resourceType,
+			amountSent: t.amountSent,
+			amountReceived: t.amountReceived,
+			lossPercentage: t.lossPercentage,
+			distance: t.distance,
+			transportTime: t.transportTime,
+			status: t.status,
+			startedAt: t.startedAt,
+			completedAt: t.completedAt,
+			direction: 'incoming' as const,
+		}));
+
+		// Combine and sort by startedAt (most recent first)
+		const allTransfers = [...formattedOutgoing, ...formattedIncoming].sort((a, b) => {
+			return b.startedAt.getTime() - a.startedAt.getTime();
+		});
+
+		res.json({
+			transfers: allTransfers,
+		});
+	} catch (error) {
+		logger.error('Failed to fetch transfers', {
+			settlementId: req.params.id,
+			error: error instanceof Error ? error.message : 'Unknown error',
+		});
+		res.status(500).json({ error: 'Failed to fetch transfers' });
+	}
+});
+
+/**
+ * POST /api/settlements/:id/transfer
+ * Initiate a resource transfer from this settlement to another settlement
+ *
+ * Request body:
+ * {
+ *   toSettlementId: string,
+ *   resourceType: 'FOOD' | 'WOOD' | 'STONE' | 'ORE' | 'CLAY' | 'HERBS' | 'PELTS' | 'GEMS' | 'EXOTIC_WOOD',
+ *   amount: number
+ * }
+ *
+ * Response:
+ * {
+ *   success: true,
+ *   transfer: {
+ *     id: string,
+ *     distance: number,
+ *     transportTime: number,
+ *     lossPercentage: number,
+ *     amountSent: number,
+ *     amountReceived: number,
+ *     completedAt: Date
+ *   }
+ * }
+ */
+router.post('/:id/transfer', authenticate, async (req, res) => {
+	try {
+		const { id: fromSettlementId } = req.params;
+		const { toSettlementId, resourceType, amount } = req.body;
+
+		// Validate request body
+		if (!toSettlementId || !resourceType || !amount) {
+			return res.status(400).json({ error: 'Missing required fields: toSettlementId, resourceType, amount' });
+		}
+
+		if (typeof amount !== 'number' || amount <= 0) {
+			return res.status(400).json({ error: 'Amount must be a positive number' });
+		}
+
+		// Validate resource type
+		const validResourceTypes = ['FOOD', 'WOOD', 'STONE', 'ORE', 'CLAY', 'HERBS', 'PELTS', 'GEMS', 'EXOTIC_WOOD'];
+		if (!validResourceTypes.includes(resourceType)) {
+			return res.status(400).json({ error: 'Invalid resource type' });
+		}
+
+		// Can't transfer to self
+		if (fromSettlementId === toSettlementId) {
+			return res.status(400).json({ error: 'Cannot transfer resources to the same settlement' });
+		}
+
+		// Verify source settlement exists and user owns it
+		const fromSettlement = await db.query.settlements.findFirst({
+			where: eq(settlements.id, fromSettlementId),
+			with: {
+				playerProfile: true,
+				storage: true,
+			},
+		});
+
+		if (!fromSettlement) {
+			return res.status(404).json({ error: 'Source settlement not found' });
+		}
+
+		if (fromSettlement.playerProfile.accountId !== req.accountId) {
+			return res.status(403).json({ error: 'You do not own this settlement' });
+		}
+
+		// Verify destination settlement exists
+		const toSettlement = await db.query.settlements.findFirst({
+			where: eq(settlements.id, toSettlementId),
+		});
+
+		if (!toSettlement) {
+			return res.status(404).json({ error: 'Destination settlement not found' });
+		}
+
+		// Check if source settlement has enough resources
+		const storage = fromSettlement.storage;
+		if (!storage) {
+			return res.status(500).json({ error: 'Source settlement storage not found' });
+		}
+
+		const currentAmount = storage[resourceType.toLowerCase() as keyof typeof storage] as number;
+		if (currentAmount < amount) {
+			return res.status(400).json({
+				error: `Insufficient ${resourceType.toLowerCase()}. Available: ${currentAmount}, Required: ${amount}`,
+			});
+		}
+
+		// Calculate transfer parameters
+		const transferParams = await calculateTransferParameters(fromSettlementId, toSettlementId, amount);
+
+		if (!transferParams) {
+			return res.status(500).json({ error: 'Failed to calculate transfer parameters' });
+		}
+
+		// Deduct resources from source settlement immediately
+		await db
+			.update(settlementStorage)
+			.set({
+				[resourceType.toLowerCase()]: currentAmount - amount,
+			})
+			.where(eq(settlementStorage.settlementId, fromSettlementId));
+
+		// Create transfer record
+		const transferId = createId();
+		const [transfer] = await db
+			.insert(settlementTransfers)
+			.values({
+				id: transferId,
+				fromSettlementId,
+				toSettlementId,
+				resourceType,
+				amountSent: amount,
+				amountReceived: transferParams.amountReceived,
+				lossPercentage: transferParams.lossPercentage,
+				distance: transferParams.distance,
+				transportTime: transferParams.transportTime,
+				status: 'in_transit',
+				completedAt: transferParams.completedAt,
+			})
+			.returning();
+
+		logger.info('Resource transfer initiated', {
+			transferId,
+			fromSettlementId,
+			toSettlementId,
+			resourceType,
+			amountSent: amount,
+			amountReceived: transferParams.amountReceived,
+			distance: transferParams.distance,
+			lossPercentage: transferParams.lossPercentage,
+		});
+
+		res.json({
+			success: true,
+			transfer: {
+				id: transferId,
+				distance: transferParams.distance,
+				transportTime: transferParams.transportTime,
+				lossPercentage: transferParams.lossPercentage,
+				amountSent: amount,
+				amountReceived: transferParams.amountReceived,
+				completedAt: transferParams.completedAt,
+			},
+		});
+	} catch (error) {
+		logger.error('Failed to initiate transfer', {
+			fromSettlementId: req.params.id,
+			error: error instanceof Error ? error.message : 'Unknown error',
+		});
+		res.status(500).json({ error: 'Failed to initiate transfer' });
 	}
 });
 

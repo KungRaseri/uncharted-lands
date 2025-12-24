@@ -11,6 +11,7 @@ import * as worldApi from '$lib/game/world-api';
 import { PUBLIC_WS_URL } from '$env/static/public';
 import { logger } from '$lib/utils/logger';
 import { presenceStore } from './presence.svelte';
+import { transferStore } from './transfers.svelte';
 
 // Connection state
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -79,6 +80,9 @@ function createSocketStore() {
 
 				// Initialize presence tracking (ARTIFACT-05 Phase 2)
 				presenceStore.initialize(socket!);
+
+				// Initialize transfer tracking (ARTIFACT-05 Phase 3)
+				transferStore.initialize(socket!);
 			});
 
 			// Server welcome message
@@ -132,6 +136,8 @@ function createSocketStore() {
 				logger.debug('[SOCKET] Disconnecting...');
 				// Cleanup presence tracking (ARTIFACT-05 Phase 2)
 				presenceStore.cleanup();
+				// Cleanup transfer tracking (ARTIFACT-05 Phase 3)
+				transferStore.cleanup();
 				socket.disconnect();
 				socket = null;
 				set({

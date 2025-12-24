@@ -140,15 +140,16 @@ export class GameLoopMonitor {
             this.tickMetrics.shift();
         }
 
-        // Log slow ticks
-        if (duration > 50) {
-            logger.warn('[MONITOR] Slow tick detected', {
-                tickNumber,
-                durationMs: duration,
-                systemsTriggered,
-                thresholdMs: 50,
-            });
-        }
+        // Commented out - with 163 worlds, ticks naturally take 600-1087ms
+        // Uncomment and adjust threshold if debugging performance issues
+        // if (duration > 2000) {
+        //     logger.warn('[MONITOR] Slow tick detected', {
+        //         tickNumber,
+        //         durationMs: duration,
+        //         systemsTriggered,
+        //         thresholdMs: 2000,
+        //     });
+        // }
     }
 
     /**
