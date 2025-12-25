@@ -200,241 +200,241 @@ describe('BuildingsListPanel', () => {
 		});
 
 		it('should expand modifiers when toggle clicked', async () => {
-		const { container } = render(BuildingsListPanel, {
-			props: {
-				buildings: mockBuildings,
-				settlementId: 'settlement-1',
-				...mockHandlers
-			}
-		});
+			const { container } = render(BuildingsListPanel, {
+				props: {
+					buildings: mockBuildings,
+					settlementId: 'settlement-1',
+					...mockHandlers
+				}
+			});
 
-		const toggleButton = screen.getByText(/Modifiers \(1\)/i);
-		await fireEvent.click(toggleButton);
+			const toggleButton = screen.getByText(/Modifiers \(1\)/i);
+			await fireEvent.click(toggleButton);
 
-		expect(screen.getByText('Population Capacity')).toBeInTheDocument();
-		expect(screen.getByText('Increases population capacity')).toBeInTheDocument();
-		// Check for modifier value - text is split across spans with whitespace, normalize it
+			expect(screen.getByText('Population Capacity')).toBeInTheDocument();
+			expect(screen.getByText('Increases population capacity')).toBeInTheDocument();
+		// Check for modifier value - text may have spacing variations
 		const text = container.textContent?.replace(/\s+/g, ' ').trim() || '';
-		expect(text).toContain('+5');
-		expect(text).toContain('(5 / Level)');
+		expect(text).toMatch(/\+\s*5/); // Matches "+5" or "+ 5"
+			expect(text).toContain('(5 / Level)');
+		});
+
+		describe('Action Buttons', () => {
+			it('should show Upgrade button when building can be upgraded', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]], // House level 1/5
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				expect(screen.getByText('Upgrade to Level 2')).toBeInTheDocument();
+			});
+
+			it('should not show Upgrade button when at max level', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[2]], // Workshop level 5/5
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				expect(screen.queryByText(/Upgrade/i)).not.toBeInTheDocument();
+				expect(screen.getByText('Max level reached')).toBeInTheDocument();
+			});
+
+			it('should show Repair button when health < 100', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[1]], // Warehouse 75% health
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				expect(screen.getByText(/Repair \(25% damage\)/i)).toBeInTheDocument();
+			});
+
+			it('should not show Repair button when health = 100', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]], // House 100% health
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				expect(screen.queryByText(/Repair/i)).not.toBeInTheDocument();
+			});
+
+			it('should always show Demolish button', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: mockBuildings,
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const demolishButtons = screen.getAllByText('Demolish');
+				expect(demolishButtons).toHaveLength(3);
+			});
+		});
+
+		describe('Event Handlers', () => {
+			it('should call onUpgrade when Upgrade button clicked', async () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]],
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const upgradeButton = screen.getByText('Upgrade to Level 2');
+				await fireEvent.click(upgradeButton);
+
+				expect(mockHandlers.onUpgrade).toHaveBeenCalledWith('building-1');
+				expect(mockHandlers.onUpgrade).toHaveBeenCalledTimes(1);
+			});
+
+			it('should call onRepair when Repair button clicked', async () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[1]],
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const repairButton = screen.getByText(/Repair/i);
+				await fireEvent.click(repairButton);
+
+				expect(mockHandlers.onRepair).toHaveBeenCalledWith('building-2');
+				expect(mockHandlers.onRepair).toHaveBeenCalledTimes(1);
+			});
+
+			it('should call onDemolish when Demolish button clicked', async () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]],
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const demolishButton = screen.getByText('Demolish');
+				await fireEvent.click(demolishButton);
+
+				expect(mockHandlers.onDemolish).toHaveBeenCalledWith('building-1');
+				expect(mockHandlers.onDemolish).toHaveBeenCalledTimes(1);
+			});
+		});
+
+		describe('Accessibility', () => {
+			it('should have proper ARIA labels for section', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: mockBuildings,
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const section = screen.getByRole('region', { name: /buildings/i });
+				expect(section).toBeInTheDocument();
+			});
+
+			it('should have role="list" on buildings container', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: mockBuildings,
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const list = screen.getByRole('list');
+				expect(list).toBeInTheDocument();
+			});
+
+			it('should have proper ARIA labels on action buttons', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]],
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				expect(screen.getByLabelText(/Upgrade House to level 2/i)).toBeInTheDocument();
+				expect(screen.getByLabelText(/Demolish House/i)).toBeInTheDocument();
+			});
+
+			it('should have aria-expanded on modifiers toggle', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]],
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const toggleButton = screen.getByRole('button', { name: /Modifiers/i });
+				expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+			});
+
+			it('should have progressbar role for health bar', () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]],
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const progressbar = screen.getByRole('progressbar', {
+					name: /Structure health: 100%/i
+				});
+				expect(progressbar).toBeInTheDocument();
+				expect(progressbar).toHaveAttribute('aria-valuenow', '100');
+				expect(progressbar).toHaveAttribute('aria-valuemin', '0');
+				expect(progressbar).toHaveAttribute('aria-valuemax', '100');
+			});
+		});
+
+		describe('Keyboard Navigation', () => {
+			it('should handle Enter key on modifiers toggle', async () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]],
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const toggleButton = screen.getByText(/Modifiers/i);
+				await fireEvent.keyDown(toggleButton, { key: 'Enter' });
+
+				expect(screen.getByText('Population Capacity')).toBeInTheDocument();
+			});
+
+			it('should handle Space key on modifiers toggle', async () => {
+				render(BuildingsListPanel, {
+					props: {
+						buildings: [mockBuildings[0]],
+						settlementId: 'settlement-1',
+						...mockHandlers
+					}
+				});
+
+				const toggleButton = screen.getByText(/Modifiers/i);
+				await fireEvent.keyDown(toggleButton, { key: ' ' });
+
+				expect(screen.getByText('Population Capacity')).toBeInTheDocument();
+			});
+		});
 	});
-
-	describe('Action Buttons', () => {
-		it('should show Upgrade button when building can be upgraded', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]], // House level 1/5
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			expect(screen.getByText('Upgrade to Level 2')).toBeInTheDocument();
-		});
-
-		it('should not show Upgrade button when at max level', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[2]], // Workshop level 5/5
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			expect(screen.queryByText(/Upgrade/i)).not.toBeInTheDocument();
-			expect(screen.getByText('Max level reached')).toBeInTheDocument();
-		});
-
-		it('should show Repair button when health < 100', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[1]], // Warehouse 75% health
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			expect(screen.getByText(/Repair \(25% damage\)/i)).toBeInTheDocument();
-		});
-
-		it('should not show Repair button when health = 100', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]], // House 100% health
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			expect(screen.queryByText(/Repair/i)).not.toBeInTheDocument();
-		});
-
-		it('should always show Demolish button', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: mockBuildings,
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const demolishButtons = screen.getAllByText('Demolish');
-			expect(demolishButtons).toHaveLength(3);
-		});
-	});
-
-	describe('Event Handlers', () => {
-		it('should call onUpgrade when Upgrade button clicked', async () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]],
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const upgradeButton = screen.getByText('Upgrade to Level 2');
-			await fireEvent.click(upgradeButton);
-
-			expect(mockHandlers.onUpgrade).toHaveBeenCalledWith('building-1');
-			expect(mockHandlers.onUpgrade).toHaveBeenCalledTimes(1);
-		});
-
-		it('should call onRepair when Repair button clicked', async () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[1]],
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const repairButton = screen.getByText(/Repair/i);
-			await fireEvent.click(repairButton);
-
-			expect(mockHandlers.onRepair).toHaveBeenCalledWith('building-2');
-			expect(mockHandlers.onRepair).toHaveBeenCalledTimes(1);
-		});
-
-		it('should call onDemolish when Demolish button clicked', async () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]],
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const demolishButton = screen.getByText('Demolish');
-			await fireEvent.click(demolishButton);
-
-			expect(mockHandlers.onDemolish).toHaveBeenCalledWith('building-1');
-			expect(mockHandlers.onDemolish).toHaveBeenCalledTimes(1);
-		});
-	});
-
-	describe('Accessibility', () => {
-		it('should have proper ARIA labels for section', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: mockBuildings,
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const section = screen.getByRole('region', { name: /buildings/i });
-			expect(section).toBeInTheDocument();
-		});
-
-		it('should have role="list" on buildings container', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: mockBuildings,
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const list = screen.getByRole('list');
-			expect(list).toBeInTheDocument();
-		});
-
-		it('should have proper ARIA labels on action buttons', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]],
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			expect(screen.getByLabelText(/Upgrade House to level 2/i)).toBeInTheDocument();
-			expect(screen.getByLabelText(/Demolish House/i)).toBeInTheDocument();
-		});
-
-		it('should have aria-expanded on modifiers toggle', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]],
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const toggleButton = screen.getByRole('button', { name: /Modifiers/i });
-			expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
-		});
-
-		it('should have progressbar role for health bar', () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]],
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const progressbar = screen.getByRole('progressbar', {
-				name: /Structure health: 100%/i
-			});
-			expect(progressbar).toBeInTheDocument();
-			expect(progressbar).toHaveAttribute('aria-valuenow', '100');
-			expect(progressbar).toHaveAttribute('aria-valuemin', '0');
-			expect(progressbar).toHaveAttribute('aria-valuemax', '100');
-		});
-	});
-
-	describe('Keyboard Navigation', () => {
-		it('should handle Enter key on modifiers toggle', async () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]],
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const toggleButton = screen.getByText(/Modifiers/i);
-			await fireEvent.keyDown(toggleButton, { key: 'Enter' });
-
-			expect(screen.getByText('Population Capacity')).toBeInTheDocument();
-		});
-
-		it('should handle Space key on modifiers toggle', async () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: [mockBuildings[0]],
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const toggleButton = screen.getByText(/Modifiers/i);
-			await fireEvent.keyDown(toggleButton, { key: ' ' });
-
-			expect(screen.getByText('Population Capacity')).toBeInTheDocument();
-		});
-	});
-});
 });
