@@ -200,22 +200,23 @@ describe('BuildingsListPanel', () => {
 		});
 
 		it('should expand modifiers when toggle clicked', async () => {
-			render(BuildingsListPanel, {
-				props: {
-					buildings: mockBuildings,
-					settlementId: 'settlement-1',
-					...mockHandlers
-				}
-			});
-
-			const toggleButton = screen.getByText(/Modifiers \(1\)/i);
-			await fireEvent.click(toggleButton);
-
-			expect(screen.getByText('Population Capacity')).toBeInTheDocument();
-			expect(screen.getByText('Increases population capacity')).toBeInTheDocument();
-			// Check for modifier value with level multiplier (level 1 × value 5 = +5)
-			expect(screen.getByText(/\+5/)).toBeInTheDocument();
+		const { container } = render(BuildingsListPanel, {
+			props: {
+				buildings: mockBuildings,
+				settlementId: 'settlement-1',
+				...mockHandlers
+			}
 		});
+
+		const toggleButton = screen.getByText(/Modifiers \(1\)/i);
+		await fireEvent.click(toggleButton);
+
+		expect(screen.getByText('Population Capacity')).toBeInTheDocument();
+		expect(screen.getByText('Increases population capacity')).toBeInTheDocument();
+		// Check for modifier value - text is split across spans with whitespace, normalize it
+		const text = container.textContent?.replace(/\s+/g, ' ').trim() || '';
+		expect(text).toContain('+5');
+		expect(text).toContain('(5 / Level)');
 	});
 
 	describe('Action Buttons', () => {
@@ -435,4 +436,5 @@ describe('BuildingsListPanel', () => {
 			expect(screen.getByText('Population Capacity')).toBeInTheDocument();
 		});
 	});
+});
 });

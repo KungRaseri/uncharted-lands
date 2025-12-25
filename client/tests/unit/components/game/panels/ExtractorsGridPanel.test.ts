@@ -689,8 +689,8 @@ describe('ExtractorsGridPanel', () => {
 		// tile_ghi789 (20, 30): 5 extractors
 		const tile3Coord = screen.getByText('📍 (20, 30)');
 		const tile3Section = tile3Coord.closest('article');
-			const tile3Cards = tile3Section?.querySelectorAll('div.card.variant-ghost');
-			expect(tile3Cards?.length).toBe(5);
-		});
+		const tile3Cards = tile3Section?.querySelectorAll('div.card.variant-ghost');
+		expect(tile3Cards?.length).toBe(5);
 	});
+});
 });

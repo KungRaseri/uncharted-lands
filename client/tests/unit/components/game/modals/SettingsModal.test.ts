@@ -67,7 +67,16 @@ describe('SettingsModal', () => {
 	let originalInnerWidth: number;
 
 	beforeEach(() => {
+		// Clear all mock calls before each test
 		vi.clearAllMocks();
+		
+		// Reset mock implementations to ensure they're fresh
+		mockLayoutStore.resetLayout.mockClear();
+		mockLayoutStore.showPanel.mockClear();
+		mockLayoutStore.hidePanel.mockClear();
+		mockLayoutStore.reorderPanels.mockClear();
+		mockLayoutStore.loadLayout.mockClear();
+		
 		originalInnerWidth = globalThis.innerWidth;
 	});
 
@@ -302,67 +311,78 @@ describe('SettingsModal', () => {
 		});
 
 		it('should call resetLayout when reset is confirmed', async () => {
-			// Mock globalThis.confirm to return true
-			const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-
-			const { container } = render(SettingsModal, {
-				props: {
-					open: true,
-					onClose: vi.fn()
-				}
-			});
-
-			await new Promise((resolve) => setTimeout(resolve, 50));
-
-			const resetButton = Array.from(container.querySelectorAll('button')).find((btn) =>
-				btn.textContent?.includes('Reset to Default')
-			);
-
-			expect(resetButton).toBeTruthy();
-
-			await fireEvent.click(resetButton!);
-
-			expect(confirmSpy).toHaveBeenCalledWith(
-				'Reset layout to default? This will clear all customizations.'
-			);
-			expect(mockLayoutStore.resetLayout).toHaveBeenCalledWith('default');
-
-			confirmSpy.mockRestore();
+		const { container } = render(SettingsModal, {
+			props: {
+				open: true,
+				onClose: vi.fn()
+			}
 		});
 
-		it('should NOT call resetLayout when reset is cancelled', async () => {
-			const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+		await new Promise((resolve) => setTimeout(resolve, 50));
 
-			const { container } = render(SettingsModal, {
-				props: {
-					open: true,
-					onClose: vi.fn()
-				}
-			});
+		// Click "Reset to Default" button to open confirmation modal
+		const resetButton = Array.from(container.querySelectorAll('button')).find((btn) =>
+			btn.textContent?.includes('Reset to Default')
+		);
 
-			await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(resetButton).toBeTruthy();
 
-			const resetButton = Array.from(container.querySelectorAll('button')).find((btn) =>
-				btn.textContent?.includes('Reset to Default')
-			);
+		await fireEvent.click(resetButton!);
 
-			await fireEvent.click(resetButton!);
+		// Wait for confirmation modal to render
+		await new Promise((resolve) => setTimeout(resolve, 50));
 
-			expect(confirmSpy).toHaveBeenCalled();
-			expect(mockLayoutStore.resetLayout).not.toHaveBeenCalled();
+		// Find and click the "Reset" confirmation button in the modal
+		const confirmButton = Array.from(container.querySelectorAll('button')).find((btn) =>
+			btn.textContent?.trim() === 'Reset'
+		);
 
-			confirmSpy.mockRestore();
-		});
+		expect(confirmButton).toBeTruthy();
+		await fireEvent.click(confirmButton!);
+
+		expect(mockLayoutStore.resetLayout).toHaveBeenCalledWith('default');
 	});
 
-	describe('Close Functionality', () => {
-		beforeEach(() => {
-			Object.defineProperty(window, 'innerWidth', {
-				writable: true,
-				configurable: true,
-				value: 1024
-			});
+	it('should NOT call resetLayout when reset is cancelled', async () => {
+		const { container } = render(SettingsModal, {
+			props: {
+				open: true,
+				onClose: vi.fn()
+			}
 		});
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		// Click "Reset to Default" button to open confirmation modal
+		const resetButton = Array.from(container.querySelectorAll('button')).find((btn) =>
+			btn.textContent?.includes('Reset to Default')
+		);
+
+		await fireEvent.click(resetButton!);
+
+		// Wait for confirmation modal to render
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		// Find and click the "Cancel" button in the confirmation modal
+		const cancelButton = Array.from(container.querySelectorAll('button')).find((btn) =>
+			btn.textContent?.trim() === 'Cancel'
+		);
+
+		expect(cancelButton).toBeTruthy();
+		await fireEvent.click(cancelButton!);
+
+		expect(mockLayoutStore.resetLayout).not.toHaveBeenCalled();
+	});
+});
+
+describe('Close Functionality', () => {
+	beforeEach(() => {
+		Object.defineProperty(window, 'innerWidth', {
+			writable: true,
+			configurable: true,
+			value: 1024
+		});
+	});
 
 		it('should call onClose when Save & Close button is clicked', async () => {
 			const mockOnClose = vi.fn();
@@ -493,4 +513,5 @@ describe('SettingsModal', () => {
 			}
 		});
 	});
+});
 });
