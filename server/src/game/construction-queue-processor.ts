@@ -268,3 +268,66 @@ export function getStructureCategory(structureType: string): string {
 
 	return extractors.includes(structureType) ? 'EXTRACTOR' : 'BUILDING';
 }
+
+/**
+ * Broadcast construction progress for active constructions
+ * Called every second to update clients with real-time progress
+ *
+ * @param worldId - World to process
+ * @param currentTime - Current timestamp (ms)
+ * @param io - Socket.IO server instance for broadcasting
+ */
+export async function broadcastConstructionProgress(
+	worldId: string,
+	currentTime: number,
+	io: SocketIOServer
+): Promise<void> {
+	try {
+		// Get all active constructions for this world
+		const activeConstructions = await db
+			.select({
+				construction: constructionQueue,
+				settlement: settlements,
+			})
+			.from(constructionQueue)
+			.innerJoin(settlements, eq(constructionQueue.settlementId, settlements.id))
+			.innerJoin(tiles, eq(settlements.tileId, tiles.id))
+			.innerJoin(regions, eq(tiles.regionId, regions.id))
+			.where(
+				and(
+					eq(regions.worldId, worldId),
+					eq(constructionQueue.status, 'IN_PROGRESS')
+				)
+			);
+
+		// Emit progress for each active construction
+		for (const { construction, settlement } of activeConstructions) {
+			const startTime = construction.startedAt?.getTime() || currentTime;
+			const endTime = construction.completesAt?.getTime() || currentTime;
+			const elapsed = currentTime - startTime;
+			const total = endTime - startTime;
+			
+			// Calculate progress percentage (0-100)
+			const progress = total > 0 
+				? Math.min(100, Math.max(0, Math.floor((elapsed / total) * 100)))
+				: 0;
+			
+			// Calculate time remaining in seconds
+			const timeRemaining = Math.max(0, Math.ceil((endTime - currentTime) / 1000));
+
+			// Emit to all clients in this world
+			io.to(`world:${worldId}`).emit('construction-progress', {
+				settlementId: settlement.id,
+				projectId: construction.id,
+				progress,
+				timeRemaining,
+				timestamp: currentTime,
+			});
+		}
+	} catch (error) {
+		logger.error(
+			`[CONSTRUCTION] Error broadcasting progress for world ${worldId}:`,
+			error
+		);
+	}
+}

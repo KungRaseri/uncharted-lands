@@ -37,14 +37,22 @@
 		extractorType: string | null;
 	};
 
+	type QueuedConstruction = {
+		tileId: string | null;
+		slotPosition: number | null;
+		structureType: string;
+		status: string;
+	};
+
 	type Props = {
 		tile: TileWithRelations;
 		extractors: Extractor[]; // Extractors on this tile
+		constructionQueue?: QueuedConstruction[];
 		onBuildExtractor?: (tileId: string, slotPosition: number) => void;
 		onSelectExtractor?: (extractorId: string) => void;
 	};
 
-	let { tile, extractors = [], onBuildExtractor, onSelectExtractor }: Props = $props();
+	let { tile, extractors = [], constructionQueue = [], onBuildExtractor, onSelectExtractor }: Props = $props();
 
 	// ✅ DEBUG: Log when component renders
 	$effect(() => {
@@ -66,6 +74,17 @@
 	// Check if slot is occupied
 	function isSlotOccupied(slotPosition: number): boolean {
 		return extractors.some((e) => e.slotPosition === slotPosition);
+	}
+
+	// Check if slot is reserved by a queued construction
+	function isSlotReserved(slotPosition: number): boolean {
+		return constructionQueue.some(
+			(item) =>
+				item.tileId === tile.id &&
+				item.slotPosition === slotPosition &&
+				item.status !== 'COMPLETE' &&
+				item.status !== 'CANCELLED'
+		);
 	}
 
 	// Get resource icon and color for extractor type
@@ -131,6 +150,7 @@
 		{#each slots as slotPosition (slotPosition)}
 			{@const extractor = getExtractorInSlot(slotPosition)}
 			{@const isOccupied = isSlotOccupied(slotPosition)}
+			{@const reserved = isSlotReserved(slotPosition)}
 
 			{#if isOccupied && extractor}
 				<!-- Occupied Slot: Show extractor -->
@@ -170,6 +190,30 @@
 						>
 					</div>
 				</button>
+			{:else if reserved}
+				<!-- Reserved Slot: Show locked state -->
+				<div
+					class="flex-1 card variant-soft-warning border-2 border-warning-400 dark:border-warning-500 p-3 opacity-70 cursor-not-allowed"
+					role="button"
+					aria-label="Slot {slotPosition}: Reserved for construction in progress"
+					aria-disabled="true"
+					transition:fade={{ duration: 200 }}
+				>
+					<div class="flex flex-col items-center gap-1.5">
+						<!-- Lock Icon -->
+						<span class="text-3xl" aria-hidden="true">🔒</span>
+
+						<!-- Label -->
+						<p class="text-xs text-warning-700 dark:text-warning-400 font-medium">
+							Queued
+						</p>
+
+						<!-- Slot Number -->
+						<span class="text-[10px] text-surface-500-400-token"
+							>Slot {slotPosition}</span
+						>
+					</div>
+				</div>
 			{:else}
 				<!-- Empty Slot: Show build button -->
 				<button

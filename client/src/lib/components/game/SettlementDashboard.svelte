@@ -36,6 +36,7 @@
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { structuresStore } from '$lib/stores/game/structures.svelte';
+	import { socketStore } from '$lib/stores/game/socket';
 	import { generateSuggestions } from '$lib/utils/settlement-suggestions';
 	import { calculateProduction } from '$lib/utils/production-calculator';
 	import type { StructureMetadata } from '$lib/api/structures';
@@ -116,6 +117,106 @@
 	// ✅ NEW: Extractor selection modal state
 	let extractorSelectorOpen = $state(false);
 	let selectedSlot = $state<number | null>(null);
+
+	// ✅ NEW: Raw construction queue with tileId/slotPosition for slot locking
+	let rawConstructionQueue = $state<Array<{
+		id: string;
+		tileId: string | null;
+		slotPosition: number | null;
+		structureType: string;
+		status: string;
+	}>>([]);
+
+	// Fetch raw construction queue on mount
+	$effect(() => {
+		async function fetchRawQueue() {
+			try {
+				const response = await fetch(`/api/structures/construction-queue/${settlementId}`, {
+					method: 'GET',
+					credentials: 'include',
+				});
+
+				if (response.ok) {
+					const data = await response.json();
+					if (data.success) {
+						// Combine active and queued, extracting only needed fields
+						rawConstructionQueue = [
+							...data.active.map((item: any) => ({
+								id: item.id,
+								tileId: item.tileId,
+								slotPosition: item.slotPosition,
+								structureType: item.structureType,
+								status: item.status
+							})),
+							...data.queued.map((item: any) => ({
+								id: item.id,
+								tileId: item.tileId,
+								slotPosition: item.slotPosition,
+								structureType: item.structureType,
+								status: item.status
+							}))
+						];
+					}
+				}
+			} catch (error) {
+				logger.error('[Dashboard] Failed to fetch construction queue', { error });
+			}
+		}
+
+		fetchRawQueue();
+	});
+
+	// ✅ NEW: Listen to Socket.IO for construction queue updates
+	$effect(() => {
+		const socket = socketStore.getSocket();
+		if (!socket) return;
+
+		const handleConstructionStarted = (data: { constructionId: string; settlementId: string; structureType: string; tileId?: string | null; slotPosition?: number | null }) => {
+			if (data.settlementId === settlementId) {
+				// Add or update the item in rawConstructionQueue
+				const existing = rawConstructionQueue.find(item => item.id === data.constructionId);
+				if (!existing) {
+					rawConstructionQueue = [...rawConstructionQueue, {
+						id: data.constructionId,
+						tileId: data.tileId ?? null,
+						slotPosition: data.slotPosition ?? null,
+						structureType: data.structureType,
+						status: 'IN_PROGRESS'
+					}];
+				}
+			}
+		};
+
+		const handleConstructionComplete = (data: { settlementId: string; structureId: string }) => {
+			if (data.settlementId === settlementId) {
+				// Remove completed item from rawConstructionQueue
+				rawConstructionQueue = rawConstructionQueue.filter(item => item.id !== data.structureId);
+			}
+		};
+
+		const handleConstructionQueued = (data: { constructionId: string; settlementId: string; structureType: string; tileId?: string | null; slotPosition?: number | null }) => {
+			if (data.settlementId === settlementId) {
+				// Add queued item
+				rawConstructionQueue = [...rawConstructionQueue, {
+					id: data.constructionId,
+					tileId: data.tileId ?? null,
+					slotPosition: data.slotPosition ?? null,
+					structureType: data.structureType,
+					status: 'QUEUED'
+				}];
+			}
+		};
+
+		socket.on('construction-started', handleConstructionStarted);
+		socket.on('construction-complete', handleConstructionComplete);
+		socket.on('construction-queued', handleConstructionQueued);
+
+		return () => {
+			socket.off('construction-started', handleConstructionStarted);
+			socket.off('construction-complete', handleConstructionComplete);
+			socket.off('construction-queued', handleConstructionQueued);
+		};
+	});
 
 	// Get resources from store with real-time Socket.IO updates
 	const realResources = $derived.by(() => resourcesStore.getResources(settlementId));
@@ -599,7 +700,7 @@
 		<!-- Phase 1: Tile Plots Panel - Shows plot slots for the settlement's tile -->
 		{#if tile}
 			<div class="mb-4">
-				<TilePlotsPanel {tile} {extractors} onBuildExtractor={handleBuildExtractor} />
+				<TilePlotsPanel {tile} {extractors} constructionQueue={rawConstructionQueue} onBuildExtractor={handleBuildExtractor} />
 			</div>
 		{/if}
 

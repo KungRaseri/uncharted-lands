@@ -2,6 +2,7 @@
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import type { StructureMetadata } from '$lib/api/structures';
 	import { logger } from '$lib/utils/logger';
+	import { toastStore } from '@skeletonlabs/skeleton';
 
 	interface Props {
 		open: boolean;
@@ -124,16 +125,49 @@
 
 			if (!result.success && result.success !== undefined) {
 				logger.error('[MobileBuildMenu] API Error Response:', { result });
-				alert(result.message || 'Failed to create structure');
+				
+				// ✅ Show toast notification for insufficient resources
+				if (result.shortages && result.shortages.length > 0) {
+					const shortageText = result.shortages
+						.map((s: any) => `${s.type}: need ${s.missing} more`)
+						.join(', ');
+					
+					toastStore.trigger({
+						message: `Insufficient Resources: ${shortageText}`,
+						background: 'variant-filled-error',
+						timeout: 5000,
+						classes: 'z-[9999]'
+					});
+				} else {
+					toastStore.trigger({
+						message: result.message || 'Failed to build structure',
+						background: 'variant-filled-error',
+						timeout: 5000,
+						classes: 'z-[9999]'
+					});
+				}
 				return;
 			}
 
 			logger.debug('[MobileBuildMenu] Structure created successfully:', result);
 
+			// Show success toast
+			toastStore.trigger({
+				message: `${structure.displayName} queued for construction!`,
+				background: 'variant-filled-success',
+				timeout: 3000,
+				classes: 'z-[9999]'
+			});
+
 			onClose();
 		} catch (error) {
 			logger.error('[MobileBuildMenu] Network error:', error);
-			alert('Network error - could not create structure');
+			toastStore.trigger({
+				message: 'Network error - could not build structure',
+				background: 'variant-filled-error',
+				timeout: 5000,
+				classes: 'z-[9999]'
+			});
 		}
 	}
 </script>

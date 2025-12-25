@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { addGenerousTestResources } from './helpers/settlements.js';
 import { registerUser, generateUniqueEmail, TEST_USERS } from './auth/auth.helpers.js';
 import { createWorldViaAPI } from './helpers/worlds.js';
+import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state.js';
 
 /**
  * Construction Queue E2E Tests
@@ -21,7 +22,8 @@ test.describe('Construction Queue', () => {
 	let adminSessionToken: string;
 
 	test.beforeAll(async ({ browser }) => {
-		// Create admin user and server/world
+		// Create admin user and server/world (allow extra time for world generation)
+		test.setTimeout(60000); // 60s timeout for world creation
 		const context = await browser.newContext();
 		const page = await context.newPage();
 
@@ -45,11 +47,20 @@ test.describe('Construction Queue', () => {
 			headers: { Cookie: `session=${adminSessionToken}` }
 		});
 
+		if (!serversResponse.ok()) {
+			throw new Error(`Failed to fetch servers: ${serversResponse.status()}`);
+		}
+
 		const serversData = await serversResponse.json();
+		console.log('[E2E] Servers response:', JSON.stringify(serversData, null, 2));
 		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
+		console.log('[E2E] Found servers:', servers.length);
+
+		// Look for existing E2E Test Server
 		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
 
 		if (!testServer) {
+			console.log('[E2E] No existing E2E Test Server found, creating new one...');
 			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
 				headers: { Cookie: `session=${adminSessionToken}` },
 				data: {
@@ -59,24 +70,53 @@ test.describe('Construction Queue', () => {
 					status: 'ONLINE'
 				}
 			});
-			testServer = await createServerResponse.json();
+
+			const createResult = await createServerResponse.json();
+
+			// If creation failed due to unique constraint, it already exists - just use first server
+			if (createResult.error) {
+				console.log(
+					'[E2E] Server creation failed, using first available server or retrying fetch...'
+				);
+
+				// Fetch again in case race condition
+				const retryResponse = await page.request.get(`${apiUrl}/servers`, {
+					headers: { Cookie: `session=${adminSessionToken}` }
+				});
+				const retryData = await retryResponse.json();
+				const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
+
+				testServer =
+					retryServers.find((s: { name: string }) => s.name === 'E2E Test Server') ||
+					retryServers[0];
+
+				if (!testServer) {
+					throw new Error(
+						`Failed to get or create server. Creation error: ${JSON.stringify(createResult)}, Retry servers: ${JSON.stringify(retryServers)}`
+					);
+				}
+			} else {
+				testServer = createResult;
+			}
 		}
 
+		console.log('[E2E] Using server:', testServer.name, testServer.id);
 		testServerId = testServer.id;
 
-		// Create world
+		// Create world (SMALL size to ensure enough viable tiles for all tests)
 		const worldData = await createWorldViaAPI(
 			page.request,
 			testServerId,
 			adminSessionToken,
 			{
 				name: `Construction Queue Test World ${Date.now()}`,
-				size: 'TINY',
+				size: 'SMALL',
 				seed: Date.now()
 			},
 			true
 		);
 		testWorldId = worldData.id;
+		console.log('[E2E] Created world:', testWorldId);
 
 		await page.close();
 		await context.close();
@@ -117,6 +157,15 @@ test.describe('Construction Queue', () => {
 				username: username
 			}
 		});
+		
+		if (!settlementResponse.ok()) {
+			const errorText = await settlementResponse.text();
+			console.log('[E2E] Settlement creation failed:', {
+				status: settlementResponse.status(),
+				error: errorText
+			});
+		}
+		
 		expect(settlementResponse.ok()).toBeTruthy();
 		const settlement = await settlementResponse.json();
 		settlementId = settlement.id;
@@ -128,8 +177,23 @@ test.describe('Construction Queue', () => {
 		await page.goto(`/game/settlements/${settlementId}`);
 		await page.waitForLoadState('networkidle');
 		
-		// Wait for dashboard to be ready
-		await page.waitForSelector('[data-testid="build-menu-button"]', { timeout: 10000 });
+		// Wait for Socket.IO connection
+		await waitForSocketConnection(page);
+		await joinWorldRoom(page, testWorldId, accountId);
+		
+		// Wait for dashboard to be ready - buildings panel build button
+		try {
+			await page.waitForSelector('[data-testid="build-structure-btn"]', { timeout: 10000 });
+		} catch (error) {
+			console.log('[E2E] Failed to find build-structure-btn, taking screenshot...');
+			await page.screenshot({ path: `build-btn-timeout-${Date.now()}.png`, fullPage: true });
+			
+			// Log what's actually on the page
+			const bodyText = await page.textContent('body');
+			console.log('[E2E] Page content:', bodyText?.substring(0, 500));
+			
+			throw error;
+		}
 	});
 
 	test('should display construction queue panel', async ({ page }) => {
@@ -140,7 +204,7 @@ test.describe('Construction Queue', () => {
 
 	test('should open build menu', async ({ page }) => {
 		// Click build menu button
-		await page.click('[data-testid="build-menu-button"]');
+		await page.click('[data-testid="build-structure-btn"]');
 		
 		// Wait for build menu to appear
 		const buildMenu = page.locator('text=Build Structure').first();
@@ -149,7 +213,7 @@ test.describe('Construction Queue', () => {
 
 	test('should display available structures', async ({ page }) => {
 		// Open build menu
-		await page.click('[data-testid="build-menu-button"]');
+		await page.click('[data-testid="build-structure-btn"]');
 		
 		// Wait for structures to load
 		await page.waitForSelector('[data-testid^="build-structure-"]', { timeout: 5000 });
@@ -161,7 +225,7 @@ test.describe('Construction Queue', () => {
 
 	test('should add building to construction queue', async ({ page }) => {
 		// Open build menu
-		await page.click('[data-testid="build-menu-button"]');
+		await page.click('[data-testid="build-structure-btn"]');
 		await page.waitForTimeout(1000);
 		
 		// Try to build a Tent (cheap structure)

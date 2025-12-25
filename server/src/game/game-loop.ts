@@ -290,10 +290,15 @@ async function processTick(io: SocketIOServer): Promise<void> {
 			where: eq(worldsTable.status, 'ready'),
 		});
 
+		// Import broadcast function
+		const { broadcastConstructionProgress } = await import('./construction-queue-processor.js');
+
 		// Process each world's construction queue
 		for (const world of activeWorlds) {
 			try {
 				await processConstructionQueues(world.id, currentTime, io);
+				// Broadcast real-time progress updates to all clients
+				await broadcastConstructionProgress(world.id, currentTime, io);
 			} catch (error) {
 				logger.error('[CONSTRUCTION QUEUE] Error processing construction queues', {
 					worldId: world.id,

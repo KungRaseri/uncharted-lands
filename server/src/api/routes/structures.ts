@@ -581,6 +581,8 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				status: result.queueItem.status,
 				completesAt: result.queueItem.completesAt,
 				resourcesCost: result.validation.deductedResources,
+				tileId: result.queueItem.tileId,
+				slotPosition: result.queueItem.slotPosition,
 				timestamp: Date.now(),
 			});
 		}
