@@ -516,31 +516,32 @@ export function hasEnoughResources(storage: Resources, required: Resources): boo
 /**
  * Calculate consumption rates for a settlement
  * 
- * Only food and water are consumed by population.
- * Wood, stone, and ore are stockpiled materials used only for construction.
+ * Population consumes food and water (survival resources).
+ * Structures consume wood, stone, and ore for maintenance (GDD Section 6.4).
  *
  * @param populationCount - Number of people in settlement
- * @param structureCount - Number of structures (not used for consumption anymore)
- * @returns Consumption rates per tick (only food/water are non-zero)
+ * @param structureCount - Number of structures requiring maintenance
+ * @returns Consumption rates per tick
  */
 export function calculateConsumption(
 	populationCount: number = 0,
-	_structureCount: number = 0
+	structureCount: number = 0
 ): Resources {
-	// Base consumption per person per tick
-	const FOOD_PER_PERSON_PER_TICK = 0.005;
-	const WATER_PER_PERSON_PER_TICK = 0.01;
+	// Population consumption rates (GDD Section 6.4)
+	const FOOD_PER_PERSON_PER_TICK = 0.005; // 18/hour
+	const WATER_PER_PERSON_PER_TICK = 0.01; // 36/hour
 
-	// Note: Wood/stone/ore are NOT consumed over time
-	// They are only spent when constructing/upgrading structures
-	// Only food and water are consumed by population
+	// Structure maintenance consumption rates (GDD Section 6.4)
+	const WOOD_PER_STRUCTURE_PER_TICK = 0.001; // 3.6/hour
+	const STONE_PER_STRUCTURE_PER_TICK = 0.0005; // 1.8/hour
+	const ORE_PER_STRUCTURE_PER_TICK = 0.00025; // 0.9/hour
 
 	return {
 		food: populationCount * FOOD_PER_PERSON_PER_TICK,
 		water: populationCount * WATER_PER_PERSON_PER_TICK,
-		wood: 0, // Not consumed - only used for construction
-		stone: 0, // Not consumed - only used for construction
-		ore: 0, // Not consumed - only used for construction
+		wood: structureCount * WOOD_PER_STRUCTURE_PER_TICK,
+		stone: structureCount * STONE_PER_STRUCTURE_PER_TICK,
+		ore: structureCount * ORE_PER_STRUCTURE_PER_TICK,
 	};
 }
 

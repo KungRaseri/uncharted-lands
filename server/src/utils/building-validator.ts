@@ -7,7 +7,7 @@
 
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, sql } from 'drizzle-orm';
-import { settlementStructures, structures } from '../db/schema.js';
+import { settlementStructures, structures, constructionQueue } from '../db/schema.js';
 import type * as schema from '../db/schema.js';
 import { STRUCTURES } from '../data/structures.js';
 import { getTownHallLevel, getAreaStatistics } from '../utils/area-calculator.js';
@@ -115,8 +115,8 @@ export async function validateBuildingPlacement(
 		// Calculate area reserved by buildings in construction queue
 		const queuedBuildings = await db.query.constructionQueue.findMany({
 			where: and(
-				eq(schema.constructionQueue.settlementId, settlementId),
-				sql`${schema.constructionQueue.status} != 'COMPLETE'` // Exclude completed constructions
+				eq(constructionQueue.settlementId, settlementId),
+				sql`${constructionQueue.status} != 'COMPLETE'` // Exclude completed constructions
 			),
 		});
 

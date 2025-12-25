@@ -51,14 +51,14 @@ export const CONSUMPTION_RATES = {
 	/** Base population capacity without structures */
 	BASE_POPULATION_CAPACITY: 10,
 
-	/** Wood maintenance per structure per tick (REMOVED - see GDD Phase 1D) */
-	WOOD_PER_STRUCTURE_PER_TICK: 0,
+	/** Wood maintenance per structure per tick (GDD spec: 3.6/hour) */
+	WOOD_PER_STRUCTURE_PER_TICK: 3.6 / 3600,
 
-	/** Stone maintenance per structure per tick (REMOVED - see GDD Phase 1D) */
-	STONE_PER_STRUCTURE_PER_TICK: 0,
+	/** Stone maintenance per structure per tick (GDD spec: 1.8/hour) */
+	STONE_PER_STRUCTURE_PER_TICK: 1.8 / 3600,
 
-	/** Ore maintenance per structure per tick (REMOVED - see GDD Phase 1D) */
-	ORE_PER_STRUCTURE_PER_TICK: 0,
+	/** Ore maintenance per structure per tick (GDD spec: 0.9/hour) */
+	ORE_PER_STRUCTURE_PER_TICK: 0.9 / 3600,
 };
 
 /**
@@ -156,35 +156,40 @@ export function calculatePopulation(structures: Structure[], _currentPopulation?
 /**
  * Calculate resource consumption per tick for a settlement
  *
- * Only food and water are consumed (survival resources).
- * Wood, stone, and ore are stockpiled materials - NOT consumed over time.
+ * Population consumes food and water (survival resources).
+ * Structures consume wood, stone, and ore for maintenance (GDD Section 6.4).
  *
  * Formula: baseConsumption × worldTemplateMultiplier
  *
  * @param population Current population count
- * @param structureCount Total number of structures (not used for consumption anymore)
+ * @param structureCount Total number of structures requiring maintenance
  * @param tickCount Number of ticks to calculate for (default: 1)
  * @param worldTemplateMultiplier Consumption modifier from world template (default: 1, Phase 1D)
- * @returns Resource consumption amounts (wood/stone/ore always 0)
+ * @returns Resource consumption amounts for the given tick count
  */
 export function calculateConsumption(
 	population: number,
-	_structureCount: number = 0,
+	structureCount: number = 0,
 	tickCount: number = 1,
 	worldTemplateMultiplier: number = 1
 ): Resources {
-	// Calculate base consumption rates (only food/water)
+	// Calculate population consumption rates (food/water)
 	const baseFoodConsumption = population * CONSUMPTION_RATES.FOOD_PER_PERSON_PER_TICK * tickCount;
 	const baseWaterConsumption =
 		population * CONSUMPTION_RATES.WATER_PER_PERSON_PER_TICK * tickCount;
+
+	// Calculate structure maintenance consumption (wood/stone/ore) - GDD Section 6.4
+	const baseWoodConsumption = structureCount * CONSUMPTION_RATES.WOOD_PER_STRUCTURE_PER_TICK * tickCount;
+	const baseStoneConsumption = structureCount * CONSUMPTION_RATES.STONE_PER_STRUCTURE_PER_TICK * tickCount;
+	const baseOreConsumption = structureCount * CONSUMPTION_RATES.ORE_PER_STRUCTURE_PER_TICK * tickCount;
 
 	// Apply world template multiplier (Phase 1D)
 	return {
 		food: baseFoodConsumption * worldTemplateMultiplier,
 		water: baseWaterConsumption * worldTemplateMultiplier,
-		wood: 0, // Not consumed - only used for construction
-		stone: 0, // Not consumed - only used for construction
-		ore: 0, // Not consumed - only used for construction
+		wood: baseWoodConsumption * worldTemplateMultiplier,
+		stone: baseStoneConsumption * worldTemplateMultiplier,
+		ore: baseOreConsumption * worldTemplateMultiplier,
 	};
 }
 

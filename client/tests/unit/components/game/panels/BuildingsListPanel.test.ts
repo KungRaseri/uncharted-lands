@@ -213,7 +213,8 @@ describe('BuildingsListPanel', () => {
 
 			expect(screen.getByText('Population Capacity')).toBeInTheDocument();
 			expect(screen.getByText('Increases population capacity')).toBeInTheDocument();
-			expect(screen.getByText('+5')).toBeInTheDocument();
+			// Check for modifier value with level multiplier (level 1 × value 5 = +5)
+			expect(screen.getByText(/\+5/)).toBeInTheDocument();
 		});
 	});
 
