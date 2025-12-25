@@ -11,6 +11,7 @@
 
 	import { browser } from '$app/environment';
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
+	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 	import { layoutStore } from '$lib/stores/ui/dashboard-layout.svelte';
 	import type { PanelId } from '$lib/stores/ui/dashboard-layout.svelte';
 	import LayoutPresetSelector from '../LayoutPresetSelector.svelte';
@@ -25,6 +26,9 @@
 
 	// Viewport detection
 	let isMobile = $state(false);
+
+	// Reset confirmation modal
+	let resetModalOpen = $state(false);
 
 	$effect(() => {
 		if (browser) {
@@ -73,9 +77,12 @@
 	}
 
 	function handleReset() {
-		if (confirm('Reset layout to default? This will clear all customizations.')) {
-			layoutStore.resetLayout('default');
-		}
+		resetModalOpen = true;
+	}
+
+	function confirmReset() {
+		layoutStore.resetLayout('default');
+		resetModalOpen = false;
 	}
 
 	// Keyboard shortcuts
@@ -307,3 +314,14 @@
 		</div>
 	{/if}
 {/if}
+
+<!-- Reset Confirmation Modal -->
+<ConfirmModal
+	bind:open={resetModalOpen}
+	title="Reset Layout"
+	message="Reset layout to default? This will clear all customizations and restore the default panel arrangement."
+	confirmText="Reset"
+	cancelText="Cancel"
+	variant="warning"
+	onconfirm={confirmReset}
+/>

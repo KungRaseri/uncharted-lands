@@ -110,51 +110,19 @@
 				logger.warn('[SETTLEMENT PAGE] No storage data available in settlement');
 			}
 
-			// ✅ FIXED: Calculate capacity from housing structures
-			// Base capacity is 10, each housing structure adds 7 (from GDD)
-			let calculatedCapacity = 10; // Base capacity
-			if (data.settlementStructures) {
-				// Get housing structures and sum their population_capacity modifiers
-				const housingStructures = data.settlementStructures.filter(
-					(s: any) => s.buildingType === 'HOUSING'
-				);
-
-				for (const house of housingStructures) {
-					// Each housing structure has modifiers array with population_capacity
-					if (house.modifiers) {
-						const capacityMod = house.modifiers.find(
-							(m: any) => m.name === 'population_capacity'
-						);
-						if (capacityMod) {
-							calculatedCapacity += capacityMod.value;
-							logger.debug('[SETTLEMENT PAGE] Found housing capacity:', {
-								structureName: house.name,
-								level: house.level,
-								capacityValue: capacityMod.value,
-								totalCapacity: calculatedCapacity
-							});
-						}
-					}
-				}
-			}
-
-			logger.debug('[SETTLEMENT PAGE] Final calculated capacity:', {
-				baseCapacity: 10,
-				totalCapacity: calculatedCapacity,
-				housingCount:
-					data.settlementStructures?.filter((s: any) => s.buildingType === 'HOUSING')
-						.length || 0
-			});
-
 			// Initialize population store from population data
 			if (data.settlement.population) {
+				// ✅ FIXED: Use server-calculated capacity instead of manual client calculation
+				const capacity = data.settlement.population.capacity || 10; // Fallback to base capacity
+				
 				logger.debug('[SETTLEMENT PAGE] Initializing population:', {
 					population: data.settlement.population,
-					calculatedCapacity
+					serverCalculatedCapacity: capacity
 				});
+				
 				populationStore.initializeFromServerData(data.settlement.id, {
 					current: data.settlement.population.currentPopulation || 0,
-					capacity: calculatedCapacity, // ✅ FIXED: Use calculated capacity instead of hardcoded 100
+					capacity: capacity,
 					happiness: data.settlement.population.happiness || 50,
 					growthRate: 0,
 					immigrationChance: 0,
@@ -175,13 +143,11 @@
 			// Check if the structure was built in this settlement
 			if (eventData.settlementId === data.settlement?.id) {
 				logger.debug(
-					'[SETTLEMENT PAGE] Structure built in current settlement, refreshing data...'
+					'[SETTLEMENT PAGE] Structure built in current settlement'
 				);
 
-				// Invalidate the page data to trigger a reload
-				invalidate('game:settlement');
-
-				// Refresh area stats immediately
+				// Socket stores handle structure updates automatically
+				// Just refresh area stats for immediate UI feedback
 				fetchAreaStats();
 			}
 		};

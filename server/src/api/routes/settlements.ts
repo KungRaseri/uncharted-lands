@@ -18,6 +18,7 @@ import { authenticate } from '../middleware/auth.js';
 import { logger } from '../../utils/logger.js';
 import { MODIFIER_NAMES } from '../../game/modifier-names.js';
 import { calculateTransferParameters } from '../../game/transfers.js';
+import { calculatePopulationCapacity } from '../../game/consumption-calculator.js';
 
 const router = Router();
 
@@ -106,7 +107,26 @@ router.get('/:id', async (req, res) => {
 			})
 		);
 
-		res.json(settlement);
+		// ✅ NEW: Calculate population capacity from housing structures
+		// Map to Structure type for calculation
+		const mappedStructures = settlement.structures.map((s: any) => ({
+			id: s.id,
+			name: s.structure?.name || '',
+			modifiers: s.modifiers || []
+		}));
+		
+		const populationCapacity = calculatePopulationCapacity(mappedStructures);
+		
+		// Add capacity to population object in response
+		const responseData = {
+			...settlement,
+			population: settlement.population ? {
+				...settlement.population,
+				capacity: populationCapacity
+			} : null
+		};
+
+		res.json(responseData);
 	} catch (error) {
 		logger.error('[API] Error fetching settlement', error);
 		res.status(500).json({ error: 'Failed to fetch settlement' });

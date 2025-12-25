@@ -6,6 +6,8 @@
 	import Footer from '$lib/components/app/Footer.svelte';
 	import { onMount } from 'svelte';
 	import { getProductionRates } from '$lib/api/game-config';
+	import { Toast } from '@skeletonlabs/skeleton-svelte';
+	import { toaster } from '$lib/stores/toaster';
 
 	// Pre-load production rates on app initialization
 	onMount(async () => {
@@ -32,3 +34,16 @@
 		<Footer />
 	</footer>
 </div>
+
+<!-- Toast notifications -->
+<Toast.Group {toaster}>
+	{#snippet children(toast)}
+		<Toast {toast}>
+			<Toast.Message>
+				<Toast.Title>{toast.title}</Toast.Title>
+				<Toast.Description>{toast.description}</Toast.Description>
+			</Toast.Message>
+			<Toast.CloseTrigger />
+		</Toast>
+	{/snippet}
+</Toast.Group>

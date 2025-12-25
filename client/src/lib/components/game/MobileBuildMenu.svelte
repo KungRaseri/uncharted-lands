@@ -2,7 +2,7 @@
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import type { StructureMetadata } from '$lib/api/structures';
 	import { logger } from '$lib/utils/logger';
-	import { toastStore } from '@skeletonlabs/skeleton';
+	import { toaster } from '$lib/stores/toaster';
 
 	interface Props {
 		open: boolean;
@@ -132,18 +132,16 @@
 						.map((s: any) => `${s.type}: need ${s.missing} more`)
 						.join(', ');
 					
-					toastStore.trigger({
-						message: `Insufficient Resources: ${shortageText}`,
-						background: 'variant-filled-error',
-						timeout: 5000,
-						classes: 'z-[9999]'
+					toaster.error({
+						title: 'Insufficient Resources',
+						description: shortageText,
+						duration: 5000
 					});
 				} else {
-					toastStore.trigger({
-						message: result.message || 'Failed to build structure',
-						background: 'variant-filled-error',
-						timeout: 5000,
-						classes: 'z-[9999]'
+					toaster.error({
+						title: 'Build Failed',
+						description: result.message || 'Failed to build structure',
+						duration: 5000
 					});
 				}
 				return;
@@ -152,21 +150,19 @@
 			logger.debug('[MobileBuildMenu] Structure created successfully:', result);
 
 			// Show success toast
-			toastStore.trigger({
-				message: `${structure.displayName} queued for construction!`,
-				background: 'variant-filled-success',
-				timeout: 3000,
-				classes: 'z-[9999]'
+			toaster.success({
+				title: 'Structure Queued',
+				description: `${structure.displayName} queued for construction!`,
+				duration: 3000
 			});
 
 			onClose();
 		} catch (error) {
 			logger.error('[MobileBuildMenu] Network error:', error);
-			toastStore.trigger({
-				message: 'Network error - could not build structure',
-				background: 'variant-filled-error',
-				timeout: 5000,
-				classes: 'z-[9999]'
+			toaster.error({
+				title: 'Network Error',
+				description: 'Could not build structure. Please try again.',
+				duration: 5000
 			});
 		}
 	}

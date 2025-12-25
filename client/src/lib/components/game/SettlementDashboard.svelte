@@ -22,6 +22,7 @@
 	// Modals
 	import SettingsModal from './modals/SettingsModal.svelte';
 	import ExtractorTypeSelector from './modals/ExtractorTypeSelector.svelte';
+	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 	import AlertsPanel from './panels/AlertsPanel.svelte';
 	import SettlementInfoPanel from './panels/SettlementInfoPanel.svelte';
 	import ResourcePanel from './panels/ResourcePanel.svelte';
@@ -117,6 +118,10 @@
 	// ✅ NEW: Extractor selection modal state
 	let extractorSelectorOpen = $state(false);
 	let selectedSlot = $state<number | null>(null);
+
+	// ✅ NEW: Demolish confirmation modal state
+	let demolishModalOpen = $state(false);
+	let buildingToDemolish = $state<string | null>(null);
 
 	// ✅ NEW: Raw construction queue with tileId/slotPosition for slot locking
 	let rawConstructionQueue = $state<Array<{
@@ -490,18 +495,17 @@
 		}
 	}
 
-	async function handleDemolishBuilding(buildingId: string) {
-		if (
-			!confirm(
-				'Are you sure you want to demolish this building? This action cannot be undone.'
-			)
-		) {
-			return;
-		}
+	function handleDemolishBuilding(buildingId: string) {
+		buildingToDemolish = buildingId;
+		demolishModalOpen = true;
+	}
+
+	async function confirmDemolish() {
+		if (!buildingToDemolish) return;
 
 		try {
 			const formData = new FormData();
-			formData.append('structureId', buildingId);
+			formData.append('structureId', buildingToDemolish);
 
 			const response = await fetch('?/demolishStructure', {
 				method: 'POST',
@@ -517,9 +521,12 @@
 			}
 
 			logger.debug('[Dashboard] Building demolished successfully');
+			demolishModalOpen = false;
 		} catch (error) {
 			logger.error('[Dashboard] Failed to demolish building:', error);
 			alert('Network error - could not demolish building');
+		} finally {
+			buildingToDemolish = null;
 		}
 	}
 
@@ -792,3 +799,17 @@
 		onBuild={handleExtractorBuild}
 	/>
 {/if}
+
+<!-- Demolish Confirmation Modal -->
+<ConfirmModal
+	bind:open={demolishModalOpen}
+	title="Demolish Building"
+	message="Are you sure you want to demolish this building? This action cannot be undone and you will not recover the resources."
+	confirmText="Demolish"
+	cancelText="Cancel"
+	variant="danger"
+	onconfirm={confirmDemolish}
+	oncancel={() => {
+		buildingToDemolish = null;
+	}}
+/>

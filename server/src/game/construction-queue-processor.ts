@@ -272,6 +272,7 @@ export function getStructureCategory(structureType: string): string {
 /**
  * Broadcast construction progress for active constructions
  * Called every second to update clients with real-time progress
+ * Now uses batched emissions (1 event per world instead of N events per construction)
  *
  * @param worldId - World to process
  * @param currentTime - Current timestamp (ms)
@@ -300,8 +301,8 @@ export async function broadcastConstructionProgress(
 				)
 			);
 
-		// Emit progress for each active construction
-		for (const { construction, settlement } of activeConstructions) {
+		// Build progress data for all constructions (batch calculation)
+		const progressData = activeConstructions.map(({ construction, settlement }) => {
 			const startTime = construction.startedAt?.getTime() || currentTime;
 			const endTime = construction.completesAt?.getTime() || currentTime;
 			const elapsed = currentTime - startTime;
@@ -315,13 +316,21 @@ export async function broadcastConstructionProgress(
 			// Calculate time remaining in seconds
 			const timeRemaining = Math.max(0, Math.ceil((endTime - currentTime) / 1000));
 
-			// Emit to all clients in this world
-			io.to(`world:${worldId}`).emit('construction-progress', {
+			return {
 				settlementId: settlement.id,
 				projectId: construction.id,
 				progress,
 				timeRemaining,
+			};
+		});
+
+		// Emit ONE batched event with all progress data
+		// This reduces socket overhead from N emits to 1 emit per world per second
+		if (progressData.length > 0) {
+			io.to(`world:${worldId}`).emit('construction-progress-batch', {
+				worldId,
 				timestamp: currentTime,
+				constructions: progressData,
 			});
 		}
 	} catch (error) {
