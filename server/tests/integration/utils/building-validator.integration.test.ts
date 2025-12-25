@@ -5,13 +5,13 @@
  * December 2025 - Building Area System Implementation
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { db } from '../../../src/db/index.js';
 import { settlementStructures, settlements } from '../../../src/db/schema.js';
 import { validateBuildingPlacement } from '../../../src/utils/building-validator.js';
 import { createId } from '@paralleldrive/cuid2';
 import type { TestEntityChain } from '../../helpers/integration-test-factory.js';
-import { createTestSettlement } from '../../helpers/integration-test-factory.js';
+import { createTestSettlement, cleanupTestChain } from '../../helpers/integration-test-factory.js';
 
 describe('Building Validator - Integration', () => {
 	let testChain: TestEntityChain;
@@ -50,6 +50,10 @@ describe('Building Validator - Integration', () => {
 		workshopId = workshop.id;
 		marketplaceId = marketplace.id;
 		farmId = farm.id;
+	});
+
+	afterEach(async () => {
+		await cleanupTestChain(testChain);
 	});
 
 	describe('Town Hall Level Validation', () => {

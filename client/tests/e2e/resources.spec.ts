@@ -135,7 +135,7 @@ test.describe('Resource Production Flow', () => {
 				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, adminSessionToken);
+				await deleteWorld(page.request, testWorldId);
 				await page.close();
 				await context.close();
 			} catch (error) {

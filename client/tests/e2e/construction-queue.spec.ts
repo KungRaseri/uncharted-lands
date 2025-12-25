@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { addGenerousTestResources } from './helpers/settlements.js';
-import { registerUser, generateUniqueEmail, TEST_USERS } from './auth/auth.helpers.js';
-import { createWorldViaAPI } from './helpers/worlds.js';
+import { registerUser, generateUniqueEmail, TEST_USERS, cleanupTestUser } from './auth/auth.helpers.js';
+import { createWorldViaAPI, deleteWorld } from './helpers/worlds.js';
 import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state.js';
 
 /**
@@ -122,6 +122,21 @@ test.describe('Construction Queue', () => {
 		await context.close();
 	});
 
+	test.afterAll(async ({ browser }) => {
+		if (testWorldId && adminSessionToken) {
+			try {
+				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
+				const context = await browser.newContext();
+				const page = await context.newPage();
+				await deleteWorld(page.request, testWorldId);
+				await page.close();
+				await context.close();
+			} catch (error) {
+				console.error('[E2E] Failed to delete shared world:', error);
+			}
+		}
+	});
+
 	test.beforeEach(async ({ page, request }) => {
 		// Register new test user
 		testUserEmail = generateUniqueEmail('construction-queue-test');
@@ -193,6 +208,18 @@ test.describe('Construction Queue', () => {
 			console.log('[E2E] Page content:', bodyText?.substring(0, 500));
 			
 			throw error;
+		}
+	});
+
+	test.afterEach(async ({ request }) => {
+		// Clean up test user only (world is shared)
+		if (testUserEmail) {
+			try {
+				await cleanupTestUser(request, testUserEmail);
+				console.log('[E2E] Cleaned up test user:', testUserEmail);
+			} catch (error) {
+				console.warn('[E2E] Failed to cleanup user:', error);
+			}
 		}
 	});
 

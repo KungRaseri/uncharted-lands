@@ -19,7 +19,9 @@ describe('Settlements API Routes', () => {
 	});
 
 	afterEach(async () => {
-		// Cleanup is handled by global test hooks
+		// Clean up test data properly
+		const { cleanupTestChain } = await import('../../helpers/integration-test-factory.js');
+		await cleanupTestChain(testChain);
 	});
 
 	describe('GET /api/settlements', () => {

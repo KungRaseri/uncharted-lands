@@ -7,6 +7,7 @@
 
 import { browser } from '$app/environment';
 import { socketStore } from './socket';
+import { logger } from '$lib/utils/logger';
 
 type BuildingType = 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER';
 
@@ -81,38 +82,43 @@ function initializeListeners(): void {
 		}
 	);
 
-	// Listen for construction progress updates
+	// Listen for batched construction progress updates (optimized - one event per world per second)
 	socket.on(
-		'construction-progress',
+		'construction-progress-batch',
 		(data: {
-			settlementId: string;
-			projectId: string;
-			progress: number;
-			timeRemaining?: number;
+			worldId: string;
+			timestamp: number;
+			constructions: Array<{
+				settlementId: string;
+				projectId: string;
+				progress: number;
+				timeRemaining: number;
+			}>;
 		}) => {
-			const currentState = state.construction.get(data.settlementId);
-			if (!currentState) return;
+			// Process all constructions in the batch
+			for (const construction of data.constructions) {
+				const currentState = state.construction.get(construction.settlementId);
+				if (!currentState) continue;
 
-			// Update progress in active projects
-			const updatedActive = currentState.active.map((project) => {
-				if (project.id === data.projectId) {
-					return {
-						...project,
-						progress: data.progress,
-						...(data.timeRemaining !== undefined && {
-							completionTime: Date.now() + data.timeRemaining * 1000
-						})
-					};
-				}
-				return project;
-			});
+				// Update progress in active projects
+				const updatedActive = currentState.active.map((project) => {
+					if (project.id === construction.projectId) {
+						return {
+							...project,
+							progress: construction.progress,
+							completionTime: Date.now() + construction.timeRemaining * 1000
+						};
+					}
+					return project;
+				});
 
-			state.construction.set(data.settlementId, {
-				...currentState,
-				active: updatedActive
-			});
+				state.construction.set(construction.settlementId, {
+					...currentState,
+					active: updatedActive
+				});
+			}
 
-			// Trigger reactivity
+			// Trigger reactivity once for all updates
 			state.construction = new Map(state.construction);
 		}
 	);

@@ -199,7 +199,7 @@ test.describe('Multi-Settlement Network Management', () => {
 				console.log(`[E2E] Cleaning up shared world: ${sharedWorldId}`);
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, sessionCookieValue);
+				await deleteWorld(page.request, sharedWorldId);
 				await context.close();
 			} catch (error) {
 				console.log('[E2E] Failed to delete world:', error);

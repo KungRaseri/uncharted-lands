@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { db } from '../../../src/db/index.js';
 import { settlementStructures } from '../../../src/db/schema.js';
 import { validateBuildingPlacement } from '../../../src/utils/building-validator.js';
 import { getAreaStatistics } from '../../../src/utils/area-calculator.js';
 import { createId } from '@paralleldrive/cuid2';
-import { createTestSettlement, type TestEntityChain } from '../../helpers/integration-test-factory.js';
+import { createTestSettlement, cleanupTestChain, type TestEntityChain } from '../../helpers/integration-test-factory.js';
 
 describe('Area Validation Debug', () => {
 	let testChain: TestEntityChain;
@@ -39,6 +39,10 @@ describe('Area Validation Debug', () => {
 			house: house.areaCost,
 			workshop: workshop.areaCost,
 		});
+	});
+
+	afterEach(async () => {
+		await cleanupTestChain(testChain);
 	});
 
 	it('should debug area calculation', async () => {

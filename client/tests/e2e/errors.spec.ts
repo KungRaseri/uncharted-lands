@@ -157,7 +157,7 @@ test.describe('Error Handling & Edge Cases', () => {
 			try {
 				const context = await browser.newContext();
 				const page = await context.newPage();
-				await deleteWorld(page.request, adminSessionToken);
+				await deleteWorld(page.request, sharedWorldId);
 				await context.close();
 			} catch (error) {
 				console.log('[E2E] Failed to delete world:', error);
