@@ -74,15 +74,10 @@
 			const fromSettlement = settlements.find(s => s.id === transfer.fromSettlementId);
 			const toSettlement = settlements.find(s => s.id === transfer.toSettlementId);
 			
-			if (fromSettlement && toSettlement) {
-				const fromPos = calculateCanvasPosition(fromSettlement);
-				const toPos = calculateCanvasPosition(toSettlement);
-				
-				// Animated dashed line
-				ctx.strokeStyle = '#3b82f6';
-				ctx.lineWidth = 2;
-				ctx.setLineDash([5, 5]);
-				ctx.lineDashOffset = -Date.now() / 50;
+		if (fromSettlement && toSettlement && ctx) {
+			const fromPos = calculateCanvasPosition(fromSettlement);
+			const toPos = calculateCanvasPosition(toSettlement);
+			
 				
 				ctx.beginPath();
 				ctx.moveTo(fromPos.x, fromPos.y);
@@ -109,10 +104,14 @@
 		});
 		
 		// Reset line dash
-		ctx.setLineDash([]);
+		if (ctx) {
+			ctx.setLineDash([]);
+		}
 		
 		// Draw settlement nodes
 		settlements.forEach(settlement => {
+			if (!ctx) return;
+			
 			const pos = calculateCanvasPosition(settlement);
 			const isHovered = hoveredSettlement?.id === settlement.id;
 			
@@ -205,7 +204,7 @@
 			height={CANVAS_HEIGHT}
 			onmousemove={handleMouseMove}
 			class="w-full"
-		/>
+		></canvas>
 		
 		<!-- Legend -->
 		<div class="absolute bottom-4 left-4 bg-white/90 dark:bg-surface-800/90 backdrop-blur-sm rounded-lg p-3 space-y-2 text-xs">

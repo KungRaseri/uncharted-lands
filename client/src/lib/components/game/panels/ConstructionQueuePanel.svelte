@@ -200,11 +200,9 @@
 									aria-valuenow={project.progress}
 									aria-valuemin="0"
 									aria-valuemax="100"
-									aria-label="{project.buildingName} construction progress: {project.progress}%, {formatTimeRemaining(
-										project.timeRemaining"
-									data-testid="progress-bar"
-									data-progress="{project.progress}"
-									)} remaining"
+								aria-label="{project.buildingName} construction progress: {project.progress}%, {formatTimeRemaining(project.timeRemaining)} remaining"
+								data-testid="progress-bar"
+								data-progress="{project.progress}"
 								>
 									<div
 										class="h-full bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 rounded-xl transition-all duration-500 ease-out flex items-center justify-center"

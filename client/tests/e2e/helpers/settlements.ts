@@ -403,16 +403,14 @@ export async function buildExtractor(
 // ============================================================================
 
 /**
- * Update settlement resources via API (for test setup)
+ * Update settlement resources via test helper API
  * @param api - Playwright APIRequestContext
  * @param settlementId - Settlement ID
- * @param sessionToken - Session cookie value
  * @param resources - Resource amounts to set
  */
 export async function updateSettlementResources(
 	api: APIRequestContext,
 	settlementId: string,
-	sessionToken: string,
 	resources: {
 		food?: number;
 		water?: number;
@@ -423,9 +421,11 @@ export async function updateSettlementResources(
 ): Promise<void> {
 	const API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
 	
-	const response = await api.put(`${API_URL}/settlements/${settlementId}/storage`, {
-		headers: { Cookie: `session=${sessionToken}` },
-		data: resources
+	const response = await api.post(`${API_URL}/test/set-resources`, {
+		data: {
+			settlementId,
+			resources
+		}
 	});
 
 	if (!response.ok()) {
@@ -438,14 +438,12 @@ export async function updateSettlementResources(
  * Add generous test resources to a settlement (for E2E testing)
  * @param api - Playwright APIRequestContext
  * @param settlementId - Settlement ID
- * @param sessionToken - Session cookie value
  */
 export async function addGenerousTestResources(
 	api: APIRequestContext,
-	settlementId: string,
-	sessionToken: string
+	settlementId: string
 ): Promise<void> {
-	await updateSettlementResources(api, settlementId, sessionToken, {
+	await updateSettlementResources(api, settlementId, {
 		food: 1000,
 		water: 1000,
 		wood: 500,

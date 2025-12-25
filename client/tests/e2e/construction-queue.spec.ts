@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { addGenerousTestResources } from './helpers/settlements.js';
+import { registerUser, generateUniqueEmail, TEST_USERS } from './auth/auth.helpers.js';
+import { createWorldViaAPI } from './helpers/worlds.js';
 
 /**
  * Construction Queue E2E Tests
@@ -7,23 +10,123 @@ import { test, expect } from '@playwright/test';
  * structures to completion and UI updates.
  */
 
+const apiUrl = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+
 test.describe('Construction Queue', () => {
-	test.beforeEach(async ({ page }) => {
-		// Login
-		await page.goto('/login');
-		await page.fill('input[name="email"]', 'test@example.com');
-		await page.fill('input[name="password"]', 'password123');
-		await page.click('button[type="submit"]');
+	let settlementId: string;
+	let testUserEmail: string;
+	let sessionCookieValue: string;
+	let testServerId: string;
+	let testWorldId: string;
+	let adminSessionToken: string;
+
+	test.beforeAll(async ({ browser }) => {
+		// Create admin user and server/world
+		const context = await browser.newContext();
+		const page = await context.newPage();
+
+		const adminEmail = generateUniqueEmail('construction-queue-admin');
+		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
+
+		const cookies = await context.cookies();
+		const sessionCookie = cookies.find((c) => c.name === 'session');
+
+		if (!sessionCookie) {
+			throw new Error('No session cookie found after admin registration');
+		}
+
+		adminSessionToken = sessionCookie.value;
+
+		// Elevate to admin
+		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
+
+		// Get or create test server
+		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
+			headers: { Cookie: `session=${adminSessionToken}` }
+		});
+
+		const serversData = await serversResponse.json();
+		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
+		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+
+		if (!testServer) {
+			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
+				headers: { Cookie: `session=${adminSessionToken}` },
+				data: {
+					name: 'E2E Test Server',
+					hostname: 'localhost',
+					port: 3001,
+					status: 'ONLINE'
+				}
+			});
+			testServer = await createServerResponse.json();
+		}
+
+		testServerId = testServer.id;
+
+		// Create world
+		const worldData = await createWorldViaAPI(
+			page.request,
+			testServerId,
+			adminSessionToken,
+			{
+				name: `Construction Queue Test World ${Date.now()}`,
+				size: 'TINY',
+				seed: Date.now()
+			},
+			true
+		);
+		testWorldId = worldData.id;
+
+		await page.close();
+		await context.close();
+	});
+
+	test.beforeEach(async ({ page, request }) => {
+		// Register new test user
+		testUserEmail = generateUniqueEmail('construction-queue-test');
+		await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
 		
-		// Wait for redirect to game page
-		await page.waitForURL('/game', { timeout: 10000 });
+		// Should redirect to getting started
+		await page.waitForURL('/game/getting-started', { timeout: 10000 });
 		
-		// Click on first settlement card
-		const firstSettlement = page.locator('[data-testid^="settlement-card"]').first();
-		await firstSettlement.click();
+		// Get session cookie
+		const cookies = await page.context().cookies();
+		const sessionCookie = cookies.find((c) => c.name === 'session');
+		if (!sessionCookie?.value) {
+			throw new Error('No session cookie found after registration');
+		}
+		sessionCookieValue = sessionCookie.value;
+
+		// Get account info
+		const accountResponse = await request.get(`${apiUrl}/account/me`, {
+			headers: { Cookie: `session=${sessionCookieValue}` }
+		});
+		expect(accountResponse.ok()).toBeTruthy();
+		const account = await accountResponse.json();
+		const accountId = account.id;
+		const username = account.profile?.username || testUserEmail;
+
+		// Create settlement
+		const settlementResponse = await request.post(`${apiUrl}/settlements`, {
+			headers: { Cookie: `session=${sessionCookieValue}` },
+			data: {
+				worldId: testWorldId,
+				serverId: testServerId,
+				accountId: accountId,
+				username: username
+			}
+		});
+		expect(settlementResponse.ok()).toBeTruthy();
+		const settlement = await settlementResponse.json();
+		settlementId = settlement.id;
+
+		// Add generous test resources
+		await addGenerousTestResources(request, settlementId);
 		
-		// Wait for settlement page to load
-		await page.waitForURL(/\/game\/settlements\/[^/]+$/, { timeout: 10000 });
+		// Navigate to settlement
+		await page.goto(`/game/settlements/${settlementId}`);
+		await page.waitForLoadState('networkidle');
 		
 		// Wait for dashboard to be ready
 		await page.waitForSelector('[data-testid="build-menu-button"]', { timeout: 10000 });
@@ -176,127 +279,5 @@ test.describe('Construction Queue', () => {
 				expect(newFirstName).toBe(firstName);
 			}
 		}
-	});
-});
-		
-		// Wait 3 seconds
-		await page.waitForTimeout(3000);
-		
-		// Get updated progress
-		const updatedProgress = await progressBar.getAttribute('data-progress');
-		
-		// Progress should have increased
-		expect(Number(updatedProgress)).toBeGreaterThan(Number(initialProgress));
-	});
-
-	test('should prevent building extractor in occupied slot', async ({ page }) => {
-		// Build first extractor
-		await page.click('[data-testid="build-menu-button"]');
-		await page.click('[data-testid="structure-card-Farm"]');
-		await page.click('[data-testid="tile-slot-0"]');
-		await page.click('[data-testid="confirm-build"]');
-		
-		// Wait for queue to update
-		await page.waitForTimeout(1000);
-		
-		// Try to build another in same slot
-		await page.click('[data-testid="build-menu-button"]');
-		await page.click('[data-testid="structure-card-Well"]');
-		await page.click('[data-testid="tile-slot-0"]'); // Same slot
-		await page.click('[data-testid="confirm-build"]');
-		
-		// Should show error message
-		await expect(page.locator('[data-testid="error-message"]')).toContainText('SLOT_RESERVED');
-	});
-
-	test('should validate area before building', async ({ page }) => {
-		// Try to build structure that exceeds area capacity
-		// (Assumes settlement has limited area)
-		await page.click('[data-testid="build-menu-button"]');
-		await page.click('[data-testid="structure-card-Warehouse"]');
-		await page.click('[data-testid="confirm-build"]');
-		
-		// Build until area is full
-		for (let i = 0; i < 20; i++) {
-			const errorVisible = await page.locator('[data-testid="error-message"]').isVisible();
-			if (errorVisible) {
-				const errorText = await page.locator('[data-testid="error-message"]').textContent();
-				expect(errorText).toContain('INSUFFICIENT_AREA');
-				break;
-			}
-			await page.click('[data-testid="build-menu-button"]');
-			await page.click('[data-testid="structure-card-Warehouse"]');
-			await page.click('[data-testid="confirm-build"]');
-			await page.waitForTimeout(500);
-		}
-	});
-
-	test('should complete construction and add structure', async ({ page }) => {
-		// This test requires a very short construction time in test environment
-		// OR mocking/fast-forwarding time
-		
-		// For now, skip or mark as slow
-		test.skip();
-		
-		// TODO: Implement time-mocking or use test fixtures with 1-second constructions
-	});
-
-	test('should queue multiple structures correctly', async ({ page }) => {
-		// Build 5 structures
-		for (let i = 0; i < 5; i++) {
-			await page.click('[data-testid="build-menu-button"]');
-			await page.click('[data-testid="structure-card-Tent"]');
-			await page.click('[data-testid="confirm-build"]');
-			await page.waitForTimeout(500);
-		}
-		
-		// Check queue count
-		const queueItems = page.locator('[data-testid="construction-queue-item"]');
-		await expect(queueItems).toHaveCount(5);
-		
-		// First 3 should be active
-		const activeItems = queueItems.filter({ has: page.locator('[data-status="active"]') });
-		await expect(activeItems).toHaveCount(3);
-		
-		// Rest should be queued
-		const queuedItems = queueItems.filter({ has: page.locator('[data-status="queued"]') });
-		await expect(queuedItems).toHaveCount(2);
-	});
-
-	test('should persist queue on page refresh', async ({ page }) => {
-		// Build structure
-		await page.click('[data-testid="build-menu-button"]');
-		await page.click('[data-testid="structure-card-Tent"]');
-		await page.click('[data-testid="confirm-build"]');
-		
-		// Wait for queue
-		await page.waitForSelector('[data-testid="construction-queue-item"]');
-		
-		// Refresh page
-		await page.reload();
-		
-		// Wait for page to load
-		await page.waitForSelector('[data-testid="settlement-name"]');
-		
-		// Queue should still be visible
-		const queueItems = page.locator('[data-testid="construction-queue-item"]');
-		await expect(queueItems).toHaveCount(1);
-	});
-
-	test('should show time in HH:MM:SS format', async ({ page }) => {
-		// Build structure
-		await page.click('[data-testid="build-menu-button"]');
-		await page.click('[data-testid="structure-card-Tent"]');
-		await page.click('[data-testid="confirm-build"]');
-		
-		// Wait for queue
-		await page.waitForSelector('[data-testid="construction-queue-item"]');
-		
-		// Get time display
-		const timeDisplay = page.locator('[data-testid="time-remaining"]').first();
-		const timeText = await timeDisplay.textContent();
-		
-		// Should match HH:MM:SS format
-		expect(timeText).toMatch(/^\d{2}:\d{2}:\d{2}$/);
 	});
 });
