@@ -25,7 +25,8 @@ import {
 	generateUniqueEmail,
 	registerUser,
 	assertRedirectedToGettingStarted,
-	TEST_USERS
+	TEST_USERS,
+	cleanupTestUser
 } from './auth/auth.helpers';
 import { getSharedTestData } from './helpers/shared-data';
 
@@ -41,6 +42,7 @@ const API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api'
 
 test.describe('Error Handling & Edge Cases', () => {
 	let sharedWorldId: string;
+	let testUserEmail: string;
 
 	// Increase timeout for error tests
 	test.setTimeout(90000); // 90 seconds
@@ -65,8 +67,8 @@ test.describe('Error Handling & Edge Cases', () => {
 
 	test.beforeEach(async ({ page }) => {
 		// Register and login test user for each test
-		const email = generateUniqueEmail('error-test');
-		await registerUser(page, email, TEST_USERS.VALID.password);
+		testUserEmail = generateUniqueEmail('error-test');
+		await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
 		await assertRedirectedToGettingStarted(page);
 
 		// Capture browser console for debugging
@@ -75,6 +77,18 @@ test.describe('Error Handling & Edge Cases', () => {
 				console.log('[BROWSER ERROR]', msg.text());
 			}
 		});
+	});
+
+	test.afterEach(async ({ request }) => {
+		// Clean up test user after each test
+		if (testUserEmail) {
+			try {
+				await cleanupTestUser(request, testUserEmail);
+				console.log('[E2E] Cleaned up test user:', testUserEmail);
+			} catch (error) {
+				console.warn('[E2E] Failed to cleanup user:', error);
+			}
+		}
 	});
 
 	// ========================================================================

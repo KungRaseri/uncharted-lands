@@ -105,6 +105,7 @@ test.describe('Multiplayer Real-Time Interactions', () => {
 	let sharedWorldId: string;
 	let sharedServerId: string;
 	let adminSessionToken: string;
+	let adminEmail: string;
 
 	// Increase timeout for multiplayer tests
 	test.setTimeout(120000); // 2 minutes
@@ -121,7 +122,7 @@ test.describe('Multiplayer Real-Time Interactions', () => {
 		const page = await context.newPage();
 
 		// Register admin user
-		const adminEmail = generateUniqueEmail('multiplayer-admin');
+		adminEmail = generateUniqueEmail('multiplayer-admin');
 		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
 
 		// Get session cookie
@@ -220,16 +221,29 @@ test.describe('Multiplayer Real-Time Interactions', () => {
 	});
 
 	test.afterAll(async ({ browser }) => {
-		if (sharedWorldId && adminSessionToken) {
-			try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+
+		try {
+			// Delete world if it exists
+			if (sharedWorldId && adminSessionToken) {
 				console.log(`[E2E] Cleaning up shared world: ${sharedWorldId}`);
-				const context = await browser.newContext();
-				const page = await context.newPage();
 				await deleteWorld(page.request, sharedWorldId);
-				await context.close();
-			} catch (error) {
-				console.log('[E2E] Failed to delete world:', error);
 			}
+
+			// Delete admin user if it exists
+			if (adminEmail) {
+				console.log(`[E2E] Cleaning up admin user: ${adminEmail}`);
+				try {
+					await page.request.delete(`${API_URL}/test/cleanup/user/${encodeURIComponent(adminEmail)}`);
+				} catch (error) {
+					console.log('[E2E] Failed to delete admin user:', error);
+				}
+			}
+		} catch (error) {
+			console.log('[E2E] Cleanup error:', error);
+		} finally {
+			await context.close();
 		}
 	});
 

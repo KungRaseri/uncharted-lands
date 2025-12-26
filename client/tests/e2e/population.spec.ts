@@ -29,7 +29,8 @@ import {
 	generateUniqueEmail,
 	registerUser,
 	assertRedirectedToGettingStarted,
-	TEST_USERS
+	TEST_USERS,
+	cleanupTestUser
 } from './auth/auth.helpers';
 import {
 	getPopulationCount,
@@ -67,16 +68,16 @@ test.describe('Population Management', () => {
 	// ========================================================================
 	test.beforeAll(async () => {
 		console.log('[E2E] Using shared test data from global setup...');
-		
+
 		// Get shared test data created by global-setup.ts
 		const sharedData = getSharedTestData();
-		
+
 		testWorldId = sharedData.generalWorldId!;
-		
+
 		if (!testWorldId) {
 			throw new Error('No general world ID available from global setup');
 		}
-		
+
 		console.log('[E2E] Using shared world ID:', testWorldId);
 	});
 
@@ -190,9 +191,17 @@ test.describe('Population Management', () => {
 		await joinWorldRoom(page, testWorldId, account.id);
 	});
 
-	// ========================================================================
-	// TEST 1: Display population and capacity
-	// ========================================================================
+	test.afterEach(async ({ request }) => {
+		// Cleanup test user only (world is shared)
+		if (testUserEmail) {
+			try {
+				await cleanupTestUser(request, testUserEmail);
+				console.log('[E2E] Cleaned up test user:', testUserEmail);
+			} catch (error) {
+				console.warn('[E2E] Failed to cleanup user:', error);
+			}
+		}
+	});
 
 	test('should display current population and capacity', async ({ page }) => {
 		console.log('[TEST] Verifying population display...');

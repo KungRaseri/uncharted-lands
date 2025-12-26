@@ -366,7 +366,7 @@ export const tiles = pgTable(
 		id: text('id').primaryKey(),
 		biomeId: text('biomeId')
 			.notNull()
-			.references(() => biomes.id),
+			.references(() => biomes.id, { onDelete: 'restrict' }),
 		regionId: text('regionId')
 			.notNull()
 			.references(() => regions.id, { onDelete: 'cascade' }),

@@ -78,6 +78,7 @@ test.describe('Multi-Settlement Network Management', () => {
 	let sharedWorldId: string;
 	let sharedServerId: string;
 	let sessionCookieValue: string;
+	let adminEmail: string;
 	let accountId: string;
 	let username: string;
 
@@ -93,7 +94,7 @@ test.describe('Multi-Settlement Network Management', () => {
 		const page = await context.newPage();
 
 		// Register admin user
-		const adminEmail = generateUniqueEmail('network-admin');
+		adminEmail = generateUniqueEmail('network-admin');
 		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
 
 		// Get session cookie
@@ -195,16 +196,29 @@ test.describe('Multi-Settlement Network Management', () => {
 	});
 
 	test.afterAll(async ({ browser }) => {
-		if (sharedWorldId && sessionCookieValue) {
-			try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+
+		try {
+			// Delete world if it exists
+			if (sharedWorldId && sessionCookieValue) {
 				console.log(`[E2E] Cleaning up shared world: ${sharedWorldId}`);
-				const context = await browser.newContext();
-				const page = await context.newPage();
 				await deleteWorld(page.request, sharedWorldId);
-				await context.close();
-			} catch (error) {
-				console.log('[E2E] Failed to delete world:', error);
 			}
+
+			// Delete admin user if it exists
+			if (adminEmail) {
+				console.log(`[E2E] Cleaning up admin user: ${adminEmail}`);
+				try {
+					await page.request.delete(`${API_URL}/test/cleanup/user/${encodeURIComponent(adminEmail)}`);
+				} catch (error) {
+					console.log('[E2E] Failed to delete admin user:', error);
+				}
+			}
+		} catch (error) {
+			console.log('[E2E] Cleanup error:', error);
+		} finally {
+			await context.close();
 		}
 	});
 

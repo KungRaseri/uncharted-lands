@@ -43,6 +43,136 @@ async function globalSetup(_config: FullConfig) {
 
 	try {
 		// ========================================
+		// 0. Clean up any existing test data (for edge cases where cleanup failed)
+		// ========================================
+		console.log('🧹 Step 0: Cleaning up any existing test data...');
+		
+		// Register a temporary admin to perform cleanup
+		const tempAdminEmail = `cleanup-admin-${Date.now()}@test.local`;
+		const tempAdminPassword = 'TempCleanup123!';
+		
+		try {
+			await registerUser(page, tempAdminEmail, tempAdminPassword);
+			
+			const cleanupCookies = await context.cookies();
+			const cleanupSession = cleanupCookies.find((c) => c.name === 'session');
+			
+			if (cleanupSession) {
+				// Elevate to admin
+				await page.request.put(
+					`${API_BASE_URL}/test/elevate-admin/${encodeURIComponent(tempAdminEmail)}`
+				);
+				
+				const cleanupToken = cleanupSession.value;
+				let deletedCount = 0;
+				
+				// 1. Delete test worlds (cascades to: Tiles, Regions, Settlements, SettlementStructures, SettlementResources, Disasters, ConstructionQueue, Players)
+				const worldsResponse = await page.request.get(`${API_BASE_URL}/worlds`, {
+					headers: { Cookie: `session=${cleanupToken}` }
+				});
+				
+				if (worldsResponse.ok()) {
+					const worldsData = await worldsResponse.json();
+					const worlds = Array.isArray(worldsData) ? worldsData : worldsData.worlds || [];
+					const testWorlds = worlds.filter((w: { name: string }) => 
+						w.name.includes('E2E') || 
+						w.name.includes('Test') ||
+						w.name.includes('test') ||
+						w.name.includes('Shared World') ||
+						w.name.includes('Population') ||
+						w.name.includes('Construction') ||
+						w.name.includes('Disaster') ||
+						w.name.includes('Settlement') ||
+						w.name.includes('Building Area') ||
+						w.name.includes('Resource') ||
+						w.name.includes('Structure') ||
+						w.name.includes('Error')
+					);
+					
+					for (const world of testWorlds) {
+						try {
+							await page.request.delete(`${API_BASE_URL}/worlds/${world.id}`, {
+								headers: { Cookie: `session=${cleanupToken}` }
+							});
+							deletedCount++;
+						} catch (error) {
+							// Ignore errors, world might already be deleted
+						}
+					}
+					
+					if (testWorlds.length > 0) {
+						console.log(`   🗑️  Deleted ${testWorlds.length} test world(s) (cascaded to settlements, structures, resources, tiles, etc.)`);
+					}
+				}
+				
+				// 2. Delete test servers (only those with "E2E" or "Test" in name, preserve production servers)
+				const serversResponse = await page.request.get(`${API_BASE_URL}/servers`, {
+					headers: { Cookie: `session=${cleanupToken}` }
+				});
+				
+				if (serversResponse.ok()) {
+					const serversData = await serversResponse.json();
+					const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
+					const testServers = servers.filter((s: { name: string }) => 
+						s.name.includes('E2E Test Server') && 
+						!s.name.includes('load-test-server') // Preserve load test server for reuse
+					);
+					
+					for (const server of testServers) {
+						try {
+							await page.request.delete(`${API_BASE_URL}/servers/${server.id}`, {
+								headers: { Cookie: `session=${cleanupToken}` }
+							});
+							deletedCount++;
+						} catch (error) {
+							// Ignore errors
+						}
+					}
+					
+					if (testServers.length > 0) {
+						console.log(`   🗑️  Deleted ${testServers.length} test server(s)`);
+					}
+				}
+				
+				// 3. Delete test accounts (only @test.local emails)
+				const playersResponse = await page.request.get(`${API_BASE_URL}/players`, {
+					headers: { Cookie: `session=${cleanupToken}` }
+				});
+				
+				if (playersResponse.ok()) {
+					const players = await playersResponse.json();
+					const testPlayers = Array.isArray(players) ? players.filter((p: { email: string }) => 
+						p.email.includes('@test.local')
+					) : [];
+					
+					for (const player of testPlayers) {
+						try {
+							await page.request.delete(`${API_BASE_URL}/players/${player.id}`, {
+								headers: { Cookie: `session=${cleanupToken}` }
+							});
+							deletedCount++;
+						} catch (error) {
+							// Ignore errors
+						}
+					}
+					
+					if (testPlayers.length > 0) {
+						console.log(`   🗑️  Deleted ${testPlayers.length} test account(s) (@test.local emails)`);
+					}
+				}
+				
+				if (deletedCount > 0) {
+					console.log(`✅ Database cleanup complete (${deletedCount} items removed)\n`);
+				} else {
+					console.log('✅ Database already clean (no test data found)\n');
+				}
+			}
+		} catch (error) {
+			// If cleanup fails, just log and continue - the setup will handle duplicates
+			console.log('⚠️  Cleanup skipped (no existing admin or cleanup failed)\n');
+		}
+
+		// ========================================
 		// 1. Create admin account
 		// ========================================
 		console.log('📝 Step 1: Creating admin account...');
