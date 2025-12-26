@@ -52,6 +52,7 @@ test.describe('Error Handling & Edge Cases', () => {
 	// ========================================================================
 
 	test.beforeAll(async ({ browser }) => {
+		test.setTimeout(60000); // Increase timeout for world creation
 		console.log('[E2E] Setting up shared server and world for error tests...');
 
 		const context = await browser.newContext();

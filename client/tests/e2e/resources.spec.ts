@@ -68,6 +68,7 @@ test.describe('Resource Production Flow', () => {
 	// SHARED SETUP: Create server and world ONCE for all tests
 	// ========================================================================
 	test.beforeAll(async ({ browser }) => {
+		test.setTimeout(60000); // Increase timeout for world creation
 		console.log('[E2E] Setting up shared server and world...');
 
 		const context = await browser.newContext();
@@ -87,43 +88,73 @@ test.describe('Resource Production Flow', () => {
 
 		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
 
-		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
-			headers: { Cookie: `session=${adminSessionToken}` }
+// Fetch existing servers
+	const serversResponse = await page.request.get(`${apiUrl}/servers`, {
+		headers: { Cookie: `session=${adminSessionToken}` }
+	});
+
+	const serversData = await serversResponse.json();
+	const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
+	
+	// Try to find existing E2E test server first
+	let testServer = servers.find((s: { name: string }) => s.name.startsWith('E2E Test Server'));
+
+	if (!testServer) {
+		// No E2E server found, create one with unique hostname+port to avoid conflicts
+		// Database has unique constraint on (hostname, port) and on name
+		const timestamp = Date.now();
+		const testServerName = `E2E Test Server ${timestamp}`;
+		const uniquePort = 3000 + (timestamp % 10000); // Generate port between 3000-13000
+		
+		console.log('[E2E] Creating test server with unique port:', uniquePort);
+		const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
+			headers: { Cookie: `session=${adminSessionToken}` },
+			data: {
+				name: testServerName,
+				hostname: 'localhost',
+				port: uniquePort, // Use unique port to avoid database constraint violation
+				status: 'ONLINE'
+			}
 		});
-
-		const serversData = await serversResponse.json();
-		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
-		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-
-		if (!testServer) {
-			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
-				headers: { Cookie: `session=${adminSessionToken}` },
-				data: {
-					name: 'E2E Test Server',
-					hostname: 'localhost',
-					port: 3001,
-					status: 'ONLINE'
-				}
-			});
+	
+		if (!createServerResponse.ok()) {
+			const errorText = await createServerResponse.text();
+			console.error(`[E2E] Server creation failed (${createServerResponse.status()}): ${errorText}`);
+			
+			// As fallback, use ANY existing server (don't need isolated servers for e2e tests)
+			if (servers.length > 0) {
+				testServer = servers[0];
+				console.log('[E2E] Using existing server as fallback:', testServer);
+			} else {
+				throw new Error(`Failed to create test server and no existing servers available: ${errorText}`);
+			}
+		} else {
 			testServer = await createServerResponse.json();
+			console.log('[E2E] Created new test server:', testServer);
 		}
+	} else {
+		console.log('[E2E] Using existing E2E test server:', testServer);
+	}
+	
+	if (!testServer || !testServer.id) {
+		throw new Error(`Test server is missing or has no ID. Server data: ${JSON.stringify(testServer)}`);
+	}
 
-		testServerId = testServer.id;
-
-		const sharedWorldName = `Resources Shared World ${Date.now()}`;
-		const worldData = await createWorldViaAPI(
-			page.request,
-			testServerId,
-			adminSessionToken,
-			{
-				name: sharedWorldName,
-				size: 'TINY',
-				seed: Date.now()
-			},
-			true
-		);
-		testWorldId = worldData.id;
-		console.log('[E2E] Shared world created:', testWorldId);
+	testServerId = testServer.id;
+	console.log('[E2E] Using test server ID:', testServerId);
+	
+	// Create a shared test world
+	const testWorld = await createWorldViaAPI(
+		page.request,
+		testServerId,
+		adminSessionToken, // Session token goes here
+		{
+			name: `E2E Test World ${Date.now()}`,
+			size: 'TINY' // Use TINY (5x5) for fast e2e tests
+		}
+	);
+	testWorldId = testWorld.id;
+	console.log('[E2E] Shared world created with ID:', testWorldId);
 
 		await page.close();
 		await context.close();

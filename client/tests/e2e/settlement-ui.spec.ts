@@ -50,6 +50,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 	// SHARED SETUP: Create server and world ONCE for all tests
 	// ========================================================================
 	test.beforeAll(async ({ browser }) => {
+		test.setTimeout(60000); // Increase timeout for world creation
 		console.log('[E2E] Setting up shared server and world...');
 
 		const context = await browser.newContext();

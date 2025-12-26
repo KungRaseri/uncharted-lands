@@ -56,6 +56,7 @@ test.describe('Structure Management Lifecycle', () => {
 	// SHARED SETUP: Create server and world ONCE for all tests
 	// ========================================================================
 	test.beforeAll(async ({ browser }) => {
+		test.setTimeout(60000); // Increase timeout for world creation
 		console.log('[E2E] Setting up shared server and world...');
 
 		// Create a temporary context for admin operations

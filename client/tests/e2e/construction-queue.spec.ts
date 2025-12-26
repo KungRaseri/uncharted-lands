@@ -57,23 +57,27 @@ test.describe('Construction Queue', () => {
 		console.log('[E2E] Found servers:', servers.length);
 
 		// Look for existing E2E Test Server
-		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
+		let testServer = servers.find((s: { name: string }) => s.name.startsWith('E2E Test Server'));
 
 		if (!testServer) {
 			console.log('[E2E] No existing E2E Test Server found, creating new one...');
+			// Use unique port to avoid database constraint violations
+			const timestamp = Date.now();
+			const uniquePort = 3000 + (timestamp % 10000);
+			
 			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
 				headers: { Cookie: `session=${adminSessionToken}` },
 				data: {
-					name: 'E2E Test Server',
+					name: `E2E Test Server ${timestamp}`,
 					hostname: 'localhost',
-					port: 3001,
+					port: uniquePort,
 					status: 'ONLINE'
 				}
 			});
 
 			const createResult = await createServerResponse.json();
 
-			// If creation failed due to unique constraint, it already exists - just use first server
+			// If creation failed, use any existing server as fallback
 			if (createResult.error) {
 				console.log(
 					'[E2E] Server creation failed, using first available server or retrying fetch...'
@@ -87,7 +91,7 @@ test.describe('Construction Queue', () => {
 				const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
 
 				testServer =
-					retryServers.find((s: { name: string }) => s.name === 'E2E Test Server') ||
+					retryServers.find((s: { name: string }) => s.name.startsWith('E2E Test Server')) ||
 					retryServers[0];
 
 				if (!testServer) {
@@ -103,14 +107,14 @@ test.describe('Construction Queue', () => {
 		console.log('[E2E] Using server:', testServer.name, testServer.id);
 		testServerId = testServer.id;
 
-		// Create world (SMALL size to ensure enough viable tiles for all tests)
+		// Create world (TINY size for fast e2e tests - generation completes quickly)
 		const worldData = await createWorldViaAPI(
 			page.request,
 			testServerId,
 			adminSessionToken,
 			{
 				name: `Construction Queue Test World ${Date.now()}`,
-				size: 'SMALL',
+				size: 'TINY', // Changed from SMALL - faster generation for e2e tests
 				seed: Date.now()
 			},
 			true
