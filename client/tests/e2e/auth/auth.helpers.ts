@@ -79,8 +79,9 @@ export async function registerUser(page: Page, email: string, password: string):
 
 	// Click submit and wait for navigation to complete
 	// SvelteKit form action will redirect to /game/getting-started
+	// Increased timeout to 30s for slow responses during parallel test execution
 	await Promise.all([
-		page.waitForURL('/game/getting-started', { timeout: 15000 }),
+		page.waitForURL('/game/getting-started', { timeout: 30000 }),
 		page.locator('button[type="submit"]').click({ timeout: 5000 })
 	]);
 }

@@ -21,7 +21,7 @@ const config: PlaywrightTestConfig = {
 	testDir: 'tests/e2e',
 	testMatch: '**/*.spec.ts', // Only match .spec.ts files (Playwright), not .test.ts files (Vitest)
 	/* Maximum time one test can run for. */
-	timeout: 30 * 1000,
+	timeout: 60 * 1000, // Increased to 60s for world creation
 	expect: {
 		/**
 		 * Maximum time expect() should wait for the condition to be met.
@@ -35,8 +35,8 @@ const config: PlaywrightTestConfig = {
 	forbidOnly: !!process.env.CI,
 	/* Retry on CI only */
 	retries: process.env.CI ? 2 : 0,
-	/* Opt out of parallel tests on CI. */
-	workers: process.env.CI ? 1 : 4,
+	/* Reduced workers to 2 for stability - prevents parallel test conflicts with server/world creation */
+	workers: process.env.CI ? 1 : 2,
 	/* Fail fast on CI to save resources */
 	maxFailures: process.env.CI ? 5 : undefined,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */

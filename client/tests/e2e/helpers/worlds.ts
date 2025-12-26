@@ -106,13 +106,19 @@ export async function createWorldViaAPI(
 	const requestPayload = {
 		serverId,
 		name: worldData.name,
-		generate: true, // Enable server-side world generation
+		generate: true, // Enable server-side generation
 		width: worldData.width || dimensions.width, // Use custom width if provided
 		height: worldData.height || dimensions.height, // Use custom height if provided
 		// Use crypto.randomInt for secure random seed generation (GHSA finding fix)
 		elevationSeed: worldData.seed || crypto.randomInt(0, 1000000),
 		worldTemplateType: 'STANDARD' // Use standard game template
 	};
+
+	// Validate required fields before making API call
+	if (!requestPayload.serverId || !requestPayload.name) {
+		console.error('[E2E] Invalid world creation payload:', { serverId, worldData, requestPayload });
+		throw new Error(`Missing required fields for world creation. serverId: ${requestPayload.serverId}, name: ${requestPayload.name}`);
+	}
 
 	console.log('[E2E] World creation request payload:', requestPayload);
 
