@@ -10,7 +10,10 @@ const config = defineConfig({
 	},
 	plugins: [tailwindcss(), sveltekit()],
 	server: {
-		port: 3000
+		port: 3000,
+		watch: {
+			ignored: ['**/playwright-report/**', '**/test-results/**', '**/coverage/**']
+		}
 	},
 	preview: {
 		port: 4173
