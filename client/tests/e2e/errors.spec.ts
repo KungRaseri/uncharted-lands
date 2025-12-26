@@ -108,7 +108,8 @@ test.describe('Error Handling & Edge Cases', () => {
 			}
 
 			// Intercept settlement creation and force 500 error
-			await page.route('**/api/settlements', (route) => {
+			// Note: page.context().route() intercepts all requests including page.request
+			await page.context().route('**/api/settlements', (route) => {
 				route.fulfill({
 					status: 500,
 					contentType: 'application/json',
@@ -142,7 +143,7 @@ test.describe('Error Handling & Edge Cases', () => {
 			console.log('[TEST] ✅ API 500 error handled correctly');
 
 			// Remove route interception
-			await page.unroute('**/api/settlements');
+			await page.context().unroute('**/api/settlements');
 		});
 
 		test.skip('should show retry option on network failure', async ({ page, request }) => {

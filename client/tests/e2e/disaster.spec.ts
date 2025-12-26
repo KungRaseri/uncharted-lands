@@ -165,6 +165,10 @@ test.describe('Disaster Lifecycle Flow', () => {
 			page,
 			request
 		}) => {
+			// Elevate user to admin to trigger disasters
+			await request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(testUserEmail)}`);
+			console.log('[E2E] Elevated user to admin');
+
 			// Trigger earthquake with warning (scheduled 60s in future, warning starts immediately)
 			console.log('[E2E] Triggering earthquake disaster...');
 			disasterId = await triggerDisaster(
