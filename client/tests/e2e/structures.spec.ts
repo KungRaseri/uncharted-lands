@@ -33,6 +33,7 @@ import { getSharedTestData } from './helpers/shared-data';
 // ============================================================================
 
 const apiUrl = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+const testServerId = process.env.E2E_TEST_SERVER_ID!;
 
 let testWorldId: string;
 let testSettlementId: string;
@@ -106,6 +107,7 @@ test.describe('Structure Management Lifecycle', () => {
 			headers: { Cookie: `session=${sessionCookieValue}` },
 			data: {
 				worldId: testWorldId,
+				serverId: testServerId,
 				accountId: accountId,
 				username: username,
 				name: TEST_SETTLEMENTS.BASIC.name

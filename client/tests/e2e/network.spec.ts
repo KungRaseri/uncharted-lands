@@ -466,7 +466,7 @@ test.describe('Multi-Settlement Network Management', () => {
 			const settlement2 = settlements[1];
 
 			// Set different resources for settlement 1
-			await request.post(`${API_URL}/api/test/set-resources`, {
+			await request.post(`${API_URL}/test/set-resources`, {
 				data: {
 					settlementId: settlement1.id,
 					resources: { food: 100, water: 200, wood: 50, stone: 30, ore: 10 }
@@ -475,7 +475,7 @@ test.describe('Multi-Settlement Network Management', () => {
 			});
 
 			// Set different resources for settlement 2
-			await request.post(`${API_URL}/api/test/set-resources`, {
+			await request.post(`${API_URL}/test/set-resources`, {
 				data: {
 					settlementId: settlement2.id,
 					resources: { food: 500, water: 600, wood: 150, stone: 80, ore: 40 }
@@ -657,7 +657,7 @@ test.describe('Multi-Settlement Network Management', () => {
 			const settlement2 = settlements[1];
 
 			// Ensure settlement 1 has resources to transfer
-			await request.post(`${API_URL}/api/test/set-resources`, {
+			await request.post(`${API_URL}/test/set-resources`, {
 				data: {
 					settlementId: settlement1.id,
 					food: 1000,
@@ -671,7 +671,7 @@ test.describe('Multi-Settlement Network Management', () => {
 
 			// Initiate transfer via API
 			const transferResponse = await request.post(
-				`${API_URL}/api/settlements/${settlement1.id}/transfer`,
+				`${API_URL}/settlements/${settlement1.id}/transfer`,
 				{
 					data: {
 						toSettlementId: settlement2.id,
@@ -719,7 +719,7 @@ test.describe('Multi-Settlement Network Management', () => {
 			const settlement2 = settlements[1];
 
 			// Ensure settlement 1 has resources
-			await request.post(`${API_URL}/api/test/set-resources`, {
+			await request.post(`${API_URL}/test/set-resources`, {
 				data: {
 					settlementId: settlement1.id,
 					wood: 500
@@ -729,7 +729,7 @@ test.describe('Multi-Settlement Network Management', () => {
 
 			// Initiate transfer
 			const transferResponse = await request.post(
-				`${API_URL}/api/settlements/${settlement1.id}/transfer`,
+				`${API_URL}/settlements/${settlement1.id}/transfer`,
 				{
 					data: {
 						toSettlementId: settlement2.id,

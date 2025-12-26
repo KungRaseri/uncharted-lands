@@ -46,6 +46,7 @@ import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state';
 // ============================================================================
 
 const apiUrl = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+const testServerId = process.env.E2E_TEST_SERVER_ID!;
 
 let testWorldId: string;
 let testSettlementId: string;
@@ -132,6 +133,7 @@ test.describe('Population Management', () => {
 				headers: { Cookie: `session=${sessionCookie.value}` },
 				data: {
 					worldId: currentWorldId,
+					serverId: testServerId,
 					accountId: account.id,
 					username: account.profile?.username || testUserEmail,
 					name: `Settlement ${Date.now()}`

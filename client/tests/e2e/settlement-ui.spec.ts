@@ -30,6 +30,7 @@ import {
 // ============================================================================
 
 const apiUrl = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+const testServerId = process.env.E2E_TEST_SERVER_ID!;
 
 let testWorldId: string;
 let testSettlementId: string;

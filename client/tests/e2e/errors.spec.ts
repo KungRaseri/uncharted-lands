@@ -35,6 +35,7 @@ import { getSharedTestData } from './helpers/shared-data';
 // ============================================================================
 
 const API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+const sharedServerId = process.env.E2E_TEST_SERVER_ID!;
 
 // ============================================================================
 // ERROR HANDLING & EDGE CASES TESTS
