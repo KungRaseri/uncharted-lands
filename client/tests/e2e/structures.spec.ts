@@ -26,7 +26,7 @@ import {
 	generateUniqueEmail,
 	assertRedirectedToGettingStarted
 } from './auth/auth.helpers';
-import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
+import { getSharedTestData } from './helpers/shared-data';
 
 // ============================================================================
 // TEST CONFIGURATION
@@ -38,8 +38,6 @@ let testWorldId: string;
 let testSettlementId: string;
 let testUserEmail: string;
 let sessionCookieValue: string;
-let testServerId: string;
-let adminSessionToken: string;
 
 // ============================================================================
 // STRUCTURE LIFECYCLE TESTS
@@ -55,114 +53,24 @@ test.describe('Structure Management Lifecycle', () => {
 	// ========================================================================
 	// SHARED SETUP: Create server and world ONCE for all tests
 	// ========================================================================
-	test.beforeAll(async ({ browser }) => {
-		test.setTimeout(60000); // Increase timeout for world creation
-		console.log('[E2E] Setting up shared server and world...');
-
-		// Create a temporary context for admin operations
-		const context = await browser.newContext();
-		const page = await context.newPage();
-
-		// Register and login admin user to get proper session
-		const adminEmail = generateUniqueEmail('structures-admin');
-		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-
-		// Get session cookie
-		const cookies = await context.cookies();
-		const sessionCookie = cookies.find((c) => c.name === 'session');
-
-		if (!sessionCookie) {
-			throw new Error('No session cookie found after admin registration');
+	// SHARED SETUP: Use global shared data (server + world created once)
+	// ========================================================================
+	test.beforeAll(async () => {
+		console.log('[E2E] Using shared test data from global setup...');
+		
+		// Get shared test data created by global-setup.ts
+		const sharedData = getSharedTestData();
+		
+		testWorldId = sharedData.generalWorldId!;
+		
+		if (!testWorldId) {
+			throw new Error('No general world ID available from global setup');
 		}
-
-		adminSessionToken = sessionCookie.value;
-
-		// Elevate to admin
-		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-
-// Get or create test server (find by hostname/port to avoid duplicates)
-	const serversResponse = await page.request.get(`${apiUrl}/servers`, {
-		headers: { Cookie: `session=${adminSessionToken}` }
+		
+		console.log('[E2E] Using shared world ID:', testWorldId);
 	});
 
-	const serversData = await serversResponse.json();
-	const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
-	let testServer = servers.find(
-		(s: { hostname: string; port: number }) => s.hostname === 'localhost' && s.port === 3001
-	);
-
-	if (!testServer) {
-		// Server doesn't exist, create it
-		const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
-			headers: { Cookie: `session=${adminSessionToken}` },
-			data: {
-				name: 'E2E Test Server',
-				hostname: 'localhost',
-				port: 3001,
-				status: 'ONLINE'
-			}
-		});
-
-		if (!createServerResponse.ok()) {
-			// Retry logic: server might have been created by another test
-			await page.waitForTimeout(500);
-			const retryResponse = await page.request.get(`${apiUrl}/servers`, {
-				headers: { Cookie: `session=${adminSessionToken}` }
-			});
-			const retryData = await retryResponse.json();
-			const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
-			testServer = retryServers.find(
-				(s: { hostname: string; port: number }) => s.hostname === 'localhost' && s.port === 3001
-			);
-			if (!testServer) {
-				const errorText = await createServerResponse.text();
-				throw new Error(
-					`Failed to create server: ${createServerResponse.status()} - ${errorText}`
-				);
-			}
-		} else {
-			testServer = await createServerResponse.json();
-		}
-		}
-
-		testServerId = testServer.id;
-
-		// Create shared world (use TINY for fast generation)
-		const sharedWorldName = `Structures Shared World ${Date.now()}`;
-		const worldData = await createWorldViaAPI(
-			page.request,
-			testServerId,
-			adminSessionToken,
-			{
-				name: sharedWorldName,
-				size: 'TINY',
-				seed: Date.now()
-			},
-			true
-		);
-		testWorldId = worldData.id;
-		console.log('[E2E] Shared world created:', testWorldId);
-
-		// Close temporary context
-		await page.close();
-		await context.close();
-	});
-
-	// Cleanup shared world after all tests
-	test.afterAll(async ({ browser }) => {
-		if (testWorldId && adminSessionToken) {
-			try {
-				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
-				const context = await browser.newContext();
-				const page = await context.newPage();
-				await deleteWorld(page.request, testWorldId);
-				await page.close();
-				await context.close();
-			} catch (error) {
-				console.error('[E2E] Failed to delete shared world:', error);
-			}
-		}
-	});
+	// No afterAll needed - global teardown handles cleanup
 
 	// ========================================================================
 	// PER-TEST SETUP: Create settlement for each test

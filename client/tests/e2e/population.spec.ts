@@ -37,7 +37,7 @@ import {
 	getHappiness,
 	getResourceAmount
 } from './helpers/population';
-import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
+import { getSharedTestData } from './helpers/shared-data';
 import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state';
 
 // ============================================================================
@@ -50,8 +50,6 @@ let testWorldId: string;
 let testSettlementId: string;
 let testUserEmail: string;
 let sessionCookieValue: string;
-let testServerId: string;
-let adminSessionToken: string;
 
 // ============================================================================
 // POPULATION MANAGEMENT TESTS

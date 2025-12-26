@@ -20,6 +20,9 @@ dotenv.config();
 const config: PlaywrightTestConfig = {
 	testDir: 'tests/e2e',
 	testMatch: '**/*.spec.ts', // Only match .spec.ts files (Playwright), not .test.ts files (Vitest)
+	/* Global setup/teardown - runs ONCE before/after all tests */
+	globalSetup: './tests/e2e/global-setup.ts',
+	globalTeardown: './tests/e2e/global-teardown.ts',
 	/* Maximum time one test can run for. */
 	timeout: 60 * 1000, // Increased to 60s for world creation
 	expect: {
