@@ -27,7 +27,7 @@ import {
 	assertRedirectedToGettingStarted,
 	TEST_USERS
 } from './auth/auth.helpers';
-import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
+import { getSharedTestData } from './helpers/shared-data';
 
 // ============================================================================
 // TEST CONFIGURATION
@@ -41,8 +41,6 @@ const API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api'
 
 test.describe('Error Handling & Edge Cases', () => {
 	let sharedWorldId: string;
-	let sharedServerId: string;
-	let adminSessionToken: string;
 
 	// Increase timeout for error tests
 	test.setTimeout(90000); // 90 seconds
@@ -51,119 +49,14 @@ test.describe('Error Handling & Edge Cases', () => {
 	// SETUP & TEARDOWN
 	// ========================================================================
 
-	test.beforeAll(async ({ browser }) => {
-		test.setTimeout(60000); // Increase timeout for world creation
-		console.log('[E2E] Setting up shared server and world for error tests...');
-
-		const context = await browser.newContext();
-		const page = await context.newPage();
-
-		// Register admin user
-		const adminEmail = generateUniqueEmail('errors-admin');
-		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-
-		// Get session cookie
-		const cookies = await context.cookies();
-		const sessionCookie = cookies.find((c) => c.name === 'session');
-		if (!sessionCookie) {
-			throw new Error('No session cookie found after registration');
+	test.beforeAll(async () => {
+		console.log('[E2E] Using shared test data from global setup...');
+		const sharedData = getSharedTestData();
+		sharedWorldId = sharedData.generalWorldId!;
+		if (!sharedWorldId) {
+			throw new Error('No general world ID available from global setup');
 		}
-		adminSessionToken = sessionCookie.value;
-
-		// Elevate to admin
-		await page.request.put(`${API_URL}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-
-		// Get or create test server
-		const serversResponse = await page.request.get(`${API_URL}/servers`, {
-			headers: { Cookie: `session=${adminSessionToken}` }
-		});
-
-		if (!serversResponse.ok()) {
-			throw new Error(`Failed to get servers: ${await serversResponse.text()}`);
-		}
-
-		const serversData = await serversResponse.json();
-		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
-		
-		// Look for existing test server by hostname and port (not just name)
-		let testServer = servers.find(
-			(s: { hostname: string; port: number }) => 
-				s.hostname === 'localhost' && s.port === 3001
-		);
-
-		if (!testServer) {
-			console.log('[E2E] No existing server found, creating new one...');
-			const createServerResponse = await page.request.post(`${API_URL}/servers`, {
-				headers: { Cookie: `session=${adminSessionToken}` },
-				data: {
-					name: 'E2E Test Server',
-					hostname: 'localhost',
-					port: 3001,
-					status: 'ONLINE'
-				}
-			});
-			if (!createServerResponse.ok()) {
-				const errorText = await createServerResponse.text();
-				// If it failed because it already exists, try to get it again
-				if (errorText.includes('CREATE_FAILED') || errorText.includes('UNIQUE')) {
-					const retryResponse = await page.request.get(`${API_URL}/servers`, {
-						headers: { Cookie: `session=${adminSessionToken}` }
-					});
-					const retryData = await retryResponse.json();
-					const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
-					testServer = retryServers.find(
-						(s: { hostname: string; port: number }) => 
-							s.hostname === 'localhost' && s.port === 3001
-					);
-					if (!testServer) {
-						throw new Error(`Failed to create or find server: ${errorText}`);
-					}
-				} else {
-					throw new Error(`Failed to create server: ${errorText}`);
-				}
-			} else {
-				testServer = await createServerResponse.json();
-			}
-		} else {
-			console.log('[E2E] Using existing test server:', testServer.id);
-		}
-
-		if (!testServer || !testServer.id) {
-			throw new Error('Failed to get server ID from response');
-		}
-
-		sharedServerId = testServer.id;
-		console.log('[E2E] Server ID:', sharedServerId);
-
-		// Create shared world
-		const worldData = await createWorldViaAPI(
-			page.request,
-			sharedServerId,
-			adminSessionToken,
-			{
-				name: `Error Test World ${Date.now()}`,
-				size: 'TINY',
-				seed: Date.now()
-			},
-			true
-		);
-		sharedWorldId = worldData.id;
-
-		console.log('[E2E] Error test setup complete');
-		await context.close();
-	});
-
-	test.afterAll(async ({ browser }) => {
-		if (sharedWorldId && adminSessionToken) {
-			try {
-				const context = await browser.newContext();
-				const page = await context.newPage();
-				await deleteWorld(page.request, sharedWorldId);
-				await context.close();
-			} catch (error) {
-				console.log('[E2E] Failed to delete world:', error);
-			}
-		}
+		console.log('[E2E] Using shared world ID:', sharedWorldId);
 	});
 
 	// ========================================================================

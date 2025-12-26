@@ -36,7 +36,9 @@ async function globalSetup(_config: FullConfig) {
 	console.log('========================================\n');
 
 	const browser = await chromium.launch();
-	const context = await browser.newContext();
+	const context = await browser.newContext({
+		baseURL: 'http://localhost:3000' // SvelteKit dev server
+	});
 	const page = await context.newPage();
 
 	try {
@@ -92,10 +94,44 @@ async function globalSetup(_config: FullConfig) {
 					status: 'ONLINE'
 				}
 			});
-			testServer = await createServerResponse.json();
-			console.log('✅ Test server created:', testServer.id);
+			
+			if (!createServerResponse.ok()) {
+				const errorText = await createServerResponse.text();
+				
+				// If server already exists (race condition or previous failed test), try to fetch it again
+				if (errorText.includes('CREATE_FAILED') || errorText.includes('duplicate') || errorText.includes('unique')) {
+					console.log('⚠️  Server creation failed (might already exist), fetching servers again...');
+					const retryResponse = await page.request.get(`${API_BASE_URL}/servers`, {
+						headers: { Cookie: `session=${adminSessionToken}` }
+					});
+					const retryData = await retryResponse.json();
+					const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
+					testServer = retryServers.find(
+						(s: { name: string; hostname: string; port: number }) =>
+							s.hostname === 'localhost' && s.port === 3001
+					);
+					
+					if (testServer) {
+						console.log('✅ Found existing server after retry:', testServer.id);
+					} else {
+						throw new Error(`Failed to create or find server after retry. Error: ${errorText}`);
+					}
+				} else {
+					throw new Error(`Failed to create server: ${createServerResponse.status()} - ${errorText}`);
+				}
+			} else {
+				testServer = await createServerResponse.json();
+				if (!testServer || !testServer.id) {
+					throw new Error(`Server creation returned invalid data: ${JSON.stringify(testServer)}`);
+				}
+				console.log('✅ Test server created:', testServer.id);
+			}
 		} else {
 			console.log('✅ Reusing existing test server:', testServer.id);
+		}
+		
+		if (!testServer || !testServer.id) {
+			throw new Error(`No valid server found or created. testServer: ${JSON.stringify(testServer)}`);
 		}
 
 		// ========================================
@@ -114,11 +150,13 @@ async function globalSetup(_config: FullConfig) {
 				height: 5,
 				elevationSeed: crypto.randomInt(0, 1000000),
 				worldTemplateType: 'STANDARD'
-			}
+			},
+			timeout: 90000 // Increase timeout to 90 seconds for world creation (can take 60-80s for TINY worlds)
 		});
 
 		if (!worldResponse.ok()) {
-			throw new Error(`Failed to create world: ${worldResponse.status()}`);
+			const errorText = await worldResponse.text();
+			throw new Error(`Failed to create world: ${worldResponse.status()} - ${errorText}`);
 		}
 
 		const worldData = await worldResponse.json();

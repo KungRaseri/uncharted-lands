@@ -63,118 +63,24 @@ test.describe('Population Management', () => {
 	test.setTimeout(90000); // 90 seconds for world generation + test execution
 
 	// ========================================================================
-	// SHARED SETUP: Create server and world ONCE for all tests
+	// SHARED SETUP: Use global shared data (server + world created once)
 	// ========================================================================
-	test.beforeAll(async ({ browser }) => {
-		test.setTimeout(60000); // Increase timeout for world creation
-		console.log('[E2E] Setting up shared server and world...');
-
-		// Create a temporary context for admin operations
-		const context = await browser.newContext();
-		const page = await context.newPage();
-
-		// Register and login admin user to get proper session
-		const adminEmail = generateUniqueEmail('pop-suite-admin');
-		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-
-		// Get session cookie
-		const cookies = await context.cookies();
-		const sessionCookie = cookies.find((c) => c.name === 'session');
-
-		if (!sessionCookie) {
-			throw new Error('No session cookie found after admin registration');
+	test.beforeAll(async () => {
+		console.log('[E2E] Using shared test data from global setup...');
+		
+		// Get shared test data created by global-setup.ts
+		const sharedData = getSharedTestData();
+		
+		testWorldId = sharedData.generalWorldId!;
+		
+		if (!testWorldId) {
+			throw new Error('No general world ID available from global setup');
 		}
-
-		adminSessionToken = sessionCookie.value;
-
-		// Elevate to admin (use page.request which is tied to page context)
-		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-
-		// Get or create test server (find by hostname/port to avoid duplicates)
-		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
-			headers: { Cookie: `session=${adminSessionToken}` }
-		});
-
-		const serversData = await serversResponse.json();
-		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
-		let testServer = servers.find(
-			(s: { hostname: string; port: number }) => s.hostname === 'localhost' && s.port === 3001
-		);
-
-		if (!testServer) {
-			// Server doesn't exist, create it
-			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
-				headers: { Cookie: `session=${adminSessionToken}` },
-				data: {
-					name: 'E2E Test Server',
-					hostname: 'localhost',
-					port: 3001,
-					status: 'ONLINE'
-				}
-			});
-
-			if (!createServerResponse.ok()) {
-				// Retry logic: server might have been created by another test
-				await page.waitForTimeout(500);
-				const retryResponse = await page.request.get(`${apiUrl}/servers`, {
-					headers: { Cookie: `session=${adminSessionToken}` }
-				});
-				const retryData = await retryResponse.json();
-				const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
-				testServer = retryServers.find(
-					(s: { hostname: string; port: number }) => s.hostname === 'localhost' && s.port === 3001
-				);
-				if (!testServer) {
-					const errorText = await createServerResponse.text();
-					throw new Error(
-						`Failed to create server: ${createServerResponse.status()} - ${errorText}`
-					);
-				}
-			} else {
-				testServer = await createServerResponse.json();
-			}
-		}
-
-		testServerId = testServer.id;
-
-		// Create shared world (use TINY for fast synchronous generation)
-		// Note: TINY worlds may not always have suitable settlement tiles,
-		// but we handle retries in beforeEach if needed
-		const sharedWorldName = `Population Shared World ${Date.now()}`;
-		const worldData = await createWorldViaAPI(
-			page.request, // Use page.request instead of context.request
-			testServerId,
-			adminSessionToken,
-			{
-				name: sharedWorldName,
-				size: 'TINY', // Use TINY (5x5) for fast synchronous generation
-				seed: Date.now()
-			},
-			true
-		);
-		testWorldId = worldData.id;
-		console.log('[E2E] Shared world created:', testWorldId);
-
-		// Close temporary context AFTER world creation
-		await page.close();
-		await context.close();
+		
+		console.log('[E2E] Using shared world ID:', testWorldId);
 	});
 
-	// Cleanup shared world after all tests
-	test.afterAll(async ({ browser }) => {
-		if (testWorldId && adminSessionToken) {
-			try {
-				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
-				const context = await browser.newContext();
-				const page = await context.newPage();
-				await deleteWorld(page.request, testWorldId);
-				await page.close();
-				await context.close();
-			} catch (error) {
-				console.error('[E2E] Failed to delete shared world:', error);
-			}
-		}
-	});
+	// No afterAll needed - global teardown handles cleanup
 
 	// ========================================================================
 	// PER-TEST SETUP: Create settlement for each test
@@ -225,7 +131,6 @@ test.describe('Population Management', () => {
 				headers: { Cookie: `session=${sessionCookie.value}` },
 				data: {
 					worldId: currentWorldId,
-					serverId: testServerId,
 					accountId: account.id,
 					username: account.profile?.username || testUserEmail,
 					name: `Settlement ${Date.now()}`
@@ -246,42 +151,22 @@ test.describe('Population Management', () => {
 					errorText
 				);
 
-				// If NO_SUITABLE_TILES error, try recreating the world with a different seed
+				// If NO_SUITABLE_TILES error, log and fail gracefully
+				// NOTE: With shared 5x5 TINY world from global setup, this should rarely happen
 				if (
 					errorText.includes('NO_SUITABLE_TILES') &&
 					worldRecreateCount < maxWorldRecreates
 				) {
 					worldRecreateCount++;
-					console.log(
-						`[E2E] TINY world has no suitable tiles, recreating world (attempt ${worldRecreateCount}/${maxWorldRecreates})...`
+					console.error(
+						`[E2E] Shared world has no suitable tiles (attempt ${worldRecreateCount}/${maxWorldRecreates}). Cannot recreate shared world.`
 					);
-
-					// Delete old world
-					await request.delete(`${apiUrl}/worlds/${currentWorldId}`, {
-						headers: { Cookie: `session=${adminSessionToken}` }
-					});
-
-					// Create new world with different seed
-					const context = await page.context().browser()?.newContext();
-					if (!context) {
-						throw new Error('Failed to create browser context for world recreation');
+					// With shared world, we can't recreate it, so just fail after retries
+					if (worldRecreateCount >= maxWorldRecreates) {
+						throw new Error(
+							`No suitable tiles in shared world after ${maxWorldRecreates} attempts. This may indicate an issue with the shared world setup.`
+						);
 					}
-					const tempPage = await context.newPage();
-					const newWorldData = await createWorldViaAPI(
-						tempPage.request,
-						testServerId,
-						adminSessionToken,
-						{
-							name: `Population World Retry ${Date.now()}`,
-							size: 'TINY',
-							seed: Date.now() + worldRecreateCount
-						},
-						true
-					);
-					currentWorldId = newWorldData.id;
-					console.log(`[E2E] New world created: ${currentWorldId}`);
-					await tempPage.close();
-					await context.close();
 				} else {
 					throw new Error(
 						`Failed to create settlement: ${settlementResponse.status()} ${errorText}`

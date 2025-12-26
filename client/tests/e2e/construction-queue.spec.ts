@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { addGenerousTestResources } from './helpers/settlements.js';
 import { registerUser, generateUniqueEmail, TEST_USERS, cleanupTestUser } from './auth/auth.helpers.js';
-import { createWorldViaAPI, deleteWorld } from './helpers/worlds.js';
+import { getSharedTestData } from './helpers/shared-data';
 import { waitForSocketConnection, joinWorldRoom } from './helpers/game-state.js';
 
 /**
@@ -17,128 +17,16 @@ test.describe('Construction Queue', () => {
 	let settlementId: string;
 	let testUserEmail: string;
 	let sessionCookieValue: string;
-	let testServerId: string;
 	let testWorldId: string;
-	let adminSessionToken: string;
 
-	test.beforeAll(async ({ browser }) => {
-		// Create admin user and server/world (allow extra time for world generation)
-		test.setTimeout(60000); // 60s timeout for world creation
-		const context = await browser.newContext();
-		const page = await context.newPage();
-
-		const adminEmail = generateUniqueEmail('construction-queue-admin');
-		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-
-		const cookies = await context.cookies();
-		const sessionCookie = cookies.find((c) => c.name === 'session');
-
-		if (!sessionCookie) {
-			throw new Error('No session cookie found after admin registration');
+	test.beforeAll(async () => {
+		console.log('[E2E] Using shared test data from global setup...');
+		const sharedData = getSharedTestData();
+		testWorldId = sharedData.generalWorldId!;
+		if (!testWorldId) {
+			throw new Error('No general world ID available from global setup');
 		}
-
-		adminSessionToken = sessionCookie.value;
-
-		// Elevate to admin
-		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-
-		// Get or create test server
-		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
-			headers: { Cookie: `session=${adminSessionToken}` }
-		});
-
-		if (!serversResponse.ok()) {
-			throw new Error(`Failed to fetch servers: ${serversResponse.status()}`);
-		}
-
-		const serversData = await serversResponse.json();
-		console.log('[E2E] Servers response:', JSON.stringify(serversData, null, 2));
-		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
-		console.log('[E2E] Found servers:', servers.length);
-
-		// Look for existing E2E Test Server
-		let testServer = servers.find((s: { name: string }) => s.name.startsWith('E2E Test Server'));
-
-		if (!testServer) {
-			console.log('[E2E] No existing E2E Test Server found, creating new one...');
-			// Use unique port to avoid database constraint violations
-			const timestamp = Date.now();
-			const uniquePort = 3000 + (timestamp % 10000);
-			
-			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
-				headers: { Cookie: `session=${adminSessionToken}` },
-				data: {
-					name: `E2E Test Server ${timestamp}`,
-					hostname: 'localhost',
-					port: uniquePort,
-					status: 'ONLINE'
-				}
-			});
-
-			const createResult = await createServerResponse.json();
-
-			// If creation failed, use any existing server as fallback
-			if (createResult.error) {
-				console.log(
-					'[E2E] Server creation failed, using first available server or retrying fetch...'
-				);
-
-				// Fetch again in case race condition
-				const retryResponse = await page.request.get(`${apiUrl}/servers`, {
-					headers: { Cookie: `session=${adminSessionToken}` }
-				});
-				const retryData = await retryResponse.json();
-				const retryServers = Array.isArray(retryData) ? retryData : retryData.servers || [];
-
-				testServer =
-					retryServers.find((s: { name: string }) => s.name.startsWith('E2E Test Server')) ||
-					retryServers[0];
-
-				if (!testServer) {
-					throw new Error(
-						`Failed to get or create server. Creation error: ${JSON.stringify(createResult)}, Retry servers: ${JSON.stringify(retryServers)}`
-					);
-				}
-			} else {
-				testServer = createResult;
-			}
-		}
-
-		console.log('[E2E] Using server:', testServer.name, testServer.id);
-		testServerId = testServer.id;
-
-		// Create world (TINY size for fast e2e tests - generation completes quickly)
-		const worldData = await createWorldViaAPI(
-			page.request,
-			testServerId,
-			adminSessionToken,
-			{
-				name: `Construction Queue Test World ${Date.now()}`,
-				size: 'TINY', // Changed from SMALL - faster generation for e2e tests
-				seed: Date.now()
-			},
-			true
-		);
-		testWorldId = worldData.id;
-		console.log('[E2E] Created world:', testWorldId);
-
-		await page.close();
-		await context.close();
-	});
-
-	test.afterAll(async ({ browser }) => {
-		if (testWorldId && adminSessionToken) {
-			try {
-				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
-				const context = await browser.newContext();
-				const page = await context.newPage();
-				await deleteWorld(page.request, testWorldId);
-				await page.close();
-				await context.close();
-			} catch (error) {
-				console.error('[E2E] Failed to delete shared world:', error);
-			}
-		}
+		console.log('[E2E] Using shared world ID:', testWorldId);
 	});
 
 	test.beforeEach(async ({ page, request }) => {
@@ -171,7 +59,6 @@ test.describe('Construction Queue', () => {
 			headers: { Cookie: `session=${sessionCookieValue}` },
 			data: {
 				worldId: testWorldId,
-				serverId: testServerId,
 				accountId: accountId,
 				username: username
 			}

@@ -17,7 +17,7 @@ import {
 	generateUniqueEmail,
 	assertRedirectedToGettingStarted
 } from './auth/auth.helpers';
-import { createWorldViaAPI, deleteWorld } from './helpers/worlds';
+import { getSharedTestData } from './helpers/shared-data';
 import { TEST_SETTLEMENTS } from './helpers/settlements';
 import {
 	waitForSocketConnection,
@@ -35,8 +35,6 @@ let testWorldId: string;
 let testSettlementId: string;
 let testUserEmail: string;
 let sessionCookieValue: string;
-let testServerId: string;
-let adminSessionToken: string;
 
 // ============================================================================
 // SETTLEMENT UI REAL-TIME UPDATE TESTS
@@ -47,84 +45,16 @@ test.describe('Settlement UI Real-Time Updates', () => {
 	test.setTimeout(60000); // 60 seconds
 
 	// ========================================================================
-	// SHARED SETUP: Create server and world ONCE for all tests
+	// SHARED SETUP: Use global test data from global-setup.ts
 	// ========================================================================
-	test.beforeAll(async ({ browser }) => {
-		test.setTimeout(60000); // Increase timeout for world creation
-		console.log('[E2E] Setting up shared server and world...');
-
-		const context = await browser.newContext();
-		const page = await context.newPage();
-
-		const adminEmail = generateUniqueEmail('settlement-ui-admin');
-		await registerUser(page, adminEmail, TEST_USERS.VALID.password);
-
-		const cookies = await context.cookies();
-		const sessionCookie = cookies.find((c) => c.name === 'session');
-
-		if (!sessionCookie) {
-			throw new Error('No session cookie found after admin registration');
+	test.beforeAll(async () => {
+		console.log('[E2E] Using shared test data from global setup...');
+		const sharedData = getSharedTestData();
+		testWorldId = sharedData.generalWorldId!;
+		if (!testWorldId) {
+			throw new Error('No general world ID available from global setup');
 		}
-
-		adminSessionToken = sessionCookie.value;
-
-		await page.request.put(`${apiUrl}/test/elevate-admin/${encodeURIComponent(adminEmail)}`);
-
-		const serversResponse = await page.request.get(`${apiUrl}/servers`, {
-			headers: { Cookie: `session=${adminSessionToken}` }
-		});
-
-		const serversData = await serversResponse.json();
-		const servers = Array.isArray(serversData) ? serversData : serversData.servers || [];
-		let testServer = servers.find((s: { name: string }) => s.name === 'E2E Test Server');
-
-		if (!testServer) {
-			const createServerResponse = await page.request.post(`${apiUrl}/servers`, {
-				headers: { Cookie: `session=${adminSessionToken}` },
-				data: {
-					name: 'E2E Test Server',
-					hostname: 'localhost',
-					port: 3001,
-					status: 'ONLINE'
-				}
-			});
-			testServer = await createServerResponse.json();
-		}
-
-		testServerId = testServer.id;
-
-		const sharedWorldName = `Settlement UI Shared World ${Date.now()}`;
-		const worldData = await createWorldViaAPI(
-			page.request,
-			testServerId,
-			adminSessionToken,
-			{
-				name: sharedWorldName,
-				size: 'TINY',
-				seed: Date.now()
-			},
-			true
-		);
-		testWorldId = worldData.id;
-		console.log('[E2E] Shared world created:', testWorldId);
-
-		await page.close();
-		await context.close();
-	});
-
-	test.afterAll(async ({ browser }) => {
-		if (testWorldId && adminSessionToken) {
-			try {
-				console.log(`[E2E] Cleaning up shared world: ${testWorldId}`);
-				const context = await browser.newContext();
-				const page = await context.newPage();
-				await deleteWorld(page.request, testWorldId);
-				await page.close();
-				await context.close();
-			} catch (error) {
-				console.error('[E2E] Failed to delete shared world:', error);
-			}
-		}
+		console.log('[E2E] Using shared world ID:', testWorldId);
 	});
 
 	// ========================================================================

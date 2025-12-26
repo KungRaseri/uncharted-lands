@@ -106,7 +106,6 @@ test.describe('Structure Management Lifecycle', () => {
 			headers: { Cookie: `session=${sessionCookieValue}` },
 			data: {
 				worldId: testWorldId,
-				serverId: testServerId,
 				accountId: accountId,
 				username: username,
 				name: TEST_SETTLEMENTS.BASIC.name
