@@ -80,12 +80,8 @@ class DisasterStore {
 	private countdownInterval: ReturnType<typeof setInterval> | null = null;
 	private listenersInitialized = false;
 
-	constructor() {
-		this.startCountdownTimer();
-	}
-
 	/**
-	 * Initialize Socket.IO listeners.
+	 * Initialize Socket.IO listeners and start countdown timer.
 	 * MUST be called from component context (e.g., onMount) after socket is connected.
 	 * Svelte 5 requires socket listeners to be set up in component lifecycle, not at module level.
 	 */
@@ -103,6 +99,7 @@ class DisasterStore {
 			return;
 		}
 
+		this.startCountdownTimer();
 		this.setupSocketListeners();
 		this.listenersInitialized = true;
 	}

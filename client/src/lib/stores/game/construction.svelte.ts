@@ -68,11 +68,18 @@ function initializeListeners(): void {
 				resources: { wood: 0, stone: 0 }
 			};
 
+			// Don't add if already in active (prevent duplicates)
+			const alreadyActive = currentState.active.some((p) => p.id === data.constructionId);
+			if (alreadyActive) {
+				logger.debug('[ConstructionStore] Project already active, skipping', { constructionId: data.constructionId });
+				return;
+			}
+
 			// Add to active projects
 			const updatedActive = [...currentState.active, project];
 
-			// Remove from queued if it was there (by structure type since ID changes)
-			const updatedQueued = currentState.queued.filter((p) => p.name !== data.structureType);
+			// Remove from queued if it was there
+			const updatedQueued = currentState.queued.filter((p) => p.id !== data.constructionId);
 
 			state.construction.set(data.settlementId, {
 				active: updatedActive,
@@ -177,11 +184,19 @@ function initializeListeners(): void {
 				resources: data.resourcesCost || { wood: 0, stone: 0 }
 			};
 
+			// Don't add if already in queued or active (prevent duplicates)
+			const alreadyQueued = currentState.queued.some((p) => p.id === data.constructionId);
+			const alreadyActive = currentState.active.some((p) => p.id === data.constructionId);
+			if (alreadyQueued || alreadyActive) {
+				logger.debug('[ConstructionStore] Project already exists, skipping', { constructionId: data.constructionId });
+				return;
+			}
+
 			// Add to queued projects
 			const updatedQueued = [...currentState.queued, project];
 
 			state.construction.set(data.settlementId, {
-				...currentState,
+				active: currentState.active,
 				queued: updatedQueued
 			});
 
@@ -193,13 +208,13 @@ function initializeListeners(): void {
 	// Listen for project cancelled
 	socket.on(
 		'construction-cancelled',
-		(data: { settlementId: string; projectId: string; refundResources?: ResourceCost }) => {
+		(data: { settlementId: string; constructionId: string; resourcesRefunded?: ResourceCost }) => {
 			const currentState = state.construction.get(data.settlementId);
 			if (!currentState) return;
 
 			// Remove from both active and queued
-			const updatedActive = currentState.active.filter((p) => p.id !== data.projectId);
-			const updatedQueued = currentState.queued.filter((p) => p.id !== data.projectId);
+			const updatedActive = currentState.active.filter((p) => p.id !== data.constructionId);
+			const updatedQueued = currentState.queued.filter((p) => p.id !== data.constructionId);
 
 			state.construction.set(data.settlementId, {
 				active: updatedActive,
@@ -462,10 +477,36 @@ export const constructionStore = {
 	/**
 	 * Cancel a construction project
 	 */
-	cancelProject(settlementId: string, projectId: string): void {
-		const socket = socketStore.getSocket();
-		if (socket) {
-			socket.emit('cancel-construction', { settlementId, projectId });
+	async cancelConstruction(constructionId: string): Promise<boolean> {
+		try {
+			const { PUBLIC_CLIENT_API_URL } = await import('$env/static/public');
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/construction-queue/${constructionId}`, {
+				method: 'DELETE',
+				credentials: 'include',
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				logger.error('[ConstructionStore] Failed to cancel construction', {
+					constructionId,
+					status: response.status,
+					error,
+				});
+				return false;
+			}
+
+			const result = await response.json();
+			logger.info('[ConstructionStore] Construction cancelled', {
+				constructionId,
+				resourcesRefunded: result.resourcesRefunded,
+			});
+			return true;
+		} catch (error) {
+			logger.error('[ConstructionStore] Error cancelling construction', {
+				error,
+				constructionId,
+			});
+			return false;
 		}
 	},
 

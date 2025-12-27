@@ -42,7 +42,9 @@
 	import { calculateProduction } from '$lib/utils/production-calculator';
 	import type { StructureMetadata } from '$lib/api/structures';
 	import { logger } from '$lib/utils/logger';
+	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 	import type { TileWithRelations } from '@uncharted-lands/shared';
+	import { invalidateAll } from '$app/navigation';
 
 	// ✅ NEW: TypeScript interface for settlement structures
 	interface SettlementStructure {
@@ -136,7 +138,7 @@
 	$effect(() => {
 		async function fetchRawQueue() {
 			try {
-				const response = await fetch(`/api/structures/construction-queue/${settlementId}`, {
+				const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/construction-queue/${settlementId}`, {
 					method: 'GET',
 					credentials: 'include',
 				});
@@ -571,6 +573,12 @@
 			logger.debug('[Dashboard] Extractor created successfully');
 			extractorSelectorOpen = false;
 			selectedSlot = null;
+			
+			// Immediately refetch construction queue and tile data
+			await Promise.all([
+				constructionStore.fetchConstructionQueue(settlement.id),
+				invalidateAll()
+			]);
 			// TODO: Add toast notification system
 		} catch (error) {
 			logger.error('[Dashboard] Failed to create extractor:', error);

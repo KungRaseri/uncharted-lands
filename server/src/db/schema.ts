@@ -878,7 +878,7 @@ export const disasterHistoryRelations = relations(disasterHistory, ({ one }) => 
 /**
  * Construction Queue System
  * Manages time-based building queue for settlements
- * - Max 3 simultaneous constructions (IN_PROGRESS)
+ * - Max 1 active construction at a time (IN_PROGRESS) - true queue behavior
  * - Max 10 total queue size
  * - Emergency construction: 2x speed, 2.5x cost during disasters
  */
@@ -894,6 +894,10 @@ export const constructionQueue = pgTable(
 
 		// Structure Details
 		structureType: text('structureType').notNull(), // 'FARM', 'HOUSE', etc.
+		
+		// Upgrade-specific field
+		existingStructureId: text('existingStructureId').references(() => settlementStructures.id, { onDelete: 'cascade' }), // NULL for new construction, set for upgrades
+		targetLevel: integer('targetLevel'), // NULL for new construction, set for upgrades (level structure will become)
 		
 		// Extractor-specific fields (for placement)
 		tileId: text('tileId').references(() => tiles.id, { onDelete: 'cascade' }), // NULL for buildings

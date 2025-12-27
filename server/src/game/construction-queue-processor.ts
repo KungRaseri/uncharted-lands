@@ -43,8 +43,15 @@ export async function processConstructionQueues(
 	// Hierarchy: Settlement → Tile → Region → World
 	const activeConstructions = await db
 		.select({
-			construction: constructionQueue,
-			settlement: settlements,
+			constructionId: constructionQueue.id,
+			settlementId: constructionQueue.settlementId,
+			structureType: constructionQueue.structureType,
+			existingStructureId: constructionQueue.existingStructureId,
+			targetLevel: constructionQueue.targetLevel,
+			tileId: constructionQueue.tileId,
+			slotPosition: constructionQueue.slotPosition,
+			startedAt: constructionQueue.startedAt,
+			completesAt: constructionQueue.completesAt,
 			worldId: regions.worldId,
 		})
 		.from(constructionQueue)
@@ -60,8 +67,8 @@ export async function processConstructionQueues(
 		);
 
 	// 2. Complete finished constructions
-	for (const { construction, settlement, worldId: wId } of activeConstructions) {
-		await completeConstruction(settlement, construction, wId, currentTime, io);
+	for (const item of activeConstructions) {
+		await completeConstruction(item.settlementId, item, item.worldId, currentTime, io);
 	}
 
 	// 3. Start next queued constructions (if slots available)
@@ -82,75 +89,123 @@ export async function processConstructionQueues(
 	}
 }
 
+type CompletedConstruction = {
+	constructionId: string;
+	settlementId: string;
+	structureType: string;
+	existingStructureId: string | null;
+	targetLevel: number | null;
+	tileId: string | null;
+	slotPosition: number | null;
+	startedAt: Date | null;
+	completesAt: Date | null;
+	worldId: string;
+};
+
 /**
  * Complete a construction that has finished
  */
 async function completeConstruction(
-	settlement: typeof settlements.$inferSelect,
-	construction: ConstructionQueue,
+	settlementId: string,
+	construction: CompletedConstruction,
 	worldId: string,
 	currentTime: number,
 	io: SocketIOServer
 ): Promise<void> {
 	try {
-		// 1. Look up the Structure record to get the actual structure ID
-		const structureRecord = await db
-			.select({ id: structures.id })
-			.from(structures)
-			.where(eq(structures.name, construction.structureType))
-			.limit(1);
+		// Check if this is an upgrade or new construction
+		if (construction.existingStructureId && construction.targetLevel) {
+			// UPGRADE: Update existing structure level
+			await db
+				.update(settlementStructures)
+				.set({
+					level: construction.targetLevel,
+				})
+				.where(eq(settlementStructures.id, construction.existingStructureId));
 
-		if (!structureRecord.length) {
-			logger.error(`[CONSTRUCTION] Structure not found: ${construction.structureType}`, {
-				constructionId: construction.id,
+			// Mark construction as complete
+			await db
+				.update(constructionQueue)
+				.set({
+					status: 'COMPLETE',
+					updatedAt: new Date(currentTime),
+				})
+				.where(eq(constructionQueue.id, construction.constructionId));
+
+			// Emit upgrade complete event
+			io.to(`world:${worldId}`).emit('structure:upgraded', {
+				settlementId,
+				structureId: construction.existingStructureId,
+				level: construction.targetLevel,
+				structureName: construction.structureType,
+				timestamp: currentTime,
 			});
-			return;
+
+			logger.debug(
+				`[CONSTRUCTION] Completed upgrade of ${construction.structureType} to level ${construction.targetLevel}`
+			);
+		} else {
+			// NEW CONSTRUCTION: Create new structure
+			
+			// 1. Look up the Structure record to get the actual structure ID
+			const structureRecord = await db
+				.select({ id: structures.id })
+				.from(structures)
+				.where(eq(structures.name, construction.structureType))
+				.limit(1);
+
+			if (!structureRecord.length) {
+				logger.error(`[CONSTRUCTION] Structure not found: ${construction.structureType}`, {
+					constructionId: construction.constructionId,
+				});
+				return;
+			}
+
+			// 2. Create the actual structure in database
+			const newStructure = await db
+				.insert(settlementStructures)
+				.values({
+					id: createId(),
+					settlementId,
+					structureId: structureRecord[0].id, // FK to structures table (actual ID)
+					level: 1,
+					health: 100, // Structures start at full health
+					populationAssigned: 0, // Population assignment (future)
+					// For extractors: include tileId and slotPosition from construction queue
+					tileId: construction.tileId || null,
+					slotPosition: construction.slotPosition !== null ? construction.slotPosition : null,
+				})
+				.returning();
+
+			// 2. Mark construction as complete
+			await db
+				.update(constructionQueue)
+				.set({
+					status: 'COMPLETE',
+					updatedAt: new Date(currentTime),
+				})
+				.where(eq(constructionQueue.id, construction.constructionId));
+
+			// 3. Emit Socket.IO event
+			// Note: worldId passed as parameter (settlements.worldId doesn't exist in schema)
+			io.to(`world:${worldId}`).emit('construction-complete', {
+				settlementId,
+				structureId: newStructure[0].id,
+				structureType: construction.structureType,
+				constructionTime:
+					construction.completesAt!.getTime() - construction.startedAt!.getTime(),
+				timestamp: currentTime,
+			});
+
+			logger.debug(
+				`[CONSTRUCTION] Completed ${construction.structureType} for settlement ${settlementId}`
+			);
 		}
 
-		// 2. Create the actual structure in database
-		const newStructure = await db
-			.insert(settlementStructures)
-			.values({
-				id: createId(),
-				settlementId: settlement.id,
-				structureId: structureRecord[0].id, // FK to structures table (actual ID)
-				level: 1,
-				health: 100, // Structures start at full health
-				populationAssigned: 0, // Population assignment (future)
-				// For extractors: include tileId and slotPosition from construction queue
-				tileId: construction.tileId || null,
-				slotPosition: construction.slotPosition !== null ? construction.slotPosition : null,
-			})
-			.returning();
-
-		// 2. Mark construction as complete
-		await db
-			.update(constructionQueue)
-			.set({
-				status: 'COMPLETE',
-				updatedAt: new Date(currentTime),
-			})
-			.where(eq(constructionQueue.id, construction.id));
-
-		// 3. Emit Socket.IO event
-		// Note: worldId passed as parameter (settlements.worldId doesn't exist in schema)
-		io.to(`world:${worldId}`).emit('construction-complete', {
-			settlementId: settlement.id,
-			structureId: newStructure[0].id,
-			structureType: construction.structureType,
-			constructionTime:
-				construction.completesAt!.getTime() - construction.startedAt!.getTime(),
-			timestamp: currentTime,
-		});
-
-		logger.debug(
-			`[CONSTRUCTION] Completed ${construction.structureType} for settlement ${settlement.id}`
-		);
-
 		// 4. Start next queued construction if slots available
-		await startNextQueuedConstruction(settlement.id, worldId, currentTime, io);
+		await startNextQueuedConstruction(settlementId, worldId, currentTime, io);
 	} catch (error) {
-		logger.error(`[CONSTRUCTION] Error completing construction ${construction.id}:`, error);
+		logger.error(`[CONSTRUCTION] Error completing construction ${construction.constructionId}:`, error);
 	}
 }
 
@@ -175,12 +230,16 @@ async function startNextQueuedConstruction(
 				)
 			);
 
-		// 2. If slots available (max 3 simultaneous)
-		if (activeCount.length < 3) {
+		// 2. If slot available (max 1 active construction - true queue)
+		if (activeCount.length < 1) {
 			// 3. Get next queued construction (lowest position)
 			const nextQueued = await db
-				.select()
+				.select({
+					construction: constructionQueue,
+					structure: structures
+				})
 				.from(constructionQueue)
+				.leftJoin(structures, eq(constructionQueue.structureType, structures.name))
 				.where(
 					and(
 						eq(constructionQueue.settlementId, settlementId),
@@ -191,7 +250,7 @@ async function startNextQueuedConstruction(
 				.limit(1);
 
 			if (nextQueued.length > 0) {
-				const construction = nextQueued[0];
+				const { construction, structure } = nextQueued[0];
 
 				// 4. Calculate completion time
 				const baseTime = getConstructionTime(construction.structureType);
@@ -216,6 +275,8 @@ async function startNextQueuedConstruction(
 					settlementId,
 					constructionId: construction.id,
 					structureType: construction.structureType,
+					buildingType: structure?.buildingType,
+					extractorType: structure?.extractorType,
 					completesAt: completionTime,
 					isEmergency: construction.isEmergency === 1,
 					timestamp: currentTime,

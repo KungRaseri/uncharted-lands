@@ -7,10 +7,20 @@
 	import { onMount } from 'svelte';
 	import { getProductionRates } from '$lib/api/game-config';
 	import { Toast } from '@skeletonlabs/skeleton-svelte';
-	import { toaster } from '$lib/stores/toaster';
+	import { initializeToaster } from '$lib/stores/toaster';
+
+	// Initialize toaster and mount state in onMount to ensure proper component lifecycle
+	let toaster = $state<any>(null);
+	let mounted = $state(false);
 
 	// Pre-load production rates on app initialization
 	onMount(async () => {
+		// Mark as mounted first
+		mounted = true;
+		
+		// Then initialize toaster inside onMount where lifecycle hooks work
+		toaster = initializeToaster();
+		
 		try {
 			await getProductionRates();
 			logger.debug('[App] Production rates pre-loaded successfully');
@@ -35,15 +45,17 @@
 	</footer>
 </div>
 
-<!-- Toast notifications -->
-<Toast.Group {toaster}>
-	{#snippet children(toast)}
-		<Toast {toast}>
-			<Toast.Message>
-				<Toast.Title>{toast.title}</Toast.Title>
-				<Toast.Description>{toast.description}</Toast.Description>
-			</Toast.Message>
-			<Toast.CloseTrigger />
-		</Toast>
-	{/snippet}
-</Toast.Group>
+<!-- Toast notifications (client-side only, after mount) -->
+{#if mounted && toaster}
+	<Toast.Group {toaster}>
+		{#snippet children(toast)}
+			<Toast {toast}>
+				<Toast.Message>
+					<Toast.Title>{toast.title}</Toast.Title>
+					<Toast.Description>{toast.description}</Toast.Description>
+				</Toast.Message>
+				<Toast.CloseTrigger />
+			</Toast>
+		{/snippet}
+	</Toast.Group>
+{/if}

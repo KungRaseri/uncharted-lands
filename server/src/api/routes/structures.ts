@@ -8,7 +8,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, or, sql } from 'drizzle-orm';
 import {
 	db,
 	settlementStructures,
@@ -187,12 +187,18 @@ router.get('/construction-queue/:settlementId', authenticate, async (req: Reques
 		}
 
 		// Fetch construction queue items (exclude COMPLETE and CANCELLED)
-		const queueItems = await db.query.constructionQueue.findMany({
-			where: and(
-				eq(constructionQueue.settlementId, settlementId),
-				// Only include active and queued items (not complete/cancelled)
-			),
-		});
+		const queueItems = await db
+			.select()
+			.from(constructionQueue)
+			.where(
+				and(
+					eq(constructionQueue.settlementId, settlementId),
+					or(
+						eq(constructionQueue.status, 'IN_PROGRESS'),
+						eq(constructionQueue.status, 'QUEUED')
+					)
+				)
+			);
 
 		// Filter to only IN_PROGRESS and QUEUED (exclude COMPLETE)
 		const activeItems = queueItems.filter(item => item.status === 'IN_PROGRESS');
@@ -512,14 +518,14 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 
 			const position = existingConstructions.length;
 			
-			// Check if queue is full (max 13: 3 active + 10 queued)
-			if (position >= 13) {
+			// Check if queue is full (max 11: 1 active + 10 queued)
+			if (position >= 11) {
 				const error = new Error('QUEUE_FULL') as Error & {
 					validation: ValidationResult;
 				};
 				error.validation = {
 					success: false,
-					errors: ['Construction queue is full (max 13 projects)'],
+					errors: ['Construction queue is full (max 11 projects)'],
 					deductedResources: {},
 				};
 				throw error;
@@ -537,14 +543,14 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 					settlementId,
 					structureType: structureDefinition.name,
 					resourcesCost: validation.deductedResources,
-					status: position < 3 ? 'IN_PROGRESS' : 'QUEUED',
+					status: position < 1 ? 'IN_PROGRESS' : 'QUEUED',
 					position,
 					isEmergency: 0,
 					// Store tileId and slotPosition for extractors
 					tileId: structureDefinition.category === 'EXTRACTOR' ? tileId : null,
 					slotPosition: structureDefinition.category === 'EXTRACTOR' ? slotPosition : null,
-					startedAt: position < 3 ? new Date() : null,
-					completesAt: position < 3 
+					startedAt: position < 1 ? new Date() : null,
+					completesAt: position < 1 
 						? new Date(Date.now() + (constructionTimeSeconds * 1000))
 						: null,
 				})
@@ -565,6 +571,13 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 
 		// Emit Socket.IO event for real-time updates
 		const worldId = settlement.tile?.region?.world?.id;
+		logger.debug('[API] Emitting Socket.IO event', {
+			worldId,
+			hasIO: !!req.app.get('io'),
+			eventName: result.queueItem.status === 'IN_PROGRESS' ? 'construction-started' : 'construction-queued',
+			constructionId: result.queueItem.id,
+		});
+		
 		if (worldId && req.app.get('io')) {
 			const io = req.app.get('io');
 			
@@ -586,6 +599,17 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				tileId: result.queueItem.tileId,
 				slotPosition: result.queueItem.slotPosition,
 				timestamp: Date.now(),
+			});
+			
+			logger.debug('[API] Socket.IO event emitted', {
+				eventName,
+				worldId,
+				constructionId: result.queueItem.id,
+			});
+		} else {
+			logger.warn('[API] Socket.IO event NOT emitted', {
+				worldId,
+				hasIO: !!req.app.get('io'),
 			});
 		}
 
@@ -642,7 +666,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 
 /**
  * POST /api/structures/:id/upgrade
- * Upgrade a structure to the next level
+ * Queue a structure upgrade (goes through construction queue)
  */
 router.post('/:id/upgrade', authenticate, async (req: Request, res: Response) => {
 	try {
@@ -674,50 +698,97 @@ router.post('/:id/upgrade', authenticate, async (req: Request, res: Response) =>
 			});
 		}
 
-		// Upgrade the structure
-		const nextLevel = structure.level + 1;
-		const [upgraded] = await db
-			.update(settlementStructures)
-			.set({
-				level: nextLevel,
-			})
-			.where(eq(settlementStructures.id, id))
-			.returning();
-
-		// Note: Extractor upgrades no longer update Plot production rates
-		// (Plot table removed - production now calculated from Tile quality fields)
-
 		const structureDef = structure.structure as Structure | undefined;
-		logger.info('[API] Structure upgraded', {
-			structureId: id,
-			level: nextLevel,
-			category: structureDef?.category,
+		const nextLevel = structure.level + 1;
+
+		// Calculate upgrade cost (same as construction cost, could be adjusted)
+		const upgradeCost = {
+			wood: structureDef?.woodCost || 0,
+			stone: structureDef?.stoneCost || 0,
+			ore: structureDef?.oreCost || 0,
+		};
+
+		// Deduct resources
+		const resources = await db.query.settlementResources.findFirst({
+			where: eq(settlementResources.settlementId, settlementData.id),
 		});
 
-		// ✅ Phase 4: Trigger settlement modifier recalculation after structure upgrade
-		try {
-			const { aggregateSettlementModifiers } =
-				await import('../../game/settlement-modifier-aggregator.js');
-			await aggregateSettlementModifiers(settlementData.id);
-			logger.debug('[API] Settlement modifiers recalculated after structure upgrade', {
-				settlementId: settlementData.id,
-				structureId: id,
-				newLevel: nextLevel,
+		if (!resources) {
+			return res.status(400).json({
+				error: 'Bad Request',
+				code: 'NO_RESOURCES',
+				message: 'Settlement has no resource data',
 			});
-		} catch (aggError) {
-			// Log error but don't fail the upgrade operation
-			logger.error(
-				'[API] Failed to recalculate settlement modifiers after structure upgrade',
-				{
-					settlementId: settlementData.id,
-					structureId: id,
-					error: aggError instanceof Error ? aggError.message : 'Unknown error',
-				}
-			);
 		}
 
-		// Emit Socket.IO event for real-time updates
-		// Get world ID from settlement's tile (need to fetch with relations)
+		// Check resource availability
+		if (
+			resources.wood < upgradeCost.wood ||
+			resources.stone < upgradeCost.stone ||
+			resources.ore < upgradeCost.ore
+		) {
+			return res.status(400).json({
+				error: 'Bad Request',
+				code: 'INSUFFICIENT_RESOURCES',
+				message: 'Insufficient resources for upgrade',
+			});
+		}
+
+		// Deduct resources
+		await db
+			.update(settlementResources)
+			.set({
+				wood: resources.wood - upgradeCost.wood,
+				stone: resources.stone - upgradeCost.stone,
+				ore: resources.ore - upgradeCost.ore,
+			})
+			.where(eq(settlementResources.settlementId, settlementData.id));
+
+		// Calculate upgrade time (1.25x construction time)
+		const baseConstructionTime = (structureDef?.constructionTimeSeconds || 600) * 1000;
+		const upgradeTime = Math.floor(baseConstructionTime * 1.25);
+		const currentTime = Date.now();
+		const completionTime = currentTime + upgradeTime;
+
+		// Check how many active construction slots
+		const activeCount = await db.query.constructionQueue.findMany({
+			where: and(
+				eq(constructionQueue.settlementId, settlementData.id),
+				eq(constructionQueue.status, 'IN_PROGRESS')
+			),
+		});
+
+		const status = activeCount.length < 1 ? 'IN_PROGRESS' : 'QUEUED';
+		const position = activeCount.length < 1 ? activeCount.length : activeCount.length;
+
+		// Add to construction queue
+		const [queueItem] = await db
+			.insert(constructionQueue)
+			.values({
+				settlementId: settlementData.id,
+				structureType: structureDef?.name || 'Unknown',
+				existingStructureId: id, // Mark as upgrade
+				targetLevel: nextLevel,
+				tileId: structure.tileId,
+				slotPosition: structure.slotPosition,
+				startedAt: status === 'IN_PROGRESS' ? new Date(currentTime) : null,
+				completesAt: status === 'IN_PROGRESS' ? new Date(completionTime) : null,
+				resourcesCost: upgradeCost,
+				status,
+				position,
+				isEmergency: 0,
+			})
+			.returning();
+
+		logger.info('[API] Structure upgrade queued', {
+			structureId: id,
+			targetLevel: nextLevel,
+			category: structureDef?.category,
+			status,
+			completesAt: queueItem.completesAt,
+		});
+
+		// Emit Socket.IO event
 		const settlementWithTile = await db.query.settlements.findFirst({
 			where: eq(settlements.id, settlementData.id),
 			with: {
@@ -729,107 +800,173 @@ router.post('/:id/upgrade', authenticate, async (req: Request, res: Response) =>
 			},
 		});
 		const worldId = settlementWithTile?.tile?.region?.worldId;
-		logger.debug('[SERVER] Attempting to emit structure:upgraded event', {
-			worldId,
-			settlementId: settlementData.id,
-			hasIo: !!req.app.get('io'),
-			structureName: structureDef?.name,
-		});
+
 		if (worldId && req.app.get('io')) {
 			const io = req.app.get('io');
-			logger.debug('[SERVER] Emitting structure:upgraded to room:', {
-				world: `world:${worldId}`,
-			});
-			io.to(`world:${worldId}`).emit('structure:upgraded', {
+			const eventName = status === 'IN_PROGRESS' ? 'construction-started' : 'construction-queued';
+			
+			io.to(`world:${worldId}`).emit(eventName, {
 				settlementId: settlementData.id,
-				structureId: id,
-				level: nextLevel,
+				constructionId: queueItem.id,
+				structureType: structureDef?.name,
 				category: structureDef?.category,
-				structureName: structureDef?.name,
+				buildingType: structureDef?.buildingType,
+				extractorType: structureDef?.extractorType,
+				completesAt: status === 'IN_PROGRESS' ? completionTime : undefined,
+				isUpgrade: true,
+				existingStructureId: id,
+				targetLevel: nextLevel,
+				position: queueItem.position,
+				timestamp: currentTime,
 			});
-			logger.debug('[SERVER] structure:upgraded event emitted successfully');
 
-			// ✅ IMMEDIATE CAPACITY UPDATE: Emit population-state event after upgrade
-			// This ensures the UI receives the new population capacity if housing was upgraded
-			try {
-				// Get current population data
-				const { getSettlementPopulation } = await import('../../db/queries.js');
-				const popData = await getSettlementPopulation(settlementData.id);
-
-				// Get all structures with modifiers to calculate new capacity
-				const structuresWithModifiers = await db.query.settlementStructures.findMany({
-					where: eq(settlementStructures.settlementId, settlementData.id),
-					with: {
-						structure: true,
-						modifiers: true,
-					},
-				});
-
-				// Map to Structure type expected by calculatePopulationState
-				const mappedStructures = structuresWithModifiers.map((s) => {
-					const struct = Array.isArray(s.structure) ? s.structure[0] : s.structure;
-					const rawMods = Array.isArray(s.modifiers)
-						? s.modifiers
-						: s.modifiers
-							? [s.modifiers]
-							: [];
-
-					return {
-						id: s.id,
-						name: struct?.name || 'Unknown',
-						category: struct?.category || 'BUILDING',
-						level: s.level,
-						modifiers: (rawMods as Array<{ name: string; value: number }>).map((m) => ({
-							name: m.name,
-							value: m.value,
-						})),
-					};
-				});
-
-				// Calculate updated population state with new capacity
-				const { calculatePopulationState } =
-					await import('../../game/population-calculator.js');
-				const popState = calculatePopulationState(
-					popData.currentPopulation,
-					mappedStructures,
-					{ food: 0, water: 0, wood: 0, stone: 0, ore: 0 },
-					popData.lastGrowthTick.getTime()
-				);
-
-				// Emit updated population state with new capacity
-				io.to(`world:${worldId}`).emit('population-state', {
-					settlementId: settlementData.id,
-					current: popData.currentPopulation,
-					capacity: popState.capacity,
-					happiness: Math.floor(popState.happiness),
-					growthRate: popState.growthRate,
-					timestamp: Date.now(),
-				});
-
-				logger.debug('[API] Population-state emitted after structure upgrade', {
-					settlementId: settlementData.id,
-					structureId: id,
-					capacity: popState.capacity,
-				});
-			} catch (popError) {
-				// Log error but don't fail the upgrade operation
-				logger.error('[API] Failed to emit population-state after structure upgrade', {
-					settlementId: settlementData.id,
-					structureId: id,
-					error: popError instanceof Error ? popError.message : 'Unknown error',
-				});
-			}
-		} else {
-			logger.debug('[SERVER] FAILED to emit - missing worldId or io instance');
+			logger.debug(`[API] Emitted ${eventName} for upgrade`, {
+				constructionId: queueItem.id,
+				worldId,
+			});
 		}
 
-		return res.json(upgraded);
+		return res.json({
+			success: true,
+			message: 'Upgrade queued',
+			queueItem,
+		});
 	} catch (error) {
-		logger.error('[API] Failed to upgrade structure', { error, structureId: req.params.id });
+		logger.error('[API] Failed to queue upgrade', { error, structureId: req.params.id });
 		return res.status(500).json({
 			error: 'Internal Server Error',
 			code: 'UPGRADE_FAILED',
-			message: 'Failed to upgrade structure',
+			message: 'Failed to queue upgrade',
+		});
+	}
+});
+
+/**
+ * DELETE /api/structures/construction-queue/:constructionId
+ * Cancel a queued construction and refund resources
+ */
+router.delete('/construction-queue/:constructionId', authenticate, async (req: Request, res: Response) => {
+	try {
+		const { constructionId } = req.params;
+
+		// Get construction queue item
+		const queueItem = await db.query.constructionQueue.findFirst({
+			where: eq(constructionQueue.id, constructionId),
+		});
+
+		if (!queueItem) {
+			return res.status(404).json({
+				success: false,
+				error: 'Not Found',
+				code: 'CONSTRUCTION_NOT_FOUND',
+				message: 'Construction not found',
+			});
+		}
+
+		// Get settlement with world info
+		const settlementData = await db.query.settlements.findFirst({
+			where: eq(settlements.id, queueItem.settlementId),
+			with: {
+				tile: {
+					with: {
+						region: {
+							with: {
+								world: true,
+							},
+						},
+					},
+				},
+			},
+		});
+
+		if (!settlementData) {
+			return res.status(404).json({
+				success: false,
+				error: 'Not Found',
+				code: 'SETTLEMENT_NOT_FOUND',
+				message: 'Settlement not found',
+			});
+		}
+
+		// Verify user owns the settlement
+		if (!req.user || settlementData.playerProfileId !== req.user.profileId) {
+			return res.status(403).json({
+				success: false,
+				error: 'Forbidden',
+				code: 'NOT_SETTLEMENT_OWNER',
+				message: 'You do not own this settlement',
+			});
+		}
+
+		// Can only cancel QUEUED items, not IN_PROGRESS
+		if (queueItem.status === 'IN_PROGRESS') {
+			return res.status(400).json({
+				success: false,
+				error: 'Bad Request',
+				code: 'CANNOT_CANCEL_ACTIVE',
+				message: 'Cannot cancel a construction that is already in progress',
+			});
+		}
+
+		if (queueItem.status !== 'QUEUED') {
+			return res.status(400).json({
+				success: false,
+				error: 'Bad Request',
+				code: 'INVALID_STATUS',
+				message: 'Can only cancel queued constructions',
+			});
+		}
+
+		// Refund resources
+		const resourcesCost = queueItem.resourcesCost as Record<string, number> | null;
+		if (resourcesCost && Object.keys(resourcesCost).length > 0) {
+			await db
+				.update(settlements)
+				.set({
+					wood: sql`${settlements.wood} + ${resourcesCost.wood || 0}`,
+					stone: sql`${settlements.stone} + ${resourcesCost.stone || 0}`,
+					ore: sql`${settlements.ore} + ${resourcesCost.ore || 0}`,
+					food: sql`${settlements.food} + ${resourcesCost.food || 0}`,
+				})
+				.where(eq(settlements.id, settlementData.id));
+		}
+
+		// Delete construction queue item
+		await db.delete(constructionQueue).where(eq(constructionQueue.id, constructionId));
+
+		logger.info('[API] Construction cancelled and resources refunded', {
+			constructionId,
+			settlementId: settlementData.id,
+			resourcesRefunded: resourcesCost,
+		});
+
+		// Emit Socket.IO event
+		const worldId = settlementData.tile?.region?.world?.id;
+		if (worldId && req.app.get('io')) {
+			const io = req.app.get('io');
+			io.to(`world:${worldId}`).emit('construction-cancelled', {
+				settlementId: settlementData.id,
+				constructionId,
+				resourcesRefunded: resourcesCost,
+				timestamp: Date.now(),
+			});
+		}
+
+		return res.json({
+			success: true,
+			message: 'Construction cancelled and resources refunded',
+			resourcesRefunded: resourcesCost,
+		});
+	} catch (error) {
+		logger.error('[API] Failed to cancel construction', { 
+			error, 
+			constructionId: req.params.constructionId 
+		});
+		return res.status(500).json({
+			success: false,
+			error: 'Internal Server Error',
+			code: 'CANCEL_FAILED',
+			message: 'Failed to cancel construction',
 		});
 	}
 });

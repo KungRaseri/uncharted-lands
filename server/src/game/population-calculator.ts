@@ -145,8 +145,8 @@ export function calculateHousingQuality(
 	}
 
 	// Bonus for quality housing structures
-	const hasHouses = structures.some((s) => s.name.toLowerCase().includes('house'));
-	const hasCottages = structures.some((s) => s.name.toLowerCase().includes('cottage'));
+	const hasHouses = structures.some((s) => s.name?.toLowerCase().includes('house'));
+	const hasCottages = structures.some((s) => s.name?.toLowerCase().includes('cottage'));
 
 	if (hasHouses) {
 		qualityScore += 20;

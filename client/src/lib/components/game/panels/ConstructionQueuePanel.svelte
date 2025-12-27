@@ -5,6 +5,10 @@
 	 * WCAG 2.1 AA Compliant
 	 */
 
+	import { constructionStore } from '$lib/stores/game/construction.svelte';
+	import { getToaster } from '$lib/stores/toaster';
+	import { invalidateAll } from '$app/navigation';
+
 	type BuildingType = 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER';
 
 	interface ResourceCost {
@@ -105,6 +109,31 @@
 			minute: '2-digit',
 			hour12: true
 		});
+	}
+
+	// Cancel construction
+	async function handleCancelConstruction(constructionId: string, buildingName: string) {
+		const confirmed = confirm(`Cancel construction of ${buildingName}? Resources will be refunded.`);
+		if (!confirmed) return;
+
+		const success = await constructionStore.cancelConstruction(constructionId);
+		
+		if (success) {
+			getToaster().success({
+				title: 'Construction Cancelled',
+				description: `${buildingName} removed from queue. Resources refunded.`,
+				duration: 3000
+			});
+			
+			// Refresh data
+			await invalidateAll();
+		} else {
+			getToaster().error({
+				title: 'Cancel Failed',
+				description: 'Could not cancel construction. Please try again.',
+				duration: 5000
+			});
+		}
 	}
 </script>
 
@@ -255,7 +284,7 @@
 											aria-hidden="true"
 											>{getBuildingEmoji(project.buildingType)}</span
 										>
-										<div class="flex flex-col gap-1">
+										<div class="flex flex-col gap-1 flex-1">
 											<h4
 												class="text-base font-semibold text-surface-900 dark:text-surface-100 m-0"
 											>
@@ -268,13 +297,35 @@
 											</p>
 										</div>
 									</div>
-									<div
-										class="flex flex-col items-end gap-1 shrink-0 md:items-start w-full md:w-auto"
-									>
-										<span
-											class="text-sm font-medium text-surface-600 dark:text-surface-400 tabular-nums"
-											>Est: {formatTimeRemaining(project.timeRemaining)}</span
+									<div class="flex items-center gap-3">
+										<div
+											class="flex flex-col items-end gap-1 shrink-0 md:items-start"
 										>
+											<span
+												class="text-sm font-medium text-surface-600 dark:text-surface-400 tabular-nums"
+												>Est: {formatTimeRemaining(project.timeRemaining)}</span
+											>
+										</div>
+										<button
+											type="button"
+											onclick={() => handleCancelConstruction(project.id, project.buildingName)}
+											class="btn btn-sm variant-ghost-error hover:variant-filled-error"
+											aria-label="Cancel {project.buildingName} construction"
+											title="Cancel and refund resources"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												class="w-4 h-4"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											>
+												<path d="M18 6L6 18M6 6l12 12" />
+											</svg>
+										</button>
 									</div>
 								</div>
 
