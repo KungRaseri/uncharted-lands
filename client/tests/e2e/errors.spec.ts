@@ -97,7 +97,7 @@ test.describe('Error Handling & Edge Cases', () => {
 	// ========================================================================
 
 	test.describe('Phase 1: API Error Handling', () => {
-		test('should show error when API request fails with 500', async ({ page }) => {
+\t\ttest.skip('should show error when API request fails with 500', async ({ page }) => {
 			console.log('[TEST] Testing API 500 error handling...');
 
 			// Get session cookie

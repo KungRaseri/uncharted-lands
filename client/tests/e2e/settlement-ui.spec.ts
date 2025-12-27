@@ -246,13 +246,13 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		// Wait for initial data
 		await page.waitForTimeout(2000);
 
-		// Get initial population capacity (should be base 10 with no houses)
+		// Get initial population capacity (should be base 10 + TENT +2 = 12)
 		const initialCapacity = await getPopulationCapacity(page);
 		console.log('[E2E] Initial population capacity:', initialCapacity);
 
-		// ✅ ASSERTION: New settlement should have base capacity of 10
+		// ✅ ASSERTION: New settlement should have base capacity of 12 (10 base + 2 from starting TENT)
 		// This verifies the page initialization calculates capacity correctly
-		expect(initialCapacity).toBe(10);
+		expect(initialCapacity).toBe(12);
 		console.log('[E2E] ✅ Base population capacity is 10 (correct)');
 	});
 
