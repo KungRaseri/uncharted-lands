@@ -301,7 +301,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 
 		// Find a housing structure (e.g., Basic House)
 		const housingStructure = structures.find(
-			(s: any) => s.category === 'BUILDING' && s.buildingType === 'HOUSING'
+			(s: any) => s.category === 'BUILDING' && s.buildingType === 'HOUSE'
 		);
 		if (!housingStructure) {
 			throw new Error('No housing structure found in structure metadata');
@@ -330,6 +330,13 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		const buildData = await buildResponse.json();
 		console.log('[E2E] Housing structure built:', buildData);
 
+		// Wait for construction to complete (House takes ~600s)
+		console.log('[E2E] Waiting for housing construction to complete...');
+		const { waitForStructureCompletion } = await import('./helpers/game-state');
+		const completed = await waitForStructureCompletion(page, 'HOUSE', 120000);
+		expect(completed).toBeTruthy();
+		console.log('[E2E] Housing construction completed');
+
 		// Wait for Socket.IO event to propagate and UI to update
 		await page.waitForTimeout(2000);
 
@@ -338,10 +345,10 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		console.log('[E2E] Updated capacity after building house:', newCapacity);
 
 		// ✅ ASSERTION: Capacity should increase by housing structure's population_capacity modifier
-		// According to GDD, basic housing adds +7 capacity
+		// House adds +5 capacity (not +7, that's from old GDD)
 		// This verifies the immediate population-state emission after structure build
 		expect(newCapacity).toBeGreaterThan(initialCapacity);
-		expect(newCapacity).toBe(17); // 10 base + 7 from house
+		expect(newCapacity).toBe(17); // 12 (base+TENT) + 5 from house
 		console.log('[E2E] ✅ Population capacity updated immediately after building housing');
 	});
 

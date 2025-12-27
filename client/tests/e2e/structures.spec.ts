@@ -239,6 +239,7 @@ test.describe('Structure Management Lifecycle', () => {
 	// ========================================================================
 
 	test('should build multiple structures and track total count', async ({ page }) => {
+		test.setTimeout(180000); // 3 minutes for construction to complete
 		console.log('[TEST] Building multiple structures...');
 
 		// Build 1 STORAGE and 1 additional Tent (both tier 0, non-unique)
@@ -249,9 +250,9 @@ test.describe('Structure Management Lifecycle', () => {
 		await page.waitForTimeout(500);
 
 		// Build another Tent (buildingType: HOUSE)
-		// Note: "House" structure is tier 1 (disabled at Outpost), so we build "Tent" instead
-		// Both Tent and House have buildingType: HOUSE, but only Tent is available at tier 0
-		await buildStructure(page, 'House'); // This will build Tent (enabled) not House (disabled)
+		// Note: House is tier 2 (minTownHallLevel: 1) and disabled at Outpost
+		// Tent is tier 1 (minTownHallLevel: 0) and available immediately
+		await buildStructure(page, 'Tent');
 		await page.waitForTimeout(500);
 
 		// Wait for constructions to complete

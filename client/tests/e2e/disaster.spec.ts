@@ -72,7 +72,7 @@ test.describe('Disaster Lifecycle Flow', () => {
 	});
 
 	// ========================================================================
-	// PER-TEST SETUP: Create settlement for each test
+	// PER-TEST SETUP: Reuse shared test data from global setup
 	// ========================================================================
 	test.beforeEach(async ({ page, request }) => {
 		// Capture all browser console logs for debugging
@@ -83,59 +83,32 @@ test.describe('Disaster Lifecycle Flow', () => {
 			console.log('[BROWSER CONSOLE]', text);
 		});
 
-		// 1. Register and login test user
-		testUserEmail = generateUniqueEmail('disaster-test');
-		await registerUser(page, testUserEmail, TEST_USERS.VALID.password);
-		await assertRedirectedToGettingStarted(page);
-
-		// 2. Get session cookies
-		const cookies = await page.context().cookies();
-		const sessionCookie = cookies.find((c) => c.name === 'session');
-		if (!sessionCookie) {
-			throw new Error('No session cookie found after registration');
-		}
-		sessionCookieValue = sessionCookie.value;
-
-		// 3. Get account information
-		const accountResponse = await request.get(`${apiUrl}/account/me`, {
-			headers: { Cookie: `session=${sessionCookieValue}` }
-		});
-		if (!accountResponse.ok()) {
-			throw new Error(`Failed to get account: ${accountResponse.status()}`);
-		}
-		const account = await accountResponse.json();
-		const accountId = account.id;
-		const username = account.profile?.username || testUserEmail;
-
-		// 4. Create settlement in shared world
-		console.log(`[E2E] Creating settlement in shared world: ${testWorldId}`);
-		const settlementResponse = await request.post(`${apiUrl}/settlements`, {
-			headers: { Cookie: `session=${sessionCookieValue}` },
-			data: {
-				worldId: testWorldId,
-				serverId: testServerId,
-				accountId: accountId,
-				username: username,
-				name: TEST_SETTLEMENTS.BASIC.name
-			}
-		});
-
-		if (!settlementResponse.ok()) {
-			const errorText = await settlementResponse.text();
-			throw new Error(
-				`Failed to create settlement: ${settlementResponse.status()} ${errorText}`
-			);
-		}
-
-		const settlement = await settlementResponse.json();
-		testSettlementId = settlement.id;
-		console.log('[E2E] Test setup complete:', {
+		// Use shared test data from global setup
+		const sharedData = getSharedTestData();
+		testUserEmail = sharedData.adminEmail!;
+		sessionCookieValue = sharedData.adminSessionToken!;
+		testSettlementId = sharedData.generalSettlementId!;
+		
+		console.log('[E2E] Using shared test data:', {
 			worldId: testWorldId,
 			settlementId: testSettlementId,
 			email: testUserEmail
 		});
 
-		// 5. Navigate to settlement page
+		// Inject session cookie into test's browser context
+		await page.context().addCookies([
+			{
+				name: 'session',
+				value: sessionCookieValue,
+				domain: 'localhost',
+				path: '/',
+				httpOnly: true,
+				secure: false,
+				sameSite: 'Lax'
+			}
+		]);
+
+		// Navigate to settlement page
 		await page.goto(`/game/settlements/${testSettlementId}`);
 		await page.waitForLoadState('networkidle');
 
@@ -211,9 +184,7 @@ test.describe('Disaster Lifecycle Flow', () => {
 
 		test('should show countdown timer that decreases', async ({ page, request }) => {
 			// Elevate to admin for disaster trigger
-			await request.post(`${API_URL}/test/elevate-admin/${testEmail}`);
-			
-			// Trigger disaster
+		await request.post(`${apiUrl}/test/elevate-admin/${encodeURIComponent(testUserEmail)}`);
 			disasterId = await triggerDisaster(
 				request,
 				sessionCookieValue,
