@@ -207,7 +207,17 @@ test.describe('Structure Management Lifecycle', () => {
 		// Note: Auto-production runs during the test, so exact resource matching is unreliable
 		// The key verification is that the structure was built successfully
 		// We verify this by checking the structure count
+		
+		// Debug: Check all structure-type attributes on page
+		const allStructures = await page.locator('[data-structure-type]').all();
+		console.log('[DEBUG] All structures with data-structure-type found:', allStructures.length);
+		for (const structure of allStructures) {
+			const type = await structure.getAttribute('data-structure-type');
+			console.log('[DEBUG] Structure type:', type);
+		}
+		
 		const storageCount = await countStructures(page, 'STORAGE');
+		console.log('[DEBUG] countStructures("STORAGE") returned:', storageCount);
 		expect(storageCount).toBe(1);
 
 		// Verify resources were sufficient to build (they didn't go negative)

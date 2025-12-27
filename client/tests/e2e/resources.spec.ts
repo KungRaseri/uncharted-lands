@@ -179,9 +179,25 @@ test.describe('Resource Production Flow', () => {
 			// Build a farm to produce food using ExtractorBuildModal
 			await buildExtractor(page, 'BASIC_FARM');
 
-			// Wait for food production to increase
+			// Wait for farm to appear
 			await page.waitForTimeout(1000);
+			
+			// Debug: Check if farm exists
+			const farmCount = await page.locator('[data-structure-type="FARM"]').count();
+			console.log('[DEBUG] Farm count:', farmCount);
+			
+			// Debug: Check initial food amount
+			const initialFood = await getResourceAmount(page, 'food');
+			console.log('[DEBUG] Initial food amount:', initialFood);
+			
+			// Wait for food production to increase
 			const productionOccurred = await waitForResourceProduction(page, 'food', 30000);
+			
+			// Debug: Check final food amount
+			const finalFood = await getResourceAmount(page, 'food');
+			console.log('[DEBUG] Final food amount:', finalFood);
+			console.log('[DEBUG] Production occurred:', productionOccurred);
+			
 			expect(productionOccurred).toBeTruthy();
 		});
 
