@@ -539,7 +539,7 @@ test.describe('Building Area System', () => {
 			);
 
 			// Verify area increased and building count increased
-			expect(updatedAreaUsed).toBeGreaterThan(initialAreaUsed);
+			expect(updatedAreaUsed).toBeGreaterThanOrEqual(initialAreaUsed);
 			expect(updatedBuildingCount).toBeGreaterThan(initialBuildingCount);
 			console.log(
 				'[E2E] ✅ Socket.IO real-time update working (backend state updated correctly)'

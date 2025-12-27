@@ -289,7 +289,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		// Get initial capacity
 		const initialCapacity = await getPopulationCapacity(page);
 		console.log('[E2E] Initial capacity:', initialCapacity);
-		expect(initialCapacity).toBe(10); // Base capacity
+		expect(initialCapacity).toBe(12); // Base capacity (10) + starting TENT (+2)
 
 		// Get structure metadata to find housing structure ID
 		const structuresResponse = await request.get(`${apiUrl}/structures/metadata`, {

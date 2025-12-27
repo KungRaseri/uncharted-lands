@@ -254,6 +254,12 @@ test.describe('Structure Management Lifecycle', () => {
 		await buildStructure(page, 'House'); // This will build Tent (enabled) not House (disabled)
 		await page.waitForTimeout(500);
 
+		// Wait for constructions to complete
+		const storageCompleted = await waitForStructureCompletion(page, 'STORAGE', 120000);
+		expect(storageCompleted).toBeTruthy();
+		const houseCompleted = await waitForStructureCompletion(page, 'HOUSE', 120000);
+		expect(houseCompleted).toBeTruthy();
+
 		// Verify structure counts
 		const storageCount = await countStructures(page, 'STORAGE');
 		const houseCount = await countStructures(page, 'HOUSE');

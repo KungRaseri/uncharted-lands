@@ -210,6 +210,9 @@ test.describe('Disaster Lifecycle Flow', () => {
 		});
 
 		test('should show countdown timer that decreases', async ({ page, request }) => {
+			// Elevate to admin for disaster trigger
+			await request.post(`${API_URL}/test/elevate-admin/${testEmail}`);
+			
 			// Trigger disaster
 			disasterId = await triggerDisaster(
 				request,
