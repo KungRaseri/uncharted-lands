@@ -126,22 +126,27 @@
 	let buildingToDemolish = $state<string | null>(null);
 
 	// ✅ NEW: Raw construction queue with tileId/slotPosition for slot locking
-	let rawConstructionQueue = $state<Array<{
-		id: string;
-		tileId: string | null;
-		slotPosition: number | null;
-		structureType: string;
-		status: string;
-	}>>([]);
+	let rawConstructionQueue = $state<
+		Array<{
+			id: string;
+			tileId: string | null;
+			slotPosition: number | null;
+			structureType: string;
+			status: string;
+		}>
+	>([]);
 
 	// Fetch raw construction queue on mount
 	$effect(() => {
 		async function fetchRawQueue() {
 			try {
-				const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/construction-queue/${settlementId}`, {
-					method: 'GET',
-					credentials: 'include',
-				});
+				const response = await fetch(
+					`${PUBLIC_CLIENT_API_URL}/structures/construction-queue/${settlementId}`,
+					{
+						method: 'GET',
+						credentials: 'include'
+					}
+				);
 
 				if (response.ok) {
 					const data = await response.json();
@@ -178,39 +183,64 @@
 		const socket = socketStore.getSocket();
 		if (!socket) return;
 
-		const handleConstructionStarted = (data: { constructionId: string; settlementId: string; structureType: string; tileId?: string | null; slotPosition?: number | null }) => {
+		const handleConstructionStarted = (data: {
+			constructionId: string;
+			settlementId: string;
+			structureType: string;
+			tileId?: string | null;
+			slotPosition?: number | null;
+		}) => {
 			if (data.settlementId === settlementId) {
 				// Add or update the item in rawConstructionQueue
-				const existing = rawConstructionQueue.find(item => item.id === data.constructionId);
+				const existing = rawConstructionQueue.find(
+					(item) => item.id === data.constructionId
+				);
 				if (!existing) {
-					rawConstructionQueue = [...rawConstructionQueue, {
-						id: data.constructionId,
-						tileId: data.tileId ?? null,
-						slotPosition: data.slotPosition ?? null,
-						structureType: data.structureType,
-						status: 'IN_PROGRESS'
-					}];
+					rawConstructionQueue = [
+						...rawConstructionQueue,
+						{
+							id: data.constructionId,
+							tileId: data.tileId ?? null,
+							slotPosition: data.slotPosition ?? null,
+							structureType: data.structureType,
+							status: 'IN_PROGRESS'
+						}
+					];
 				}
 			}
 		};
 
-		const handleConstructionComplete = (data: { settlementId: string; structureId: string }) => {
+		const handleConstructionComplete = (data: {
+			settlementId: string;
+			structureId: string;
+		}) => {
 			if (data.settlementId === settlementId) {
 				// Remove completed item from rawConstructionQueue
-				rawConstructionQueue = rawConstructionQueue.filter(item => item.id !== data.structureId);
+				rawConstructionQueue = rawConstructionQueue.filter(
+					(item) => item.id !== data.structureId
+				);
 			}
 		};
 
-		const handleConstructionQueued = (data: { constructionId: string; settlementId: string; structureType: string; tileId?: string | null; slotPosition?: number | null }) => {
+		const handleConstructionQueued = (data: {
+			constructionId: string;
+			settlementId: string;
+			structureType: string;
+			tileId?: string | null;
+			slotPosition?: number | null;
+		}) => {
 			if (data.settlementId === settlementId) {
 				// Add queued item
-				rawConstructionQueue = [...rawConstructionQueue, {
-					id: data.constructionId,
-					tileId: data.tileId ?? null,
-					slotPosition: data.slotPosition ?? null,
-					structureType: data.structureType,
-					status: 'QUEUED'
-				}];
+				rawConstructionQueue = [
+					...rawConstructionQueue,
+					{
+						id: data.constructionId,
+						tileId: data.tileId ?? null,
+						slotPosition: data.slotPosition ?? null,
+						structureType: data.structureType,
+						status: 'QUEUED'
+					}
+				];
 			}
 		};
 
@@ -282,8 +312,8 @@
 			settlementId,
 			activeCount: active.length,
 			queuedCount: queued.length,
-			active: active.map(p => ({ id: p.id, name: p.name })),
-			queued: queued.map(p => ({ id: p.id, name: p.name })),
+			active: active.map((p) => ({ id: p.id, name: p.name })),
+			queued: queued.map((p) => ({ id: p.id, name: p.name }))
 		});
 
 		// Map store BuildingType to panel BuildingType
@@ -573,57 +603,56 @@
 			});
 			const result = await response.json();
 
-			logger.debug('[Dashboard] Build structure response:', { result, type: result.type, status: response.status });
+			logger.debug('[Dashboard] Build structure response:', {
+				result,
+				type: result.type,
+				status: response.status
+			});
 
 			// SvelteKit actions that use fail() return { type: 'failure', status: number, data: {...} }
 			// Success returns { type: 'success', status: 200, data: {...} }
 			if (result.type === 'failure' || !response.ok) {
 				const errorData = result.data || result;
-				logger.error('[Dashboard] Failed to create extractor:', { 
-					result, 
-					errorData, 
+				logger.error('[Dashboard] Failed to create extractor:', {
+					result,
+					errorData,
 					errorDataType: typeof errorData,
 					fullResponse: JSON.stringify(result)
 				});
+
+// Handle error response from server
+			let message = 'Failed to create extractor';
+			let shortageDetails = [];
+
+			if (typeof errorData === 'object' && errorData !== null) {
+				message = errorData.error || errorData.message || message;
 				
-				// Handle case where data might be a serialized string (SvelteKit bug)
-				let reasons = [];
-				let message = 'Failed to create extractor';
-				
-				if (typeof errorData === 'string') {
-					// Try to parse the serialized array structure
-					try {
-						// The string looks like: "[{\"success\":1,...},false,\"message\",[...]]"
-						const parsed = JSON.parse(errorData.replace(/\\/g, ''));
-						if (Array.isArray(parsed) && parsed.length >= 3) {
-							message = parsed[2] || message;
-							if (Array.isArray(parsed[3])) {
-								reasons = parsed[3];
-							}
-						}
-					} catch (e) {
-						// If parsing fails, extract message from string
-						const msgMatch = errorData.match(/"([^"]+)"/);
-						message = msgMatch ? msgMatch[1] : errorData;
-					}
-				} else if (typeof errorData === 'object' && errorData !== null) {
-					message = errorData.message || message;
-					reasons = Array.isArray(errorData.reasons) ? errorData.reasons : [];
+				// Server returns shortages array with { type, required, available, missing }
+				if (Array.isArray(errorData.shortages)) {
+					shortageDetails = errorData.shortages.map((s: any) => 
+						`${s.type.toUpperCase()}: Need ${s.required}, have ${s.available} (missing ${s.missing})`
+					);
 				}
-				
-				const reasonsText = reasons.length > 0 ? reasons.join('\n') : 'Check server logs for details';
-				alert(`❌ ${message}\n\n${reasonsText}`);
+			} else if (typeof errorData === 'string') {
+				// Fallback for string errors
+				message = errorData;
+				}
+
+			const detailsText = shortageDetails.length > 0 
+				? shortageDetails.join('\n') 
+				: 'Check your resource stockpiles';
+			alert(`❌ ${message}\n\n${detailsText}`);
 				return;
 			}
 
 			logger.debug('[Dashboard] Extractor created successfully');
 			extractorSelectorOpen = false;
 			selectedSlot = null;
-			
+
 			// Immediately refetch construction queue and tile data
 			logger.debug('[Dashboard] Refetching construction queue and invalidating all data');
 			await Promise.all([
-				constructionStore.fetchConstructionQueue(settlement.id),
+				constructionStore.fetchConstructionQueue(settlementId),
 				invalidateAll()
 			]);
 			logger.debug('[Dashboard] Refetch complete');
@@ -769,7 +798,12 @@
 		<!-- Phase 1: Tile Plots Panel - Shows plot slots for the settlement's tile -->
 		{#if tile}
 			<div class="mb-4">
-				<TilePlotsPanel {tile} {extractors} constructionQueue={rawConstructionQueue} onBuildExtractor={handleBuildExtractor} />
+				<TilePlotsPanel
+					{tile}
+					{extractors}
+					constructionQueue={rawConstructionQueue}
+					onBuildExtractor={handleBuildExtractor}
+				/>
 			</div>
 		{/if}
 

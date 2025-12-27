@@ -195,21 +195,21 @@ export function calculateDisasterPreparedness(
 	// Warning systems (up to 15 points)
 	const hasWatchtower = structures.some(
 		(s) =>
-			s.name.toLowerCase().includes('watchtower') || s.name.toLowerCase().includes('warning')
+			s.name && (s.name.toLowerCase().includes('watchtower') || s.name.toLowerCase().includes('warning'))
 	);
 	if (hasWatchtower) {
 		score += 15;
 	}
 
 	// Hospital availability (up to 15 points)
-	const hasHospital = structures.some((s) => s.name.toLowerCase().includes('hospital'));
+	const hasHospital = structures.some((s) => s.name && s.name.toLowerCase().includes('hospital'));
 	if (hasHospital) {
 		score += 15;
 	}
 
 	// Defense structures (up to 20 points)
 	const defenseRating = structures.reduce((total, s) => {
-		const defenseModifier = s.modifiers.find((m) => m.name.toLowerCase().includes('defense'));
+		const defenseModifier = s.modifiers.find((m) => m.name && m.name.toLowerCase().includes('defense'));
 		return total + (defenseModifier?.value || 0);
 	}, 0);
 

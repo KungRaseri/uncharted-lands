@@ -15,7 +15,6 @@ import {
 	settlements,
 	structures,
 	tiles,
-	structureModifiers,
 	constructionQueue,
 } from '../../db/index.js';
 import { STRUCTURE_COSTS } from '../../data/structure-costs.js';
@@ -216,7 +215,7 @@ router.get('/construction-queue/:settlementId', authenticate, async (req: Reques
 			queued: queuedItems,
 		});
 	} catch (error) {
-		logger.error('[API] Failed to fetch construction queue', { 
+		logger.error('[API] Failed to fetch construction queue', {
 			error,
 			settlementId: req.params.settlementId,
 		});
@@ -503,7 +502,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			);
 
 			if (!validation.success) {
-				logger.warn('[API] Insufficient resources for construction', {
+				logger.error('[API] Insufficient resources for construction', {
 					settlementId,
 					structureName: structureDefinition.name,
 					error: validation.error,
@@ -523,7 +522,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				.where(eq(constructionQueue.settlementId, settlementId));
 
 			const position = existingConstructions.length;
-			
+
 			logger.debug('[API] Creating construction queue item', {
 				settlementId,
 				structureName: structureDefinition.name,
@@ -534,7 +533,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				tileId,
 				slotPosition,
 			});
-			
+
 			// Check if queue is full (max 11: 1 active + 10 queued)
 			if (position >= 11) {
 				const error = new Error('QUEUE_FULL') as Error & {
@@ -567,7 +566,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 					tileId: structureDefinition.category === 'EXTRACTOR' ? tileId : null,
 					slotPosition: structureDefinition.category === 'EXTRACTOR' ? slotPosition : null,
 					startedAt: position < 1 ? new Date() : null,
-					completesAt: position < 1 
+					completesAt: position < 1
 						? new Date(Date.now() + (constructionTimeSeconds * 1000))
 						: null,
 				})
@@ -604,12 +603,12 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			eventName: result.queueItem.status === 'IN_PROGRESS' ? 'construction-started' : 'construction-queued',
 			constructionId: result.queueItem.id,
 		});
-		
+
 		if (worldId && req.app.get('io')) {
 			const io = req.app.get('io');
-			
-			const eventName = result.queueItem.status === 'IN_PROGRESS' 
-				? 'construction-started' 
+
+			const eventName = result.queueItem.status === 'IN_PROGRESS'
+				? 'construction-started'
 				: 'construction-queued';
 
 			io.to(`world:${worldId}`).emit(eventName, {
@@ -627,7 +626,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				slotPosition: result.queueItem.slotPosition,
 				timestamp: Date.now(),
 			});
-			
+
 			logger.debug('[API] Socket.IO event emitted', {
 				eventName,
 				worldId,
@@ -643,7 +642,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 		// Return success response
 		const structureCost = STRUCTURE_COSTS.find(s => s.name === result.structureDefinition.name);
 		const constructionTimeSeconds = structureCost?.constructionTimeSeconds || 60;
-		
+
 		res.status(201).json({
 			success: true,
 			message: 'Structure queued for construction',
@@ -663,7 +662,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 		// Handle validation errors (insufficient resources or queue full)
 		if (error instanceof Error && (error.message === 'INSUFFICIENT_RESOURCES' || error.message === 'QUEUE_FULL')) {
 			const validationError = (error as Error & { validation: ValidationResult }).validation;
-			logger.warn('[API] Insufficient resources for structure', {
+			logger.error('[API] Insufficient resources for structure', {
 				settlementId: req.body.settlementId,
 				structureId: req.body.structureId,
 				shortages: validationError.shortages,
@@ -836,7 +835,7 @@ router.post('/:id/upgrade', authenticate, async (req: Request, res: Response) =>
 		if (worldId && req.app.get('io')) {
 			const io = req.app.get('io');
 			const eventName = status === 'IN_PROGRESS' ? 'construction-started' : 'construction-queued';
-			
+
 			io.to(`world:${worldId}`).emit(eventName, {
 				settlementId: settlementData.id,
 				constructionId: queueItem.id,
@@ -990,9 +989,9 @@ router.delete('/construction-queue/:constructionId', authenticate, async (req: R
 			resourcesRefunded: resourcesCost,
 		});
 	} catch (error) {
-		logger.error('[API] Failed to cancel construction', { 
-			error, 
-			constructionId: req.params.constructionId 
+		logger.error('[API] Failed to cancel construction', {
+			error,
+			constructionId: req.params.constructionId
 		});
 		return res.status(500).json({
 			success: false,
