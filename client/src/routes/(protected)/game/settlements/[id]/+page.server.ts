@@ -200,13 +200,23 @@ export const actions: Actions = {
 					tileId,
 					slotPosition,
 					status: response.status,
-					error: result
+					error: result,
+					shortages: result.shortages,
 				});
+
+				// Format shortage messages for user
+				const reasons = [result.code || result.error || 'UNKNOWN_ERROR'];
+				if (result.shortages && Array.isArray(result.shortages) && result.shortages.length > 0) {
+					const shortageMessages = result.shortages.map((s: any) => 
+						`${s.type}: need ${s.required}, have ${s.available} (missing ${s.missing})`
+					);
+					reasons.push(...shortageMessages);
+				}
 
 				return fail(response.status, {
 					success: false,
-					message: result.message || 'Failed to build structure',
-					reasons: [result.code || 'UNKNOWN_ERROR']
+					message: result.message || result.error || 'Failed to build structure',
+					reasons,
 				});
 			}
 

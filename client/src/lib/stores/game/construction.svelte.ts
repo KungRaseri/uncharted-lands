@@ -415,6 +415,13 @@ export const constructionStore = {
 
 			const data = await response.json();
 			
+			logger.debug('[ConstructionStore] Raw API response:', {
+				settlementId,
+				success: data.success,
+				activeRaw: data.active,
+				queuedRaw: data.queued,
+			});
+			
 			if (data.success) {
 				const now = Date.now();
 				

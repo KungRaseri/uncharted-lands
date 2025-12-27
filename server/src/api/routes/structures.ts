@@ -503,6 +503,12 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			);
 
 			if (!validation.success) {
+				logger.warn('[API] Insufficient resources for construction', {
+					settlementId,
+					structureName: structureDefinition.name,
+					error: validation.error,
+					shortages: validation.shortages,
+				});
 				const error = new Error('INSUFFICIENT_RESOURCES') as Error & {
 					validation: ValidationResult;
 				};
@@ -517,6 +523,17 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				.where(eq(constructionQueue.settlementId, settlementId));
 
 			const position = existingConstructions.length;
+			
+			logger.debug('[API] Creating construction queue item', {
+				settlementId,
+				structureName: structureDefinition.name,
+				category: structureDefinition.category,
+				position,
+				existingCount: existingConstructions.length,
+				willBeActive: position < 1,
+				tileId,
+				slotPosition,
+			});
 			
 			// Check if queue is full (max 11: 1 active + 10 queued)
 			if (position >= 11) {
@@ -555,6 +572,16 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 						: null,
 				})
 				.returning();
+
+			logger.debug('[API] Construction queue item created', {
+				constructionId: queueItem.id,
+				settlementId,
+				structureName: structureDefinition.name,
+				status: queueItem.status,
+				position: queueItem.position,
+				tileId: queueItem.tileId,
+				slotPosition: queueItem.slotPosition,
+			});
 
 			return { queueItem, structureDefinition, validation };
 		});
@@ -638,7 +665,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			const validationError = (error as Error & { validation: ValidationResult }).validation;
 			logger.warn('[API] Insufficient resources for structure', {
 				settlementId: req.body.settlementId,
-				structureName: req.body.structureName,
+				structureId: req.body.structureId,
 				shortages: validationError.shortages,
 			});
 			return res.status(400).json({
@@ -652,14 +679,19 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 		logger.error('[API] Failed to create structure', {
 			errorMessage: error instanceof Error ? error.message : String(error),
 			errorStack: error instanceof Error ? error.stack : undefined,
-			body: req.body,
-			structureDefinition: structureDefinition?.name,
-			settlementId: req.body.settlementId,
+			errorName: error instanceof Error ? error.name : 'Unknown',
+			requestBody: {
+				settlementId: req.body.settlementId,
+				structureId: req.body.structureId,
+				tileId: req.body.tileId,
+				slotPosition: req.body.slotPosition,
+			},
 		});
 		return res.status(500).json({
+			success: false,
 			error: 'Internal Server Error',
 			code: 'CREATE_FAILED',
-			message: 'Failed to create structure',
+			message: 'An error occurred while building the structure',
 		});
 	}
 });

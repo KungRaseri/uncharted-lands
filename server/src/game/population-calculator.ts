@@ -181,9 +181,9 @@ export function calculateDisasterPreparedness(
 	// Shelter capacity coverage (up to 50 points)
 	// Check for Emergency Shelter structures
 	const shelterCapacity = structures.reduce((total, s) => {
-		if (s.name.toLowerCase().includes('shelter') || s.name.toLowerCase().includes('bunker')) {
+		if (s.name && (s.name.toLowerCase().includes('shelter') || s.name.toLowerCase().includes('bunker'))) {
 			// Each shelter protects 50 people (from GDD)
-			const capacityMod = s.modifiers.find((m) => m.name.toLowerCase().includes('capacity'));
+			const capacityMod = s.modifiers.find((m) => m.name && m.name.toLowerCase().includes('capacity'));
 			return total + (capacityMod?.value || 50);
 		}
 		return total;

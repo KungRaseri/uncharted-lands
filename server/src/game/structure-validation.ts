@@ -12,6 +12,7 @@ import { eq } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { settlementStorage, settlements, structureRequirements } from '../db/schema.js';
 import type * as schema from '../db/schema.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Resource shortage information
@@ -59,12 +60,28 @@ export async function validateAndDeductResources(
 	settlementId: string,
 	structure: typeof schema.structures.$inferSelect
 ): Promise<ValidationResult> {
+	logger.debug('[VALIDATION] Starting resource validation', {
+		settlementId,
+		structureId: structure.id,
+		structureName: structure.name,
+		structureCategory: structure.category,
+	});
+
 	// 1. Get structure costs from StructureRequirement table (database query)
 	const requirementRecords = await tx.query.structureRequirements.findMany({
 		where: eq(structureRequirements.structureId, structure.id),
 		with: {
 			resource: true,
 		},
+	});
+
+	logger.debug('[VALIDATION] Found requirement records', {
+		structureId: structure.id,
+		recordCount: requirementRecords.length,
+		records: requirementRecords.map(r => ({
+			resourceName: (r.resource as any)?.name,
+			quantity: r.quantity
+		}))
 	});
 
 	// Build costs object from database records
@@ -77,6 +94,8 @@ export async function validateAndDeductResources(
 		}
 	}
 
+	logger.debug('[VALIDATION] Parsed costs', { costs });
+
 	// 2. Query settlement with storage
 	const settlement = await tx.query.settlements.findFirst({
 		where: eq(settlements.id, settlementId),
@@ -86,14 +105,22 @@ export async function validateAndDeductResources(
 	});
 
 	if (!settlement) {
+		logger.error('[VALIDATION] Settlement not found', { settlementId });
 		throw new Error('Settlement not found');
 	}
 
 	if (!settlement.storage) {
+		logger.error('[VALIDATION] Settlement storage not found', { settlementId });
 		throw new Error('Settlement storage not found');
 	}
 
 	const storage = settlement.storage;
+	logger.debug('[VALIDATION] Current resources', {
+		settlementId,
+		wood: storage.wood,
+		stone: storage.stone,
+		ore: storage.ore,
+	});
 
 	// 3. Validate sufficient resources
 	const shortages: ResourceShortage[] = [];
@@ -102,6 +129,11 @@ export async function validateAndDeductResources(
 	const woodCost = costs.wood ?? 0;
 	const stoneCost = costs.stone ?? 0;
 	const oreCost = costs.ore ?? 0;
+
+	logger.debug('[VALIDATION] Checking resource availability', {
+		costs: { wood: woodCost, stone: stoneCost, ore: oreCost },
+		available: { wood: storage.wood, stone: storage.stone, ore: storage.ore },
+	});
 
 	if (storage.wood < woodCost) {
 		shortages.push({
@@ -131,6 +163,13 @@ export async function validateAndDeductResources(
 	}
 
 	if (shortages.length > 0) {
+		logger.warn('[VALIDATION] Resource shortages detected', {
+			settlementId,
+			structureName: structure.name,
+			shortages,
+			requiredCosts: { wood: woodCost, stone: stoneCost, ore: oreCost },
+			availableResources: { wood: storage.wood, stone: storage.stone, ore: storage.ore },
+		});
 		return {
 			success: false,
 			error: 'Insufficient resources to build structure',

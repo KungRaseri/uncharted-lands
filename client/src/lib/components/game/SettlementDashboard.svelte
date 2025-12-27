@@ -272,10 +272,19 @@
 
 	// Real construction queue data from constructionStore
 	const realConstruction = $derived.by(() => {
-		// Access state directly to ensure reactivity
-		const stateSnapshot = constructionStore.state;
-		const active = stateSnapshot.construction.get(settlementId)?.active || [];
-		const queued = stateSnapshot.construction.get(settlementId)?.queued || [];
+		// Access state properties directly for proper reactivity tracking
+		const construction = constructionStore.state.construction;
+		const constructionState = construction.get(settlementId);
+		const active = constructionState?.active || [];
+		const queued = constructionState?.queued || [];
+
+		logger.debug('[Dashboard] Construction queue derived:', {
+			settlementId,
+			activeCount: active.length,
+			queuedCount: queued.length,
+			active: active.map(p => ({ id: p.id, name: p.name })),
+			queued: queued.map(p => ({ id: p.id, name: p.name })),
+		});
 
 		// Map store BuildingType to panel BuildingType
 		// Store now uses actual types: 'HOUSE', 'STORAGE', 'FOOD', 'WOOD', etc.
@@ -564,9 +573,46 @@
 			});
 			const result = await response.json();
 
-			if (!result.success && result.success !== undefined) {
-				logger.error('[Dashboard] Failed to create extractor:', result);
-				alert(result.message || 'Failed to create extractor');
+			logger.debug('[Dashboard] Build structure response:', { result, type: result.type, status: response.status });
+
+			// SvelteKit actions that use fail() return { type: 'failure', status: number, data: {...} }
+			// Success returns { type: 'success', status: 200, data: {...} }
+			if (result.type === 'failure' || !response.ok) {
+				const errorData = result.data || result;
+				logger.error('[Dashboard] Failed to create extractor:', { 
+					result, 
+					errorData, 
+					errorDataType: typeof errorData,
+					fullResponse: JSON.stringify(result)
+				});
+				
+				// Handle case where data might be a serialized string (SvelteKit bug)
+				let reasons = [];
+				let message = 'Failed to create extractor';
+				
+				if (typeof errorData === 'string') {
+					// Try to parse the serialized array structure
+					try {
+						// The string looks like: "[{\"success\":1,...},false,\"message\",[...]]"
+						const parsed = JSON.parse(errorData.replace(/\\/g, ''));
+						if (Array.isArray(parsed) && parsed.length >= 3) {
+							message = parsed[2] || message;
+							if (Array.isArray(parsed[3])) {
+								reasons = parsed[3];
+							}
+						}
+					} catch (e) {
+						// If parsing fails, extract message from string
+						const msgMatch = errorData.match(/"([^"]+)"/);
+						message = msgMatch ? msgMatch[1] : errorData;
+					}
+				} else if (typeof errorData === 'object' && errorData !== null) {
+					message = errorData.message || message;
+					reasons = Array.isArray(errorData.reasons) ? errorData.reasons : [];
+				}
+				
+				const reasonsText = reasons.length > 0 ? reasons.join('\n') : 'Check server logs for details';
+				alert(`❌ ${message}\n\n${reasonsText}`);
 				return;
 			}
 
@@ -575,10 +621,12 @@
 			selectedSlot = null;
 			
 			// Immediately refetch construction queue and tile data
+			logger.debug('[Dashboard] Refetching construction queue and invalidating all data');
 			await Promise.all([
 				constructionStore.fetchConstructionQueue(settlement.id),
 				invalidateAll()
 			]);
+			logger.debug('[Dashboard] Refetch complete');
 			// TODO: Add toast notification system
 		} catch (error) {
 			logger.error('[Dashboard] Failed to create extractor:', error);
