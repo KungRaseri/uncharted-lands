@@ -620,15 +620,19 @@
 					fullResponse: JSON.stringify(result)
 				});
 
-// Handle error response from server
+			// Handle error response from server
 			let message = 'Failed to create extractor';
 			let shortageDetails = [];
 
 			if (typeof errorData === 'object' && errorData !== null) {
 				message = errorData.error || errorData.message || message;
 				
-				// Server returns shortages array with { type, required, available, missing }
-				if (Array.isArray(errorData.shortages)) {
+				// SvelteKit action returns 'reasons' array with formatted shortage messages
+				if (Array.isArray(errorData.reasons)) {
+					shortageDetails = errorData.reasons;
+				}
+				// Direct API response returns 'shortages' array with objects
+				else if (Array.isArray(errorData.shortages)) {
 					shortageDetails = errorData.shortages.map((s: any) => 
 						`${s.type.toUpperCase()}: Need ${s.required}, have ${s.available} (missing ${s.missing})`
 					);
@@ -636,17 +640,14 @@
 			} else if (typeof errorData === 'string') {
 				// Fallback for string errors
 				message = errorData;
-				}
+			}
 
 			const detailsText = shortageDetails.length > 0 
 				? shortageDetails.join('\n') 
 				: 'Check your resource stockpiles';
 			alert(`❌ ${message}\n\n${detailsText}`);
-				return;
-			}
-
-			logger.debug('[Dashboard] Extractor created successfully');
-			extractorSelectorOpen = false;
+			return;
+		}
 			selectedSlot = null;
 
 			// Immediately refetch construction queue and tile data

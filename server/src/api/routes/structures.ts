@@ -519,7 +519,15 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			const existingConstructions = await tx
 				.select()
 				.from(constructionQueue)
-				.where(eq(constructionQueue.settlementId, settlementId));
+				.where(
+					and(
+						eq(constructionQueue.settlementId, settlementId),
+						or(
+							eq(constructionQueue.status, 'IN_PROGRESS'),
+							eq(constructionQueue.status, 'QUEUED')
+						)
+					)
+				);
 
 			const position = existingConstructions.length;
 
@@ -541,15 +549,11 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				};
 				error.validation = {
 					success: false,
-					errors: ['Construction queue is full (max 11 projects)'],
-					deductedResources: {},
+					error: 'Construction queue is full (max 11 projects: 1 active + 10 queued)',
+					deductedResources: { wood: 0, stone: 0, ore: 0 },
 				};
 				throw error;
 			}
-
-			// Get construction time from STRUCTURE_COSTS (single source of truth)
-			const structureCost = STRUCTURE_COSTS.find(s => s.name === structureDefinition.name);
-			const constructionTimeSeconds = structureCost?.constructionTimeSeconds || 60;
 
 			// Add to construction queue
 			const [queueItem] = await tx
@@ -665,12 +669,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 			logger.error('[API] Insufficient resources for structure', {
 				settlementId: req.body.settlementId,
 				structureId: req.body.structureId,
-				shortages: validationError.shortages,
-			});
-			return res.status(400).json({
-				success: false,
-				error: validationError.error || 'Insufficient resources to build structure',
-				shortages: validationError.shortages,
+				error: validationError.error,
 			});
 		}
 
