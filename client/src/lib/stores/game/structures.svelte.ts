@@ -13,6 +13,8 @@ import { socketStore } from './socket';
 import type { Socket } from 'socket.io-client';
 import type { Structure } from '@uncharted-lands/shared';
 import { logger } from '$lib/utils/logger';
+import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
+import { browser } from '$app/environment';
 
 interface StructuresState {
 	// Map of settlementId -> Structure[]
@@ -208,6 +210,40 @@ function initialize() {
 	if (socket && !listenersInitialized) {
 		logger.debug('[StructuresStore] Initializing socket listeners');
 		initializeListeners(socket);
+	}
+}
+
+/**
+ * Fetch structures from REST API for a settlement
+ * Called after construction-complete event to get updated structure list
+ */
+async function fetchStructures(settlementId: string): Promise<void> {
+	if (!browser) return;
+	
+	logger.debug('[StructuresStore] Fetching structures from API:', { settlementId });
+	
+	try {
+		const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/by-settlement/${settlementId}`, {
+			credentials: 'include'
+		});
+		
+		if (!response.ok) {
+			logger.error('[StructuresStore] Failed to fetch structures:', { status: response.status });
+			return;
+		}
+		
+		const structures: Structure[] = await response.json();
+		
+		// Update state
+		state.structures.set(settlementId, structures);
+		state.structures = new Map(state.structures);
+		
+		logger.debug('[StructuresStore] Structures fetched and updated:', {
+			settlementId,
+			count: structures.length
+		});
+	} catch (error) {
+		logger.error('[StructuresStore] Error fetching structures:', error);
 	}
 }
 

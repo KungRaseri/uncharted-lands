@@ -532,3 +532,37 @@ export async function getResourceConsumptionRate(
 		return null;
 	}
 }
+/**
+ * Wait for a structure to appear in the buildings/extractors list
+ * @param page - Playwright page object
+ * @param structureType - The structure type to wait for (e.g., 'STORAGE', 'FARM')
+ * @param timeoutMs - Maximum time to wait in milliseconds (default: 120000 = 2 minutes)
+ * @returns True if structure appears, false if timeout
+ */
+export async function waitForStructureCompletion(
+	page: Page,
+	structureType: string,
+	timeoutMs = 120000
+): Promise<boolean> {
+	const startTime = Date.now();
+	
+	console.log(`[E2E Helper] Waiting for structure completion: ${structureType} (timeout: ${timeoutMs}ms)`);
+	
+	// Poll DOM until structure appears
+	// Check frequently (every 500ms) since construction-complete event triggers fetchStructures() which updates DOM
+	while (Date.now() - startTime < timeoutMs) {
+		const count = await countStructures(page, structureType);
+		
+		if (count > 0) {
+			const elapsed = Date.now() - startTime;
+			console.log(`[E2E Helper] Structure ${structureType} completed in ${elapsed}ms`);
+			return true;
+		}
+		
+		// Check every 500ms for faster detection
+		await page.waitForTimeout(500);
+	}
+	
+	console.warn(`[E2E Helper] Structure ${structureType} did not complete within ${timeoutMs}ms`);
+	return false;
+}

@@ -22,7 +22,8 @@ import {
 	assertGameLoopRunning,
 	joinWorldRoom,
 	waitForSocketConnection,
-	waitForSocketEvent
+	waitForSocketEvent,
+	waitForStructureCompletion
 } from './helpers/game-state';
 import {
 	TEST_DISASTERS,
@@ -176,11 +177,16 @@ test.describe('Resource Production Flow', () => {
 		});
 
 		test('should detect resource production over time', async ({ page }) => {
+			test.setTimeout(180000); // 3 minutes for construction to complete
+			
 			// Build a farm to produce food using ExtractorBuildModal
 			await buildExtractor(page, 'BASIC_FARM');
 
-			// Wait for farm to appear
-			await page.waitForTimeout(1000);
+			// Wait for farm construction to complete
+			console.log('[TEST] Waiting for farm construction to complete...');
+			const farmCompleted = await waitForStructureCompletion(page, 'FARM', 120000);
+			expect(farmCompleted).toBeTruthy();
+			console.log('[TEST] Farm construction completed');
 			
 			// Debug: Check if farm exists
 			const farmCount = await page.locator('[data-structure-type="FARM"]').count();

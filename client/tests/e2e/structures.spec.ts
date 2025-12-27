@@ -17,7 +17,8 @@ import {
 	waitForSocketConnection,
 	joinWorldRoom,
 	countStructures,
-	waitForSocketEvent
+	waitForSocketEvent,
+	waitForStructureCompletion
 } from './helpers/game-state';
 import {
 	TEST_USERS,
@@ -189,6 +190,8 @@ test.describe('Structure Management Lifecycle', () => {
 	// ========================================================================
 
 	test('should build a STORAGE and deduct resources correctly', async ({ page }) => {
+		test.setTimeout(180000); // 3 minutes for construction to complete
+		
 		console.log('[TEST] Building STORAGE (Warehouse) and verifying resource deduction...');
 
 		// Get initial resources
@@ -199,6 +202,10 @@ test.describe('Structure Management Lifecycle', () => {
 		// Note: Database structure name is "Storage", code definition is "Warehouse"
 		// Costs: 40 wood, 20 stone (from STRUCTURES definition)
 		await buildStructure(page, 'Storage');
+
+		// Wait for construction to complete (structures are not instant)
+		const completed = await waitForStructureCompletion(page, 'STORAGE', 120000); // 2 minutes timeout
+		expect(completed).toBeTruthy();
 
 		// Get final resources
 		const finalResources = await getCurrentResources(page);
