@@ -9,7 +9,7 @@ import { browser } from '$app/environment';
 import { socketStore } from './socket';
 import { logger } from '$lib/utils/logger';
 
-type BuildingType = 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER';
+type BuildingType = 'HOUSE' | 'STORAGE' | 'WORKSHOP' | 'MARKETPLACE' | 'TOWN_HALL' | 'FOOD' | 'WATER' | 'WOOD' | 'STONE' | 'ORE' | 'OTHER';
 
 interface ResourceCost {
 	wood: number;
@@ -49,17 +49,19 @@ function initializeListeners(): void {
 	// Listen for construction started event (project begins building)
 	socket.on(
 		'construction-started',
-		(data: { settlementId: string; constructionId: string; structureType: string; category?: string; completesAt: Date; isEmergency?: boolean; timestamp: number }) => {
+		(data: { settlementId: string; constructionId: string; structureType: string; category?: string; buildingType?: string; extractorType?: string; completesAt: Date; isEmergency?: boolean; timestamp: number }) => {
 			const currentState = state.construction.get(data.settlementId) || {
 				active: [],
 				queued: []
 			};
 
 			// Convert server data to ConstructionProject format
+			// Use buildingType (HOUSE, STORAGE, etc) or extractorType (FOOD, WOOD, etc)
+			const typeValue = data.buildingType || data.extractorType || data.category || 'OTHER';
 			const project: ConstructionProject = {
 				id: data.constructionId,
 				name: data.structureType,
-				type: (data.category as BuildingType) || 'OTHER',
+				type: typeValue as BuildingType,
 				progress: 0,
 				startTime: data.timestamp,
 				completionTime: new Date(data.completesAt).getTime(),
@@ -156,17 +158,19 @@ function initializeListeners(): void {
 	// Listen for new project queued
 	socket.on(
 		'construction-queued',
-		(data: { settlementId: string; constructionId: string; structureType: string; category?: string; position: number; status: string; completesAt?: Date; resourcesCost?: ResourceCost; timestamp: number }) => {
+		(data: { settlementId: string; constructionId: string; structureType: string; category?: string; buildingType?: string; extractorType?: string; position: number; status: string; completesAt?: Date; resourcesCost?: ResourceCost; timestamp: number }) => {
 			const currentState = state.construction.get(data.settlementId) || {
 				active: [],
 				queued: []
 			};
 
 			// Convert server data to ConstructionProject format
+			// Use buildingType (HOUSE, STORAGE, etc) or extractorType (FOOD, WOOD, etc)
+			const typeValue = data.buildingType || data.extractorType || data.category || 'OTHER';
 			const project: ConstructionProject = {
 				id: data.constructionId,
 				name: data.structureType,
-				type: (data.category as BuildingType) || 'OTHER',
+				type: typeValue as BuildingType,
 				progress: 0,
 				startTime: data.timestamp,
 				completionTime: data.completesAt ? new Date(data.completesAt).getTime() : 0,

@@ -276,20 +276,26 @@
 		const queued = stateSnapshot.construction.get(settlementId)?.queued || [];
 
 		// Map store BuildingType to panel BuildingType
-		// Store: 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER'
+		// Store now uses actual types: 'HOUSE', 'STORAGE', 'FOOD', 'WOOD', etc.
 		// Panel: 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER'
 		const mapBuildingType = (
 			storeType: string
 		): 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER' => {
 			switch (storeType) {
-				case 'HOUSING':
+				case 'HOUSE':
 					return 'HOUSE';
-				case 'PRODUCTION':
-					return 'FARM';
-				case 'INFRASTRUCTURE':
+				case 'STORAGE':
 					return 'WAREHOUSE';
-				case 'DEFENSE':
-					return 'OTHER';
+				case 'WORKSHOP':
+					return 'WORKSHOP';
+				case 'TOWN_HALL':
+					return 'TOWN_HALL';
+				case 'FOOD':
+				case 'WATER':
+				case 'WOOD':
+				case 'STONE':
+				case 'ORE':
+					return 'FARM'; // All extractors show as farm icon
 				default:
 					return 'OTHER';
 			}

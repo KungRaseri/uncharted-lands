@@ -59,16 +59,16 @@ test.describe('Structure Management Lifecycle', () => {
 	// ========================================================================
 	test.beforeAll(async () => {
 		console.log('[E2E] Using shared test data from global setup...');
-		
+
 		// Get shared test data created by global-setup.ts
 		const sharedData = getSharedTestData();
-		
+
 		testWorldId = sharedData.generalWorldId!;
-		
+
 		if (!testWorldId) {
 			throw new Error('No general world ID available from global setup');
 		}
-		
+
 		console.log('[E2E] Using shared world ID:', testWorldId);
 	});
 
@@ -191,7 +191,7 @@ test.describe('Structure Management Lifecycle', () => {
 
 	test('should build a STORAGE and deduct resources correctly', async ({ page }) => {
 		test.setTimeout(180000); // 3 minutes for construction to complete
-		
+
 		console.log('[TEST] Building STORAGE (Warehouse) and verifying resource deduction...');
 
 		// Get initial resources
@@ -214,7 +214,7 @@ test.describe('Structure Management Lifecycle', () => {
 		// Note: Auto-production runs during the test, so exact resource matching is unreliable
 		// The key verification is that the structure was built successfully
 		// We verify this by checking the structure count
-		
+
 		// Debug: Check all structure-type attributes on page
 		const allStructures = await page.locator('[data-structure-type]').all();
 		console.log('[DEBUG] All structures with data-structure-type found:', allStructures.length);
@@ -222,7 +222,7 @@ test.describe('Structure Management Lifecycle', () => {
 			const type = await structure.getAttribute('data-structure-type');
 			console.log('[DEBUG] Structure type:', type);
 		}
-		
+
 		const storageCount = await countStructures(page, 'STORAGE');
 		console.log('[DEBUG] countStructures("STORAGE") returned:', storageCount);
 		expect(storageCount).toBe(1);
@@ -249,15 +249,14 @@ test.describe('Structure Management Lifecycle', () => {
 		await buildStructure(page, 'Storage');
 		await page.waitForTimeout(500);
 
-		// Build another Tent (buildingType: HOUSE)
-		// Note: House is tier 2 (minTownHallLevel: 1) and disabled at Outpost
-		// Tent is tier 1 (minTownHallLevel: 0) and available immediately
-		await buildStructure(page, 'Tent');
-		await page.waitForTimeout(500);
 
-		// Wait for constructions to complete
+		// Note: Both Tent and House use data-structure-name="HOUSE"
+		// The helper will click the first enabled HOUSE button (Tent)
+		await buildStructure(page, 'House');
+
 		const storageCompleted = await waitForStructureCompletion(page, 'STORAGE', 120000);
 		expect(storageCompleted).toBeTruthy();
+
 		const houseCompleted = await waitForStructureCompletion(page, 'HOUSE', 120000);
 		expect(houseCompleted).toBeTruthy();
 

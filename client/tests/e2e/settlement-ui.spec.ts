@@ -263,6 +263,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		page,
 		request
 	}) => {
+		test.setTimeout(180000); // 3 minutes for construction to complete
 		console.log('[E2E] TEST 3: Population capacity updates when building housing');
 
 		// Navigate to settlement page
@@ -299,12 +300,13 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		const structuresData = await structuresResponse.json();
 		const structures = structuresData.data; // Extract data array from response
 
-		// Find a housing structure (e.g., Basic House)
+		// Find Tent structure specifically (tier 1, +2 capacity, minTownHallLevel: 0)
+		// Note: House (tier 2, +5 capacity) requires minTownHallLevel: 1
 		const housingStructure = structures.find(
-			(s: any) => s.category === 'BUILDING' && s.buildingType === 'HOUSE'
+			(s: any) => s.category === 'BUILDING' && s.buildingType === 'HOUSE' && s.name === 'Tent'
 		);
 		if (!housingStructure) {
-			throw new Error('No housing structure found in structure metadata');
+			throw new Error('Tent structure not found in structure metadata');
 		}
 		console.log('[E2E] Found housing structure:', housingStructure.name, housingStructure.id);
 
@@ -330,7 +332,7 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		const buildData = await buildResponse.json();
 		console.log('[E2E] Housing structure built:', buildData);
 
-		// Wait for construction to complete (House takes ~600s)
+		// Wait for construction to complete (Tent takes ~60s)
 		console.log('[E2E] Waiting for housing construction to complete...');
 		const { waitForStructureCompletion } = await import('./helpers/game-state');
 		const completed = await waitForStructureCompletion(page, 'HOUSE', 120000);
@@ -345,10 +347,10 @@ test.describe('Settlement UI Real-Time Updates', () => {
 		console.log('[E2E] Updated capacity after building house:', newCapacity);
 
 		// ✅ ASSERTION: Capacity should increase by housing structure's population_capacity modifier
-		// House adds +5 capacity (not +7, that's from old GDD)
+		// Tent adds +2 capacity per level (tier 1, minTownHallLevel: 0)
 		// This verifies the immediate population-state emission after structure build
 		expect(newCapacity).toBeGreaterThan(initialCapacity);
-		expect(newCapacity).toBe(17); // 12 (base+TENT) + 5 from house
+		expect(newCapacity).toBe(14); // 12 (10 base + 2 starting Tent) + 2 from second Tent
 		console.log('[E2E] ✅ Population capacity updated immediately after building housing');
 	});
 

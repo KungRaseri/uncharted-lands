@@ -577,6 +577,8 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				constructionId: result.queueItem.id,
 				structureType: result.structureDefinition.name,
 				category: result.structureDefinition.category,
+				buildingType: result.structureDefinition.buildingType,
+				extractorType: result.structureDefinition.extractorType,
 				position: result.queueItem.position,
 				status: result.queueItem.status,
 				completesAt: result.queueItem.completesAt,
