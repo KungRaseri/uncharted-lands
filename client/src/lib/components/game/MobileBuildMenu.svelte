@@ -2,7 +2,7 @@
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import type { StructureMetadata } from '$lib/api/structures';
 	import { logger } from '$lib/utils/logger';
-	import { getToaster } from '$lib/stores/toaster';
+	import { toaster } from '$lib/stores/toaster.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 
@@ -134,17 +134,9 @@
 						.map((s: any) => `${s.type}: need ${s.missing} more`)
 						.join(', ');
 					
-					getToaster().error({
-						title: 'Insufficient Resources',
-						description: shortageText,
-						duration: 5000
-					});
+					toaster.error('Insufficient Resources', shortageText, 5000);
 				} else {
-					getToaster().error({
-						title: 'Build Failed',
-						description: result.message || 'Failed to build structure',
-						duration: 5000
-					});
+					toaster.error('Build Failed', result.message || 'Failed to build structure', 5000);
 				}
 				return;
 			}
@@ -158,20 +150,12 @@
 			]);
 
 			// Show success toast
-			getToaster().success({
-				title: 'Structure Queued',
-				description: `${structure.displayName} queued for construction!`,
-				duration: 3000
-			});
+			toaster.success('Structure Queued', `${structure.displayName} queued for construction!`, 3000);
 
 			onClose();
 		} catch (error) {
 			logger.error('[MobileBuildMenu] Network error:', error);
-			getToaster().error({
-				title: 'Network Error',
-				description: 'Could not build structure. Please try again.',
-				duration: 5000
-			});
+			toaster.error('Network Error', 'Could not build structure. Please try again.', 5000);
 		}
 	}
 </script>

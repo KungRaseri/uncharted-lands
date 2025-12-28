@@ -571,7 +571,7 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 					slotPosition: structureDefinition.category === 'EXTRACTOR' ? slotPosition : null,
 					startedAt: position < 1 ? new Date() : null,
 					completesAt: position < 1
-						? new Date(Date.now() + (constructionTimeSeconds * 1000))
+						? new Date(Date.now() + (structureDefinition.constructionTimeSeconds * 1000))
 						: null,
 				})
 				.returning();
@@ -670,6 +670,14 @@ router.post('/create', authenticate, async (req: Request, res: Response) => {
 				settlementId: req.body.settlementId,
 				structureId: req.body.structureId,
 				error: validationError.error,
+			});
+			
+			return res.status(400).json({
+				success: false,
+				error: 'Bad Request',
+				code: error.message,
+				message: validationError.error,
+				shortages: validationError.shortages,
 			});
 		}
 

@@ -52,12 +52,18 @@
 		onSelectExtractor?: (extractorId: string) => void;
 	};
 
-	let { tile, extractors = [], constructionQueue = [], onBuildExtractor, onSelectExtractor }: Props = $props();
+	let {
+		tile,
+		extractors = [],
+		constructionQueue = [],
+		onBuildExtractor,
+		onSelectExtractor
+	}: Props = $props();
 
 	// ✅ DEBUG: Log when component renders
 	$effect(() => {
 		logger.debug('[TilePlotsPanel] Component rendering with:', {
-			tile,
+			// tile,
 			extractorsCount: extractors.length,
 			plotSlots: tile.plotSlots
 		});

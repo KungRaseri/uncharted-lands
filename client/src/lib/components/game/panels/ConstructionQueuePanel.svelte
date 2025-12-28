@@ -6,7 +6,7 @@
 	 */
 
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
-	import { getToaster } from '$lib/stores/toaster';
+	import { toaster } from '$lib/stores/toaster.svelte';
 	import { invalidateAll } from '$app/navigation';
 
 	type BuildingType = 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER';
@@ -119,20 +119,12 @@
 		const success = await constructionStore.cancelConstruction(constructionId);
 		
 		if (success) {
-			getToaster().success({
-				title: 'Construction Cancelled',
-				description: `${buildingName} removed from queue. Resources refunded.`,
-				duration: 3000
-			});
+			toaster.success('Construction Cancelled', `${buildingName} removed from queue. Resources refunded.`, 3000);
 			
 			// Refresh data
 			await invalidateAll();
 		} else {
-			getToaster().error({
-				title: 'Cancel Failed',
-				description: 'Could not cancel construction. Please try again.',
-				duration: 5000
-			});
+			toaster.error('Cancel Failed', 'Could not cancel construction. Please try again.', 5000);
 		}
 	}
 </script>

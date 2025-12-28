@@ -7,7 +7,7 @@
 	import { onMount } from 'svelte';
 	import { getProductionRates } from '$lib/api/game-config';
 	import { Toast } from '@skeletonlabs/skeleton-svelte';
-	import { initializeToaster } from '$lib/stores/toaster';
+	import { initializeToaster } from '$lib/stores/toaster.svelte';
 
 	// Initialize toaster and mount state in onMount to ensure proper component lifecycle
 	let toaster = $state<any>(null);

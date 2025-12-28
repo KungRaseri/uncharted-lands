@@ -45,6 +45,7 @@
 	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 	import type { TileWithRelations } from '@uncharted-lands/shared';
 	import { invalidateAll } from '$app/navigation';
+	import { toaster } from '$lib/stores/toaster.svelte';
 
 	// ✅ NEW: TypeScript interface for settlement structures
 	interface SettlementStructure {
@@ -505,15 +506,16 @@
 
 			if (!result.success && result.success !== undefined) {
 				logger.error('[Dashboard] Failed to upgrade building:', result);
-				alert(result.message || 'Failed to upgrade building');
+				toaster.error('Upgrade Failed', result.message || 'Failed to upgrade building');
 				return;
 			}
 
 			logger.debug('[Dashboard] Building upgraded successfully');
+			toaster.success('Building Upgraded', 'Upgrade queued successfully');
 			// TODO: Add toast notification system
 		} catch (error) {
 			logger.error('[Dashboard] Failed to upgrade building:', error);
-			alert('Network error - could not upgrade building');
+			toaster.error('Network Error', 'Could not upgrade building');
 		}
 	}
 
@@ -531,14 +533,15 @@
 
 			if (!result.success && result.success !== undefined) {
 				logger.error('[Dashboard] Failed to repair building:', result);
-				alert(result.message || 'Failed to repair building');
+				toaster.error('Repair Failed', result.message || 'Failed to repair building');
 				return;
 			}
 
 			logger.debug('[Dashboard] Building repaired successfully');
+			toaster.success('Building Repaired', 'Repair completed successfully');
 		} catch (error) {
 			logger.error('[Dashboard] Failed to repair building:', error);
-			alert('Network error - could not repair building');
+			toaster.error('Network Error', 'Could not repair building');
 		}
 	}
 
@@ -563,15 +566,16 @@
 
 			if (!result.success && result.success !== undefined) {
 				logger.error('[Dashboard] Failed to demolish building:', result);
-				alert(result.message || 'Failed to demolish building');
+				toaster.error('Demolish Failed', result.message || 'Failed to demolish building');
 				return;
 			}
 
 			logger.debug('[Dashboard] Building demolished successfully');
+			toaster.success('Building Demolished', 'Structure removed successfully');
 			demolishModalOpen = false;
 		} catch (error) {
 			logger.error('[Dashboard] Failed to demolish building:', error);
-			alert('Network error - could not demolish building');
+			toaster.error('Network Error', 'Could not demolish building');
 		} finally {
 			buildingToDemolish = null;
 		}
@@ -612,55 +616,58 @@
 			// SvelteKit actions that use fail() return { type: 'failure', status: number, data: {...} }
 			// Success returns { type: 'success', status: 200, data: {...} }
 			if (result.type === 'failure' || !response.ok) {
-				const errorData = result.data || result;
+				let errorData = result.data || result;
+
+				// SvelteKit's fail() serializes data with devalue - try to parse if it's a string
+				if (typeof errorData === 'string') {
+					try {
+						errorData = JSON.parse(errorData);
+					} catch {
+						// If parsing fails, treat it as a plain message
+					}
+				}
+
 				logger.error('[Dashboard] Failed to create extractor:', {
-					result,
 					errorData,
-					errorDataType: typeof errorData,
-					fullResponse: JSON.stringify(result)
+					errorDataType: typeof errorData
 				});
 
-			// Handle error response from server
-			let message = 'Failed to create extractor';
-			let shortageDetails = [];
+				// Handle error response from server
+				let title = 'Build Failed';
+				let description = 'Failed to create extractor';
 
-			if (typeof errorData === 'object' && errorData !== null) {
-				message = errorData.error || errorData.message || message;
-				
-				// SvelteKit action returns 'reasons' array with formatted shortage messages
-				if (Array.isArray(errorData.reasons)) {
-					shortageDetails = errorData.reasons;
+				if (typeof errorData === 'object' && errorData !== null) {
+					// Check for shortage details first (most specific)
+					if (Array.isArray(errorData.shortages) && errorData.shortages.length > 0) {
+						title = 'Insufficient Resources';
+						description = errorData.shortages
+							.map((s: any) => `${s.type}: need ${s.missing} more`)
+							.join(', ');
+					}
+					// Check for reasons array (from SvelteKit action)
+					else if (Array.isArray(errorData.reasons) && errorData.reasons.length > 0) {
+						title = 'Insufficient Resources';
+						description = errorData.reasons.join(', ');
+					}
+					// Otherwise use error message
+					else {
+						description = errorData.message || errorData.error || description;
+						title =
+							errorData.code === 'INSUFFICIENT_RESOURCES'
+								? 'Insufficient Resources'
+								: 'Build Failed';
+					}
+				} else if (typeof errorData === 'string') {
+					description = errorData;
 				}
-				// Direct API response returns 'shortages' array with objects
-				else if (Array.isArray(errorData.shortages)) {
-					shortageDetails = errorData.shortages.map((s: any) => 
-						`${s.type.toUpperCase()}: Need ${s.required}, have ${s.available} (missing ${s.missing})`
-					);
-				}
-			} else if (typeof errorData === 'string') {
-				// Fallback for string errors
-				message = errorData;
-			}
 
-			const detailsText = shortageDetails.length > 0 
-				? shortageDetails.join('\n') 
-				: 'Check your resource stockpiles';
-			alert(`❌ ${message}\n\n${detailsText}`);
-			return;
-		}
-			selectedSlot = null;
-
-			// Immediately refetch construction queue and tile data
-			logger.debug('[Dashboard] Refetching construction queue and invalidating all data');
-			await Promise.all([
-				constructionStore.fetchConstructionQueue(settlementId),
-				invalidateAll()
-			]);
+			toaster.error(title, description, 5000);
 			logger.debug('[Dashboard] Refetch complete');
-			// TODO: Add toast notification system
+
+			toaster.success('Extractor Queued', 'Construction has been added to the queue', 3000);
 		} catch (error) {
 			logger.error('[Dashboard] Failed to create extractor:', error);
-			alert('Network error - could not create extractor');
+			toaster.error('Network Error', 'Could not create extractor', 4000);
 		}
 	}
 
