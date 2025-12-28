@@ -9,6 +9,8 @@
 	import { Toast } from '@skeletonlabs/skeleton-svelte';
 	import { initializeToaster } from '$lib/stores/toaster.svelte';
 
+	let { children } = $props();
+
 	// Initialize toaster and mount state in onMount to ensure proper component lifecycle
 	let toaster = $state<any>(null);
 	let mounted = $state(false);
@@ -37,7 +39,7 @@
 	</header>
 
 	<main class="flex-1 overflow-y-auto">
-		<slot />
+		{@render children()}
 	</main>
 
 	<footer class="flex-none">

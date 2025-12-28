@@ -237,7 +237,7 @@
 <!-- Main Settlement Dashboard -->
 {#if data.settlement}
 	{@const tileData = (data as any).tile}
-	{@const _ = logger.debug('[SETTLEMENT PAGE] Passing tile to dashboard:', { tileData })}
+	<!-- {@const _ = logger.debug('[SETTLEMENT PAGE] Passing tile to dashboard:', { tileData })} -->
 	<SettlementDashboard
 		settlementId={data.settlement.id}
 		settlementName={data.settlement.name}
