@@ -48,10 +48,11 @@
 </div>
 
 <!-- Toast notifications (client-side only, after mount) -->
+<!-- Render OUTSIDE main layout to avoid z-index issues -->
 {#if mounted && toaster}
 	<Toast.Group {toaster}>
 		{#snippet children(toast)}
-			<Toast {toast}>
+			<Toast toast={toast} class="skb:preset-filled-{toast.type}-500">
 				<Toast.Message>
 					<Toast.Title>{toast.title}</Toast.Title>
 					<Toast.Description>{toast.description}</Toast.Description>

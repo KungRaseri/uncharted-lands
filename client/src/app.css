@@ -1,7 +1,9 @@
 @import 'tailwindcss';
-@import '@skeletonlabs/skeleton';
-@import '@skeletonlabs/skeleton/themes/cerberus';
 @import './lib/styles/modals.css';
+
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton-svelte';
+@import '@skeletonlabs/skeleton/themes/cerberus';
 
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
