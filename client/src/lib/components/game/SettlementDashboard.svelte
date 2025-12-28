@@ -661,7 +661,17 @@
 					description = errorData;
 				}
 
-			toaster.error(title, description, 5000);
+				toaster.error(title, description, 5000);
+				return;
+			}
+			selectedSlot = null;
+
+			// Immediately refetch construction queue and tile data
+			logger.debug('[Dashboard] Refetching construction queue and invalidating all data');
+			await Promise.all([
+				constructionStore.fetchConstructionQueue(settlementId),
+				invalidateAll()
+			]);
 			logger.debug('[Dashboard] Refetch complete');
 
 			toaster.success('Extractor Queued', 'Construction has been added to the queue', 3000);
