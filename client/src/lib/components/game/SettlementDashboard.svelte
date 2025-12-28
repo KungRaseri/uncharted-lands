@@ -593,77 +593,44 @@
 		logger.debug('[Dashboard] Building extractor:', { structureId, tileId, slotPosition });
 
 		try {
-			// Create a form and submit it to trigger the buildStructure action
-			const formData = new FormData();
-			formData.append('structureId', structureId); // ✅ FIXED: Use structureId parameter
-			formData.append('tileId', tileId);
-			formData.append('slotPosition', slotPosition.toString());
-
-			// Submit to the current page's buildStructure action
-			const response = await fetch('?/buildStructure', {
+			// Call API directly for clean JSON responses
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/create`, {
 				method: 'POST',
-				body: formData,
-				credentials: 'include' // ✅ FIX: Include cookies for authentication
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					settlementId,
+					structureId,
+					tileId,
+					slotPosition
+				}),
+				credentials: 'include'
 			});
+
 			const result = await response.json();
 
-			logger.debug('[Dashboard] Build structure response:', {
-				result,
-				type: result.type,
-				status: response.status
-			});
+			if (!response.ok) {
+				logger.error('[Dashboard] Failed to create extractor:', result);
 
-			// SvelteKit actions that use fail() return { type: 'failure', status: number, data: {...} }
-			// Success returns { type: 'success', status: 200, data: {...} }
-			if (result.type === 'failure' || !response.ok) {
-				let errorData = result.data || result;
-
-				// SvelteKit's fail() serializes data with devalue - try to parse if it's a string
-				if (typeof errorData === 'string') {
-					try {
-						errorData = JSON.parse(errorData);
-					} catch {
-						// If parsing fails, treat it as a plain message
-					}
-				}
-
-				logger.error('[Dashboard] Failed to create extractor:', {
-					errorData,
-					errorDataType: typeof errorData
-				});
-
-				// Handle error response from server
+				// Handle error with clean JSON response
 				let title = 'Build Failed';
-				let description = 'Failed to create extractor';
+				let description = result.message || 'Failed to create extractor';
 
-				if (typeof errorData === 'object' && errorData !== null) {
-					// Check for shortage details first (most specific)
-					if (Array.isArray(errorData.shortages) && errorData.shortages.length > 0) {
-						title = 'Insufficient Resources';
-						description = errorData.shortages
-							.map((s: any) => `${s.type}: need ${s.missing} more`)
-							.join(', ');
-					}
-					// Check for reasons array (from SvelteKit action)
-					else if (Array.isArray(errorData.reasons) && errorData.reasons.length > 0) {
-						title = 'Insufficient Resources';
-						description = errorData.reasons.join(', ');
-					}
-					// Otherwise use error message
-					else {
-						description = errorData.message || errorData.error || description;
-						title =
-							errorData.code === 'INSUFFICIENT_RESOURCES'
-								? 'Insufficient Resources'
-								: 'Build Failed';
-					}
-				} else if (typeof errorData === 'string') {
-					description = errorData;
+				// Check for resource shortages
+				if (result.shortages && Array.isArray(result.shortages) && result.shortages.length > 0) {
+					title = 'Insufficient Resources';
+					description = result.shortages
+						.map((s: any) => `${s.type}: need ${s.missing} more`)
+						.join(', ');
+				} else if (result.code === 'INSUFFICIENT_RESOURCES') {
+					title = 'Insufficient Resources';
 				}
 
 				toaster.error(title, description, 5000);
 				return;
 			}
+			
 			selectedSlot = null;
 
 			// Immediately refetch construction queue and tile data

@@ -17,10 +17,10 @@
 	onMount(async () => {
 		// Mark as mounted first
 		mounted = true;
-		
+
 		// Then initialize toaster inside onMount where lifecycle hooks work
 		toaster = initializeToaster();
-		
+
 		try {
 			await getProductionRates();
 			logger.debug('[App] Production rates pre-loaded successfully');
