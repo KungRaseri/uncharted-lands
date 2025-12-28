@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Shield, Plus, Lock, Check, Info } from 'lucide-svelte';
+	import { Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -182,112 +183,87 @@
 </div>
 
 <!-- Permissions Detail Modal -->
-{#if showPermissionsModal && selectedRole}
-	<div
-		class="modal-backdrop"
-		onclick={handleBackdropClick}
-		onkeydown={handleBackdropKeydown}
-		role="presentation"
-		tabindex="-1"
-	></div>
-	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-2xl shadow-xl">
-		<header class="mb-6">
-			<div class="flex items-center gap-3 mb-2">
-				<Shield size={28} class="text-primary-500" />
-				<h3 class="text-2xl font-bold">{selectedRole.name} Permissions</h3>
-			</div>
-			<p class="text-sm text-surface-600 dark:text-surface-400">
-				{selectedRole.description}
-			</p>
-		</header>
+{#if selectedRole}
+	<Dialog open={showPermissionsModal} onOpenChange={(details) => { showPermissionsModal = details.open; if (!details.open) closeModals(); }}>
+		<Portal>
+			<Dialog.Backdrop class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+			<Dialog.Positioner class="fixed inset-0 z-50 flex justify-center items-center p-4">
+				<Dialog.Content class="card bg-surface-100-900 w-full max-w-2xl p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+					<header>
+						<Dialog.Title class="flex items-center gap-3 text-2xl font-bold mb-2">
+							<Shield size={28} class="text-primary-500" />
+							{selectedRole.name} Permissions
+						</Dialog.Title>
+						<p class="text-sm text-surface-600 dark:text-surface-400">
+							{selectedRole.description}
+						</p>
+					</header>
 
-		<div class="space-y-6 max-h-[60vh] overflow-y-auto">
-			{#if selectedRole.permissions.includes('*')}
-				<div class="card preset-filled-success-500/10 p-4 border-2 border-success-500">
-					<div class="flex items-center gap-2">
-						<Check size={20} class="text-success-700 dark:text-success-300" />
-						<span class="font-medium text-success-700 dark:text-success-300">
-							All Permissions Granted
-						</span>
-					</div>
-					<p class="text-sm text-success-800 dark:text-success-200 mt-2">
-						This role has unrestricted access to all system functions and permissions.
-					</p>
-				</div>
-			{:else}
-				{#each data.availablePermissions as category}
-					{@const rolePerms = selectedRole.permissions}
-					{@const categoryPerms = category.permissions.filter((p) =>
-						rolePerms.includes(p.id)
-					)}
-					{#if categoryPerms.length > 0}
-						<div>
-							<h4
-								class="font-bold text-sm text-surface-600 dark:text-surface-400 uppercase mb-3"
-							>
-								{category.category}
-							</h4>
-							<div class="space-y-2">
-								{#each categoryPerms as permission}
-									<div
-										class="flex items-start gap-3 p-3 bg-surface-200 dark:bg-surface-800 rounded-md"
-									>
-										<Check size={18} class="text-success-500 shrink-0 mt-0.5" />
-										<div class="flex-1 min-w-0">
-											<div class="font-semibold text-sm">
-												{permission.name}
-											</div>
-											<div class="font-mono text-xs text-primary-500 mb-1">
-												{permission.id}
-											</div>
-											<div
-												class="text-xs text-surface-600 dark:text-surface-400"
-											>
-												{permission.description}
-											</div>
+					<div class="space-y-6 max-h-[60vh] overflow-y-auto">
+						{#if selectedRole.permissions.includes('*')}
+							<div class="card preset-filled-success-500/10 p-4 border-2 border-success-500">
+								<div class="flex items-center gap-2">
+									<Check size={20} class="text-success-700 dark:text-success-300" />
+									<span class="font-medium text-success-700 dark:text-success-300">
+										All Permissions Granted
+									</span>
+								</div>
+								<p class="text-sm text-success-800 dark:text-success-200 mt-2">
+									This role has unrestricted access to all system functions and permissions.
+								</p>
+							</div>
+						{:else}
+							{#each data.availablePermissions as category}
+								{@const rolePerms = selectedRole.permissions}
+								{@const categoryPerms = category.permissions.filter((p) =>
+									rolePerms.includes(p.id)
+								)}
+								{#if categoryPerms.length > 0}
+									<div>
+										<h4
+											class="font-bold text-sm text-surface-600 dark:text-surface-400 uppercase mb-3"
+										>
+											{category.category}
+										</h4>
+										<div class="space-y-2">
+											{#each categoryPerms as permission}
+												<div
+													class="flex items-start gap-3 p-3 bg-surface-200 dark:bg-surface-800 rounded-md"
+												>
+													<Check size={18} class="text-success-500 shrink-0 mt-0.5" />
+													<div class="flex-1 min-w-0">
+														<div class="font-semibold text-sm">
+															{permission.name}
+														</div>
+														<div class="font-mono text-xs text-primary-500 mb-1">
+															{permission.id}
+														</div>
+														<div
+															class="text-xs text-surface-600 dark:text-surface-400"
+														>
+															{permission.description}
+														</div>
+													</div>
+												</div>
+											{/each}
 										</div>
 									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
-				{/each}
-			{/if}
-		</div>
+								{/if}
+							{/each}
+						{/if}
+					</div>
 
-		<footer
-			class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-300 dark:border-surface-700"
-		>
-			<button
-				type="button"
-				class="btn preset-tonal-surface-500 rounded-md"
-				onclick={closeModals}
-			>
-				Close
-			</button>
-		</footer>
-	</div>
+					<footer
+						class="flex justify-end gap-2 pt-4 border-t border-surface-300 dark:border-surface-700"
+					>
+						<Dialog.CloseTrigger
+							class="btn preset-tonal-surface-500 rounded-md"
+						>
+							Close
+						</Dialog.CloseTrigger>
+					</footer>
+				</Dialog.Content>
+			</Dialog.Positioner>
+		</Portal>
+	</Dialog>
 {/if}
-
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.7);
-		z-index: 998;
-		backdrop-filter: blur(4px);
-	}
-
-	.modal {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 999;
-		max-height: 90vh;
-		overflow-y: auto;
-	}
-</style>

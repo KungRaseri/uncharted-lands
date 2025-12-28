@@ -2,6 +2,7 @@
 	import type { PageData, ActionData } from './$types';
 	import { Globe, Plus, Search, ExternalLink, Server, Pencil, Trash2 } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
+	import { Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -20,18 +21,18 @@
 	);
 
 	// State for delete confirmation modal
-	let deleteModalOpen = $state(false);
+	let deleteDialogOpen = $state(false);
 	let worldToDelete = $state<(typeof data.worlds)[0] | null>(null);
 	let isDeleting = $state(false);
 
 	function openDeleteModal(world: (typeof data.worlds)[0]) {
 		worldToDelete = world;
-		deleteModalOpen = true;
+		deleteDialogOpen = true;
 	}
 
 	function closeDeleteModal() {
 		if (!isDeleting) {
-			deleteModalOpen = false;
+			deleteDialogOpen = false;
 			worldToDelete = null;
 		}
 	}
@@ -179,89 +180,81 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-{#if deleteModalOpen && worldToDelete}
+{#if worldToDelete}
 	{@const regionCount = worldToDelete.regions?.length || 0}
 	{@const tileCount = regionCount * 100}
 	{@const plotCount = tileCount * 5}
 
-	<div
-		class="modal-backdrop"
-		onclick={closeDeleteModal}
-		onkeydown={(e) => e.key === 'Escape' && closeDeleteModal()}
-		role="presentation"
-		tabindex="-1"
-	>
-		<div
-			class="modal preset-filled-surface-50-950 w-full max-w-md"
-			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
-			role="dialog"
-			aria-modal="true"
-			tabindex="-1"
-		>
-			<header class="modal-header">
-				<h3 class="h3">Delete World</h3>
-			</header>
-			<section class="modal-body space-y-4">
-				<p>
-					Are you sure you want to delete the world <strong>{worldToDelete.name}</strong>?
-				</p>
+	<Dialog open={deleteDialogOpen} onOpenChange={(details) => { deleteDialogOpen = details.open; if (!details.open) closeDeleteModal(); }}>
+		<Portal>
+			<Dialog.Backdrop class="fixed inset-0 z-50 bg-black/70" />
+			<Dialog.Positioner class="fixed inset-0 z-50 flex justify-center items-center p-4">
+				<Dialog.Content class="card bg-surface-100-900 w-full max-w-md p-6 space-y-4 shadow-xl">
+					<header class="flex justify-between items-center">
+						<Dialog.Title class="text-xl font-bold">Delete World</Dialog.Title>
+					</header>
 
-				<aside class="alert preset-filled-warning-500 rounded-md">
-					<div class="alert-message">
-						<p class="font-semibold">⚠️ Cascade Delete Warning</p>
-						<p class="text-sm">This will permanently delete:</p>
-						<ul class="text-sm list-disc list-inside mt-2 space-y-1">
-							<li>{regionCount} region{regionCount === 1 ? '' : 's'}</li>
-							<li>~{tileCount.toLocaleString()} tiles</li>
-							<li>~{plotCount.toLocaleString()} plots</li>
-							<li>All associated settlements and resources</li>
-						</ul>
-					</div>
-				</aside>
+					<Dialog.Description class="space-y-4">
+						<p>
+							Are you sure you want to delete the world <strong>{worldToDelete.name}</strong>?
+						</p>
 
-				<aside class="alert preset-filled-error-500 rounded-md">
-					<div class="alert-message">
-						<p class="font-semibold">This action cannot be undone!</p>
-					</div>
-				</aside>
-			</section>
-			<footer class="modal-footer">
-				<button
-					type="button"
-					class="btn preset-tonal-surface-500 rounded-md"
-					onclick={closeDeleteModal}
-					disabled={isDeleting}
-				>
-					Cancel
-				</button>
-				<form
-					method="POST"
-					action="?/delete"
-					use:enhance={() => {
-						isDeleting = true;
-						return async ({ update }) => {
-							await update();
-							isDeleting = false;
-							closeDeleteModal();
-						};
-					}}
-				>
-					<input type="hidden" name="worldId" value={worldToDelete.id} />
-					<button
-						type="submit"
-						class="btn preset-filled-error-500 rounded-md"
-						disabled={isDeleting}
-					>
-						{#if isDeleting}
-							<span>Deleting...</span>
-						{:else}
-							<Trash2 size={16} />
-							<span>Delete World</span>
-						{/if}
-					</button>
-				</form>
-			</footer>
-		</div>
-	</div>
+						<aside class="alert preset-filled-warning-500 rounded-md">
+							<div class="alert-message">
+								<p class="font-semibold">⚠️ Cascade Delete Warning</p>
+								<p class="text-sm">This will permanently delete:</p>
+								<ul class="text-sm list-disc list-inside mt-2 space-y-1">
+									<li>{regionCount} region{regionCount === 1 ? '' : 's'}</li>
+									<li>~{tileCount.toLocaleString()} tiles</li>
+									<li>~{plotCount.toLocaleString()} plots</li>
+									<li>All associated settlements and resources</li>
+								</ul>
+							</div>
+						</aside>
+
+						<aside class="alert preset-filled-error-500 rounded-md">
+							<div class="alert-message">
+								<p class="font-semibold">This action cannot be undone!</p>
+							</div>
+						</aside>
+					</Dialog.Description>
+
+					<footer class="flex gap-3 justify-end">
+						<Dialog.CloseTrigger
+							class="btn preset-tonal-surface-500 rounded-md"
+							disabled={isDeleting}
+						>
+							Cancel
+						</Dialog.CloseTrigger>
+						<form
+							method="POST"
+							action="?/delete"
+							use:enhance={() => {
+								isDeleting = true;
+								return async ({ update }) => {
+									await update();
+									isDeleting = false;
+									closeDeleteModal();
+								};
+							}}
+						>
+							<input type="hidden" name="worldId" value={worldToDelete.id} />
+							<button
+								type="submit"
+								class="btn preset-filled-error-500 rounded-md"
+								disabled={isDeleting}
+							>
+								{#if isDeleting}
+									<span>Deleting...</span>
+								{:else}
+									<Trash2 size={16} />
+									<span>Delete World</span>
+								{/if}
+							</button>
+						</form>
+					</footer>
+				</Dialog.Content>
+			</Dialog.Positioner>
+		</Portal>
+	</Dialog>
 {/if}
