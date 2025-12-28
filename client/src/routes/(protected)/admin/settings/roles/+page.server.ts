@@ -1,5 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail } from '@sveltejs/kit';
+import { logger } from '$lib/utils/logger';
 
 export const load: PageServerLoad = async () => {
 	// Current role configuration from the database schema
@@ -117,7 +118,7 @@ export const actions: Actions = {
 
 		// This would update the role configuration in the database
 		// For now, since roles are defined in the schema, this is a placeholder
-		console.log('Update role:', { roleId, permissions });
+		logger.debug('Update role:', { roleId, permissions });
 
 		return fail(400, {
 			error: 'Role modification requires database schema changes. This feature will be implemented when role permissions are moved to the database.'
@@ -131,7 +132,7 @@ export const actions: Actions = {
 		const permissions = formData.getAll('permissions') as string[];
 
 		// This would create a new role in the database
-		console.log('Create role:', { name, description, permissions });
+		logger.debug('Create role:', { name, description, permissions });
 
 		return fail(400, {
 			error: 'Custom role creation requires database schema changes. This feature will be implemented in a future update.'

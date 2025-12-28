@@ -156,13 +156,16 @@ export function calculatePopulation(structures: Structure[], _currentPopulation?
 /**
  * Calculate resource consumption per tick for a settlement
  *
+ * Population consumes food and water (survival resources).
+ * Structures consume wood, stone, and ore for maintenance (GDD Section 6.4).
+ *
  * Formula: baseConsumption × worldTemplateMultiplier
  *
  * @param population Current population count
- * @param structureCount Total number of structures in settlement
+ * @param structureCount Total number of structures requiring maintenance
  * @param tickCount Number of ticks to calculate for (default: 1)
  * @param worldTemplateMultiplier Consumption modifier from world template (default: 1, Phase 1D)
- * @returns Resource consumption amounts
+ * @returns Resource consumption amounts for the given tick count
  */
 export function calculateConsumption(
 	population: number,
@@ -170,26 +173,23 @@ export function calculateConsumption(
 	tickCount: number = 1,
 	worldTemplateMultiplier: number = 1
 ): Resources {
-	// Calculate base consumption rates
+	// Calculate population consumption rates (food/water)
 	const baseFoodConsumption = population * CONSUMPTION_RATES.FOOD_PER_PERSON_PER_TICK * tickCount;
 	const baseWaterConsumption =
 		population * CONSUMPTION_RATES.WATER_PER_PERSON_PER_TICK * tickCount;
 
-	// Structure maintenance costs (GDD Section 6.4)
-	const baseWoodMaintenance =
-		structureCount * CONSUMPTION_RATES.WOOD_PER_STRUCTURE_PER_TICK * tickCount;
-	const baseStoneMaintenance =
-		structureCount * CONSUMPTION_RATES.STONE_PER_STRUCTURE_PER_TICK * tickCount;
-	const baseOreMaintenance =
-		structureCount * CONSUMPTION_RATES.ORE_PER_STRUCTURE_PER_TICK * tickCount;
+	// Calculate structure maintenance consumption (wood/stone/ore) - GDD Section 6.4
+	const baseWoodConsumption = structureCount * CONSUMPTION_RATES.WOOD_PER_STRUCTURE_PER_TICK * tickCount;
+	const baseStoneConsumption = structureCount * CONSUMPTION_RATES.STONE_PER_STRUCTURE_PER_TICK * tickCount;
+	const baseOreConsumption = structureCount * CONSUMPTION_RATES.ORE_PER_STRUCTURE_PER_TICK * tickCount;
 
 	// Apply world template multiplier (Phase 1D)
 	return {
 		food: baseFoodConsumption * worldTemplateMultiplier,
 		water: baseWaterConsumption * worldTemplateMultiplier,
-		wood: baseWoodMaintenance * worldTemplateMultiplier,
-		stone: baseStoneMaintenance * worldTemplateMultiplier,
-		ore: baseOreMaintenance * worldTemplateMultiplier,
+		wood: baseWoodConsumption * worldTemplateMultiplier,
+		stone: baseStoneConsumption * worldTemplateMultiplier,
+		ore: baseOreConsumption * worldTemplateMultiplier,
 	};
 }
 

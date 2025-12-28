@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { deserialize } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { logger } from '$lib/utils/logger';
 	import type { ActionData, PageData } from './$types';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
 	import { generateMap } from '$lib/game/world-generator';
@@ -91,7 +92,7 @@
 		// Keep persistence constant for elevation too
 		elevationOptions.persistence = 0.5;
 
-		console.log('Updated parameters from simple controls:', {
+		logger.debug('Updated parameters from simple controls:', {
 			terrainRoughness,
 			mountainHeight,
 			waterLevel,
@@ -230,18 +231,21 @@
 				body: formData
 			});
 
-			console.log('[WORLD CREATE] Response status:', response.status, response.statusText);
-			console.log('[WORLD CREATE] Response ok:', response.ok);
+			logger.debug('[WORLD CREATE] Response status:', {
+				status: response.status,
+				statusText: response.statusText
+			});
+			logger.debug('[WORLD CREATE] Response ok:', { ok: response.ok });
 
 			// Use SvelteKit's deserialize to properly parse the response
 			const result = deserialize(await response.text());
 
-			console.log('[WORLD CREATE] Action result:', result);
-			console.log('[WORLD CREATE] Result type:', result.type);
+			logger.debug('[WORLD CREATE] Action result:', { result });
+			logger.debug('[WORLD CREATE] Result type:', { type: result.type });
 
 			// Type guard: Check result.type before accessing result.data
 			if (result.type === 'success') {
-				console.log('[WORLD CREATE] Result data:', result.data);
+				logger.debug('[WORLD CREATE] Result data:', { data: result.data });
 			}
 
 			if (result.type === 'failure' || result.type === 'error') {
@@ -264,17 +268,15 @@
 			const world = result.data.world;
 			const generationSettings = result.data.generationSettings;
 
-			console.log('[WORLD CREATE] Extracted world:', world);
-			console.log('[WORLD CREATE] Extracted settings:', generationSettings);
+			logger.debug('[WORLD CREATE] Extracted world:', { world });
+			logger.debug('[WORLD CREATE] Extracted settings:', { generationSettings });
 
 			if (!world || !generationSettings) {
-				console.error(
-					'[WORLD CREATE] Missing data - world:',
-					!!world,
-					'settings:',
-					!!generationSettings
-				);
-				console.error('[WORLD CREATE] Full result.data:', result.data);
+				logger.error('[WORLD CREATE] Missing data', {
+					hasWorld: !!world,
+					hasSettings: !!generationSettings
+				});
+				logger.error('[WORLD CREATE] Full result.data:', { data: result.data });
 				saveError = 'World was created but no data was returned';
 				generationProgress = '';
 				return;
@@ -282,7 +284,7 @@
 
 			// Type guard to ensure world has id property
 			if (typeof world !== 'object' || world === null || !('id' in world)) {
-				console.error('[WORLD CREATE] World object missing id property');
+				logger.error('[WORLD CREATE] World object missing id property');
 				saveError = 'World was created but missing required data';
 				generationProgress = '';
 				return;
@@ -293,7 +295,7 @@
 			const settingsParam = encodeURIComponent(JSON.stringify(generationSettings));
 			await goto(`/admin/worlds/${world.id}?startGeneration=true&settings=${settingsParam}`);
 		} catch (err) {
-			console.error('[WORLD CREATE] Error:', err);
+			logger.error('[WORLD CREATE] Error:', err);
 			saveError = 'Failed to create world. Please try again.';
 			generationProgress = '';
 		} finally {

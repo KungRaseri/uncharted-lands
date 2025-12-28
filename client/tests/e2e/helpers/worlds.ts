@@ -6,6 +6,8 @@
 import type { APIRequestContext } from '@playwright/test';
 import crypto from 'node:crypto';
 
+const API_BASE_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+
 /**
  * Wait for world generation to complete
  * Polls the world status until it changes from 'GENERATING' to 'READY'
@@ -29,7 +31,7 @@ export async function waitForWorldGeneration(
 
 	while (Date.now() - startTime < timeoutMs) {
 		// Fetch current world status with authentication
-		const response = await api.get(`http://localhost:3001/api/worlds/${worldId}`, {
+		const response = await api.get(`${API_BASE_URL}/worlds/${worldId}`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			}
@@ -82,6 +84,8 @@ export async function createWorldViaAPI(
 		name: string;
 		size?: 'TINY' | 'SMALL' | 'MEDIUM' | 'LARGE' | 'MASSIVE'; // Added TINY for E2E tests
 		seed?: number;
+		width?: number; // Optional override for custom dimensions
+		height?: number; // Optional override for custom dimensions
 	},
 	waitForGeneration: boolean = true
 ): Promise<any> {
@@ -102,18 +106,24 @@ export async function createWorldViaAPI(
 	const requestPayload = {
 		serverId,
 		name: worldData.name,
-		generate: true, // Enable server-side world generation
-		width: dimensions.width,
-		height: dimensions.height,
+		generate: true, // Enable server-side generation
+		width: worldData.width || dimensions.width, // Use custom width if provided
+		height: worldData.height || dimensions.height, // Use custom height if provided
 		// Use crypto.randomInt for secure random seed generation (GHSA finding fix)
 		elevationSeed: worldData.seed || crypto.randomInt(0, 1000000),
 		worldTemplateType: 'STANDARD' // Use standard game template
 	};
 
+	// Validate required fields before making API call
+	if (!requestPayload.serverId || !requestPayload.name) {
+		console.error('[E2E] Invalid world creation payload:', { serverId, worldData, requestPayload });
+		throw new Error(`Missing required fields for world creation. serverId: ${requestPayload.serverId}, name: ${requestPayload.name}`);
+	}
+
 	console.log('[E2E] World creation request payload:', requestPayload);
 
 	// Create world (returns immediately with GENERATING status)
-	const response = await api.post('http://localhost:3001/api/worlds', {
+	const response = await api.post(`${API_BASE_URL}/worlds`, {
 		headers: {
 			Cookie: `session=${sessionToken}`
 		},

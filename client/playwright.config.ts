@@ -9,12 +9,22 @@ dotenv.config();
 
 /**
  * See https://playwright.dev/docs/test-configuration.
+ *
+ * Parallelism Strategy:
+ * - Local: 4 workers for faster feedback (~30-45s for full suite)
+ * - CI: 1 worker to conserve resources
+ * - fullyParallel: true allows tests within files to run in parallel
+ * - Some test files use serial mode (disaster.spec.ts, resources.spec.ts) for stateful tests
+ * - maxFailures: 5 on CI to fail fast and save resources
  */
 const config: PlaywrightTestConfig = {
 	testDir: 'tests/e2e',
 	testMatch: '**/*.spec.ts', // Only match .spec.ts files (Playwright), not .test.ts files (Vitest)
+	/* Global setup/teardown - runs ONCE before/after all tests */
+	globalSetup: './tests/e2e/global-setup.ts',
+	globalTeardown: './tests/e2e/global-teardown.ts',
 	/* Maximum time one test can run for. */
-	timeout: 30 * 1000,
+	timeout: 60 * 1000, // Increased to 60s for world creation
 	expect: {
 		/**
 		 * Maximum time expect() should wait for the condition to be met.
@@ -28,8 +38,10 @@ const config: PlaywrightTestConfig = {
 	forbidOnly: !!process.env.CI,
 	/* Retry on CI only */
 	retries: process.env.CI ? 2 : 0,
-	/* Opt out of parallel tests on CI. */
-	workers: process.env.CI ? 1 : undefined,
+	/* Reduced workers to 2 for stability - prevents parallel test conflicts with server/world creation */
+	workers: process.env.CI ? 1 : 2,
+	/* Fail fast on CI to save resources */
+	maxFailures: process.env.CI ? 5 : undefined,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	reporter: [
 		['list'], // Console output
@@ -47,56 +59,67 @@ const config: PlaywrightTestConfig = {
 	},
 
 	/* Configure projects for major browsers */
-	projects: [
-		// {
-		// 	name: 'chromium',
-		// 	use: {
-		// 		...devices['Desktop Chrome']
-		// 	}
-		// },
+	// Local: Firefox only for faster feedback (~5-10min)
+	// CI: All 3 browsers for comprehensive coverage
+	projects: process.env.CI
+		? [
+			{
+				name: 'chromium',
+				use: {
+					...devices['Desktop Chrome']
+				}
+			},
 
-		{
-			name: 'firefox',
-			use: {
-				...devices['Desktop Firefox']
+			{
+				name: 'firefox',
+				use: {
+					...devices['Desktop Firefox']
+				}
+			},
+
+			{
+				name: 'webkit',
+				use: {
+					...devices['Desktop Safari']
+				}
 			}
-		}
+			/* Test against mobile viewports. */
+			// {
+			//   name: 'Mobile Chrome',
+			//   use: {
+			//     ...devices['Pixel 5'],
+			//   },
+			// },
+			// {
+			//   name: 'Mobile Safari',
+			//   use: {
+			//     ...devices['iPhone 12'],
+			//   },
+			// },
 
-		// {
-		// 	name: 'webkit',
-		// 	use: {
-		// 		...devices['Desktop Safari']
-		// 	}
-		// }
+			/* Test against branded browsers. */
+			// {
+			//   name: 'Microsoft Edge',
+			//   use: {
+			//     channel: 'msedge',
+			//   },
+			// },
+			// {
+			//   name: 'Google Chrome',
+			//   use: {
+			//     channel: 'chrome',
+			//   },
+			// },
 
-		/* Test against mobile viewports. */
-		// {
-		//   name: 'Mobile Chrome',
-		//   use: {
-		//     ...devices['Pixel 5'],
-		//   },
-		// },
-		// {
-		//   name: 'Mobile Safari',
-		//   use: {
-		//     ...devices['iPhone 12'],
-		//   },
-		// },
-
-		/* Test against branded browsers. */
-		// {
-		//   name: 'Microsoft Edge',
-		//   use: {
-		//     channel: 'msedge',
-		//   },
-		// },
-		// {
-		//   name: 'Google Chrome',
-		//   use: {
-		//     channel: 'chrome',
-		//   },
-		// },
-	]
+		]
+		: [
+			{
+				name: 'firefox',
+				use: {
+					...devices['Desktop Firefox']
+				}
+			}
+		]
 
 	/* Folder for test artifacts such as screenshots, videos, traces, etc. */
 	// outputDir: 'test-results/',

@@ -28,10 +28,18 @@
 		category: 'EXTRACTOR';
 	}
 
+	interface QueuedConstruction {
+		tileId: string | null;
+		slotPosition: number | null;
+		structureType: string;
+		status: string;
+	}
+
 	interface Props {
 		settlementId: string;
 		tile?: Tile;
 		extractors?: ExtractorStructure[];
+		constructionQueue?: QueuedConstruction[];
 		onBuildExtractor?: (slotPosition: number) => void;
 		onViewExtractor?: (extractor: ExtractorStructure) => void;
 	}
@@ -50,6 +58,7 @@
 			biomeId: ''
 		},
 		extractors = [],
+		constructionQueue = [],
 		onBuildExtractor,
 		onViewExtractor
 	}: Props = $props();
@@ -71,6 +80,17 @@
 	// Check if slot is occupied
 	function isSlotOccupied(slotPosition: number): boolean {
 		return extractors.some((e) => e.slotPosition === slotPosition);
+	}
+
+	// Check if slot is reserved by a queued construction
+	function isSlotReserved(slotPosition: number): boolean {
+		return constructionQueue.some(
+			(item) =>
+				item.tileId === tile.id &&
+				item.slotPosition === slotPosition &&
+				item.status !== 'COMPLETE' &&
+				item.status !== 'CANCELLED'
+		);
 	}
 
 	// Format quality percentage
@@ -97,18 +117,26 @@
 	// Handle slot click
 	function handleSlotClick(slotPosition: number) {
 		const extractor = getExtractorInSlot(slotPosition);
+		const reserved = isSlotReserved(slotPosition);
+		
 		if (extractor && onViewExtractor) {
 			onViewExtractor(extractor);
-		} else if (!extractor && onBuildExtractor) {
+		} else if (!extractor && !reserved && onBuildExtractor) {
 			onBuildExtractor(slotPosition);
 		}
+		// If reserved, do nothing (slot is locked)
 	}
 
 	// Get aria-label for slot
 	function getSlotLabel(slotPosition: number): string {
 		const extractor = getExtractorInSlot(slotPosition);
+		const reserved = isSlotReserved(slotPosition);
+		
 		if (extractor) {
 			return `Slot ${slotPosition + 1}: Occupied, Level ${extractor.level}, ${extractor.health}% health. Click to view or upgrade.`;
+		}
+		if (reserved) {
+			return `Slot ${slotPosition + 1}: Reserved for construction in progress. Cannot build.`;
 		}
 		return `Slot ${slotPosition + 1}: Empty. Click to build extractor.`;
 	}
@@ -216,16 +244,21 @@
 				{#each Array(tile.plotSlots) as _, slotPosition (slotPosition)}
 					{@const extractor = getExtractorInSlot(slotPosition)}
 					{@const occupied = isSlotOccupied(slotPosition)}
+					{@const reserved = isSlotReserved(slotPosition)}
 
 					<li role="listitem">
 						<button
 							type="button"
 							class="w-full aspect-square rounded-md border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-surface-900 {occupied
 								? 'border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-950 hover:bg-primary-100 dark:hover:bg-primary-900'
-								: 'border-surface-300 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 border-dashed'}"
+								: reserved
+									? 'border-warning-400 dark:border-warning-500 bg-warning-50 dark:bg-warning-950 cursor-not-allowed opacity-70'
+									: 'border-surface-300 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 border-dashed'}"
 							onclick={() => handleSlotClick(slotPosition)}
+							disabled={reserved}
 							aria-label={getSlotLabel(slotPosition)}
 							data-slot={slotPosition}
+							data-reserved={reserved}
 						>
 							<div class="flex flex-col items-center justify-center h-full p-2">
 								{#if extractor}
@@ -258,6 +291,16 @@
 												></div>
 											</div>
 										{/if}
+									</div>
+								{:else if reserved}
+									<!-- Reserved Slot (locked for construction) -->
+									<div class="flex flex-col items-center gap-1">
+										<span class="text-2xl leading-none" aria-hidden="true">🔒</span>
+										<span
+											class="text-xs font-medium text-warning-700 dark:text-warning-400"
+										>
+											Queued
+										</span>
 									</div>
 								{:else}
 									<!-- Empty Slot -->

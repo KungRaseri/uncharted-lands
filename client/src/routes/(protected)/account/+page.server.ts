@@ -1,10 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
 import type { PageServerLoad } from './$types';
-import { env } from '$env/dynamic/public';
-
-// Use PUBLIC_API_URL which works in both client and server contexts
-const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
+import { SERVER_API_URL } from '$env/static/private';
 
 export const load: PageServerLoad = async ({ locals, cookies }) => {
 	if (!locals.account) {
@@ -27,7 +24,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 			hasSessionToken: !!sessionToken
 		});
 
-		const response = await fetch(`${API_URL}/account/me`, {
+		const response = await fetch(`${SERVER_API_URL}/account/me`, {
 			method: 'GET',
 			headers: {
 				Cookie: `session=${sessionToken}`

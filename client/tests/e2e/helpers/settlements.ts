@@ -95,27 +95,37 @@ export async function createSettlement(
  * Create settlement via API (faster for setup)
  * @param api - Playwright APIRequestContext
  * @param worldId - World to create settlement in
+ * @param serverId - Server ID the world belongs to
  * @param settlementData - Settlement configuration
  * @returns Settlement object from API
  */
 export async function createSettlementViaAPI(
 	api: APIRequestContext,
 	worldId: string,
+	serverId: string,
+	accountId: string,
+	sessionToken: string,
 	settlementData: {
-		name: string;
-		tileId?: string;
+		username: string;
+		picture?: string;
 	}
 ): Promise<Settlement> {
-	const response = await api.post('/api/settlements', {
+	const API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+	
+	const response = await api.post(`${API_URL}/settlements`, {
+		headers: { Cookie: `session=${sessionToken}` },
 		data: {
 			worldId,
-			name: settlementData.name,
-			tileId: settlementData.tileId
+			serverId,
+			accountId,
+			username: settlementData.username,
+			picture: settlementData.picture
 		}
 	});
 
 	if (!response.ok()) {
-		throw new Error(`Failed to create settlement: ${response.status()}`);
+		const errorText = await response.text();
+		throw new Error(`Failed to create settlement: ${errorText || response.status()}`);
 	}
 
 	return response.json();
@@ -297,15 +307,43 @@ export async function buildStructure(
 	}
 
 	// Step 4: Click the structure button using data-testid
-	const structureButton = page.locator(
-		`[data-testid="build-structure-${structureName.toLowerCase()}"]`
+	// Use data-structure-name attribute to target the exact structure
+	const structureButton = page.locator(`[data-structure-name="${structureName.toUpperCase()}"]`);
+
+	// Debug: Check if button exists at all
+	const buttonCount = await structureButton.count();
+	console.log(
+		`[E2E Helper] Found ${buttonCount} buttons with data-structure-name: ${structureName.toUpperCase()}`
 	);
 
+	if (buttonCount === 0) {
+		// Debug: List all available structure buttons
+		const allButtons = await page.locator('[data-testid^="build-structure-"]').all();
+		console.log(`[E2E Helper] Available structure buttons: ${allButtons.length}`);
+		for (const btn of allButtons) {
+			const testid = await btn.getAttribute('data-testid');
+			const structureName = await btn.getAttribute('data-structure-name');
+			const disabled = await btn.isDisabled();
+			const visible = await btn.isVisible();
+			console.log(
+				`[E2E Helper]   - ${testid} (name: ${structureName}, disabled: ${disabled}, visible: ${visible})`
+			);
+		}
+		throw new Error(`Structure button not found with name: ${structureName.toUpperCase()}`);
+	}
+
+	// If multiple buttons found (e.g., two structures with same buildingType),
+	// use the first enabled one
+	const enabledButton =
+		buttonCount > 1
+			? structureButton.filter({ hasNot: page.locator(':disabled') }).first()
+			: structureButton;
+
 	// Wait for the button to be visible and enabled
-	await structureButton.waitFor({ state: 'visible', timeout: 5000 });
+	await enabledButton.waitFor({ state: 'visible', timeout: 5000 });
 
 	// Click the structure
-	await structureButton.click();
+	await enabledButton.click();
 
 	// Step 5: Wait for the build menu to close (indicates structure was built)
 	await page.waitForSelector(`[data-testid="build-structure-${structureName.toLowerCase()}"]`, {
@@ -358,6 +396,60 @@ export async function buildExtractor(
 	await page.waitForSelector('text=Select Extractor Type', { state: 'hidden', timeout: 5000 });
 
 	console.log(`[E2E Helper] Extractor built successfully: ${extractorType}`);
+}
+
+// ============================================================================
+// SETTLEMENT RESOURCE MANAGEMENT
+// ============================================================================
+
+/**
+ * Update settlement resources via test helper API
+ * @param api - Playwright APIRequestContext
+ * @param settlementId - Settlement ID
+ * @param resources - Resource amounts to set
+ */
+export async function updateSettlementResources(
+	api: APIRequestContext,
+	settlementId: string,
+	resources: {
+		food?: number;
+		water?: number;
+		wood?: number;
+		stone?: number;
+		ore?: number;
+	}
+): Promise<void> {
+	const API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+	
+	const response = await api.post(`${API_URL}/test/set-resources`, {
+		data: {
+			settlementId,
+			resources
+		}
+	});
+
+	if (!response.ok()) {
+		const errorText = await response.text();
+		throw new Error(`Failed to update settlement resources: ${errorText || response.status()}`);
+	}
+}
+
+/**
+ * Add generous test resources to a settlement (for E2E testing)
+ * @param api - Playwright APIRequestContext
+ * @param settlementId - Settlement ID
+ */
+export async function addGenerousTestResources(
+	api: APIRequestContext,
+	settlementId: string
+): Promise<void> {
+	await updateSettlementResources(api, settlementId, {
+		food: 1000,
+		water: 1000,
+		wood: 500,
+		stone: 500,
+		ore: 200
+	});
 }
 
 // ============================================================================

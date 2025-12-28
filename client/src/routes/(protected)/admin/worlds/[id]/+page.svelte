@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { logger } from '$lib/utils/logger';
 	import {
 		Globe,
 		Server,
@@ -59,7 +60,7 @@
 				const settings = JSON.parse(decodeURIComponent(generationSettings));
 				triggerGeneration(settings);
 			} catch (error) {
-				console.error('Failed to parse generation settings:', error);
+				logger.error('Failed to parse generation settings:', error);
 				generationError = 'Failed to start generation: Invalid settings';
 			}
 		}
@@ -76,7 +77,7 @@
 		isGenerating = true;
 		generationError = null;
 
-		console.log('[WORLD DETAILS] Starting generation with settings:', settings);
+		logger.debug('[WORLD DETAILS] Starting generation with settings:', { settings });
 
 		try {
 			// Map the settings to what the API expects
@@ -90,54 +91,61 @@
 				temperatureOptions: settings.temperatureSettings || settings.temperatureOptions
 			};
 
-			console.log('[WORLD DETAILS] Mapped API settings:', apiSettings);
+			logger.debug('[WORLD DETAILS] Mapped API settings:', { apiSettings });
 
 			// Call the generate server action
 			const formData = new FormData();
 			formData.append('settings', JSON.stringify(apiSettings));
 
-			console.log('[WORLD DETAILS] Calling generate action...');
+			logger.debug('[WORLD DETAILS] Calling generate action...');
 			const response = await fetch(`?/generate`, {
 				method: 'POST',
 				body: formData
 			});
 
-			console.log('[WORLD DETAILS] Generate response:', response.status, response.ok);
+			logger.debug('[WORLD DETAILS] Generate response:', {
+				status: response.status,
+				ok: response.ok
+			});
 
 			if (!response.ok) {
 				const errorText = await response.text();
-				console.error('[WORLD DETAILS] Generate failed:', errorText);
+				logger.error('[WORLD DETAILS] Generate failed:', { errorText });
 				throw new Error('Failed to start generation');
 			}
 
 			const result = await response.text();
-			console.log('[WORLD DETAILS] Generate result:', result);
+			logger.debug('[WORLD DETAILS] Generate result:', { result });
 
 			// Start polling for status
-			console.log('[WORLD DETAILS] Starting polling...');
+			logger.debug('[WORLD DETAILS] Starting polling...');
 			startPolling();
 		} catch (error) {
-			console.error('Failed to start generation:', error);
+			logger.error('Failed to start generation:', error);
 			generationError = error instanceof Error ? error.message : 'Failed to start generation';
 			isGenerating = false;
 		}
 	}
 
 	function startPolling() {
-		console.log('[WORLD DETAILS] Polling started');
+		logger.debug('[WORLD DETAILS] Polling started');
 		// Poll every 3 seconds
 		pollingInterval = setInterval(async () => {
 			try {
-				console.log('[WORLD DETAILS] Polling - current status:', data.world?.status);
+				logger.debug('[WORLD DETAILS] Polling - current status:', {
+					status: data.world?.status
+				});
 				// Invalidate all data to refetch the world
 				await invalidateAll();
 
-				console.log('[WORLD DETAILS] After invalidate - status:', data.world?.status);
+				logger.debug('[WORLD DETAILS] After invalidate - status:', {
+					status: data.world?.status
+				});
 
 				// Check world status
 				if (data.world?.status === 'ready') {
 					// Generation complete!
-					console.log('[WORLD DETAILS] Generation complete!');
+					logger.debug('[WORLD DETAILS] Generation complete!');
 					isGenerating = false;
 					if (pollingInterval) {
 						clearInterval(pollingInterval);
@@ -145,7 +153,7 @@
 					}
 				} else if (data.world?.status === 'failed') {
 					// Generation failed
-					console.log('[WORLD DETAILS] Generation failed!');
+					logger.debug('[WORLD DETAILS] Generation failed!');
 					isGenerating = false;
 					generationError = 'World generation failed. Please try again.';
 					if (pollingInterval) {
@@ -154,7 +162,7 @@
 					}
 				}
 			} catch (error) {
-				console.error('Polling error:', error);
+				logger.error('Polling error:', error);
 			}
 		}, 3000);
 	}

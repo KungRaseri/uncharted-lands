@@ -52,7 +52,7 @@ test.describe('Authentication Flow', () => {
 			expect(await isAuthenticated(page)).toBe(true);
 
 			// Step 4: Verify can access protected routes
-			await page.goto('/game/world');
+			await page.goto('/game/profile');
 			await expect(page).toHaveURL(/\/game/);
 		});
 
@@ -68,7 +68,7 @@ test.describe('Authentication Flow', () => {
 			expect(await isAuthenticated(page)).toBe(true);
 
 			// Should be able to access protected routes immediately
-			await page.goto('/game/world');
+			await page.goto('/game/profile');
 			const currentUrl = page.url();
 			expect(currentUrl).toContain('/game');
 		});
@@ -83,10 +83,11 @@ test.describe('Authentication Flow', () => {
 			userEmail = generateUniqueEmail('protected');
 			userPassword = TEST_USERS.VALID.password;
 
-			const page = await browser.newPage();
+			const context = await browser.newContext();
+			const page = await context.newPage();
 			await registerUser(page, userEmail, userPassword);
 			// registerUser already waits for /game/getting-started - no additional wait needed
-			await page.close();
+			await context.close();
 		});
 
 		test.afterEach(async ({ request }) => {
@@ -96,7 +97,7 @@ test.describe('Authentication Flow', () => {
 
 		test('should redirect unauthenticated users to sign-in', async ({ page }) => {
 			// Try to access protected route without authentication
-			await page.goto('/game/world');
+			await page.goto('/game/profile');
 
 			// Should redirect to sign-in with redirectTo parameter
 			await page.waitForURL(/sign-in/);
@@ -109,7 +110,7 @@ test.describe('Authentication Flow', () => {
 			// loginUser already waits for /game - no additional wait needed
 
 			// Access protected route
-			await page.goto('/game/world');
+			await page.goto('/game/profile');
 			await page.waitForLoadState('networkidle');
 
 			// Should stay on protected route
@@ -142,13 +143,17 @@ test.describe('Authentication Flow', () => {
 
 			// Try to access sign-in page
 			await page.goto('/sign-in');
-			await page.waitForURL('/game', { timeout: 5000 });
-			await expect(page).toHaveURL('/game');
+			// Should redirect away from sign-in (to /game or /game/getting-started depending on profile)
+			await page.waitForURL(/\/game/, { timeout: 10000 });
+			expect(page.url()).toMatch(/\/game/);
+			expect(page.url()).not.toContain('/sign-in');
 
 			// Try to access register page
 			await page.goto('/register');
-			await page.waitForURL('/game', { timeout: 5000 });
-			await expect(page).toHaveURL('/game');
+			// Should redirect away from register
+			await page.waitForURL(/\/game/, { timeout: 10000 });
+			expect(page.url()).toMatch(/\/game/);
+			expect(page.url()).not.toContain('/register');
 		});
 	});
 
@@ -182,7 +187,7 @@ test.describe('Authentication Flow', () => {
 			await page.goto('/support');
 			expect(await isAuthenticated(page)).toBe(true);
 
-			await page.goto('/game/world');
+			await page.goto('/game/profile');
 			expect(await isAuthenticated(page)).toBe(true);
 		});
 
@@ -223,7 +228,7 @@ test.describe('Authentication Flow', () => {
 			expect(await isAuthenticated(page)).toBe(false);
 
 			// Accessing protected route should redirect to sign-in
-			await page.goto('/game/world');
+			await page.goto('/game/profile');
 			await page.waitForURL(/sign-in/);
 		});
 	});
@@ -271,8 +276,8 @@ test.describe('Authentication Flow', () => {
 			expect(await isAuthenticated(page2)).toBe(true);
 
 			// Both should be able to access protected routes
-			await page1.goto('/game/world');
-			await page2.goto('/game/world');
+			await page1.goto('/game/profile');
+			await page2.goto('/game/profile');
 
 			await page1.waitForLoadState('networkidle');
 			await page2.waitForLoadState('networkidle');

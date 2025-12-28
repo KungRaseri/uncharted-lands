@@ -6,6 +6,8 @@
 import type { Page, APIRequestContext } from '@playwright/test';
 import { expect } from '@playwright/test';
 
+const DEFAULT_API_URL = process.env.PUBLIC_CLIENT_API_URL || 'http://localhost:3001/api';
+
 // Type for disaster warning event data
 type DisasterWarningData = {
 	disasterId: string;
@@ -31,21 +33,21 @@ export const TEST_DISASTERS = {
 	EARTHQUAKE_MINOR: {
 		type: 'EARTHQUAKE',
 		severity: 25,
-		duration: 300, // 5 minutes in seconds
+		duration: 30, // 30 seconds (fast E2E testing)
 		expectedCasualties: 0, // Minor should have 0-5% casualties
 		expectedStructureDamage: 15 // 5-15% health loss
 	},
 	FLOOD_MODERATE: {
 		type: 'FLOOD',
 		severity: 50,
-		duration: 600, // 10 minutes
+		duration: 60, // 60 seconds (fast E2E testing)
 		expectedCasualties: 10, // 5-15% casualties
 		expectedStructureDamage: 35 // 15-35% health loss
 	},
 	DROUGHT_MAJOR: {
 		type: 'DROUGHT',
 		severity: 70,
-		duration: 1800, // 30 minutes
+		duration: 120, // 120 seconds (fast E2E testing)
 		expectedCasualties: 25, // 15-30% casualties
 		expectedStructureDamage: 50 // 35-60% health loss
 	}
@@ -61,7 +63,7 @@ export const TEST_DISASTERS = {
  * @param sessionCookie - Session cookie value for authentication
  * @param worldId - World ID to trigger disaster in
  * @param disasterConfig - Disaster configuration
- * @param apiUrl - Base API URL (optional, defaults to http://localhost:3001/api)
+ * @param apiUrl - Base API URL (optional, defaults to PUBLIC_CLIENT_API_URL env var)
  * @returns Disaster event ID
  */
 export async function triggerDisaster(
@@ -69,7 +71,7 @@ export async function triggerDisaster(
 	sessionCookie: string,
 	worldId: string,
 	disasterConfig: (typeof TEST_DISASTERS)[keyof typeof TEST_DISASTERS],
-	apiUrl: string = 'http://localhost:3001/api'
+	apiUrl: string = DEFAULT_API_URL
 ): Promise<string> {
 	const response = await request.post(`${apiUrl}/admin/disasters/trigger`, {
 		headers: {
@@ -136,37 +138,43 @@ export async function waitForDisasterWarning(
 	page: Page,
 	timeoutMs: number = 65000
 ): Promise<DisasterWarningData> {
-	// Set up event listener before waiting
-	await page.evaluate(() => {
-		const win = window as unknown as WindowWithSocket;
-		if (!win.__disasterWarningPromise) {
-			win.__disasterWarningPromise = new Promise((resolve) => {
-				const socket = win.socket;
-				if (socket) {
-					socket.once('disaster-warning', (data: unknown) => {
-						console.log('[E2E] Received disaster-warning event:', data);
-						resolve(data as DisasterWarningData);
+	// Poll the disaster store state to check if warning was received
+	const result = await page.evaluate(async (timeout) => {
+		const win = window as any;
+		const startTime = Date.now();
+
+		// Poll disasterStore.warningActive every 100ms
+		return new Promise((resolve, reject) => {
+			const pollInterval = setInterval(() => {
+				const elapsed = Date.now() - startTime;
+
+				// Check if timeout exceeded
+				if (elapsed > timeout) {
+					clearInterval(pollInterval);
+					reject(new Error(`Timeout waiting for disaster-warning after ${timeout}ms`));
+					return;
+				}
+
+				// Check if disaster store has received warning
+				const disasterStore = win.disasterStore;
+				if (disasterStore && disasterStore.warningActive && disasterStore.activeDisaster) {
+					clearInterval(pollInterval);
+					console.log(
+						'[E2E] Disaster warning detected from store:',
+						disasterStore.activeDisaster
+					);
+					resolve({
+						disasterId: disasterStore.activeDisaster.id,
+						type: disasterStore.activeDisaster.type,
+						severity: disasterStore.activeDisaster.severity,
+						severityLevel: disasterStore.activeDisaster.severityLevel,
+						timeRemaining: disasterStore.timeUntilImpact,
+						affectedRegion: disasterStore.activeDisaster.affectedRegion,
+						affectedBiomes: disasterStore.activeDisaster.affectedBiomes
 					});
 				}
-			});
-		}
-	});
-
-	// Wait for the promise with timeout
-	const result = await page.evaluate((timeout) => {
-		const win = window as unknown as WindowWithSocket;
-		return Promise.race([
-			win.__disasterWarningPromise,
-			new Promise((_, reject) =>
-				setTimeout(
-					() =>
-						reject(
-							new Error(`Timeout waiting for disaster-warning after ${timeout}ms`)
-						),
-					timeout
-				)
-			)
-		]);
+			}, 100);
+		});
 	}, timeoutMs);
 
 	return result as DisasterWarningData;
@@ -192,14 +200,28 @@ export async function assertWarningBannerVisible(page: Page, disasterType: strin
  */
 export async function getWarningTimeRemaining(page: Page): Promise<number> {
 	const countdown = page.locator('[data-testid="disaster-countdown"]');
+
+	// Wait for countdown to be visible and have content
+	await countdown.waitFor({ state: 'visible', timeout: 5000 });
+
 	const text = await countdown.textContent();
 
-	// Parse "1h 23m 45s" format
+	// Parse different formats:
+	// - "30s" (seconds only, for times < 60s)
+	// - "5m" (minutes only, for times < 1h)
+	// - "2h 15m" (hours and minutes, for times >= 1h)
+
+	// Check for seconds-only format first
+	const secondsMatch = text?.match(/^(\d+)s$/);
+	if (secondsMatch) {
+		return Number.parseInt(secondsMatch[1], 10);
+	}
+
+	// Parse hours and minutes
 	const hours = text?.match(/(\d+)h/)?.[1] || '0';
 	const minutes = text?.match(/(\d+)m/)?.[1] || '0';
-	const seconds = text?.match(/(\d+)s/)?.[1] || '0';
 
-	return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+	return Number.parseInt(hours, 10) * 3600 + Number.parseInt(minutes, 10) * 60;
 }
 
 /**
@@ -222,10 +244,27 @@ export async function activateEmergencyShelter(page: Page): Promise<void> {
 /**
  * Verify disaster impact banner is visible
  * @param page - Playwright page object
+ * @param timeoutMs - Maximum time to wait (default: 20000ms = 20 seconds, accounting for 10-second warning time + buffer)
  */
-export async function assertImpactBannerVisible(page: Page): Promise<void> {
+export async function assertImpactBannerVisible(
+	page: Page,
+	timeoutMs: number = 20000
+): Promise<void> {
 	const banner = page.locator('[data-testid="disaster-impact-banner"]');
-	await banner.waitFor({ state: 'visible', timeout: 5000 });
+	await banner.waitFor({ state: 'visible', timeout: timeoutMs });
+}
+
+/**
+ * Open the damage feed during impact phase
+ * @param page - Playwright page object
+ */
+export async function openDamageFeed(page: Page): Promise<void> {
+	const toggleButton = page.locator('[data-testid="toggle-damage-feed-btn"]');
+	await toggleButton.click();
+
+	// Wait for damage feed to appear
+	const damageFeed = page.locator('[data-testid="damage-feed"]');
+	await damageFeed.waitFor({ state: 'visible', timeout: 2000 });
 }
 
 /**
@@ -296,25 +335,44 @@ export async function assertAftermathModalVisible(page: Page): Promise<void> {
 }
 
 /**
+ * Wait for disaster aftermath modal to appear
+ * @param page - Playwright page object
+ * @param timeoutMs - How long to wait (default 120s for disaster duration + processing)
+ * @returns True when modal appears
+ */
+export async function waitForAftermathModal(page: Page, timeoutMs: number = 120000): Promise<void> {
+	const modal = page.locator('[data-testid="disaster-aftermath-modal"]');
+	await modal.waitFor({ state: 'visible', timeout: timeoutMs });
+	console.log('[E2E] Disaster aftermath modal appeared');
+}
+
+/**
  * Get disaster summary from aftermath modal
  * @param page - Playwright page object
+ * @param timeoutMs - How long to wait for modal (default 10s)
  * @returns Disaster summary data
  */
-export async function getDisasterSummary(page: Page): Promise<{
+export async function getDisasterSummary(
+	page: Page,
+	timeoutMs: number = 10000
+): Promise<{
 	casualties: number;
 	structuresDamaged: number;
 	resourcesLost: number;
 }> {
 	const modal = page.locator('[data-testid="disaster-aftermath-modal"]');
 
+	// Wait for modal to be visible first
+	await modal.waitFor({ state: 'visible', timeout: timeoutMs });
+
 	const casualtiesText = await modal.locator('[data-testid="total-casualties"]').textContent();
 	const damagedText = await modal.locator('[data-testid="structures-damaged"]').textContent();
 	const resourcesText = await modal.locator('[data-testid="resources-lost"]').textContent();
 
 	return {
-		casualties: parseInt(casualtiesText?.match(/\d+/)?.[0] || '0', 10),
-		structuresDamaged: parseInt(damagedText?.match(/\d+/)?.[0] || '0', 10),
-		resourcesLost: parseInt(resourcesText?.match(/\d+/)?.[0] || '0', 10)
+		casualties: Number.parseInt(casualtiesText?.match(/\d+/)?.[0] || '0', 10),
+		structuresDamaged: Number.parseInt(damagedText?.match(/\d+/)?.[0] || '0', 10),
+		resourcesLost: Number.parseInt(resourcesText?.match(/\d+/)?.[0] || '0', 10)
 	};
 }
 

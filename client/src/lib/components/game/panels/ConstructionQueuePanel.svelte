@@ -5,6 +5,10 @@
 	 * WCAG 2.1 AA Compliant
 	 */
 
+	import { constructionStore } from '$lib/stores/game/construction.svelte';
+	import { toaster } from '$lib/stores/toaster.svelte';
+	import { invalidateAll } from '$app/navigation';
+
 	type BuildingType = 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER';
 
 	interface ResourceCost {
@@ -60,27 +64,18 @@
 		}
 	}
 
-	// Format time remaining
+	// Format time remaining as HH:MM:SS
 	function formatTimeRemaining(seconds: number): string {
-		if (seconds < 60) {
-			return `${seconds}s`;
-		}
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
+		const secs = seconds % 60;
 
-		const minutes = Math.floor(seconds / 60);
-		const hours = Math.floor(minutes / 60);
-		const days = Math.floor(hours / 24);
+		// Zero-pad to 2 digits
+		const hh = hours.toString().padStart(2, '0');
+		const mm = minutes.toString().padStart(2, '0');
+		const ss = secs.toString().padStart(2, '0');
 
-		if (days > 0) {
-			const remainingHours = hours % 24;
-			return `${days}d ${remainingHours}h`;
-		}
-
-		if (hours > 0) {
-			const remainingMinutes = minutes % 60;
-			return `${hours}h ${remainingMinutes}m`;
-		}
-
-		return `${minutes}m`;
+		return `${hh}:${mm}:${ss}`;
 	}
 
 	// Format resource costs
@@ -114,6 +109,23 @@
 			minute: '2-digit',
 			hour12: true
 		});
+	}
+
+	// Cancel construction
+	async function handleCancelConstruction(constructionId: string, buildingName: string) {
+		const confirmed = confirm(`Cancel construction of ${buildingName}? Resources will be refunded.`);
+		if (!confirmed) return;
+
+		const success = await constructionStore.cancelConstruction(constructionId);
+		
+		if (success) {
+			toaster.success('Construction Cancelled', `${buildingName} removed from queue. Resources refunded.`, 3000);
+			
+			// Refresh data
+			await invalidateAll();
+		} else {
+			toaster.error('Cancel Failed', 'Could not cancel construction. Please try again.', 5000);
+		}
 	}
 </script>
 
@@ -161,6 +173,9 @@
 							<div
 								class="bg-primary-50 dark:bg-primary-950 rounded-md p-4 md:p-3 border border-primary-300 dark:border-primary-700 flex flex-col gap-3"
 								role="listitem"
+								data-testid="construction-queue-item"
+								data-status="active"
+								data-structure-name="{project.buildingName}"
 							>
 								<div
 									class="flex items-start justify-between gap-4 flex-col md:flex-row"
@@ -189,6 +204,7 @@
 									>
 										<span
 											class="text-lg font-bold text-primary-600 dark:text-primary-400 tabular-nums"
+											data-testid="time-remaining"
 											>{formatTimeRemaining(project.timeRemaining)}</span
 										>
 										<span
@@ -205,9 +221,9 @@
 									aria-valuenow={project.progress}
 									aria-valuemin="0"
 									aria-valuemax="100"
-									aria-label="{project.buildingName} construction progress: {project.progress}%, {formatTimeRemaining(
-										project.timeRemaining
-									)} remaining"
+								aria-label="{project.buildingName} construction progress: {project.progress}%, {formatTimeRemaining(project.timeRemaining)} remaining"
+								data-testid="progress-bar"
+								data-progress="{project.progress}"
 								>
 									<div
 										class="h-full bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 rounded-xl transition-all duration-500 ease-out flex items-center justify-center"
@@ -248,8 +264,9 @@
 						{#each queuedProjects as project (project.id)}
 							<div
 								class="bg-surface-100 dark:bg-surface-800 rounded-md p-4 md:p-3 border border-surface-200 dark:border-surface-700 flex flex-col gap-3"
-								role="listitem"
-							>
+								role="listitem"								data-testid="construction-queue-item"
+								data-status="queued"
+								data-structure-name="{project.buildingName}"							>
 								<div
 									class="flex items-start justify-between gap-4 flex-col md:flex-row"
 								>
@@ -259,7 +276,7 @@
 											aria-hidden="true"
 											>{getBuildingEmoji(project.buildingType)}</span
 										>
-										<div class="flex flex-col gap-1">
+										<div class="flex flex-col gap-1 flex-1">
 											<h4
 												class="text-base font-semibold text-surface-900 dark:text-surface-100 m-0"
 											>
@@ -272,13 +289,35 @@
 											</p>
 										</div>
 									</div>
-									<div
-										class="flex flex-col items-end gap-1 shrink-0 md:items-start w-full md:w-auto"
-									>
-										<span
-											class="text-sm font-medium text-surface-600 dark:text-surface-400 tabular-nums"
-											>Est: {formatTimeRemaining(project.timeRemaining)}</span
+									<div class="flex items-center gap-3">
+										<div
+											class="flex flex-col items-end gap-1 shrink-0 md:items-start"
 										>
+											<span
+												class="text-sm font-medium text-surface-600 dark:text-surface-400 tabular-nums"
+												>Est: {formatTimeRemaining(project.timeRemaining)}</span
+											>
+										</div>
+										<button
+											type="button"
+											onclick={() => handleCancelConstruction(project.id, project.buildingName)}
+											class="btn btn-sm variant-ghost-error hover:variant-filled-error"
+											aria-label="Cancel {project.buildingName} construction"
+											title="Cancel and refund resources"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												class="w-4 h-4"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											>
+												<path d="M18 6L6 18M6 6l12 12" />
+											</svg>
+										</button>
 									</div>
 								</div>
 

@@ -462,7 +462,8 @@ async function seedAccounts() {
 			logger.error(`[SEED] Error seeding account ${accountData.email}:`, error);
 			throw error;
 		}
-	} logger.info(`[SEED] Account seeding complete: ${created} created, ${updated} skipped`);
+	}
+	logger.info(`[SEED] Account seeding complete: ${created} created, ${updated} skipped`);
 
 	return { created, updated, total: accountsToSeed.length };
 }

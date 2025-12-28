@@ -28,7 +28,9 @@ export const load: PageServerLoad = async ({ locals, cookies, setHeaders }) => {
 
 		logger.debug('[GETTING STARTED] Loading servers and worlds', {
 			accountId: locals.account.id,
-			hasSessionToken: !!sessionToken
+			hasSessionToken: !!sessionToken,
+			sessionTokenPreview: sessionToken ? sessionToken.substring(0, 8) + '...' : 'MISSING',
+			accountUserAuthToken: locals.account.userAuthToken ? locals.account.userAuthToken.substring(0, 8) + '...' : 'MISSING'
 		});
 
 		// ✅ Fetch servers from EXTERNAL Express API (use native fetch)

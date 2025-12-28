@@ -5,6 +5,7 @@
  */
 
 import { BIOMES, type BiomeDefinition } from '$lib/data/biomes';
+import { logger } from '../utils/logger.js';
 
 /**
  * Find biome that matches the given precipitation and temperature
@@ -97,7 +98,7 @@ export function getBiomeNameForPreview(
 
 	// Debug logging - sample every 100th tile to avoid spam
 	if (Math.random() < 0.01) {
-		console.log('[BIOME DEBUG]', {
+		logger.debug('[BIOME DEBUG]', {
 			elevation,
 			precipitation: precipitation.toFixed(3),
 			temperature: temperature.toFixed(3),

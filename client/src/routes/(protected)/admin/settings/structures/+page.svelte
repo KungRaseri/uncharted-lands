@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Building2, Hammer, Info, ChevronRight } from 'lucide-svelte';
+	import { Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -148,7 +149,7 @@
 						<div>
 							<span class="text-surface-600 dark:text-surface-400">Production:</span>
 							<span class="font-mono text-xs ml-2">
-								{formatResources(structure.baseProduction as Record<string, number | undefined>)}</span
+								{formatResources(structure.baseProduction as any)}</span
 							>
 						</div>
 					{/if}
@@ -175,7 +176,7 @@
 					<div>
 						<span class="text-surface-600 dark:text-surface-400">Cost:</span>
 						<span class="font-mono text-xs ml-2">
-							{formatResources((structure.baseCost || structure.costs) as Record<string, number | undefined>)}
+					{formatResources((structure.baseCost || structure.costs) as any)}
 						</span>
 					</div>
 				</div>
@@ -195,39 +196,36 @@
 </div>
 
 <!-- Structure Detail Modal -->
-{#if showDetailModal && selectedStructure}
-	<div
-		class="modal-backdrop"
-		onclick={handleBackdropClick}
-		onkeydown={handleBackdropKeydown}
-		role="presentation"
-		tabindex="-1"
-	></div>
-	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-2xl shadow-xl">
-		<header class="mb-6">
-			<div class="flex items-center gap-3 mb-2">
-				<div
-					class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center"
-				>
-					{#if selectedStructure.category === 'EXTRACTOR'}
-						<Hammer size={24} class="text-primary-500" />
-					{:else}
-						<Building2 size={24} class="text-primary-500" />
-					{/if}
-				</div>
-				<div>
-					<h3 class="text-2xl font-bold">{selectedStructure.name}</h3>
-					<span class="badge preset-tonal-primary-500 text-xs">
-						{selectedStructure.id}
-					</span>
-				</div>
-			</div>
-			<p class="text-sm text-surface-600 dark:text-surface-400">
-				{selectedStructure.description}
-			</p>
-		</header>
+{#if selectedStructure}
+	<Dialog open={showDetailModal} onOpenChange={(details) => { showDetailModal = details.open; if (!details.open) closeModal(); }}>
+		<Portal>
+			<Dialog.Backdrop class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+			<Dialog.Positioner class="fixed inset-0 z-50 flex justify-center items-center p-4">
+				<Dialog.Content class="card bg-surface-100-900 w-full max-w-2xl p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+					<header>
+						<div class="flex items-center gap-3 mb-2">
+							<div
+								class="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center"
+							>
+								{#if selectedStructure.category === 'EXTRACTOR'}
+									<Hammer size={24} class="text-primary-500" />
+								{:else}
+									<Building2 size={24} class="text-primary-500" />
+								{/if}
+							</div>
+							<div>
+								<Dialog.Title class="text-2xl font-bold">{selectedStructure.name}</Dialog.Title>
+								<span class="badge preset-tonal-primary-500 text-xs">
+									{selectedStructure.id}
+								</span>
+							</div>
+						</div>
+						<Dialog.Description class="text-sm text-surface-600 dark:text-surface-400">
+							{selectedStructure.description}
+						</Dialog.Description>
+					</header>
 
-		<div class="space-y-6">
+					<div class="space-y-6">
 			<!-- Base Stats -->
 			<div>
 				<h4 class="font-bold text-sm text-surface-600 dark:text-surface-400 uppercase mb-3">
@@ -339,39 +337,17 @@
 			</div>
 		</div>
 
-		<footer
-			class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-300 dark:border-surface-700"
-		>
-			<button
-				type="button"
-				class="btn preset-tonal-surface-500 rounded-md"
-				onclick={closeModal}
-			>
-				Close
-			</button>
-		</footer>
-	</div>
+					<footer
+						class="flex justify-end gap-2 pt-4 border-t border-surface-300 dark:border-surface-700"
+					>
+						<Dialog.CloseTrigger
+							class="btn preset-tonal-surface-500 rounded-md"
+						>
+							Close
+						</Dialog.CloseTrigger>
+					</footer>
+				</Dialog.Content>
+			</Dialog.Positioner>
+		</Portal>
+	</Dialog>
 {/if}
-
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.7);
-		z-index: 998;
-		backdrop-filter: blur(4px);
-	}
-
-	.modal {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 999;
-		max-height: 90vh;
-		overflow-y: auto;
-	}
-</style>

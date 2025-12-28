@@ -6,7 +6,13 @@
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
-import { db, accounts, profiles } from '../../db/index.js';
+import {
+	db,
+	accounts,
+	profiles,
+	settlementStorage,
+	settlementPopulation,
+} from '../../db/index.js';
 import { eq, like, desc } from 'drizzle-orm';
 import { logger } from '../../utils/logger.js';
 import { sendServerError, sendNotFoundError } from '../utils/responses.js';
@@ -246,6 +252,153 @@ router.put('/elevate-admin/:email', requireTestEnvironment, async (req, res) => 
 	} catch (error) {
 		logger.error('[TEST HELPERS] Failed to elevate user to admin', error);
 		sendServerError(res, error, 'Failed to elevate user to admin', 'ELEVATION_FAILED');
+	}
+});
+
+/**
+ * POST /api/test/set-resources
+ * Set resources for a settlement (for testing resource-dependent mechanics)
+ *
+ * Body: {
+ *   settlementId: string,
+ *   resources: { food?: number, water?: number, wood?: number, stone?: number, ore?: number }
+ * }
+ */
+router.post('/set-resources', requireTestEnvironment, async (req, res) => {
+	try {
+		const { settlementId, resources } = req.body;
+
+		if (!settlementId || typeof settlementId !== 'string') {
+			return res.status(400).json({
+				error: 'settlementId is required',
+				code: 'MISSING_SETTLEMENT_ID',
+			});
+		}
+
+		if (!resources || typeof resources !== 'object') {
+			return res.status(400).json({
+				error: 'resources object is required',
+				code: 'MISSING_RESOURCES',
+			});
+		}
+
+		logger.info(`[TEST HELPERS] Setting resources for settlement: ${settlementId}`, {
+			resources,
+		});
+
+		// Get current storage
+		const storage = await db.query.settlementStorage.findFirst({
+			where: eq(settlementStorage.settlementId, settlementId),
+		});
+
+		if (!storage) {
+			logger.warn(`[TEST HELPERS] Settlement storage not found: ${settlementId}`);
+			return sendNotFoundError(res, 'Settlement storage not found');
+		}
+
+		// Update resources (only provided values)
+		const updates: Record<string, number> = {};
+		if (resources.food !== undefined) updates.food = resources.food;
+		if (resources.water !== undefined) updates.water = resources.water;
+		if (resources.wood !== undefined) updates.wood = resources.wood;
+		if (resources.stone !== undefined) updates.stone = resources.stone;
+		if (resources.ore !== undefined) updates.ore = resources.ore;
+
+		await db
+			.update(settlementStorage)
+			.set(updates)
+			.where(eq(settlementStorage.settlementId, settlementId));
+
+		// Get updated storage
+		const updatedStorage = await db.query.settlementStorage.findFirst({
+			where: eq(settlementStorage.settlementId, settlementId),
+		});
+
+		logger.info(`[TEST HELPERS] Resources updated for settlement: ${settlementId}`);
+
+		res.json({
+			success: true,
+			message: 'Resources updated successfully',
+			settlementId,
+			resources: updatedStorage,
+		});
+	} catch (error) {
+		logger.error('[TEST HELPERS] Failed to set resources', error);
+		sendServerError(res, error, 'Failed to set resources', 'SET_RESOURCES_FAILED');
+	}
+});
+
+/**
+ * POST /api/test/set-population
+ * Set population data for a settlement (for testing population mechanics)
+ *
+ * Body: {
+ *   settlementId: string,
+ *   population?: number,
+ *   happiness?: number
+ * }
+ */
+router.post('/set-population', requireTestEnvironment, async (req, res) => {
+	try {
+		const { settlementId, population, happiness } = req.body;
+
+		if (!settlementId || typeof settlementId !== 'string') {
+			return res.status(400).json({
+				error: 'settlementId is required',
+				code: 'MISSING_SETTLEMENT_ID',
+			});
+		}
+
+		if (population === undefined && happiness === undefined) {
+			return res.status(400).json({
+				error: 'At least one of population or happiness must be provided',
+				code: 'MISSING_PARAMETERS',
+			});
+		}
+
+		logger.info(`[TEST HELPERS] Setting population data for settlement: ${settlementId}`, {
+			population,
+			happiness,
+		});
+
+		// Get current population data
+		const populationData = await db.query.settlementPopulation.findFirst({
+			where: eq(settlementPopulation.settlementId, settlementId),
+		});
+
+		if (!populationData) {
+			logger.warn(`[TEST HELPERS] Settlement population not found: ${settlementId}`);
+			return sendNotFoundError(res, 'Settlement population not found');
+		}
+
+		// Update population data (only provided values)
+		const updates: Record<string, number | Date> = {
+			updatedAt: new Date(),
+		};
+		if (population !== undefined) updates.currentPopulation = population;
+		if (happiness !== undefined) updates.happiness = happiness;
+
+		await db
+			.update(settlementPopulation)
+			.set(updates)
+			.where(eq(settlementPopulation.settlementId, settlementId));
+
+		// Get updated population data
+		const updatedPopulation = await db.query.settlementPopulation.findFirst({
+			where: eq(settlementPopulation.settlementId, settlementId),
+		});
+
+		logger.info(`[TEST HELPERS] Population data updated for settlement: ${settlementId}`);
+
+		res.json({
+			success: true,
+			message: 'Population data updated successfully',
+			settlementId,
+			population: updatedPopulation,
+		});
+	} catch (error) {
+		logger.error('[TEST HELPERS] Failed to set population', error);
+		sendServerError(res, error, 'Failed to set population', 'SET_POPULATION_FAILED');
 	}
 });
 

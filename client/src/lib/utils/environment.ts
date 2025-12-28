@@ -5,6 +5,8 @@
  * Use these instead of directly checking import.meta.env.
  */
 
+import { logger } from './logger';
+
 /**
  * Current environment mode
  */
@@ -88,7 +90,7 @@ export function logEnvironmentInfo() {
 		exposeSocket: exposeSocketForTesting
 	};
 
-	console.log('[ENVIRONMENT] Configuration:', info);
+	logger.debug('[ENVIRONMENT] Configuration:', info);
 
 	return info;
 }

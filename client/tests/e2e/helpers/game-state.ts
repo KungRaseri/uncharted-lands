@@ -47,7 +47,7 @@ export async function waitForSocketConnection(
 	console.log('[E2E] Waiting for Socket.IO connection...', { timeoutMs, required });
 
 	const startTime = Date.now();
-	const pollInterval = 100; // Check every 100ms
+	const pollInterval = 500; // Check every 500ms
 
 	while (Date.now() - startTime < timeoutMs) {
 		const debugInfo = await page.evaluate(() => {
@@ -464,9 +464,8 @@ export async function waitForSocketEvent(
 				socket.once(event, (data: unknown) => {
 					clearTimeout(timer);
 					console.log('[E2E DEBUG] Target event received:', event, 'Data:', data);
-					// Resolve with a serializable value instead of the raw data
-					// (Socket.IO event data may contain JSHandles that can't cross page.evaluate boundary)
-					resolve(true);
+					// Return the actual event data
+					resolve(data);
 				});
 			});
 		},
@@ -481,10 +480,89 @@ export async function waitForSocketEvent(
  */
 export async function assertGameLoopRunning(page: Page, timeoutMs: number = 30000): Promise<void> {
 	try {
-		// Use resource-preview which fires frequently (~60 times/sec) instead of resource-update
-		// which fires on production intervals (10s in E2E, 3600s in production)
-		await waitForSocketEvent(page, 'resource-preview', timeoutMs);
+		// Wait for either resource-update or resource-preview events
+		// resource-update fires on production intervals (10s in E2E, 3600s in production)
+		// resource-preview fires frequently (every 1s) if client is listening for it
+		await waitForSocketEvent(page, 'resource-update', timeoutMs);
 	} catch {
-		throw new Error('Game loop not running - no resource-preview events received');
+		throw new Error('Game loop not running - no resource events received');
 	}
+}
+
+/**
+ * Get resource production rate from UI
+ * @param page - Playwright page object
+ * @param resource - Resource type to check
+ * @returns Production rate string (e.g., "+45/hr") or null if not found
+ */
+export async function getResourceProductionRate(
+	page: Page,
+	resource: 'food' | 'water' | 'wood' | 'stone' | 'ore'
+): Promise<string | null> {
+	const selector = `[data-testid="${resource}-production-rate"]`;
+	const element = page.locator(selector);
+
+	try {
+		await element.waitFor({ state: 'visible', timeout: 5000 });
+		return await element.textContent();
+	} catch {
+		console.warn(`[E2E] Production rate not found for ${resource}`);
+		return null;
+	}
+}
+
+/**
+ * Get resource consumption rate from UI
+ * @param page - Playwright page object
+ * @param resource - Resource type to check
+ * @returns Consumption rate string (e.g., "-10/hr") or null if not found
+ */
+export async function getResourceConsumptionRate(
+	page: Page,
+	resource: 'food' | 'water' | 'wood' | 'stone' | 'ore'
+): Promise<string | null> {
+	const selector = `[data-testid="${resource}-consumption-rate"]`;
+	const element = page.locator(selector);
+
+	try {
+		await element.waitFor({ state: 'visible', timeout: 5000 });
+		return await element.textContent();
+	} catch {
+		console.warn(`[E2E] Consumption rate not found for ${resource}`);
+		return null;
+	}
+}
+/**
+ * Wait for a structure to appear in the buildings/extractors list
+ * @param page - Playwright page object
+ * @param structureType - The structure type to wait for (e.g., 'STORAGE', 'FARM')
+ * @param timeoutMs - Maximum time to wait in milliseconds (default: 120000 = 2 minutes)
+ * @returns True if structure appears, false if timeout
+ */
+export async function waitForStructureCompletion(
+	page: Page,
+	structureType: string,
+	timeoutMs = 120000
+): Promise<boolean> {
+	const startTime = Date.now();
+	
+	console.log(`[E2E Helper] Waiting for structure completion: ${structureType} (timeout: ${timeoutMs}ms)`);
+	
+	// Poll DOM until structure appears
+	// Check frequently (every 500ms) since construction-complete event triggers fetchStructures() which updates DOM
+	while (Date.now() - startTime < timeoutMs) {
+		const count = await countStructures(page, structureType);
+		
+		if (count > 0) {
+			const elapsed = Date.now() - startTime;
+			console.log(`[E2E Helper] Structure ${structureType} completed in ${elapsed}ms`);
+			return true;
+		}
+		
+		// Check every 500ms for faster detection
+		await page.waitForTimeout(500);
+	}
+	
+	console.warn(`[E2E Helper] Structure ${structureType} did not complete within ${timeoutMs}ms`);
+	return false;
 }

@@ -1,7 +1,7 @@
 # Development Dockerfile for Client (E2E Testing)
 # Uses Vite dev server for hot reload during testing
 
-FROM node:22-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 

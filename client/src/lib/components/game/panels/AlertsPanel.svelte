@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { logger } from '$lib/utils/logger';
 	/**
 	 * Alerts Panel Component
 	 * Horizontal ticker/banner displaying urgent notifications and warnings
@@ -79,7 +80,7 @@
 	// Handle alert click
 	function handleAlertClick(alert: Alert) {
 		// TODO: Navigate to alert details or map location
-		console.log('Alert clicked:', alert.id);
+		logger.debug('Alert clicked:', { alertId: alert.id });
 		// Future: Could navigate to /settlements/[id]#alert-[alertId]
 		// Or open a modal with full details
 	}

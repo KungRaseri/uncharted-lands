@@ -74,7 +74,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 				if (playerSettlements && playerSettlements.length > 0) {
 					// Get the world and server from the first settlement
 					const settlement = playerSettlements[0];
-					const worldId = settlement.tile?.region?.worldId;
+					const worldId = settlement.tile?.region?.world?.id; // FIXED: Changed from worldId to world?.id
 					const serverId = settlement.tile?.region?.world?.serverId;
 
 					logger.debug('[GAME LAYOUT] First settlement data', {

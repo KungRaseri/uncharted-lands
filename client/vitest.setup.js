@@ -16,6 +16,22 @@ try {
 	}
 }
 
+// Polyfill Element.animate for tests (used by Svelte transitions)
+if (typeof Element !== 'undefined' && !Element.prototype.animate) {
+	Element.prototype.animate = function () {
+		return {
+			cancel: () => {},
+			finish: () => {},
+			play: () => {},
+			pause: () => {},
+			reverse: () => {},
+			playbackRate: 1,
+			playState: 'finished',
+			finished: Promise.resolve()
+		};
+	};
+}
+
 // Cleanup after each test
 afterEach(() => {
 	cleanup();

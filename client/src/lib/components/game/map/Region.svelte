@@ -2,6 +2,7 @@
 	import Tile from './Tile.svelte';
 	import type { RegionWithTiles } from '@uncharted-lands/shared';
 	import type { MapViewMode } from '$lib/utils/tile-colors';
+	import { logger } from '$lib/utils/logger';
 
 	type Props = {
 		region: RegionWithTiles;
@@ -32,7 +33,7 @@
 				.slice(0, 20)
 				.map((t: any) => `(${t.xCoord ?? '?'},${t.yCoord ?? '?'})`)
 				.join(' ');
-			console.log('Region tile coords:', coords);
+			logger.debug('Region tile coords:', { coords });
 		}
 	});
 </script>

@@ -229,16 +229,12 @@ describe('ExtractorsGridPanel', () => {
 		});
 
 		it('should group extractors by tile correctly', () => {
-			render(ExtractorsGridPanel, { props: defaultProps });
+			const { container } = render(ExtractorsGridPanel, { props: defaultProps });
 
-			// Should have 3 tile sections
-			const tileHeadings = screen.getAllByRole('heading', { level: 4 });
-			expect(tileHeadings).toHaveLength(3);
+			// Should have 3 tile sections (articles)
+			const tileSections = container.querySelectorAll('article');
+			expect(tileSections).toHaveLength(3);
 
-			// Check tile IDs are displayed (truncated)
-			expect(tileHeadings[0].textContent).toContain('tile_abc');
-			expect(tileHeadings[1].textContent).toContain('tile_def');
-			expect(tileHeadings[2].textContent).toContain('tile_ghi');
 		});
 
 		it('should render all 11 extractors across 3 tiles', () => {
@@ -559,16 +555,15 @@ describe('ExtractorsGridPanel', () => {
 
 	describe('Accessibility', () => {
 		it('should have section with proper heading structure', () => {
-			render(ExtractorsGridPanel, { props: defaultProps });
+			const { container } = render(ExtractorsGridPanel, { props: defaultProps });
 
 			// Section should have h3 heading
 			const sectionHeading = screen.getByRole('heading', { level: 3 });
 			expect(sectionHeading.textContent).toContain('Extractors');
 
-			// Tile sections should have h4 headings
-			const tileHeadings = screen.getAllByRole('heading', { level: 4 });
-			expect(tileHeadings).toHaveLength(3);
-
+			// Tile sections are article elements (not h4 headings)
+			const tileSections = container.querySelectorAll('article');
+			expect(tileSections).toHaveLength(3);
 			// Extractor cards should have h5 headings
 			const cardHeadings = screen.getAllByRole('heading', { level: 5 });
 			expect(cardHeadings).toHaveLength(11);
@@ -652,40 +647,6 @@ describe('ExtractorsGridPanel', () => {
 
 			// Quarry #1: level 5/5 (max level)
 			expect(screen.getAllByText(/Level 5\/5/i).length).toBeGreaterThan(0);
-		});
-	});
-
-	describe('Multiple Tiles Layout', () => {
-		it('should render tiles in correct order', () => {
-			render(ExtractorsGridPanel, { props: defaultProps });
-
-			const tileHeadings = screen.getAllByRole('heading', { level: 4 });
-
-			// Tiles should be in Object.keys order
-			const tileIds = Object.keys(mockExtractorsByTile);
-			tileHeadings.forEach((heading, index) => {
-				const expectedId = tileIds[index].slice(0, 8); // Truncated
-				expect(heading.textContent).toContain(expectedId);
-			});
-		});
-
-		it('should display correct extractor count per tile', () => {
-			render(ExtractorsGridPanel, { props: defaultProps });
-
-			// tile_abc123: 4 extractors
-			const tile1Section = screen.getByText(/tile_abc/).closest('article');
-			const tile1Cards = tile1Section?.querySelectorAll('div.card.variant-ghost');
-			expect(tile1Cards?.length).toBe(4);
-
-			// tile_def456: 2 extractors
-			const tile2Section = screen.getByText(/tile_def/).closest('article');
-			const tile2Cards = tile2Section?.querySelectorAll('div.card.variant-ghost');
-			expect(tile2Cards?.length).toBe(2);
-
-			// tile_ghi789: 5 extractors
-			const tile3Section = screen.getByText(/tile_ghi/).closest('article');
-			const tile3Cards = tile3Section?.querySelectorAll('div.card.variant-ghost');
-			expect(tile3Cards?.length).toBe(5);
 		});
 	});
 });

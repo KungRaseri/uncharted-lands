@@ -218,6 +218,65 @@ describe('Structures API Routes', () => {
 			await cleanupTestChain(structureChain);
 			await cleanupTestChain(otherChain);
 		});
+
+		it('should recalculate area after demolition', async () => {
+			// Get structure IDs
+			const townHallStructure = await db.query.structures.findFirst({
+				where: (structure, { eq }) => eq(structure.name, 'Town Hall'),
+			});
+			const houseStructure = await db.query.structures.findFirst({
+				where: (structure, { eq }) => eq(structure.name, 'House'),
+			});
+			expect(townHallStructure).toBeDefined();
+			expect(houseStructure).toBeDefined();
+
+			// Create Town Hall (100 area)
+			await db.insert(settlementStructures).values({
+				id: crypto.randomUUID(),
+				settlementId: testChain!.settlement.id,
+				structureId: townHallStructure!.id,
+				level: 1,
+				health: 100,
+			});
+
+			// Create 3 Houses (3 × 50 = 150 area)
+			const houseIds: string[] = [];
+			for (let i = 0; i < 3; i++) {
+				const id = crypto.randomUUID();
+				houseIds.push(id);
+				await db.insert(settlementStructures).values({
+					id,
+					settlementId: testChain!.settlement.id,
+					structureId: houseStructure!.id,
+					level: 1,
+					health: 100,
+				});
+			}
+
+			// Verify initial area: 100 + 150 = 250
+			let structures = await db.query.settlementStructures.findMany({
+				where: (structure, { eq }) => eq(structure.settlementId, testChain!.settlement.id),
+				with: { structure: true },
+			});
+			let totalArea = structures.reduce((sum, s) => sum + (s.structure?.areaCost ?? 0), 0);
+			expect(totalArea).toBe(250);
+
+			// Delete one House
+			const response = await request(app)
+				.delete(`/api/structures/${houseIds[0]}`)
+				.set('Cookie', `session=${testChain!.account.userAuthToken}`)
+				.expect(200);
+
+			expect(response.body.success).toBe(true);
+
+			// Verify area recalculated: 100 + 100 = 200
+			structures = await db.query.settlementStructures.findMany({
+				where: (structure, { eq }) => eq(structure.settlementId, testChain!.settlement.id),
+				with: { structure: true },
+			});
+			totalArea = structures.reduce((sum, s) => sum + (s.structure?.areaCost ?? 0), 0);
+			expect(totalArea).toBe(200);
+		});
 	});
 
 	describe('POST /api/structures/create', () => {
@@ -346,6 +405,151 @@ describe('Structures API Routes', () => {
 			expect(response.body.code).toBe('NOT_SETTLEMENT_OWNER');
 
 			await cleanupTestChain(otherChain);
+		});
+
+		it('should reject creation with insufficient area', async () => {
+			// Get structure IDs
+			const townHallStructure = await db.query.structures.findFirst({
+				where: (structure, { eq }) => eq(structure.name, 'Town Hall'),
+			});
+			const houseStructure = await db.query.structures.findFirst({
+				where: (structure, { eq }) => eq(structure.name, 'House'),
+			});
+			const workshopStructure = await db.query.structures.findFirst({
+				where: (structure, { eq }) => eq(structure.name, 'Workshop'),
+			});
+			expect(townHallStructure).toBeDefined();
+			expect(houseStructure).toBeDefined();
+			expect(workshopStructure).toBeDefined();
+
+			// Create Town Hall (100 area, TH level 1)
+			await db.insert(settlementStructures).values({
+				id: crypto.randomUUID(),
+				settlementId: testChain!.settlement.id,
+				structureId: townHallStructure!.id,
+				level: 1,
+				health: 100,
+			});
+
+			// Create 10 Houses (10 × 50 = 500 area)
+			// Total: 100 + 500 = 600 area used out of 600 capacity (TH level 1)
+			for (let i = 0; i < 10; i++) {
+				await db.insert(settlementStructures).values({
+					id: crypto.randomUUID(),
+					settlementId: testChain!.settlement.id,
+					structureId: houseStructure!.id,
+					level: 1,
+					health: 100,
+				});
+			}
+
+			// Try to create Workshop (75 area) - should fail
+			const response = await request(app)
+				.post('/api/structures/create')
+				.set('Cookie', `session=${testChain!.account.userAuthToken}`)
+				.send({
+					settlementId: testChain!.settlement.id,
+					structureId: workshopStructure!.id,
+					tileId: testChain!.settlement.tileId,
+					slotPosition: 0,
+				})
+				.expect(400);
+
+			expect(response.body.success).toBe(false);
+			expect(response.body.code).toBe('INSUFFICIENT_AREA');
+		});
+
+		it('should reject second unique building', async () => {
+			// Get Town Hall structure
+			const townHallStructure = await db.query.structures.findFirst({
+				where: (structure, { eq }) => eq(structure.name, 'Town Hall'),
+			});
+			expect(townHallStructure).toBeDefined();
+
+			// Create first Town Hall
+			await db.insert(settlementStructures).values({
+				id: crypto.randomUUID(),
+				settlementId: testChain!.settlement.id,
+				structureId: townHallStructure!.id,
+				level: 1,
+				health: 100,
+			});
+
+			// Try to create second Town Hall
+			const response = await request(app)
+				.post('/api/structures/create')
+				.set('Cookie', `session=${testChain!.account.userAuthToken}`)
+				.send({
+					settlementId: testChain!.settlement.id,
+					structureId: townHallStructure!.id,
+					tileId: testChain!.settlement.tileId,
+					slotPosition: 0,
+				})
+				.expect(400);
+
+			expect(response.body.success).toBe(false);
+			expect(response.body.code).toBe('UNIQUE_CONSTRAINT_VIOLATED');
+		});
+
+		it('should successfully create and update area used', async () => {
+			// Get structure IDs
+			const townHallStructure = await db.query.structures.findFirst({
+				where: (structure, { eq }) => eq(structure.name, 'Town Hall'),
+			});
+			const houseStructure = await db.query.structures.findFirst({
+				where: (structure, { eq }) => eq(structure.name, 'House'),
+			});
+			expect(townHallStructure).toBeDefined();
+			expect(houseStructure).toBeDefined();
+
+			// Create Town Hall (100 area)
+			await db.insert(settlementStructures).values({
+				id: crypto.randomUUID(),
+				settlementId: testChain!.settlement.id,
+				structureId: townHallStructure!.id,
+				level: 1,
+				health: 100,
+			});
+
+			// Create 4 Houses (4 × 50 = 200 area)
+			// Total: 300 area used, 300 available (TH level 1 = 600 capacity)
+			for (let i = 0; i < 4; i++) {
+				await db.insert(settlementStructures).values({
+					id: crypto.randomUUID(),
+					settlementId: testChain!.settlement.id,
+					structureId: houseStructure!.id,
+					level: 1,
+					health: 100,
+				});
+			}
+
+			// Create one more House
+			const response = await request(app)
+				.post('/api/structures/create')
+				.set('Cookie', `session=${testChain!.account.userAuthToken}`)
+				.send({
+					settlementId: testChain!.settlement.id,
+					structureId: houseStructure!.id,
+					tileId: testChain!.settlement.tileId,
+					slotPosition: 0,
+				})
+				.expect(201);
+
+			expect(response.body.success).toBe(true);
+			expect(response.body.structure).toBeDefined();
+
+			// Verify area was calculated correctly
+			// Should now have: TH (100) + 5 Houses (250) = 350 area used
+			const structures = await db.query.settlementStructures.findMany({
+				where: (structure, { eq }) => eq(structure.settlementId, testChain!.settlement.id),
+				with: { structure: true },
+			});
+
+			const totalArea = structures.reduce((sum, s) => {
+				return sum + (s.structure?.areaCost ?? 0);
+			}, 0);
+
+			expect(totalArea).toBe(350);
 		});
 	});
 

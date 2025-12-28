@@ -18,6 +18,7 @@
  */
 
 import type { TileType } from '@uncharted-lands/shared';
+import { logger } from '../utils/logger.js';
 
 /**
  * Map visualization mode
@@ -242,7 +243,7 @@ export function getTileColor(elevation: number, biomeName: string, type: TileTyp
 
 	// Priority 5: Fallback to elevation-based coloring for unknown biomes
 	// Debug logging for unknown biomes - remove after verification
-	console.warn('[TILE COLOR] Unknown biome, using fallback:', {
+	logger.warn('[TILE COLOR] Unknown biome, using fallback:', {
 		biomeName,
 		elevation,
 		type,

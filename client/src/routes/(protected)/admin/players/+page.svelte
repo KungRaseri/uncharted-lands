@@ -13,6 +13,7 @@
 		Trash2,
 		UserCog
 	} from 'lucide-svelte';
+	import { Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -331,256 +332,227 @@
 </div>
 
 <!-- Edit Role Modal -->
-{#if showEditModal && selectedAccount}
-	<div
-		class="modal-backdrop"
-		onclick={handleBackdropClick}
-		onkeydown={handleBackdropKeydown}
-		role="presentation"
-		tabindex="-1"
-	></div>
-	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-md shadow-xl">
-		<header class="mb-4">
-			<h3 class="text-2xl font-bold flex items-center gap-2">
-				<UserCog size={24} />
-				Edit Player Role
-			</h3>
-		</header>
+{#if selectedAccount}
+	<Dialog open={showEditModal} onOpenChange={(details) => { showEditModal = details.open; if (!details.open) closeModals(); }}>
+		<Portal>
+			<Dialog.Backdrop class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+			<Dialog.Positioner class="fixed inset-0 z-50 flex justify-center items-center p-4">
+				<Dialog.Content class="card bg-surface-100-900 w-full max-w-md p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+					<header>
+						<Dialog.Title class="text-2xl font-bold flex items-center gap-2">
+							<UserCog size={24} />
+							Edit Player Role
+						</Dialog.Title>
+					</header>
 
-		<form
-			method="POST"
-			action="?/updateRole"
-			use:enhance={() => {
-				isSubmitting = true;
-				return async ({ update, result }) => {
-					await update();
-					isSubmitting = false;
-					if (result.type === 'success') {
-						closeModals();
-					}
-				};
-			}}
-		>
-			<input type="hidden" name="accountId" value={selectedAccount.id} />
-
-			<div class="space-y-4">
-				<div>
-					<p class="label mb-2">
-						<span class="font-medium">Player</span>
-					</p>
-					<div class="card preset-tonal-surface-500 p-3">
-						<p class="font-semibold">
-							{selectedAccount.profile?.username || 'No Username'}
-						</p>
-						<p class="text-sm text-surface-600 dark:text-surface-400">
-							{selectedAccount.email}
-						</p>
-					</div>
-				</div>
-
-				<div>
-					<label for="role-select" class="label mb-2">
-						<span class="font-medium">Role</span>
-					</label>
-					<select
-						id="role-select"
-						name="role"
-						bind:value={editRole}
-						class="select"
-						required
+					<form
+						method="POST"
+						action="?/updateRole"
+						use:enhance={() => {
+							isSubmitting = true;
+							return async ({ update, result }) => {
+								await update();
+								isSubmitting = false;
+								if (result.type === 'success') {
+									closeModals();
+								}
+							};
+						}}
 					>
-						<option value="MEMBER">Member</option>
-						<option value="SUPPORT">Support</option>
-						<option value="ADMINISTRATOR">Administrator</option>
-					</select>
-					<p class="text-sm text-surface-600 dark:text-surface-400 mt-1">
-						Current role: <span class="font-semibold">{selectedAccount.role}</span>
-					</p>
-				</div>
-			</div>
+						<input type="hidden" name="accountId" value={selectedAccount.id} />
 
-			<footer class="flex justify-end gap-2 mt-6">
-				<button
-					type="button"
-					class="btn preset-tonal-surface-500 rounded-md"
-					onclick={closeModals}
-					disabled={isSubmitting}
-				>
-					Cancel
-				</button>
-				<button
-					type="submit"
-					class="btn preset-filled-primary-500 rounded-md"
-					disabled={isSubmitting}
-				>
-					{isSubmitting ? 'Saving...' : 'Save Changes'}
-				</button>
-			</footer>
-		</form>
-	</div>
+						<div class="space-y-4">
+							<div>
+								<p class="label mb-2">
+									<span class="font-medium">Player</span>
+								</p>
+								<div class="card preset-tonal-surface-500 p-3">
+									<p class="font-semibold">
+										{selectedAccount.profile?.username || 'No Username'}
+									</p>
+									<p class="text-sm text-surface-600 dark:text-surface-400">
+										{selectedAccount.email}
+									</p>
+								</div>
+							</div>
+
+							<div>
+								<label for="role-select" class="label mb-2">
+									<span class="font-medium">Role</span>
+								</label>
+								<select
+									id="role-select"
+									name="role"
+									bind:value={editRole}
+									class="select"
+									required
+								>
+									<option value="MEMBER">Member</option>
+									<option value="SUPPORT">Support</option>
+									<option value="ADMINISTRATOR">Administrator</option>
+								</select>
+								<p class="text-sm text-surface-600 dark:text-surface-400 mt-1">
+									Current role: <span class="font-semibold">{selectedAccount.role}</span>
+								</p>
+							</div>
+						</div>
+
+						<footer class="flex justify-end gap-2 mt-6">
+							<Dialog.CloseTrigger
+								class="btn preset-tonal-surface-500 rounded-md"
+								disabled={isSubmitting}
+							>
+								Cancel
+							</Dialog.CloseTrigger>
+							<button
+								type="submit"
+								class="btn preset-filled-primary-500 rounded-md"
+								disabled={isSubmitting}
+							>
+								{isSubmitting ? 'Saving...' : 'Save Changes'}
+							</button>
+						</footer>
+					</form>
+				</Dialog.Content>
+			</Dialog.Positioner>
+		</Portal>
+	</Dialog>
 {/if}
 
 <!-- Ban Player Modal -->
-{#if showBanModal && selectedAccount}
-	<div
-		class="modal-backdrop"
-		onclick={handleBackdropClick}
-		onkeydown={handleBackdropKeydown}
-		role="presentation"
-		tabindex="-1"
-	></div>
-	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-md shadow-xl">
-		<header class="mb-4">
-			<h3 class="text-2xl font-bold flex items-center gap-2 text-warning-500">
-				<Ban size={24} />
-				Ban Player
-			</h3>
-		</header>
+{#if selectedAccount}
+	<Dialog open={showBanModal} onOpenChange={(details) => { showBanModal = details.open; if (!details.open) closeModals(); }}>
+		<Portal>
+			<Dialog.Backdrop class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+			<Dialog.Positioner class="fixed inset-0 z-50 flex justify-center items-center p-4">
+				<Dialog.Content class="card bg-surface-100-900 w-full max-w-md p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+					<header>
+						<Dialog.Title class="text-2xl font-bold flex items-center gap-2 text-warning-500">
+							<Ban size={24} />
+							Ban Player
+						</Dialog.Title>
+					</header>
 
-		<div class="space-y-4">
-			<div class="card preset-filled-warning-500/10 p-4 border-2 border-warning-500">
-				<p class="font-medium text-warning-700 dark:text-warning-300 mb-2">
-					This feature is coming soon!
-				</p>
-				<p class="text-sm text-surface-700 dark:text-surface-300">
-					Player banning functionality will be implemented in a future update. This will
-					allow you to temporarily or permanently restrict player access.
-				</p>
-			</div>
+					<div class="space-y-4">
+						<div class="card preset-filled-warning-500/10 p-4 border-2 border-warning-500">
+							<p class="font-medium text-warning-700 dark:text-warning-300 mb-2">
+								This feature is coming soon!
+							</p>
+							<p class="text-sm text-surface-700 dark:text-surface-300">
+								Player banning functionality will be implemented in a future update. This will
+								allow you to temporarily or permanently restrict player access.
+							</p>
+						</div>
 
-			<div class="card preset-tonal-surface-500 p-3">
-				<p class="font-semibold">{selectedAccount.profile?.username || 'No Username'}</p>
-				<p class="text-sm text-surface-600 dark:text-surface-400">
-					{selectedAccount.email}
-				</p>
-			</div>
-		</div>
+						<div class="card preset-tonal-surface-500 p-3">
+							<p class="font-semibold">{selectedAccount.profile?.username || 'No Username'}</p>
+							<p class="text-sm text-surface-600 dark:text-surface-400">
+								{selectedAccount.email}
+							</p>
+						</div>
+					</div>
 
-		<footer class="flex justify-end gap-2 mt-6">
-			<button
-				type="button"
-				class="btn preset-tonal-surface-500 rounded-md"
-				onclick={closeModals}
-			>
-				Close
-			</button>
-		</footer>
-	</div>
+					<footer class="flex justify-end gap-2">
+						<Dialog.CloseTrigger
+							class="btn preset-tonal-surface-500 rounded-md"
+						>
+							Close
+						</Dialog.CloseTrigger>
+					</footer>
+				</Dialog.Content>
+			</Dialog.Positioner>
+		</Portal>
+	</Dialog>
 {/if}
 
 <!-- Delete Account Modal -->
-{#if showDeleteModal && selectedAccount}
-	<div
-		class="modal-backdrop"
-		onclick={handleBackdropClick}
-		onkeydown={handleBackdropKeydown}
-		role="presentation"
-		tabindex="-1"
-	></div>
-	<div class="modal card preset-filled-surface-100-900 p-6 w-full max-w-md shadow-xl">
-		<header class="mb-4">
-			<h3 class="text-2xl font-bold flex items-center gap-2 text-error-500">
-				<Trash2 size={24} />
-				Delete Account
-			</h3>
-		</header>
+{#if selectedAccount}
+	<Dialog open={showDeleteModal} onOpenChange={(details) => { showDeleteModal = details.open; if (!details.open) closeModals(); }}>
+		<Portal>
+			<Dialog.Backdrop class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+			<Dialog.Positioner class="fixed inset-0 z-50 flex justify-center items-center p-4">
+				<Dialog.Content class="card bg-surface-100-900 w-full max-w-md p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+					<header>
+						<Dialog.Title class="text-2xl font-bold flex items-center gap-2 text-error-500">
+							<Trash2 size={24} />
+							Delete Account
+						</Dialog.Title>
+					</header>
 
-		<form
-			method="POST"
-			action="?/deleteAccount"
-			use:enhance={() => {
-				isSubmitting = true;
-				return async ({ update, result }) => {
-					await update();
-					isSubmitting = false;
-					if (result.type === 'success') {
-						closeModals();
-					}
-				};
-			}}
-		>
-			<input type="hidden" name="accountId" value={selectedAccount.id} />
+					<form
+						method="POST"
+						action="?/deleteAccount"
+						use:enhance={() => {
+							isSubmitting = true;
+							return async ({ update, result }) => {
+								await update();
+								isSubmitting = false;
+								if (result.type === 'success') {
+									closeModals();
+								}
+							};
+						}}
+					>
+						<input type="hidden" name="accountId" value={selectedAccount.id} />
 
-			<div class="space-y-4">
-				<div class="card preset-filled-error-500/10 p-4 border-2 border-error-500">
-					<p class="font-medium text-error-700 dark:text-error-300 mb-2">
-						⚠️ This action cannot be undone!
-					</p>
-					<p class="text-sm text-surface-700 dark:text-surface-300">
-						Deleting this account will permanently remove all associated data including
-						profile, settlements, and game progress.
-					</p>
-				</div>
+						<div class="space-y-4">
+							<div class="card preset-filled-error-500/10 p-4 border-2 border-error-500">
+								<p class="font-medium text-error-700 dark:text-error-300 mb-2">
+									⚠️ This action cannot be undone!
+								</p>
+								<p class="text-sm text-surface-700 dark:text-surface-300">
+									Deleting this account will permanently remove all associated data including
+									profile, settlements, and game progress.
+								</p>
+							</div>
 
-				<div class="card preset-tonal-surface-500 p-3">
-					<p class="font-semibold">
-						{selectedAccount.profile?.username || 'No Username'}
-					</p>
-					<p class="text-sm text-surface-600 dark:text-surface-400">
-						{selectedAccount.email}
-					</p>
-					<p class="text-xs text-surface-500 dark:text-surface-500 mt-1 font-mono">
-						ID: {selectedAccount.id}
-					</p>
-				</div>
+							<div class="card preset-tonal-surface-500 p-3">
+								<p class="font-semibold">
+									{selectedAccount.profile?.username || 'No Username'}
+								</p>
+								<p class="text-sm text-surface-600 dark:text-surface-400">
+									{selectedAccount.email}
+								</p>
+								<p class="text-xs text-surface-500 dark:text-surface-500 mt-1 font-mono">
+									ID: {selectedAccount.id}
+								</p>
+							</div>
 
-				<div>
-					<label for="delete-confirm" class="label mb-2">
-						<span class="font-medium">Type DELETE to confirm</span>
-					</label>
-					<input
-						id="delete-confirm"
-						type="text"
-						name="confirmation"
-						class="input"
-						placeholder="DELETE"
-						pattern="DELETE"
-						required
-						autocomplete="off"
-					/>
-				</div>
-			</div>
+							<div>
+								<label for="delete-confirm" class="label mb-2">
+									<span class="font-medium">Type DELETE to confirm</span>
+								</label>
+								<input
+									id="delete-confirm"
+									type="text"
+									name="confirmation"
+									class="input"
+									placeholder="DELETE"
+									pattern="DELETE"
+									required
+									autocomplete="off"
+								/>
+							</div>
+						</div>
 
-			<footer class="flex justify-end gap-2 mt-6">
-				<button
-					type="button"
-					class="btn preset-tonal-surface-500 rounded-md"
-					onclick={closeModals}
-					disabled={isSubmitting}
-				>
-					Cancel
-				</button>
-				<button
-					type="submit"
-					class="btn preset-filled-error-500 rounded-md"
-					disabled={isSubmitting}
-				>
-					{isSubmitting ? 'Deleting...' : 'Delete Account'}
-				</button>
-			</footer>
-		</form>
-	</div>
+						<footer class="flex justify-end gap-2">
+							<Dialog.CloseTrigger
+								class="btn preset-tonal-surface-500 rounded-md"
+								disabled={isSubmitting}
+							>
+								Cancel
+							</Dialog.CloseTrigger>
+							<button
+								type="submit"
+								class="btn preset-filled-error-500 rounded-md"
+								disabled={isSubmitting}
+							>
+								{isSubmitting ? 'Deleting...' : 'Delete Account'}
+							</button>
+						</footer>
+					</form>
+				</Dialog.Content>
+			</Dialog.Positioner>
+		</Portal>
+	</Dialog>
 {/if}
-
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.7);
-		z-index: 998;
-		backdrop-filter: blur(4px);
-	}
-
-	.modal {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 999;
-		max-height: 90vh;
-		overflow-y: auto;
-	}
-</style>

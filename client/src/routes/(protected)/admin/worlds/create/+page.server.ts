@@ -1,10 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { logger } from '$lib/utils/logger';
 import type { PageServerLoad, Actions } from './$types';
-import { env } from '$env/dynamic/public';
-
-// Use PUBLIC_API_URL which works in both client and server contexts
-const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001/api';
+import { SERVER_API_URL } from '$env/static/private';
 
 export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
 	if (!locals.account || locals.account.role !== 'ADMINISTRATOR') {
@@ -21,10 +18,10 @@ export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
 
 		logger.debug('[WORLD CREATE] Loading servers', {
 			hasSessionToken: !!sessionToken,
-			apiUrl: API_URL
+			apiUrl: SERVER_API_URL
 		});
 
-		const response = await fetch(`${API_URL}/servers`, {
+		const response = await fetch(`${SERVER_API_URL}/servers`, {
 			headers: {
 				Cookie: `session=${sessionToken}`
 			},
@@ -60,7 +57,7 @@ export const load: PageServerLoad = async ({ cookies, locals, setHeaders }) => {
 		logger.error('[WORLD CREATE] Exception loading servers', {
 			error: error instanceof Error ? error.message : String(error),
 			stack: error instanceof Error ? error.stack : undefined,
-			apiUrl: API_URL
+			apiUrl: SERVER_API_URL
 		});
 		return { servers: [], error: 'An error occurred loading servers' };
 	}
@@ -91,7 +88,7 @@ export const actions: Actions = {
 			});
 
 			// Step 1: Create world record only (quick operation)
-			const response = await fetch(`${API_URL}/worlds`, {
+			const response = await fetch(`${SERVER_API_URL}/worlds`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

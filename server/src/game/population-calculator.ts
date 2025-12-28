@@ -145,8 +145,8 @@ export function calculateHousingQuality(
 	}
 
 	// Bonus for quality housing structures
-	const hasHouses = structures.some((s) => s.name.toLowerCase().includes('house'));
-	const hasCottages = structures.some((s) => s.name.toLowerCase().includes('cottage'));
+	const hasHouses = structures.some((s) => s.name?.toLowerCase().includes('house'));
+	const hasCottages = structures.some((s) => s.name?.toLowerCase().includes('cottage'));
 
 	if (hasHouses) {
 		qualityScore += 20;
@@ -181,9 +181,9 @@ export function calculateDisasterPreparedness(
 	// Shelter capacity coverage (up to 50 points)
 	// Check for Emergency Shelter structures
 	const shelterCapacity = structures.reduce((total, s) => {
-		if (s.name.toLowerCase().includes('shelter') || s.name.toLowerCase().includes('bunker')) {
+		if (s.name && (s.name.toLowerCase().includes('shelter') || s.name.toLowerCase().includes('bunker'))) {
 			// Each shelter protects 50 people (from GDD)
-			const capacityMod = s.modifiers.find((m) => m.name.toLowerCase().includes('capacity'));
+			const capacityMod = s.modifiers.find((m) => m.name && m.name.toLowerCase().includes('capacity'));
 			return total + (capacityMod?.value || 50);
 		}
 		return total;
@@ -195,21 +195,21 @@ export function calculateDisasterPreparedness(
 	// Warning systems (up to 15 points)
 	const hasWatchtower = structures.some(
 		(s) =>
-			s.name.toLowerCase().includes('watchtower') || s.name.toLowerCase().includes('warning')
+			s.name && (s.name.toLowerCase().includes('watchtower') || s.name.toLowerCase().includes('warning'))
 	);
 	if (hasWatchtower) {
 		score += 15;
 	}
 
 	// Hospital availability (up to 15 points)
-	const hasHospital = structures.some((s) => s.name.toLowerCase().includes('hospital'));
+	const hasHospital = structures.some((s) => s.name && s.name.toLowerCase().includes('hospital'));
 	if (hasHospital) {
 		score += 15;
 	}
 
 	// Defense structures (up to 20 points)
 	const defenseRating = structures.reduce((total, s) => {
-		const defenseModifier = s.modifiers.find((m) => m.name.toLowerCase().includes('defense'));
+		const defenseModifier = s.modifiers.find((m) => m.name && m.name.toLowerCase().includes('defense'));
 		return total + (defenseModifier?.value || 0);
 	}, 0);
 

@@ -36,10 +36,12 @@ class ClientLogger {
 	private readonly isDevelopment: boolean;
 	private readonly timers: Map<string, PerformanceTimer> = new Map();
 	private readonly logToFile: boolean;
-	private readonly maxLogFiles = 10;
+	private readonly logRetentionCount: number;
 	private readonly logDir: string;
 	private currentLogFile: string | null = null;
 	private logStartTime: string | null = null;
+	private readonly localStorageKey = 'uncharted_logs';
+	private readonly localStorageErrorKey = 'uncharted_error_logs';
 
 	constructor() {
 		// Detect environment using centralized utility
@@ -56,10 +58,19 @@ class ClientLogger {
 		// File logging configuration (only on server-side)
 		this.logToFile = browser ? false : this.isDevelopment;
 		this.logDir = browser ? '' : './logs';
+		this.logRetentionCount = Number.parseInt(
+			import.meta.env.VITE_LOG_RETENTION_COUNT || '5',
+			10
+		);
 
 		// Initialize file logging (server-side only)
 		if (this.logToFile && !browser) {
 			this.initializeFileLogging();
+		}
+
+		// Initialize localStorage logging (browser only)
+		if (browser) {
+			this.initializeLocalStorageLogging();
 		}
 	}
 
@@ -116,34 +127,54 @@ class ClientLogger {
 	}
 
 	/**
-	 * Clean up old log files, keeping only the most recent maxLogFiles
+	 * Clean up old log files, keeping only the configured number of most recent files
 	 */
 	private cleanupOldLogs(): void {
 		try {
-			const files = fs.readdirSync(this.logDir);
-			const logFiles = files
+			// Clean up regular logs
+			const regularLogs = fs
+				.readdirSync(this.logDir)
 				.filter(
-					(f: string) =>
+					(f) =>
 						f.endsWith('.log') &&
 						!f.endsWith('.latest.log') &&
 						!f.endsWith('.error.log')
 				)
-				.map((f: string) => ({
-					name: f,
-					path: path.join(this.logDir, f),
-					time: fs.statSync(path.join(this.logDir, f)).mtime.getTime()
-				}))
-				.sort((a: { time: number }, b: { time: number }) => b.time - a.time);
+				.sort((a, b) => b.localeCompare(a)); // Most recent first
 
-			// Keep only the most recent maxLogFiles
-			const logsToDelete = logFiles.slice(this.maxLogFiles);
+			if (regularLogs.length > this.logRetentionCount) {
+				const filesToRemove = regularLogs.slice(this.logRetentionCount);
+				console.log(`[LOGGER] Cleaning up ${filesToRemove.length} old log file(s)...`);
 
-			for (const log of logsToDelete) {
-				try {
-					fs.unlinkSync(log.path);
-					console.log(`[LOGGER] Deleted old log: ${log.name}`);
-				} catch (err) {
-					console.error(`[LOGGER] Failed to delete ${log.name}:`, err);
+				for (const file of filesToRemove) {
+					try {
+						fs.unlinkSync(path.join(this.logDir, file));
+						console.log(`[LOGGER] Deleted old log: ${file}`);
+					} catch (err) {
+						console.error(`[LOGGER] Failed to delete ${file}:`, err);
+					}
+				}
+			}
+
+			// Clean up error logs
+			const errorLogs = fs
+				.readdirSync(this.logDir)
+				.filter((f) => f.endsWith('.error.log'))
+				.sort((a, b) => b.localeCompare(a)); // Most recent first
+
+			if (errorLogs.length > this.logRetentionCount) {
+				const filesToRemove = errorLogs.slice(this.logRetentionCount);
+				console.log(
+					`[LOGGER] Cleaning up ${filesToRemove.length} old error log file(s)...`
+				);
+
+				for (const file of filesToRemove) {
+					try {
+						fs.unlinkSync(path.join(this.logDir, file));
+						console.log(`[LOGGER] Deleted old error log: ${file}`);
+					} catch (err) {
+						console.error(`[LOGGER] Failed to delete ${file}:`, err);
+					}
 				}
 			}
 		} catch (err) {
@@ -161,6 +192,127 @@ class ClientLogger {
 		this.logStartTime = `${date}-${time}`;
 		this.currentLogFile = path.join(this.logDir, `${this.logStartTime}.latest.log`);
 		console.log(`[LOGGER] Started new log file: ${path.basename(this.currentLogFile)}`);
+	}
+
+	/**
+	 * Initialize localStorage logging for browser
+	 */
+	private initializeLocalStorageLogging(): void {
+		if (!browser) return;
+
+		try {
+			// Clean up old logs on initialization
+			this.cleanupLocalStorageLogs();
+
+			// Initialize current session
+			const now = new Date();
+			const date = now.toISOString().split('T')[0];
+			const time = now.toISOString().split('T')[1].replaceAll(':', '-').split('.')[0];
+			this.logStartTime = `${date}-${time}`;
+
+			console.log(`[LOGGER] Browser logging to localStorage initialized`);
+		} catch (err) {
+			console.error('[LOGGER] Failed to initialize localStorage logging:', err);
+		}
+	}
+
+	/**
+	 * Clean up old localStorage logs, keeping only the most recent entries
+	 */
+	private cleanupLocalStorageLogs(): void {
+		if (!browser) return;
+
+		try {
+			// Get all log entries
+			const regularLogs = this.getLocalStorageLogs();
+			const errorLogs = this.getLocalStorageErrorLogs();
+
+			// Keep only retention count of each type
+			if (regularLogs.length > this.logRetentionCount) {
+				const toKeep = regularLogs.slice(-this.logRetentionCount);
+				localStorage.setItem(this.localStorageKey, JSON.stringify(toKeep));
+				console.log(
+					`[LOGGER] Cleaned up ${regularLogs.length - toKeep.length} old browser log entries`
+				);
+			}
+
+			if (errorLogs.length > this.logRetentionCount) {
+				const toKeep = errorLogs.slice(-this.logRetentionCount);
+				localStorage.setItem(this.localStorageErrorKey, JSON.stringify(toKeep));
+				console.log(
+					`[LOGGER] Cleaned up ${errorLogs.length - toKeep.length} old browser error log entries`
+				);
+			}
+		} catch (err) {
+			console.error('[LOGGER] Failed to cleanup localStorage logs:', err);
+		}
+	}
+
+	/**
+	 * Get logs from localStorage
+	 */
+	private getLocalStorageLogs(): string[] {
+		if (!browser) return [];
+		try {
+			const logs = localStorage.getItem(this.localStorageKey);
+			return logs ? JSON.parse(logs) : [];
+		} catch {
+			return [];
+		}
+	}
+
+	/**
+	 * Get error logs from localStorage
+	 */
+	private getLocalStorageErrorLogs(): string[] {
+		if (!browser) return [];
+		try {
+			const logs = localStorage.getItem(this.localStorageErrorKey);
+			return logs ? JSON.parse(logs) : [];
+		} catch {
+			return [];
+		}
+	}
+
+	/**
+	 * Write log to localStorage (browser only)
+	 */
+	private writeToLocalStorage(level: string, message: string, context?: LogContext): void {
+		if (!browser) return;
+
+		try {
+			const timestamp = this.timestamp();
+			const logEntry = `[${timestamp}] [${level.padEnd(5)}] ${message}${
+				context ? ' ' + JSON.stringify(context) : ''
+			}`;
+
+			// Add to regular logs
+			const regularLogs = this.getLocalStorageLogs();
+			regularLogs.push(logEntry);
+
+			// Keep only the most recent entries (avoid localStorage quota)
+			const maxEntries = 1000; // Keep max 1000 entries before cleanup
+			if (regularLogs.length > maxEntries) {
+				regularLogs.splice(0, regularLogs.length - maxEntries);
+			}
+
+			localStorage.setItem(this.localStorageKey, JSON.stringify(regularLogs));
+
+			// Also add errors to separate error log
+			if (level === 'ERROR') {
+				const errorLogs = this.getLocalStorageErrorLogs();
+				errorLogs.push(logEntry);
+
+				if (errorLogs.length > maxEntries) {
+					errorLogs.splice(0, errorLogs.length - maxEntries);
+				}
+
+				localStorage.setItem(this.localStorageErrorKey, JSON.stringify(errorLogs));
+			}
+		} catch (err) {
+			// Don't crash if localStorage is full or unavailable
+			console.error('[LOGGER] Failed to write to localStorage:', err);
+		}
 	}
 
 	/**
@@ -266,7 +418,13 @@ class ClientLogger {
 	 * Write log to file (server-side only)
 	 */
 	private writeToFile(level: string, message: string, context?: LogContext): void {
-		if (!this.logToFile || !this.currentLogFile || browser) return;
+		if (browser) {
+			// Write to localStorage in browser
+			this.writeToLocalStorage(level, message, context);
+			return;
+		}
+
+		if (!this.logToFile || !this.currentLogFile) return;
 
 		try {
 			const timestamp = this.timestamp();
@@ -479,6 +637,34 @@ class ClientLogger {
 		localStorage.removeItem('LOG_LEVEL');
 		console.log('🔧 Debug logging disabled. Reload the page.');
 	}
+
+	/**
+	 * Export logs as text (browser only)
+	 */
+	exportLogs(): string {
+		if (!browser) return 'Not available on server';
+		const logs = this.getLocalStorageLogs();
+		return logs.join('\n');
+	}
+
+	/**
+	 * Export error logs as text (browser only)
+	 */
+	exportErrorLogs(): string {
+		if (!browser) return 'Not available on server';
+		const logs = this.getLocalStorageErrorLogs();
+		return logs.join('\n');
+	}
+
+	/**
+	 * Clear all logs from localStorage (browser only)
+	 */
+	clearLogs(): void {
+		if (!browser) return;
+		localStorage.removeItem(this.localStorageKey);
+		localStorage.removeItem(this.localStorageErrorKey);
+		console.log('🗑️ Browser logs cleared');
+	}
 }
 
 // Export singleton instance
@@ -488,11 +674,18 @@ export const logger = new ClientLogger();
 if (globalThis.window !== undefined) {
 	(globalThis as unknown as Record<string, unknown>).enableDebugLogs = ClientLogger.enableDebug;
 	(globalThis as unknown as Record<string, unknown>).disableDebugLogs = ClientLogger.disableDebug;
+	(globalThis as unknown as Record<string, unknown>).exportLogs = () => logger.exportLogs();
+	(globalThis as unknown as Record<string, unknown>).exportErrorLogs = () =>
+		logger.exportErrorLogs();
+	(globalThis as unknown as Record<string, unknown>).clearLogs = () => logger.clearLogs();
 
 	// Log current log level on load (development only)
 	if (logger.isDev()) {
 		console.log(
 			'🔧 Logger initialized. Use enableDebugLogs() or disableDebugLogs() to control logging.'
+		);
+		console.log(
+			'📋 Use exportLogs() or exportErrorLogs() to download logs. Use clearLogs() to clear them.'
 		);
 	}
 }

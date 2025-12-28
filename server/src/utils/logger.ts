@@ -6,6 +6,7 @@
  * Writes logs to files for debugging
  */
 
+import 'dotenv/config'; // Load environment variables FIRST
 import fs from 'fs';
 import path from 'path';
 
@@ -35,18 +36,29 @@ class Logger {
 	private readonly isProd: boolean;
 	private readonly logDir: string;
 	private readonly logToFile: boolean;
+	private readonly logRetentionCount: number;
 	private currentLogFile: string | null = null;
 	private logStartTime: string | null = null;
 
 	constructor() {
+		// Debug: Check if env vars are loaded
+		console.log('[Logger Init] process.env.LOG_LEVEL:', process.env.LOG_LEVEL);
+		console.log('[Logger Init] process.env.NODE_ENV:', process.env.NODE_ENV);
+		
 		// Set log level from environment or default to INFO
-		const envLevel = process.env.LOG_LEVEL?.toUpperCase();
-		this.minLevel = LogLevel[envLevel as keyof typeof LogLevel] ?? LogLevel.INFO;
+		const envLogLevel = process.env.LOG_LEVEL as keyof typeof LogLevel;
+		console.log('[Logger Init] envLogLevel:', envLogLevel);
+		console.log('[Logger Init] LogLevel[envLogLevel]:', LogLevel[envLogLevel]);
+		
+		this.minLevel = LogLevel[envLogLevel] ?? LogLevel.INFO;
+		console.log('[Logger Init] Final minLevel:', this.minLevel, `(${LogLevel[this.minLevel]})`);
+		
 		this.isProd = process.env.NODE_ENV === 'production';
 
 		// File logging configuration
 		this.logToFile = process.env.LOG_TO_FILE === 'true' || !this.isProd; // Always log to file in dev
 		this.logDir = path.join(process.cwd(), 'logs');
+		this.logRetentionCount = Number.parseInt(process.env.LOG_RETENTION_COUNT || '5', 10);
 
 		// Create logs directory if it doesn't exist
 		if (this.logToFile && !fs.existsSync(this.logDir)) {
@@ -101,25 +113,51 @@ class Logger {
 	}
 
 	/**
-	 * Clean up old log files, keeping only the 10 most recent
+	 * Clean up old log files, keeping only the configured number of most recent files
 	 */
 	private cleanupOldLogs(): void {
 		try {
-			const MAX_LOG_FILES = 10;
-			const files = fs
+			// Clean up regular logs
+			const regularLogs = fs
 				.readdirSync(this.logDir)
-				.filter((f) => f.endsWith('.log') && !f.endsWith('.latest.log'))
+				.filter(
+					(f) =>
+						f.endsWith('.log') &&
+						!f.endsWith('.latest.log') &&
+						!f.endsWith('.error.log')
+				)
 				.sort((a, b) => b.localeCompare(a)); // Most recent first
 
-			// Remove old files beyond the limit
-			if (files.length > MAX_LOG_FILES) {
-				const filesToRemove = files.slice(MAX_LOG_FILES);
+			if (regularLogs.length > this.logRetentionCount) {
+				const filesToRemove = regularLogs.slice(this.logRetentionCount);
 				console.log(`[LOGGER] Cleaning up ${filesToRemove.length} old log file(s)...`);
 
 				for (const file of filesToRemove) {
 					try {
 						fs.unlinkSync(path.join(this.logDir, file));
 						console.log(`[LOGGER] Deleted old log: ${file}`);
+					} catch (err) {
+						console.error(`[LOGGER] Failed to delete ${file}:`, err);
+					}
+				}
+			}
+
+			// Clean up error logs
+			const errorLogs = fs
+				.readdirSync(this.logDir)
+				.filter((f) => f.endsWith('.error.log'))
+				.sort((a, b) => b.localeCompare(a)); // Most recent first
+
+			if (errorLogs.length > this.logRetentionCount) {
+				const filesToRemove = errorLogs.slice(this.logRetentionCount);
+				console.log(
+					`[LOGGER] Cleaning up ${filesToRemove.length} old error log file(s)...`
+				);
+
+				for (const file of filesToRemove) {
+					try {
+						fs.unlinkSync(path.join(this.logDir, file));
+						console.log(`[LOGGER] Deleted old error log: ${file}`);
 					} catch (err) {
 						console.error(`[LOGGER] Failed to delete ${file}:`, err);
 					}
@@ -246,9 +284,8 @@ class Logger {
 			const timestamp = this.timestamp();
 
 			// Write to the current .latest.log file
-			const logEntry = `[${timestamp}] [${level.padEnd(5)}] ${message}${
-				context ? ' ' + JSON.stringify(context) : ''
-			}\n`;
+			const logEntry = `[${timestamp}] [${level.padEnd(5)}] ${message}${context ? ' ' + JSON.stringify(context) : ''
+				}\n`;
 
 			fs.appendFileSync(this.currentLogFile, logEntry, 'utf8');
 
@@ -326,7 +363,10 @@ class Logger {
 							if (error instanceof Error) {
 								captureException(error, context);
 							} else if (error) {
-								captureException(new Error(message), { ...context, originalError: error });
+								captureException(new Error(message), {
+									...context,
+									originalError: error,
+								});
 							}
 						})
 						.catch(() => {
@@ -427,7 +467,7 @@ class ChildLogger {
 	constructor(
 		private parent: Logger,
 		private defaultContext: LogContext
-	) {}
+	) { }
 
 	private mergeContext(context?: LogContext): LogContext {
 		return { ...this.defaultContext, ...context };

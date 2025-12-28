@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { logger } from '$lib/utils/logger';
+	import type { StructureMetadata } from '$lib/api/structures';
 
 	/**
 	 * BuildingsListPanel Component
@@ -10,6 +12,7 @@
 	 * - Action buttons (upgrade, repair, demolish)
 	 * - Modifiers tooltip
 	 * - Accessibility features (keyboard navigation, ARIA)
+	 * - Building Area System: Area cost badges and tooltips
 	 */
 
 	interface StructureModifier {
@@ -36,6 +39,7 @@
 	interface Props {
 		buildings: Building[];
 		settlementId: string;
+		structures?: StructureMetadata[]; // Optional: structure metadata for area info
 		onBuild?: () => void;
 		onUpgrade?: (buildingId: string) => void;
 		onRepair?: (buildingId: string) => void;
@@ -45,23 +49,28 @@
 	let {
 		buildings = [],
 		settlementId,
+		structures = [],
 		onBuild,
 		onUpgrade,
 		onRepair,
 		onDemolish
 	}: Props = $props();
 
+	// Helper to get structure metadata for a building
+	function getStructureMetadata(building: Building): StructureMetadata | undefined {
+		return structures.find((s) => s.id === building.structureId);
+	}
+
 	// ✅ DEBUG: Log when component renders and receives buildings
 	$effect(() => {
-		console.log('[BuildingsListPanel] ==== COMPONENT RENDER ====');
-		console.log('[BuildingsListPanel] Buildings.length:', buildings.length);
+		logger.debug('[BuildingsListPanel] ==== COMPONENT RENDER ====');
+		logger.debug('[BuildingsListPanel] Buildings.length:', { length: buildings.length });
 		if (buildings.length > 0) {
-			console.log(
-				'[BuildingsListPanel] Building names:',
-				buildings.map((b) => b.name).join(', ')
-			);
+			logger.debug('[BuildingsListPanel] Building names:', {
+				names: buildings.map((b) => b.name)
+			});
 		}
-		console.log('[BuildingsListPanel] ================');
+		logger.debug('[BuildingsListPanel] ================');
 	});
 
 	// Expanded building IDs for showing modifiers
@@ -133,21 +142,43 @@
 	{:else}
 		<ul class="space-y-3" role="list">
 			{#each buildings as building (building.id)}
+				{@const metadata = getStructureMetadata(building)}
 				<li
 					data-testid="structure"
-					data-structure-type={building.buildingType}
+					data-structure-id={building.buildingType ||
+						building.extractorType ||
+						building.structureId}
+					data-structure-type={building.buildingType || building.extractorType}
 					class="card variant-soft p-4 space-y-2"
 					transition:slide={{ duration: 300, easing: quintOut }}
 				>
 					<!-- Building Header -->
 					<div class="flex items-start justify-between gap-4">
 						<div class="flex-1 min-w-0">
-							<h4 class="font-semibold text-lg truncate">
-								{building.name}
-								<span class="text-sm text-surface-600-300-token ml-2">
-									Level {building.level}/{building.maxLevel}
-								</span>
-							</h4>
+							<div class="flex items-center gap-2 mb-1">
+								<h4 class="font-semibold text-lg truncate">
+									{building.name}
+									<span class="text-sm text-surface-600-300-token ml-2">
+										Level {building.level}/{building.maxLevel}
+									</span>
+								</h4>
+								{#if metadata?.areaCost && metadata.areaCost > 0}
+									<span
+										class="text-xs px-2 py-0.5 rounded-full bg-primary-200 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-medium"
+										title="Building area cost: {metadata.areaCost}"
+									>
+										📐 {metadata.areaCost}
+									</span>
+								{/if}
+								{#if metadata?.unique}
+									<span
+										class="text-xs px-2 py-0.5 rounded-full bg-warning-200 dark:bg-warning-900 text-warning-700 dark:text-warning-300 font-medium"
+										title="Unique building - only one per settlement"
+									>
+										⭐
+									</span>
+								{/if}
+							</div>
 							<p class="text-sm text-surface-600-300-token mt-1">
 								{building.description}
 							</p>
@@ -158,7 +189,7 @@
 							class="flex items-center gap-2 shrink-0"
 							title="Structure health: {building.health}%"
 						>
-							<span class={getHealthColor(building.health)}>
+							<span class={getHealthColor(building.health)} data-testid="health">
 								{building.health}%
 							</span>
 							<span class="text-xs text-surface-500-400-token">
@@ -221,7 +252,11 @@
 											</p>
 										</div>
 										<span class="text-sm font-semibold shrink-0">
-											{modifier.value > 0 ? '+' : ''}{modifier.value}
+											{modifier.value > 0 ? '+' : ''}
+											{building.level * modifier.value}
+											<span class="text-xs font-semibold shrink-0">
+												({modifier.value} / Level)
+											</span>
 										</span>
 									</div>
 								{/each}

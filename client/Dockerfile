@@ -1,7 +1,7 @@
 # Multi-stage build for SvelteKit client
 
 # Stage 1: Dependencies
-FROM node:22-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
 
 # Copy package files
@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Stage 2: Builder
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 # Copy dependencies from deps stage
@@ -24,7 +24,7 @@ COPY . .
 RUN npm run build
 
 # Stage 3: Production dependencies
-FROM node:22-alpine AS prod-deps
+FROM node:24-alpine AS prod-deps
 WORKDIR /app
 
 # Copy package files
@@ -34,7 +34,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Stage 4: Runner
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 
 # Create non-root user for security

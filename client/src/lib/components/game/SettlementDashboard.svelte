@@ -22,6 +22,7 @@
 	// Modals
 	import SettingsModal from './modals/SettingsModal.svelte';
 	import ExtractorTypeSelector from './modals/ExtractorTypeSelector.svelte';
+	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 	import AlertsPanel from './panels/AlertsPanel.svelte';
 	import SettlementInfoPanel from './panels/SettlementInfoPanel.svelte';
 	import ResourcePanel from './panels/ResourcePanel.svelte';
@@ -36,9 +37,15 @@
 	import { constructionStore } from '$lib/stores/game/construction.svelte';
 	import { resourcesStore } from '$lib/stores/game/resources.svelte';
 	import { structuresStore } from '$lib/stores/game/structures.svelte';
+	import { socketStore } from '$lib/stores/game/socket';
 	import { generateSuggestions } from '$lib/utils/settlement-suggestions';
 	import { calculateProduction } from '$lib/utils/production-calculator';
 	import type { StructureMetadata } from '$lib/api/structures';
+	import { logger } from '$lib/utils/logger';
+	import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
+	import type { TileWithRelations } from '@uncharted-lands/shared';
+	import { invalidateAll } from '$app/navigation';
+	import { toaster } from '$lib/stores/toaster.svelte';
 
 	// ✅ NEW: TypeScript interface for settlement structures
 	interface SettlementStructure {
@@ -71,10 +78,6 @@
 		worldId: string;
 		resilience: number | null;
 		createdAt: string | Date;
-		Tile?: {
-			xCoord: number;
-			yCoord: number;
-		} | null;
 	}
 
 	// ✅ NEW: Add Tile type definition (must match TilePlotsPanel)
@@ -97,7 +100,7 @@
 		onOpenBuildMenu?: () => void; // Handler to open build menu
 		structures?: StructureMetadata[];
 		settlement?: Settlement;
-		tile?: Tile | null; // ✅ NEW: Add tile data
+		tile: TileWithRelations;
 	}
 
 	let {
@@ -106,7 +109,7 @@
 		onOpenBuildMenu,
 		structures = [],
 		settlement,
-		tile = null
+		tile
 	}: Props = $props();
 
 	// ✅ REACTIVE: Get structures from store with real-time Socket.IO updates
@@ -118,6 +121,140 @@
 	// ✅ NEW: Extractor selection modal state
 	let extractorSelectorOpen = $state(false);
 	let selectedSlot = $state<number | null>(null);
+
+	// ✅ NEW: Demolish confirmation modal state
+	let demolishModalOpen = $state(false);
+	let buildingToDemolish = $state<string | null>(null);
+
+	// ✅ NEW: Raw construction queue with tileId/slotPosition for slot locking
+	let rawConstructionQueue = $state<
+		Array<{
+			id: string;
+			tileId: string | null;
+			slotPosition: number | null;
+			structureType: string;
+			status: string;
+		}>
+	>([]);
+
+	// Fetch raw construction queue on mount
+	$effect(() => {
+		async function fetchRawQueue() {
+			try {
+				const response = await fetch(
+					`${PUBLIC_CLIENT_API_URL}/structures/construction-queue/${settlementId}`,
+					{
+						method: 'GET',
+						credentials: 'include'
+					}
+				);
+
+				if (response.ok) {
+					const data = await response.json();
+					if (data.success) {
+						// Combine active and queued, extracting only needed fields
+						rawConstructionQueue = [
+							...data.active.map((item: any) => ({
+								id: item.id,
+								tileId: item.tileId,
+								slotPosition: item.slotPosition,
+								structureType: item.structureType,
+								status: item.status
+							})),
+							...data.queued.map((item: any) => ({
+								id: item.id,
+								tileId: item.tileId,
+								slotPosition: item.slotPosition,
+								structureType: item.structureType,
+								status: item.status
+							}))
+						];
+					}
+				}
+			} catch (error) {
+				logger.error('[Dashboard] Failed to fetch construction queue', { error });
+			}
+		}
+
+		fetchRawQueue();
+	});
+
+	// ✅ NEW: Listen to Socket.IO for construction queue updates
+	$effect(() => {
+		const socket = socketStore.getSocket();
+		if (!socket) return;
+
+		const handleConstructionStarted = (data: {
+			constructionId: string;
+			settlementId: string;
+			structureType: string;
+			tileId?: string | null;
+			slotPosition?: number | null;
+		}) => {
+			if (data.settlementId === settlementId) {
+				// Add or update the item in rawConstructionQueue
+				const existing = rawConstructionQueue.find(
+					(item) => item.id === data.constructionId
+				);
+				if (!existing) {
+					rawConstructionQueue = [
+						...rawConstructionQueue,
+						{
+							id: data.constructionId,
+							tileId: data.tileId ?? null,
+							slotPosition: data.slotPosition ?? null,
+							structureType: data.structureType,
+							status: 'IN_PROGRESS'
+						}
+					];
+				}
+			}
+		};
+
+		const handleConstructionComplete = (data: {
+			settlementId: string;
+			structureId: string;
+		}) => {
+			if (data.settlementId === settlementId) {
+				// Remove completed item from rawConstructionQueue
+				rawConstructionQueue = rawConstructionQueue.filter(
+					(item) => item.id !== data.structureId
+				);
+			}
+		};
+
+		const handleConstructionQueued = (data: {
+			constructionId: string;
+			settlementId: string;
+			structureType: string;
+			tileId?: string | null;
+			slotPosition?: number | null;
+		}) => {
+			if (data.settlementId === settlementId) {
+				// Add queued item
+				rawConstructionQueue = [
+					...rawConstructionQueue,
+					{
+						id: data.constructionId,
+						tileId: data.tileId ?? null,
+						slotPosition: data.slotPosition ?? null,
+						structureType: data.structureType,
+						status: 'QUEUED'
+					}
+				];
+			}
+		};
+
+		socket.on('construction-started', handleConstructionStarted);
+		socket.on('construction-complete', handleConstructionComplete);
+		socket.on('construction-queued', handleConstructionQueued);
+
+		return () => {
+			socket.off('construction-started', handleConstructionStarted);
+			socket.off('construction-complete', handleConstructionComplete);
+			socket.off('construction-queued', handleConstructionQueued);
+		};
+	});
 
 	// Get resources from store with real-time Socket.IO updates
 	const realResources = $derived.by(() => resourcesStore.getResources(settlementId));
@@ -166,24 +303,41 @@
 
 	// Real construction queue data from constructionStore
 	const realConstruction = $derived.by(() => {
-		const active = constructionStore.getActiveProjects(settlementId);
-		const queued = constructionStore.getQueuedProjects(settlementId);
+		// Access state properties directly for proper reactivity tracking
+		const construction = constructionStore.state.construction;
+		const constructionState = construction.get(settlementId);
+		const active = constructionState?.active || [];
+		const queued = constructionState?.queued || [];
+
+		logger.debug('[Dashboard] Construction queue derived:', {
+			settlementId,
+			activeCount: active.length,
+			queuedCount: queued.length,
+			active: active.map((p) => ({ id: p.id, name: p.name })),
+			queued: queued.map((p) => ({ id: p.id, name: p.name }))
+		});
 
 		// Map store BuildingType to panel BuildingType
-		// Store: 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER'
+		// Store now uses actual types: 'HOUSE', 'STORAGE', 'FOOD', 'WOOD', etc.
 		// Panel: 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER'
 		const mapBuildingType = (
 			storeType: string
 		): 'HOUSE' | 'FARM' | 'WAREHOUSE' | 'WORKSHOP' | 'TOWN_HALL' | 'OTHER' => {
 			switch (storeType) {
-				case 'HOUSING':
+				case 'HOUSE':
 					return 'HOUSE';
-				case 'PRODUCTION':
-					return 'FARM';
-				case 'INFRASTRUCTURE':
+				case 'STORAGE':
 					return 'WAREHOUSE';
-				case 'DEFENSE':
-					return 'OTHER';
+				case 'WORKSHOP':
+					return 'WORKSHOP';
+				case 'TOWN_HALL':
+					return 'TOWN_HALL';
+				case 'FOOD':
+				case 'WATER':
+				case 'WOOD':
+				case 'STONE':
+				case 'ORE':
+					return 'FARM'; // All extractors show as farm icon
 				default:
 					return 'OTHER';
 			}
@@ -251,7 +405,7 @@
 				buildingType: s.buildingType ?? null,
 				category: s.category,
 				modifiers: (s.modifiers ?? []).map((m) => ({
-					id: m.type, // BuildingsListPanel expects 'id', but canonical has 'type'
+					id: m.id, // BuildingsListPanel expects 'id', but canonical has 'type'
 					name: m.name,
 					description: m.description,
 					value: m.value
@@ -280,31 +434,29 @@
 
 	// ✅ DEBUG: Log tile and extractor data
 	$effect(() => {
-		console.log('[Dashboard] ==== RENDER UPDATE ====');
-		console.log('[Dashboard] settlementStructures.length:', settlementStructures.length);
-		console.log('[Dashboard] Buildings.length:', buildings.length);
-		console.log('[Dashboard] Extractors.length:', extractors.length);
+		logger.debug('[Dashboard] ==== RENDER UPDATE ====');
+		logger.debug('[Dashboard] settlementStructures.length:', {
+			settlementStructuresLength: settlementStructures.length
+		});
+		logger.debug('[Dashboard] Buildings.length:', { buildingsLength: buildings.length });
+		logger.debug('[Dashboard] Extractors.length:', { extractorsLength: extractors.length });
 
 		if (settlementStructures.length > 0) {
-			console.log(
-				'[Dashboard] First structure:',
-				settlementStructures[0].name,
-				settlementStructures[0].category
-			);
+			logger.debug('[Dashboard] First structure:', {
+				name: settlementStructures[0].name,
+				category: settlementStructures[0].category
+			});
 		}
 
 		// Check which panels are visible
 		const structuresPanel = currentLayout.panels.find((p) => p.id === 'structures');
-		console.log(
-			'[Dashboard] Structures panel - visible:',
-			structuresPanel?.visible,
-			'collapsed:',
-			structuresPanel?.collapsed,
-			'column:',
-			structuresPanel?.column
-		);
-		console.log('[Dashboard] Current viewport:', viewport);
-		console.log('[Dashboard] ====================');
+		logger.debug('[Dashboard] Structures panel - visible:', {
+			visible: structuresPanel?.visible,
+			collapsed: structuresPanel?.collapsed,
+			column: structuresPanel?.column
+		});
+		logger.debug('[Dashboard] Current viewport:', { viewport });
+		logger.debug('[Dashboard] ====================');
 	});
 
 	// ✅ NEW: Group extractors by tile for grid display
@@ -353,16 +505,17 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error('[Dashboard] Failed to upgrade building:', result);
-				alert(result.message || 'Failed to upgrade building');
+				logger.error('[Dashboard] Failed to upgrade building:', result);
+				toaster.error('Upgrade Failed', result.message || 'Failed to upgrade building');
 				return;
 			}
 
-			console.log('[Dashboard] Building upgraded successfully');
+			logger.debug('[Dashboard] Building upgraded successfully');
+			toaster.success('Building Upgraded', 'Upgrade queued successfully');
 			// TODO: Add toast notification system
 		} catch (error) {
-			console.error('[Dashboard] Failed to upgrade building:', error);
-			alert('Network error - could not upgrade building');
+			logger.error('[Dashboard] Failed to upgrade building:', error);
+			toaster.error('Network Error', 'Could not upgrade building');
 		}
 	}
 
@@ -379,30 +532,30 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error('[Dashboard] Failed to repair building:', result);
-				alert(result.message || 'Failed to repair building');
+				logger.error('[Dashboard] Failed to repair building:', result);
+				toaster.error('Repair Failed', result.message || 'Failed to repair building');
 				return;
 			}
 
-			console.log('[Dashboard] Building repaired successfully');
+			logger.debug('[Dashboard] Building repaired successfully');
+			toaster.success('Building Repaired', 'Repair completed successfully');
 		} catch (error) {
-			console.error('[Dashboard] Failed to repair building:', error);
-			alert('Network error - could not repair building');
+			logger.error('[Dashboard] Failed to repair building:', error);
+			toaster.error('Network Error', 'Could not repair building');
 		}
 	}
 
-	async function handleDemolishBuilding(buildingId: string) {
-		if (
-			!confirm(
-				'Are you sure you want to demolish this building? This action cannot be undone.'
-			)
-		) {
-			return;
-		}
+	function handleDemolishBuilding(buildingId: string) {
+		buildingToDemolish = buildingId;
+		demolishModalOpen = true;
+	}
+
+	async function confirmDemolish() {
+		if (!buildingToDemolish) return;
 
 		try {
 			const formData = new FormData();
-			formData.append('structureId', buildingId);
+			formData.append('structureId', buildingToDemolish);
 
 			const response = await fetch('?/demolishStructure', {
 				method: 'POST',
@@ -412,75 +565,92 @@
 			const result = await response.json();
 
 			if (!result.success && result.success !== undefined) {
-				console.error('[Dashboard] Failed to demolish building:', result);
-				alert(result.message || 'Failed to demolish building');
+				logger.error('[Dashboard] Failed to demolish building:', result);
+				toaster.error('Demolish Failed', result.message || 'Failed to demolish building');
 				return;
 			}
 
-			console.log('[Dashboard] Building demolished successfully');
+			logger.debug('[Dashboard] Building demolished successfully');
+			toaster.success('Building Demolished', 'Structure removed successfully');
+			demolishModalOpen = false;
 		} catch (error) {
-			console.error('[Dashboard] Failed to demolish building:', error);
-			alert('Network error - could not demolish building');
+			logger.error('[Dashboard] Failed to demolish building:', error);
+			toaster.error('Network Error', 'Could not demolish building');
+		} finally {
+			buildingToDemolish = null;
 		}
 	}
 
 	// ✅ NEW: Handlers for plot slot interactions
 	function handleBuildExtractor(tileId: string, slotPosition: number) {
-		console.log(
-			'[Dashboard] Build extractor requested for tile:',
-			tileId,
-			'slot:',
-			slotPosition
-		);
+		logger.debug('[Dashboard] Build extractor requested for tile:', { tileId, slotPosition });
 		selectedSlot = slotPosition;
 		extractorSelectorOpen = true;
 	}
 
 	// ✅ FIXED: Use form submission to go through SvelteKit server-side action
 	async function handleExtractorBuild(tileId: string, slotPosition: number, structureId: string) {
-		console.log(
-			'[Dashboard] Building extractor:',
-			structureId,
-			'on tile:',
-			tileId,
-			'slot:',
-			slotPosition
-		);
+		logger.debug('[Dashboard] Building extractor:', { structureId, tileId, slotPosition });
 
 		try {
-			// Create a form and submit it to trigger the buildStructure action
-			const formData = new FormData();
-			formData.append('structureId', structureId); // ✅ FIXED: Use structureId parameter
-			formData.append('tileId', tileId);
-			formData.append('slotPosition', slotPosition.toString());
-
-			// Submit to the current page's buildStructure action
-			const response = await fetch('?/buildStructure', {
+			// Call API directly for clean JSON responses
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/create`, {
 				method: 'POST',
-				body: formData,
-				credentials: 'include' // ✅ FIX: Include cookies for authentication
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					settlementId,
+					structureId,
+					tileId,
+					slotPosition
+				}),
+				credentials: 'include'
 			});
+
 			const result = await response.json();
 
-			if (!result.success && result.success !== undefined) {
-				console.error('[Dashboard] Failed to create extractor:', result);
-				alert(result.message || 'Failed to create extractor');
+			if (!response.ok) {
+				logger.error('[Dashboard] Failed to create extractor:', result);
+
+				// Handle error with clean JSON response
+				let title = 'Build Failed';
+				let description = result.message || 'Failed to create extractor';
+
+				// Check for resource shortages
+				if (result.shortages && Array.isArray(result.shortages) && result.shortages.length > 0) {
+					title = 'Insufficient Resources';
+					description = result.shortages
+						.map((s: any) => `${s.type}: need ${s.missing} more`)
+						.join(', ');
+				} else if (result.code === 'INSUFFICIENT_RESOURCES') {
+					title = 'Insufficient Resources';
+				}
+
+				toaster.error(title, description, 5000);
 				return;
 			}
-
-			console.log('[Dashboard] Extractor created successfully');
-			extractorSelectorOpen = false;
+			
 			selectedSlot = null;
-			// TODO: Add toast notification system
+
+			// Immediately refetch construction queue and tile data
+			logger.debug('[Dashboard] Refetching construction queue and invalidating all data');
+			await Promise.all([
+				constructionStore.fetchConstructionQueue(settlementId),
+				invalidateAll()
+			]);
+			logger.debug('[Dashboard] Refetch complete');
+
+			toaster.success('Extractor Queued', 'Construction has been added to the queue', 3000);
 		} catch (error) {
-			console.error('[Dashboard] Failed to create extractor:', error);
-			alert('Network error - could not create extractor');
+			logger.error('[Dashboard] Failed to create extractor:', error);
+			toaster.error('Network Error', 'Could not create extractor', 4000);
 		}
 	}
 
 	// ✅ NEW: Debug logging
 	$effect(() => {
-		console.log('[Dashboard] Real structures loaded:', {
+		logger.debug('[Dashboard] Real structures loaded:', {
 			total: settlementStructures.length,
 			buildings: buildings.length,
 			extractors: extractors.length
@@ -516,8 +686,8 @@
 			level: 1, // TODO: Get from settlement tier when implemented
 			type: 'OUTPOST' as const, // TODO: Get from settlement type when implemented
 			location: {
-				x: settlement.Tile?.xCoord || 0,
-				y: settlement.Tile?.yCoord || 0
+				x: tile.xCoord || 0,
+				y: tile.yCoord || 0
 			},
 			population: {
 				current: realPopulation.current,
@@ -590,7 +760,7 @@
 		<ResourcePanel {settlementId} settlementName={settlement?.name} resources={realResources} />
 	{:else if panel.id === 'settlement-info'}
 		{#if settlement}
-			<SettlementInfoPanel {settlementId} {settlement} />
+			<SettlementInfoPanel {settlementId} {settlement} {tile} />
 		{/if}
 	{:else if panel.id === 'population'}
 		<PopulationPanel {settlementId} population={realPopulation} />
@@ -601,11 +771,11 @@
 			{settlementId}
 			suggestions={realSuggestions}
 			onDismiss={(id) => {
-				console.log('Dismissed suggestion:', id);
+				logger.debug('Dismissed suggestion:', { id });
 				announcement = `Dismissed suggestion: ${realSuggestions.find((s) => s.id === id)?.title}`;
 			}}
 			onRefresh={() => {
-				console.log('Refreshing suggestions');
+				logger.debug('Refreshing suggestions');
 				announcement = 'Refreshing action suggestions';
 			}}
 		/>
@@ -613,7 +783,12 @@
 		<!-- Phase 1: Tile Plots Panel - Shows plot slots for the settlement's tile -->
 		{#if tile}
 			<div class="mb-4">
-				<TilePlotsPanel {tile} {extractors} onBuildExtractor={handleBuildExtractor} />
+				<TilePlotsPanel
+					{tile}
+					{extractors}
+					constructionQueue={rawConstructionQueue}
+					onBuildExtractor={handleBuildExtractor}
+				/>
 			</div>
 		{/if}
 
@@ -621,6 +796,7 @@
 		<BuildingsListPanel
 			{buildings}
 			{settlementId}
+			{structures}
 			onBuild={onOpenBuildMenu}
 			onUpgrade={handleUpgradeBuilding}
 			onRepair={handleRepairBuilding}
@@ -704,3 +880,17 @@
 		onBuild={handleExtractorBuild}
 	/>
 {/if}
+
+<!-- Demolish Confirmation Modal -->
+<ConfirmModal
+	bind:open={demolishModalOpen}
+	title="Demolish Building"
+	message="Are you sure you want to demolish this building? This action cannot be undone and you will not recover the resources."
+	confirmText="Demolish"
+	cancelText="Cancel"
+	variant="danger"
+	onconfirm={confirmDemolish}
+	oncancel={() => {
+		buildingToDemolish = null;
+	}}
+/>

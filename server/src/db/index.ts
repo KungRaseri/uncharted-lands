@@ -30,17 +30,17 @@ const queryClient = postgres(process.env.DATABASE_URL, {
 	idle_timeout: 20,
 	connect_timeout: 10,
 	prepare: false, // Disable prepared statements for better compatibility with connection poolers
-	onnotice: () => {}, // Suppress notices
-	onparameter: () => {}, // Suppress parameter changes
-	debug:
-		process.env.NODE_ENV === 'development'
-			? (connection, query, params) => {
-					logger.debug('[DATABASE] Query executed', {
-						query: query.slice(0, 100),
-						params: params?.slice(0, 5),
-					});
-				}
-			: undefined,
+	onnotice: () => { }, // Suppress notices
+	onparameter: () => { }, // Suppress parameter changes
+	// debug:
+	// 	process.env.NODE_ENV === 'development'
+	// 		? (connection, query, params) => {
+	// 				logger.debug('[DATABASE] Query executed', {
+	// 					query: query.slice(0, 100),
+	// 					params: params?.slice(0, 5),
+	// 				});
+	// 			}
+	// 		: undefined,
 });
 
 // Test database connection on startup

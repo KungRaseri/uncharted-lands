@@ -5,17 +5,18 @@ import {
 	normalizeNoiseValue,
 	getBiomeNameForPreview
 } from '../../../src/lib/utils/biome-matcher';
+import { logger } from '../../../src/lib/utils/logger';
 
-// Mock console.log to avoid spam in tests
-const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+// Mock logger.debug to avoid spam in tests
+const loggerDebugSpy = vi.spyOn(logger, 'debug').mockImplementation(() => {});
 
 describe('Biome Matcher Utilities', () => {
 	beforeEach(() => {
-		consoleLogSpy.mockClear();
+		loggerDebugSpy.mockClear();
 	});
 
 	afterEach(() => {
-		consoleLogSpy.mockRestore();
+		loggerDebugSpy.mockRestore();
 	});
 
 	describe('findBiomeForTile', () => {
@@ -189,12 +190,12 @@ describe('Biome Matcher Utilities', () => {
 		it('should occasionally log debug info (tested via mock)', () => {
 			// Run multiple times to potentially trigger the 1% random logging
 			vi.spyOn(Math, 'random').mockReturnValue(0.001); // Force logging
-			vi.spyOn(console, 'log').mockImplementation(() => {});
+			vi.spyOn(logger, 'debug').mockImplementation(() => {});
 			const name = getBiomeNameForPreview(0.5, 0, 0);
 			expect(name).toBeTruthy();
 			// Verify console.log was called (debug logging)
-			expect(console.log).toHaveBeenCalled();
-			vi.mocked(console.log).mockRestore();
+			expect(logger.debug).toHaveBeenCalled();
+			vi.mocked(logger.debug).mockRestore();
 			vi.spyOn(Math, 'random').mockRestore();
 		});
 	});

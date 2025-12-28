@@ -173,8 +173,8 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 			const production = calculateProduction(tile, [farm], TICKS_PER_SECOND, BIOME_GRASSLAND);
 
 			// BLOCKER 2: baseRate × quality × biomeEff × 0.2 × tierMult × ticks
-			// 1 × 1.2 × 1.0 × 0.2 × 5 × 60 = 72 food (Tier 1 = 5×)
-			expect(production.food).toBeCloseTo(72, 4);
+			// 1 × 1.2 × 1.0 × 0.2 × 0.5 × 60 = 7.2 food (Tier 1 L1 = 0.5×)
+			expect(production.food).toBeCloseTo(7.2, 4);
 			expect(production.water).toBe(0);
 			expect(production.wood).toBe(0);
 			expect(production.stone).toBe(0);
@@ -191,14 +191,14 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 
 			const production = calculateProduction(tile, [farm], TICKS_PER_SECOND, BIOME_GRASSLAND);
 
-			// 1 × 1 × 1 × 0.2 × 5 × 60 = 60 food
-			expect(production.food).toBeCloseTo(60, 4);
+			// 1 × 1 × 1 × 0.2 × 0.5 × 60 = 6.0 food (Tier 1 L1 = 0.5×)
+			expect(production.food).toBeCloseTo(6.0, 4);
 		});
 	});
 
 	// ===== SCENARIO 3: FARM Levels 2-3 → Same Tier 1 Production =====
 	describe('Scenario 3: FARM levels 2-3 use same tier multiplier', () => {
-		test('FARM level 2 uses Tier 1 multiplier (5×, same as L1)', () => {
+		test('FARM level 2 uses Tier 1 multiplier with level bonus (0.55×)', () => {
 			const tile = createMockTile({
 				baseProductionModifier: 1,
 				foodQuality: 120,
@@ -208,12 +208,12 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 
 			const production = calculateProduction(tile, [farmL2], TICKS_PER_SECOND, BIOME_GRASSLAND);
 
-			// BLOCKER 2: Tier 1 (L1-3) = 5× multiplier (not linear)
-			// 1 × 1.2 × 1.0 × 0.2 × 5 × 60 = 72 food (same as L1)
-			expect(production.food).toBeCloseTo(72, 4);
+			// Tier 1 (L1-5): 0.5 + (level-1) × 0.05 = 0.5 + 0.05 = 0.55×
+			// 1 × 1.2 × 1.0 × 0.2 × 0.55 × 60 = 7.92 food
+			expect(production.food).toBeCloseTo(7.92, 4);
 		});
 
-		test('FARM level 3 uses Tier 1 multiplier (5×, same as L1-L2)', () => {
+		test('FARM level 3 uses Tier 1 multiplier with level bonus (0.6×)', () => {
 			const tile = createMockTile({
 				baseProductionModifier: 1,
 				foodQuality: 100,
@@ -223,9 +223,9 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 
 			const production = calculateProduction(tile, [farmL3], TICKS_PER_SECOND, BIOME_GRASSLAND);
 
-			// Tier 1 (L1-3) = 5× multiplier
-			// 1 × 1 × 1 × 0.2 × 5 × 60 = 60 food (same as L1)
-			expect(production.food).toBeCloseTo(60, 4);
+			// Tier 1 (L1-5): 0.5 + (level-1) × 0.05 = 0.5 + 0.10 = 0.6×
+			// 1 × 1 × 1 × 0.2 × 0.6 × 60 = 7.2 food
+			expect(production.food).toBeCloseTo(7.2, 4);
 		});
 	});
 
@@ -246,8 +246,8 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 				BIOME_FOREST // Forest has 0.8x food efficiency
 			);
 
-			// BLOCKER 2: 1 × 1 × 0.8 × 0.2 × 5 × 60 = 48 food
-			expect(production.food).toBeCloseTo(48, 4);
+			// BLOCKER 2: 1 × 1 × 0.8 × 0.2 × 0.5 × 60 = 4.8 food
+			expect(production.food).toBeCloseTo(4.8, 4);
 		});
 	});
 
@@ -268,8 +268,8 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 				BIOME_FOREST // Forest has 2x wood efficiency
 			);
 
-			// BLOCKER 2: 1 × 1.5 × 2 × 0.2 × 5 × 60 = 180 wood
-			expect(production.wood).toBeCloseTo(180, 4);
+			// BLOCKER 2: 1 × 1.5 × 2 × 0.2 × 0.5 × 60 = 18.0 wood
+			expect(production.wood).toBeCloseTo(18.0, 4);
 			expect(production.food).toBe(0);
 		});
 
@@ -288,8 +288,8 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 				'DESERT' // Desert has 2x stone efficiency
 			);
 
-			// BLOCKER 2: 1 × 1.2 × 2 × 0.2 × 5 × 60 = 144 stone
-			expect(production.stone).toBeCloseTo(144, 4);
+			// BLOCKER 2: 1 × 1.2 × 2 × 0.2 × 0.5 × 60 = 14.4 stone
+			expect(production.stone).toBeCloseTo(14.4, 4);
 		});
 	});
 
@@ -306,10 +306,10 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 
 			const production = calculateProduction(tile, [farm, well], TICKS_PER_SECOND, BIOME_GRASSLAND);
 
-			// BLOCKER 2: Tier 1 (L1-3) = 5×
-			// Food: 1 × 1 × 1 × 0.2 × 5 × 60 = 60
+			// BLOCKER 2: Tier 1 L1 = 0.5×
+			// Food: 1 × 1 × 1 × 0.2 × 0.5 × 60 = 6.0
 			// NOTE: No waterQuality field in Tile schema, so WELL cannot produce water
-			expect(production.food).toBeCloseTo(60, 4);
+			expect(production.food).toBeCloseTo(6.0, 4);
 			expect(production.wood).toBe(0);
 			expect(production.stone).toBe(0);
 			expect(production.ore).toBe(0);
@@ -333,12 +333,12 @@ describe('BLOCKER 2: Production Requires Extractors', () => {
 				BIOME_GRASSLAND
 			);
 
-			// BLOCKER 2: All Tier 1 (L1-3) = 5× multiplier
-			// Food: 1 × 1.0 × 1.0 × 0.2 × 5 × 60 = 60
+			// BLOCKER 2: Tier 1 with level bonuses
+			// Food (L2): 1 × 1.0 × 1.0 × 0.2 × 0.55 × 60 = 6.6
 			// NOTE: No waterQuality field in Tile schema, so WELL cannot produce water
-			// Wood: 1 × 1.2 × 1.0 × 0.2 × 5 × 60 = 72
-			expect(production.food).toBeCloseTo(60, 4);
-			expect(production.wood).toBeCloseTo(72, 4);
+			// Wood (L3): 1 × 1.2 × 1.0 × 0.2 × 0.6 × 60 = 8.64
+			expect(production.food).toBeCloseTo(6.6, 4);
+			expect(production.wood).toBeCloseTo(8.64, 4);
 			expect(production.stone).toBe(0);
 			expect(production.ore).toBe(0);
 		});

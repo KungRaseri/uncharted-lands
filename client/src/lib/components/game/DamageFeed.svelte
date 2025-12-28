@@ -19,14 +19,14 @@
 	}
 </script>
 
-<div class="space-y-2 scroll-smooth">
+<div class="space-y-2 scroll-smooth" data-testid="damage-feed">
 	{#if damageUpdates.length === 0}
 		<p class="text-sm text-surface-600 dark:text-surface-300 text-center py-4">
 			No damage updates yet...
 		</p>
 	{:else}
 		{#each damageUpdates.slice().reverse() as update}
-			<div class="text-sm border-l-2 border-red-600 pl-3 py-1">
+			<div class="text-sm border-l-2 border-red-600 pl-3 py-1" data-testid="damage-entry">
 				<p class="text-xs text-surface-500 dark:text-surface-400">
 					{formatTime(update.timestamp)}
 				</p>

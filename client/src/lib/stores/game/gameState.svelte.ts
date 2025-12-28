@@ -12,6 +12,7 @@
 
 import { browser } from '$app/environment';
 import { invalidate } from '$app/navigation';
+import { logger } from '$lib/utils/logger';
 
 /**
  * Auto-refresh game data every minute to catch tick updates
@@ -22,7 +23,7 @@ export function createGameRefreshInterval(dependencyKey: string = 'game:data') {
 
 	// Check for updates every 60 seconds
 	const intervalId = setInterval(() => {
-		console.log('[GAME STORE] Auto-refresh triggered');
+		logger.debug('[GAME STORE] Auto-refresh triggered');
 		invalidate(dependencyKey);
 	}, 60000);
 
@@ -38,7 +39,7 @@ export function createGameRefreshInterval(dependencyKey: string = 'game:data') {
 export function refreshGameData(dependencyKey: string = 'game:data') {
 	if (!browser) return;
 
-	console.log('[GAME STORE] Manual refresh triggered');
+	logger.debug('[GAME STORE] Manual refresh triggered');
 	invalidate(dependencyKey);
 }
 

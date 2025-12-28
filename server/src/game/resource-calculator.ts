@@ -71,27 +71,46 @@ function calculateBaseProduction(
  * Get extractor tier multiplier based on structure level
  *
  * Per GDD Section 3.4: Tier-based multipliers for extractors
- * - Tier 1 (Levels 1-3):  5x multiplier  (Basic extractors - FARM, MINE, etc.)
- * - Tier 2 (Levels 4-6):  10x multiplier (Advanced extractors)
- * - Tier 3 (Levels 7-10): 16x multiplier (Elite extractors)
+ * REBALANCED (December 20, 2025): Reduced by 10× for better game balance
+ * - OLD: 5×/10×/16× (1 farm fed 100 people)
+ * - NEW: 0.5×/1×/1.6× (1 farm feeds 10 people)
  *
- * This replaces the old linear levelMultiplier = 1 + (level-1) × 0.2
+ * Tier boundaries every 5 levels (L1-5, L6-10, L11-15, etc.):
+ * - Tier 1 (Levels 1-5):   0.5× multiplier (Basic extractors)
+ * - Tier 2 (Levels 6-10):  1.0× multiplier (Advanced extractors)
+ * - Tier 3 (Levels 11+):   1.6× multiplier (Elite extractors)
  *
- * @param level - Extractor structure level (1-10)
- * @returns Tier multiplier (5, 10, or 16)
+ * LEVEL-WITHIN-TIER BONUSES (December 20, 2025):
+ * - Tier 1: +0.05× per level (L1=0.5×, L2=0.55×, L3=0.6×, L4=0.65×, L5=0.7×)
+ * - Tier 2: +0.08× per level (L6=1.0×, L7=1.08×, L8=1.16×, L9=1.24×, L10=1.32×)
+ * - Tier 3: +0.10× per level (L11=1.6×, L12=1.7×, L13=1.8×, etc.)
+ *
+ * This ensures every upgrade provides a meaningful production boost.
+ *
+ * @param level - Extractor structure level (1+, infinite progression)
+ * @returns Tier multiplier with level bonus
  *
  * @example
- * getExtractorTierMultiplier(1)  // Returns: 5  (Tier 1)
- * getExtractorTierMultiplier(3)  // Returns: 5  (Tier 1)
- * getExtractorTierMultiplier(4)  // Returns: 10 (Tier 2)
- * getExtractorTierMultiplier(6)  // Returns: 10 (Tier 2)
- * getExtractorTierMultiplier(9)  // Returns: 16 (Tier 3)
- * getExtractorTierMultiplier(10) // Returns: 16 (Tier 3)
+ * getExtractorTierMultiplier(1)  // Returns: 0.50  (Tier 1, L1)
+ * getExtractorTierMultiplier(3)  // Returns: 0.60  (Tier 1, L3)
+ * getExtractorTierMultiplier(5)  // Returns: 0.70  (Tier 1, L5)
+ * getExtractorTierMultiplier(6)  // Returns: 1.00  (Tier 2, L6)
+ * getExtractorTierMultiplier(8)  // Returns: 1.16  (Tier 2, L8)
+ * getExtractorTierMultiplier(10) // Returns: 1.32  (Tier 2, L10)
+ * getExtractorTierMultiplier(11) // Returns: 1.60  (Tier 3, L11)
+ * getExtractorTierMultiplier(15) // Returns: 2.00  (Tier 3, L15)
  */
 function getExtractorTierMultiplier(level: number): number {
-	if (level <= 3) return 5; // Tier 1: Basic
-	if (level <= 6) return 10; // Tier 2: Advanced
-	return 16; // Tier 3: Elite
+	if (level <= 5) {
+		// Tier 1: 0.5× base + 0.05× per level
+		return 0.5 + (level - 1) * 0.05;
+	}
+	if (level <= 10) {
+		// Tier 2: 1.0× base + 0.08× per level within tier
+		return 1.0 + (level - 6) * 0.08;
+	}
+	// Tier 3: 1.6× base + 0.10× per level within tier
+	return 1.6 + (level - 11) * 0.10;
 }
 
 import type { Tile, SettlementStructure } from '../db/schema.js';
@@ -496,29 +515,33 @@ export function hasEnoughResources(storage: Resources, required: Resources): boo
 
 /**
  * Calculate consumption rates for a settlement
- * (Future: based on population, structures, etc.)
+ * 
+ * Population consumes food and water (survival resources).
+ * Structures consume wood, stone, and ore for maintenance (GDD Section 6.4).
  *
  * @param populationCount - Number of people in settlement
- * @param structureCount - Number of structures (for maintenance)
+ * @param structureCount - Number of structures requiring maintenance
  * @returns Consumption rates per tick
  */
 export function calculateConsumption(
 	populationCount: number = 0,
 	structureCount: number = 0
 ): Resources {
-	// Base consumption per person per tick
-	const FOOD_PER_PERSON_PER_TICK = 0.005;
-	const WATER_PER_PERSON_PER_TICK = 0.01;
+	// Population consumption rates (GDD Section 6.4)
+	const FOOD_PER_PERSON_PER_TICK = 0.005; // 18/hour
+	const WATER_PER_PERSON_PER_TICK = 0.01; // 36/hour
 
-	// Maintenance cost per structure per tick
-	const MAINTENANCE_PER_STRUCTURE_PER_TICK = 0.001;
+	// Structure maintenance consumption rates (GDD Section 6.4)
+	const WOOD_PER_STRUCTURE_PER_TICK = 0.001; // 3.6/hour
+	const STONE_PER_STRUCTURE_PER_TICK = 0.0005; // 1.8/hour
+	const ORE_PER_STRUCTURE_PER_TICK = 0.00025; // 0.9/hour
 
 	return {
 		food: populationCount * FOOD_PER_PERSON_PER_TICK,
 		water: populationCount * WATER_PER_PERSON_PER_TICK,
-		wood: structureCount * MAINTENANCE_PER_STRUCTURE_PER_TICK,
-		stone: structureCount * MAINTENANCE_PER_STRUCTURE_PER_TICK * 0.5,
-		ore: structureCount * MAINTENANCE_PER_STRUCTURE_PER_TICK * 0.25,
+		wood: structureCount * WOOD_PER_STRUCTURE_PER_TICK,
+		stone: structureCount * STONE_PER_STRUCTURE_PER_TICK,
+		ore: structureCount * ORE_PER_STRUCTURE_PER_TICK,
 	};
 }
 

@@ -37,12 +37,17 @@ export interface Biome {
 // Settlement Types
 // ============================================================================
 
+export type SettlementType = 'OUTPOST' | 'VILLAGE' | 'TOWN' | 'CITY';
+
 export interface Settlement {
 	id: string;
 	name: string;
 	playerProfileId: string;
 	tileId: string;
 	founded: Date | string;
+	settlementType: SettlementType;
+	tier: number; // 1-4
+	resilience: number; // 0-100
 }
 
 // ============================================================================

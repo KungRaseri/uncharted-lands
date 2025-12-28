@@ -9,6 +9,9 @@ import { io, type Socket } from 'socket.io-client';
 import { browser } from '$app/environment';
 import * as worldApi from '$lib/game/world-api';
 import { PUBLIC_WS_URL } from '$env/static/public';
+import { logger } from '$lib/utils/logger';
+import { presenceStore } from './presence.svelte';
+import { transferStore } from './transfers.svelte';
 
 // Connection state
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -44,12 +47,12 @@ function createSocketStore() {
 		connect: (serverUrl?: string, token?: string) => {
 			if (!browser) return;
 			if (socket?.connected) {
-				console.log('[SOCKET] Already connected');
+				logger.debug('[SOCKET] Already connected');
 				return;
 			}
 
 			const url = serverUrl || PUBLIC_WS_URL;
-			console.log(`[SOCKET] Connecting to ${url}...`);
+			logger.info(`[SOCKET] Connecting to ${url}...`);
 
 			update((state) => ({ ...state, connectionState: 'connecting' }));
 
@@ -66,7 +69,7 @@ function createSocketStore() {
 
 			// Connection successful
 			socket.on('connect', () => {
-				console.log('[SOCKET] Connected:', socket?.id);
+				logger.info('[SOCKET] Connected:', { socketId: socket?.id });
 				reconnectAttempts = 0;
 				update((state) => ({
 					...state,
@@ -74,17 +77,23 @@ function createSocketStore() {
 					connectionState: 'connected',
 					error: null
 				}));
+
+				// Initialize presence tracking (ARTIFACT-05 Phase 2)
+				presenceStore.initialize(socket!);
+
+				// Initialize transfer tracking (ARTIFACT-05 Phase 3)
+				transferStore.initialize(socket!);
 			});
 
 			// Server welcome message
 			socket.on('connected', (data) => {
-				console.log('[SOCKET] Welcome:', data);
+				logger.debug('[SOCKET] Welcome:', data);
 			});
 
 			// Connection error
 			socket.on('connect_error', (error) => {
 				reconnectAttempts++;
-				console.error('[SOCKET] Connection error:', error.message);
+				logger.error('[SOCKET] Connection error:', error);
 
 				if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
 					update((state) => ({
@@ -97,7 +106,7 @@ function createSocketStore() {
 
 			// Disconnected
 			socket.on('disconnect', (reason) => {
-				console.log('[SOCKET] Disconnected:', reason);
+				logger.info('[SOCKET] Disconnected:', { reason });
 				update((state) => ({
 					...state,
 					connectionState: 'disconnected',
@@ -124,7 +133,11 @@ function createSocketStore() {
 		 */
 		disconnect: () => {
 			if (socket) {
-				console.log('[SOCKET] Disconnecting...');
+				logger.debug('[SOCKET] Disconnecting...');
+				// Cleanup presence tracking (ARTIFACT-05 Phase 2)
+				presenceStore.cleanup();
+				// Cleanup transfer tracking (ARTIFACT-05 Phase 3)
+				transferStore.cleanup();
 				socket.disconnect();
 				socket = null;
 				set({
@@ -143,7 +156,7 @@ function createSocketStore() {
 			if (socket?.connected) {
 				socket.emit(event, data);
 			} else {
-				console.warn('[SOCKET] Cannot emit, not connected:', event);
+				logger.warn('[SOCKET] Cannot emit, not connected:', { event });
 			}
 		},
 

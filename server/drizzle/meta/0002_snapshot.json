@@ -1,6 +1,6 @@
 {
-  "id": "69ded436-2c55-47ab-ba20-9fd7caacc92f",
-  "prevId": "0a3199f2-c5e1-4ba7-9ff6-99a6c8b854fa",
+  "id": "6416b13d-c74c-499f-818d-6adece99453b",
+  "prevId": "3bb1b517-754d-4b21-8c41-aed814c63e5c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -39,6 +39,20 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'MEMBER'"
+        },
+        "lastSeen": {
+          "name": "lastSeen",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "isOnline": {
+          "name": "isOnline",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "createdAt": {
           "name": "createdAt",
@@ -397,17 +411,17 @@
           "primaryKey": false,
           "notNull": true
         },
-        "affectedRegionId": {
-          "name": "affectedRegionId",
-          "type": "text",
+        "affectedRegionIds": {
+          "name": "affectedRegionIds",
+          "type": "json",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "affectedBiomes": {
           "name": "affectedBiomes",
           "type": "json",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "scheduledAt": {
           "name": "scheduledAt",
@@ -557,19 +571,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "DisasterEvent_affectedRegionId_Region_id_fk": {
-          "name": "DisasterEvent_affectedRegionId_Region_id_fk",
-          "tableFrom": "DisasterEvent",
-          "tableTo": "Region",
-          "columnsFrom": [
-            "affectedRegionId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -1375,7 +1376,7 @@
           "name": "settlementId",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "food": {
           "name": "food",
@@ -1441,7 +1442,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "SettlementStorage_settlementId_unique": {
+          "name": "SettlementStorage_settlementId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "settlementId"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1644,12 +1653,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "settlementStorageId": {
-          "name": "settlementStorageId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -1657,12 +1660,41 @@
           "notNull": true,
           "default": "'Home Settlement'"
         },
+        "settlementType": {
+          "name": "settlementType",
+          "type": "SettlementType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'OUTPOST'"
+        },
+        "tier": {
+          "name": "tier",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
         "resilience": {
           "name": "resilience",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "areaUsed": {
+          "name": "areaUsed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "areaCapacity": {
+          "name": "areaCapacity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 500
         },
         "createdAt": {
           "name": "createdAt",
@@ -1737,31 +1769,10 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        },
-        "Settlement_settlementStorageId_SettlementStorage_id_fk": {
-          "name": "Settlement_settlementStorageId_SettlementStorage_id_fk",
-          "tableFrom": "Settlement",
-          "tableTo": "SettlementStorage",
-          "columnsFrom": [
-            "settlementStorageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "Settlement_settlementStorageId_unique": {
-          "name": "Settlement_settlementStorageId_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "settlementStorageId"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -2076,6 +2087,54 @@
           "primaryKey": false,
           "notNull": true,
           "default": 10
+        },
+        "tier": {
+          "name": "tier",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "constructionTimeSeconds": {
+          "name": "constructionTimeSeconds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "populationRequired": {
+          "name": "populationRequired",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "areaCost": {
+          "name": "areaCost",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "unique": {
+          "name": "unique",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "minTownHallLevel": {
+          "name": "minTownHallLevel",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "createdAt": {
           "name": "createdAt",
@@ -2504,11 +2563,9 @@
       "values": [
         "HOUSE",
         "STORAGE",
-        "BARRACKS",
         "WORKSHOP",
         "MARKETPLACE",
-        "TOWN_HALL",
-        "WALL"
+        "TOWN_HALL"
       ]
     },
     "public.DisasterSeverity": {
@@ -2589,6 +2646,16 @@
         "OFFLINE",
         "MAINTENANCE",
         "ONLINE"
+      ]
+    },
+    "public.SettlementType": {
+      "name": "SettlementType",
+      "schema": "public",
+      "values": [
+        "OUTPOST",
+        "VILLAGE",
+        "TOWN",
+        "CITY"
       ]
     },
     "public.SpecialResource": {

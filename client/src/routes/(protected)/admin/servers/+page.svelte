@@ -4,22 +4,23 @@
 	import PageHeader from '$lib/components/admin/PageHeader.svelte';
 	import EmptyState from '$lib/components/admin/EmptyState.svelte';
 	import { enhance } from '$app/forms';
+	import { Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	// State for delete confirmation modal
-	let deleteModalOpen = $state(false);
+	let deleteDialogOpen = $state(false);
 	let serverToDelete = $state<(typeof data.servers)[0] | null>(null);
 	let isDeleting = $state(false);
 
 	function openDeleteModal(server: (typeof data.servers)[0]) {
 		serverToDelete = server;
-		deleteModalOpen = true;
+		deleteDialogOpen = true;
 	}
 
 	function closeDeleteModal() {
 		if (!isDeleting) {
-			deleteModalOpen = false;
+			deleteDialogOpen = false;
 			serverToDelete = null;
 		}
 	}
@@ -143,73 +144,61 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-{#if deleteModalOpen && serverToDelete}
-	<div
-		class="modal-backdrop"
-		onclick={closeDeleteModal}
-		onkeydown={(e) => e.key === 'Escape' && closeDeleteModal()}
-		role="presentation"
-		tabindex="-1"
-	>
-		<div
-			class="modal preset-filled-surface-50-950 w-full max-w-md"
-			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
-			role="dialog"
-			aria-modal="true"
-			aria-labelledby="delete-modal-title"
-			tabindex="-1"
-		>
-			<header class="modal-header">
-				<h3 class="h3" id="delete-modal-title">Delete Server</h3>
-			</header>
-			<section class="modal-body space-y-4">
-				<p>
-					Are you sure you want to delete the server <strong>{serverToDelete.name}</strong
-					>?
-				</p>
+{#if serverToDelete}
+	<Dialog open={deleteDialogOpen} onOpenChange={(details) => { deleteDialogOpen = details.open; if (!details.open) closeDeleteModal(); }}>
+		<Portal>
+			<Dialog.Backdrop class="fixed inset-0 z-50 bg-black/70" />
+			<Dialog.Positioner class="fixed inset-0 z-50 flex justify-center items-center p-4">
+				<Dialog.Content class="card bg-surface-100-900 w-full max-w-md p-6 space-y-4 shadow-xl">
+					<header class="flex justify-between items-center">
+						<Dialog.Title class="text-xl font-bold">Delete Server</Dialog.Title>
+					</header>
 
-				{#if serverToDelete.worlds && serverToDelete.worlds.length > 0}
-					<aside class="alert preset-filled-warning-500 rounded-md">
-						<div class="alert-message">
-							<p class="font-semibold">
-								Warning: This server has {serverToDelete.worlds.length} world(s)
-							</p>
-							<p class="text-sm">
-								You must delete or reassign all worlds before deleting this server.
-							</p>
-						</div>
-					</aside>
-				{:else}
-					<aside class="alert preset-filled-error-500 rounded-md">
-						<div class="alert-message">
-							<p class="font-semibold">This action cannot be undone!</p>
-						</div>
-					</aside>
-				{/if}
-			</section>
-			<footer class="modal-footer">
-				<button
-					type="button"
-					class="btn preset-tonal-surface-500 rounded-md"
-					onclick={closeDeleteModal}
-					disabled={isDeleting}
-				>
-					Cancel
-				</button>
-				<form
-					method="POST"
-					action="?/delete"
-					use:enhance={() => {
-						isDeleting = true;
-						return async ({ update }) => {
-							await update();
-							isDeleting = false;
-							closeDeleteModal();
-						};
-					}}
-				>
-					<input type="hidden" name="serverId" value={serverToDelete.id} />
+					<Dialog.Description class="space-y-4">
+						<p>
+							Are you sure you want to delete the server <strong>{serverToDelete.name}</strong>?
+						</p>
+
+						{#if serverToDelete.worlds && serverToDelete.worlds.length > 0}
+							<aside class="alert preset-filled-warning-500 rounded-md">
+								<div class="alert-message">
+									<p class="font-semibold">
+										Warning: This server has {serverToDelete.worlds.length} world(s)
+									</p>
+									<p class="text-sm">
+										You must delete or reassign all worlds before deleting this server.
+									</p>
+								</div>
+							</aside>
+						{:else}
+							<aside class="alert preset-filled-error-500 rounded-md">
+								<div class="alert-message">
+									<p class="font-semibold">This action cannot be undone!</p>
+								</div>
+							</aside>
+						{/if}
+					</Dialog.Description>
+
+					<footer class="flex gap-3 justify-end">
+						<Dialog.CloseTrigger
+							class="btn preset-tonal-surface-500 rounded-md"
+							disabled={isDeleting}
+						>
+							Cancel
+						</Dialog.CloseTrigger>
+						<form
+							method="POST"
+							action="?/delete"
+							use:enhance={() => {
+								isDeleting = true;
+								return async ({ update }) => {
+									await update();
+									isDeleting = false;
+									closeDeleteModal();
+								};
+							}}
+						>
+							<input type="hidden" name="serverId" value={serverToDelete.id} />
 					<button
 						type="submit"
 						class="btn preset-filled-error-500 rounded-md"

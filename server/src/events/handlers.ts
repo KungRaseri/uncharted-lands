@@ -36,12 +36,19 @@ import {
 	subtractResources,
 	hasEnoughResources,
 	type Resources,
+	calculateProduction,
 } from '../game/resource-calculator.js';
 import { createWorld } from '../game/world-creator.js';
 import { aggregateSettlementModifiers } from '../game/settlement-modifier-aggregator.js';
-import { calculatePopulationState, getPopulationSummary } from '../game/population-calculator.js';
+import {
+	calculatePopulationState,
+	getPopulationSummary,
+	getHappinessDescription,
+} from '../game/population-calculator.js';
+import { calculateConsumption, calculatePopulation } from '../game/consumption-calculator.js';
+import { getWorldTemplateConfig } from '../types/world-templates.js';
 import { db } from '../db/index.js';
-import { settlementStructures } from '../db/schema.js';
+import { settlementStructures, settlements } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -174,6 +181,9 @@ async function handleJoinWorld(socket: Socket, data: JoinWorldData): Promise<voi
 			timestamp: Date.now(),
 		});
 
+		// Send initial resource production/consumption rates for player's settlements
+		await sendInitialResourceData(socket, data.playerId, data.worldId);
+
 		// Notify others in the world
 		socket.to(`world:${data.worldId}`).emit('player-joined', {
 			playerId: data.playerId,
@@ -190,6 +200,208 @@ async function handleJoinWorld(socket: Socket, data: JoinWorldData): Promise<voi
 			message: 'Failed to join world',
 			timestamp: Date.now(),
 		});
+	}
+}
+
+/**
+ * Send initial resource production/consumption data for a player's settlements
+ * Called when player joins world to populate initial rates
+ */
+async function sendInitialResourceData(
+	socket: Socket,
+	playerId: string,
+	worldId: string
+): Promise<void> {
+	try {
+		// Get player's settlements in this world
+		const playerSettlements = await db.query.settlements.findMany({
+			where: eq(settlements.playerProfileId, playerId),
+			with: {
+				tile: {
+					with: {
+						biome: true,
+						region: {
+							with: {
+								world: true,
+							},
+						},
+					},
+				},
+				storage: true,
+				structures: {
+					with: {
+						structure: true,
+						modifiers: true, // Include modifiers for population capacity calculation
+					},
+				},
+			},
+		});
+
+		// Filter to settlements in this world
+		const settlementsInWorld = playerSettlements.filter(
+			(s) => s.tile?.region?.worldId === worldId
+		);
+
+		if (settlementsInWorld.length === 0) {
+			logger.debug('[INITIAL DATA] No settlements found for player in world', {
+				playerId,
+				worldId,
+			});
+			return;
+		}
+
+		// Send resource data for each settlement
+		for (const settlement of settlementsInWorld) {
+			if (!settlement.tile) {
+				logger.warn('[INITIAL DATA] Settlement missing tile data', {
+					settlementId: settlement.id,
+					settlementName: settlement.name,
+				});
+				continue;
+			}
+
+			if (!settlement.storage) {
+				logger.error(
+					'[INITIAL DATA] Settlement missing storage! This is a critical database issue.',
+					{
+						settlementId: settlement.id,
+						settlementName: settlement.name,
+						storageId: settlement.settlementStorageId,
+						fix: 'Run: npm run fix-storage in server directory',
+					}
+				);
+				continue;
+			}
+
+			// Get extractors (production structures)
+			const extractors =
+				settlement.structures?.filter(
+					(s: { extractorType: string | null }) => s.extractorType != null
+				) || [];
+
+			// Calculate TICK_RATE interval production (10 seconds = 600 ticks at 60Hz)
+			const TICK_RATE = 60;
+			const RESOURCE_INTERVAL_SEC = Number.parseInt(
+				process.env.RESOURCE_INTERVAL_SEC || '10',
+				10
+			);
+			const ticksForInterval = RESOURCE_INTERVAL_SEC * TICK_RATE;
+
+			// Get world template multipliers
+			const worldTemplate = getWorldTemplateConfig(
+				settlement.tile.region?.world?.worldTemplateType || 'STANDARD'
+			);
+			const productionMultiplier = worldTemplate.productionMultiplier;
+			const consumptionMultiplier = worldTemplate.consumptionMultiplier;
+
+			// Calculate production for the interval
+			const production = calculateProduction(
+				settlement.tile,
+				extractors,
+				ticksForInterval,
+				settlement.tile.biome?.name,
+				productionMultiplier
+			);
+
+			// Calculate consumption for the interval
+			const population = calculatePopulation(settlement.structures || []);
+			const consumption = calculateConsumption(
+				population,
+				settlement.structures?.length || 0,
+				ticksForInterval,
+				consumptionMultiplier
+			);
+
+			// Calculate net production
+			const netProduction = {
+				food: production.food - consumption.food,
+				water: production.water - consumption.water,
+				wood: production.wood - consumption.wood,
+				stone: production.stone - consumption.stone,
+				ore: production.ore - consumption.ore,
+			};
+
+			// Convert rates to per-hour for client display
+			// Server calculates for interval (e.g., 10 seconds), convert to hourly rates
+			const intervalsPerHour = 3600 / RESOURCE_INTERVAL_SEC;
+			const productionPerHour = {
+				food: production.food * intervalsPerHour,
+				water: production.water * intervalsPerHour,
+				wood: production.wood * intervalsPerHour,
+				stone: production.stone * intervalsPerHour,
+				ore: production.ore * intervalsPerHour,
+			};
+			const consumptionPerHour = {
+				food: consumption.food * intervalsPerHour,
+				water: consumption.water * intervalsPerHour,
+				wood: consumption.wood * intervalsPerHour,
+				stone: consumption.stone * intervalsPerHour,
+				ore: consumption.ore * intervalsPerHour,
+			};
+			const netProductionPerHour = {
+				food: netProduction.food * intervalsPerHour,
+				water: netProduction.water * intervalsPerHour,
+				wood: netProduction.wood * intervalsPerHour,
+				stone: netProduction.stone * intervalsPerHour,
+				ore: netProduction.ore * intervalsPerHour,
+			};
+
+			// Send resource-update event with rates already converted to per-hour
+			socket.emit('resource-update', {
+				type: 'auto-production' as const,
+				settlementId: settlement.id,
+				resources: {
+					food: settlement.storage.food,
+					water: settlement.storage.water,
+					wood: settlement.storage.wood,
+					stone: settlement.storage.stone,
+					ore: settlement.storage.ore,
+				},
+				production: productionPerHour,
+				consumption: consumptionPerHour,
+				netProduction: netProductionPerHour,
+				population,
+				timestamp: Date.now(),
+			});
+
+			// Send population-state event with initial capacity
+			const currentPop = settlement.population?.currentPopulation || 0;
+			const popState = calculatePopulationState(
+				currentPop,
+				settlement.structures || [],
+				{
+					food: settlement.storage.food,
+					water: settlement.storage.water,
+					wood: settlement.storage.wood,
+					stone: settlement.storage.stone,
+					ore: settlement.storage.ore,
+				},
+				settlement.population?.lastGrowthTick || Date.now()
+			);
+
+			const happinessDescription = getHappinessDescription(popState.happiness);
+			const popSummary = getPopulationSummary(popState);
+
+			socket.emit('population-state', {
+				settlementId: settlement.id,
+				current: popState.current,
+				capacity: popState.capacity,
+				happiness: popState.happiness,
+				happinessDescription,
+				growthRate: popState.growthRate,
+				status: popSummary.status,
+				timestamp: Date.now(),
+			});
+
+			logger.debug('[INITIAL DATA] Sent initial resource and population data', {
+				settlementId: settlement.id,
+				production,
+				consumption,
+				populationCapacity: popState.capacity,
+			});
+		}
+	} catch (error) {
+		logger.error('[INITIAL DATA] Error sending initial resource data:', error);
 	}
 }
 
@@ -719,19 +931,8 @@ async function handleUpgradeStructure(
 		}
 
 		const currentLevel = structureToUpgrade.structure.level;
-		const maxLevel = 5; // Default max level (could be from config)
 
-		// Check if already at max level
-		if (currentLevel >= maxLevel) {
-			const errorResponse = {
-				success: false,
-				error: `Structure already at maximum level (${maxLevel})`,
-				currentLevel,
-				maxLevel,
-				timestamp: Date.now(),
-			};
-			return callback ? callback(errorResponse) : undefined;
-		}
+		// No max level check - infinite progression via exponential cost curve (1.5^level)
 
 		// Get structure configuration from centralized source
 		const normalizedStructureType = data.structureType.toUpperCase();

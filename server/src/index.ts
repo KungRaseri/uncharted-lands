@@ -13,6 +13,10 @@ import http from 'node:http';
 import express from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
+
+// Load environment variables BEFORE other imports that need them
+dotenv.config();
+
 import { expressErrorHandler } from '@sentry/node';
 import type {
 	ClientToServerEvents,
@@ -21,6 +25,7 @@ import type {
 	SocketData,
 } from '@uncharted-lands/shared';
 import { registerEventHandlers } from './events/handlers.js';
+import { setupPresenceTracking } from './events/presence.js';
 import {
 	authenticationMiddleware,
 	loggingMiddleware,
@@ -29,12 +34,10 @@ import {
 import { logger } from './utils/logger.js';
 import { closeDatabase, isDatabaseConnected } from './db/index.js';
 import { startGameLoop, stopGameLoop, getGameLoopStatus } from './game/game-loop.js';
+import { startTransportQueue, stopTransportQueue } from './game/transport-queue.js';
 import apiRouter from './api/index.js';
 import { apiLimiter } from './api/middleware/rateLimit.js';
 import { requestLogger, errorLogger } from './api/middleware/request-logger.js';
-
-// Load environment variables
-dotenv.config();
 
 // Configuration
 const PORT = Number.parseInt(process.env.PORT || '3001', 10);
@@ -131,6 +134,12 @@ app.set('io', io);
 io.use(loggingMiddleware);
 io.use(authenticationMiddleware);
 io.use(errorHandlingMiddleware);
+
+// Setup presence tracking (ARTIFACT-05 Phase 2)
+setupPresenceTracking(io);
+
+// Start transport queue processor (ARTIFACT-05 Phase 3)
+startTransportQueue(io);
 
 // Handle new connections
 io.on('connection', (socket) => {
@@ -299,93 +308,103 @@ function getMemoryStats() {
 	};
 }
 
-// Only start server if not in test mode
-if (NODE_ENV !== 'test') {
-	// Start server
-	httpServer.listen(PORT, HOST, () => {
-		const dbStatus = isDatabaseConnected();
-		const memStats = getMemoryStats();
-		const routes = getKnownApiRoutes();
+// Start server
+httpServer.listen(PORT, HOST, () => {
+	const dbStatus = isDatabaseConnected();
+	const memStats = getMemoryStats();
+	const routes = getKnownApiRoutes();
 
-		// Group routes by base path
-		const routesByPath = routes.reduce(
-			(
-				acc: Record<string, Array<{ method: string; path: string }>>,
-				route: { method: string; path: string }
-			) => {
-				const basePath = route.path.split('/')[1] || 'root';
-				if (!acc[basePath]) acc[basePath] = [];
-				acc[basePath].push(route);
-				return acc;
-			},
-			{} as Record<string, Array<{ method: string; path: string }>>
-		);
+	// Group routes by base path
+	const routesByPath = routes.reduce(
+		(
+			acc: Record<string, Array<{ method: string; path: string }>>,
+			route: { method: string; path: string }
+		) => {
+			const basePath = route.path.split('/')[1] || 'root';
+			if (!acc[basePath]) acc[basePath] = [];
+			acc[basePath].push(route);
+			return acc;
+		},
+		{} as Record<string, Array<{ method: string; path: string }>>
+	);
 
-		logger.info('═'.repeat(80));
-		logger.info('  🎮 Uncharted Lands - Game Server');
-		logger.info('═'.repeat(80));
-		logger.info(`  Environment:  ${NODE_ENV}`);
-		logger.info(`  Node Version: ${process.version}`);
-		logger.info(`  Process ID:   ${process.pid}`);
-		logger.info(`  Platform:     ${process.platform} (${process.arch})`);
-		logger.info('─'.repeat(80));
-		logger.info('  📡 Server Endpoints:');
-		logger.info(`     WebSocket:    ws://${HOST}:${PORT}`);
-		logger.info(`     REST API:     http://${HOST}:${PORT}/api`);
-		logger.info(`     Health Check: http://${HOST}:${PORT}/health`);
-		logger.info('─'.repeat(80));
-		logger.info('  💾 Memory Usage:');
-		logger.info(`     Heap Used:    ${memStats.heapUsed}`);
-		logger.info(`     Heap Total:   ${memStats.heapTotal}`);
-		logger.info(`     RSS:          ${memStats.rss}`);
-		logger.info(`     External:     ${memStats.external}`);
-		logger.info('─'.repeat(80));
-		logger.info(`  🔌 Database:     ${dbStatus ? '✓ Connected' : '✗ Disconnected'}`);
-		logger.info(`  🌐 CORS Origins: ${CORS_ORIGINS.length} configured`);
-		for (const origin of CORS_ORIGINS) {
-			logger.info(`     • ${origin}`);
-		}
-		logger.info('─'.repeat(80));
-		logger.info(`  📍 Registered API Routes: ${routes.length} total`);
-		logger.info('');
+	logger.info('═'.repeat(80));
+	logger.info('  🎮 Uncharted Lands - Game Server');
+	logger.info('═'.repeat(80));
+	logger.info(`  Server Time:  ${new Date().toISOString()}`);
+	logger.info(`  Node Version: ${process.version}`);
+	logger.info(`  Process ID:   ${process.pid}`);
+	logger.info(`  Platform:     ${process.platform} (${process.arch})`);
+	logger.info('─'.repeat(80));
+	logger.info('  📡 Server Endpoints:');
+	logger.info(`     WebSocket:    ws://${HOST}:${PORT}`);
+	logger.info(`     REST API:     http://${HOST}:${PORT}/api`);
+	logger.info(`     Health Check: http://${HOST}:${PORT}/health`);
+	logger.info('─'.repeat(80));
+	logger.info('  💾 Memory Usage:');
+	logger.info(`     Heap Used:    ${memStats.heapUsed}`);
+	logger.info(`     Heap Total:   ${memStats.heapTotal}`);
+	logger.info(`     RSS:          ${memStats.rss}`);
+	logger.info(`     External:     ${memStats.external}`);
+	logger.info('─'.repeat(80));
+	logger.info(`  🔌 Database:     ${dbStatus ? '✓ Connected' : '✗ Disconnected'}`);
+	logger.info(`  🌐 CORS Origins: ${CORS_ORIGINS.length} configured`);
+	for (const origin of CORS_ORIGINS) {
+		logger.info(`     • ${origin}`);
+	}
+	logger.info('─'.repeat(80));
+	logger.info(`  📍 Registered API Routes: ${routes.length} total`);
+	logger.info('');
 
-		// Display routes grouped by base path
-		const sortedPaths = Object.keys(routesByPath).sort();
-		for (const basePath of sortedPaths) {
-			const pathRoutes = routesByPath[basePath];
-			logger.info(`     /${basePath === 'root' ? '' : basePath}:`);
+	// Display routes grouped by base path
+	const sortedPaths = Object.keys(routesByPath).sort();
+	for (const basePath of sortedPaths) {
+		const pathRoutes = routesByPath[basePath];
+		logger.info(`     /${basePath === 'root' ? '' : basePath}:`);
 
-			// Sort routes by path then method
-			pathRoutes
-				.sort(
-					(a: { method: string; path: string }, b: { method: string; path: string }) => {
-						if (a.path === b.path) {
-							const methodOrder = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
-							return methodOrder.indexOf(a.method) - methodOrder.indexOf(b.method);
-						}
-						return a.path.localeCompare(b.path);
+		// Sort routes by path then method
+		pathRoutes
+			.sort(
+				(a: { method: string; path: string }, b: { method: string; path: string }) => {
+					if (a.path === b.path) {
+						const methodOrder = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+						return methodOrder.indexOf(a.method) - methodOrder.indexOf(b.method);
 					}
-				)
-				.forEach((route: { method: string; path: string }) => {
-					const methodPadded = route.method.padEnd(7);
-					logger.info(`       ${methodPadded} ${route.path}`);
-				});
-			logger.info('');
-		}
+					return a.path.localeCompare(b.path);
+				}
+			)
+			.forEach((route: { method: string; path: string }) => {
+				const methodPadded = route.method.padEnd(7);
+				logger.info(`       ${methodPadded} ${route.path}`);
+			});
+		logger.info('');
+	}
+	logger.info('─'.repeat(80));
+	logger.info(`  🧪 Environment Variables:`);
+	logger.info(`     NODE_ENV: ${NODE_ENV}`);
+	logger.info(`     LOG_LEVEL: ${process.env.LOG_LEVEL || 'info'}`);
+	logger.info('');
+	logger.info(`  ⏰ Game Loop Configuration (Phase 1 - Real-World Time Aligned):`);
+	logger.info(`     TICK_RATE: ${process.env.TICK_RATE || '60'} Hz`);
+	logger.info(`     RESOURCE_INTERVAL_SEC: ${process.env.RESOURCE_INTERVAL_SEC || '3600'}s (Every hour at :00)`);
+	logger.info(`     SOCKET_EMIT_INTERVAL_SEC: ${process.env.SOCKET_EMIT_INTERVAL_SEC || '1'}s`);
+	logger.info(`     POPULATION_INTERVAL_SEC: ${process.env.POPULATION_INTERVAL_SEC || '3600'}s (Every hour at :30)`);
+	logger.info(`     DISASTER_INTERVAL_SEC: ${process.env.DISASTER_INTERVAL_SEC || '900'}s (Every 15 minutes)`);
+	logger.info(`     REPAIR_SCHEDULE: Every hour at :45`);
 
-		logger.info('═'.repeat(80));
+	logger.info('═'.repeat(80));
 
-		if (dbStatus) {
-			logger.info('[STARTUP] ✓ All systems operational');
-		} else {
-			logger.warn('[STARTUP] ⚠️  Server started WITHOUT database connection');
-			logger.warn('[STARTUP] Database operations will fail until connection is restored');
-		}
 
-		// Start the game loop
-		startGameLoop(io);
-	});
-} // End of if (NODE_ENV !== 'test')
+	if (dbStatus) {
+		logger.info('[STARTUP] ✓ All systems operational');
+	} else {
+		logger.warn('[STARTUP] ⚠️  Server started WITHOUT database connection');
+		logger.warn('[STARTUP] Database operations will fail until connection is restored');
+	}
+
+	// Start the game loop
+	startGameLoop(io);
+});
 
 // Graceful shutdown
 const shutdown = async (signal: string) => {
@@ -394,6 +413,9 @@ const shutdown = async (signal: string) => {
 	// Stop game loop first
 	logger.info('[SHUTDOWN] Stopping game loop...');
 	stopGameLoop();
+
+	logger.info('[SHUTDOWN] Stopping transport queue...');
+	stopTransportQueue();
 
 	logger.info('[SHUTDOWN] Closing Socket.IO server...');
 

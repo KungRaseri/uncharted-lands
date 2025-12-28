@@ -15,6 +15,7 @@ import authRouter from './routes/auth.js';
 import settlementsRouter from './routes/settlements.js';
 import accountRouter from './routes/account.js';
 import structuresRouter from './routes/structures.js';
+import settlementAreaRouter from './routes/settlement-area.js';
 import configRouter from './routes/config.js';
 import testHelpersRouter from './routes/test-helpers.js';
 
@@ -58,6 +59,7 @@ router.use('/servers', serversRouter);
 router.use('/regions', geographyRouter); // Handles regions, tiles
 router.use('/players', playersRouter);
 router.use('/settlements', settlementsRouter);
+router.use('/settlement-area', settlementAreaRouter);
 router.use('/structures', structuresRouter);
 router.use('/admin', adminRouter);
 router.use('/test', testHelpersRouter); // Test cleanup endpoints (test/dev only)

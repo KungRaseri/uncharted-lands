@@ -6,6 +6,8 @@
  */
 
 import { socketStore } from './socket';
+import { logger } from '$lib/utils/logger';
+
 import type {
 	DisasterWarningData,
 	DisasterImminentData,
@@ -25,8 +27,8 @@ interface DisasterEvent {
 	severity: number;
 	severityLevel: string;
 	duration: number;
-	affectedRegion?: string | null;
-	affectedBiomes: string[];
+	affectedRegions: string[]; // Changed from affectedRegion (now array of region IDs)
+	affectedBiomes: string[]; // Biome types vulnerable to this disaster
 }
 
 interface DamageUpdate {
@@ -76,30 +78,50 @@ class DisasterStore {
 	emergencyRepairTimeRemaining = $state<number | null>(null); // milliseconds
 
 	private countdownInterval: ReturnType<typeof setInterval> | null = null;
+	private listenersInitialized = false;
 
-	constructor() {
-		this.setupSocketListeners();
+	/**
+	 * Initialize Socket.IO listeners and start countdown timer.
+	 * MUST be called from component context (e.g., onMount) after socket is connected.
+	 * Svelte 5 requires socket listeners to be set up in component lifecycle, not at module level.
+	 */
+	initialize() {
+		if (this.listenersInitialized) {
+			logger.debug('[DISASTER] Listeners already initialized, skipping');
+			return;
+		}
+
+		const socket = socketStore.getSocket();
+		if (!socket) {
+			logger.warn(
+				'[DISASTER] Socket not available yet, listeners will be initialized when socket connects'
+			);
+			return;
+		}
+
 		this.startCountdownTimer();
+		this.setupSocketListeners();
+		this.listenersInitialized = true;
 	}
 
 	private setupSocketListeners() {
 		const socket = socketStore.getSocket();
 		if (!socket) {
-			console.warn('[DISASTER] Socket not available, listeners not set up');
+			logger.warn('[DISASTER] Socket not available, listeners not set up');
 			return;
 		}
 
 		// WARNING phase
 		socket.on('disaster-warning', (data: DisasterWarningData) => {
-			console.log('[DISASTER] Warning received:', data);
+			logger.debug('[DISASTER] Warning received:', { data });
 			this.activeDisaster = {
 				id: data.disasterId,
 				type: data.type,
 				severity: data.severity,
 				severityLevel: data.severityLevel,
 				duration: 0, // Will be set on impact start
-				affectedRegion: data.affectedRegion,
-				affectedBiomes: data.affectedBiomes
+				affectedRegions: data.affectedRegions || [], // Now array of region IDs (default to empty array)
+				affectedBiomes: data.affectedBiomes || []
 			};
 			this.warningActive = true;
 			this.warningDismissed = false;
@@ -108,14 +130,22 @@ class DisasterStore {
 
 		// IMMINENT phase (30 min warning)
 		socket.on('disaster-imminent', (data: DisasterImminentData) => {
-			console.log('[DISASTER] Imminent:', data);
-			this.timeUntilImpact = data.impactIn;
+			logger.debug('[DISASTER] Imminent:', { data });
+
+			// Only update if significantly different (more than 2 seconds off)
+			// This prevents server updates from interfering with client-side countdown
+			if (
+				this.timeUntilImpact === null ||
+				Math.abs(this.timeUntilImpact - data.impactIn) > 2000
+			) {
+				this.timeUntilImpact = data.impactIn;
+			}
 			// Could trigger urgent notification here
 		});
 
 		// IMPACT start
 		socket.on('disaster-impact-start', (data: DisasterImpactStartData) => {
-			console.log('[DISASTER] Impact started:', data);
+			logger.debug('[DISASTER] Impact started:', { data });
 			this.warningActive = false;
 			this.impactActive = true;
 			this.damageUpdates = [];
@@ -129,7 +159,7 @@ class DisasterStore {
 
 		// DAMAGE updates (individual structure damage)
 		socket.on('structure-damaged', (data: StructureDamagedData) => {
-			console.log('[DISASTER] Structure damaged:', data);
+			logger.debug('[DISASTER] Structure damaged:', { data });
 
 			// Calculate damage dealt
 			const oldHealth =
@@ -157,7 +187,7 @@ class DisasterStore {
 
 		// STRUCTURE DESTROYED (structure reaches 0% health)
 		socket.on('structure-destroyed', (data: StructureDestroyedData) => {
-			console.log('[DISASTER] Structure destroyed:', data);
+			logger.debug('[DISASTER] Structure destroyed:', { data });
 
 			// Add to damage feed
 			const update: DamageUpdate = {
@@ -179,7 +209,7 @@ class DisasterStore {
 
 		// CASUALTIES REPORT (population casualties from disaster)
 		socket.on('casualties-report', (data: CasualtiesReportData) => {
-			console.log('[DISASTER] Casualties reported:', data);
+			logger.debug('[DISASTER] Casualties reported:', { data });
 
 			// Update aftermath summary if available
 			if (this.aftermathSummary) {
@@ -189,13 +219,13 @@ class DisasterStore {
 
 		// DAMAGE progress updates
 		socket.on('disaster-damage-update', (data: DisasterDamageUpdateData) => {
-			console.log('[DISASTER] Damage update:', data.progress, '%');
+			logger.debug('[DISASTER] Damage update:', { progress: data.progress });
 			// Could update progress bar here
 		});
 
 		// IMPACT end
 		socket.on('disaster-impact-end', (data: DisasterImpactEndData) => {
-			console.log('[DISASTER] Impact ended:', data);
+			logger.debug('[DISASTER] Impact ended:', { data });
 			this.impactActive = false;
 
 			// Build aftermath summary from final data
@@ -217,7 +247,7 @@ class DisasterStore {
 
 		// AFTERMATH
 		socket.on('disaster-aftermath', (data: DisasterAftermathData) => {
-			console.log('[DISASTER] Aftermath phase:', data);
+			logger.debug('[DISASTER] Aftermath phase:', { data });
 			this.aftermathModalOpen = true;
 			this.emergencyRepairWindowActive = data.emergencyRepairDiscount;
 			this.emergencyRepairTimeRemaining = 48 * 60 * 60 * 1000; // 48 hours
@@ -225,7 +255,7 @@ class DisasterStore {
 
 		// RESOLVED (cleanup)
 		socket.on('disaster-resolved', (data: DisasterResolvedData) => {
-			console.log('[DISASTER] Resolved:', data);
+			logger.debug('[DISASTER] Resolved:', { data });
 			this.activeDisaster = null;
 			this.warningActive = false;
 			this.impactActive = false;
@@ -281,10 +311,21 @@ class DisasterStore {
 	get timeUntilImpactFormatted() {
 		if (!this.timeUntilImpact) return '';
 
-		const hours = Math.floor(this.timeUntilImpact / (1000 * 60 * 60));
-		const minutes = Math.floor((this.timeUntilImpact % (1000 * 60 * 60)) / (1000 * 60));
+		const totalSeconds = Math.floor(this.timeUntilImpact / 1000);
 
-		return `${hours}h ${minutes}m`;
+		// Show seconds if less than 1 minute (for E2E testing and short warnings)
+		if (totalSeconds < 60) {
+			return `${totalSeconds}s`;
+		}
+
+		// Show hours and minutes for longer durations
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+		if (hours > 0) {
+			return `${hours}h ${minutes}m`;
+		}
+		return `${minutes}m`;
 	}
 
 	get emergencyRepairTimeFormatted() {

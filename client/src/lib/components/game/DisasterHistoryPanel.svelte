@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { formatDistanceToNow, format } from 'date-fns';
+	import { logger } from '$lib/utils/logger';
 	import type {
 		DisasterHistory,
 		DisasterHistoryFilters,
@@ -144,7 +145,7 @@
 			disasters = data;
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Unknown error occurred';
-			console.error('[DisasterHistoryPanel] Fetch error:', err);
+			logger.error('[DisasterHistoryPanel] Fetch error:', err);
 		} finally {
 			loading = false;
 		}

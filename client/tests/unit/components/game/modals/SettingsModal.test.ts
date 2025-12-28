@@ -67,7 +67,16 @@ describe('SettingsModal', () => {
 	let originalInnerWidth: number;
 
 	beforeEach(() => {
+		// Clear all mock calls before each test
 		vi.clearAllMocks();
+
+		// Reset mock implementations to ensure they're fresh
+		mockLayoutStore.resetLayout.mockClear();
+		mockLayoutStore.showPanel.mockClear();
+		mockLayoutStore.hidePanel.mockClear();
+		mockLayoutStore.reorderPanels.mockClear();
+		mockLayoutStore.loadLayout.mockClear();
+
 		originalInnerWidth = globalThis.innerWidth;
 	});
 
@@ -302,9 +311,6 @@ describe('SettingsModal', () => {
 		});
 
 		it('should call resetLayout when reset is confirmed', async () => {
-			// Mock globalThis.confirm to return true
-			const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-
 			const { container } = render(SettingsModal, {
 				props: {
 					open: true,
@@ -314,6 +320,7 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
+			// Click "Reset to Default" button to open confirmation modal
 			const resetButton = Array.from(container.querySelectorAll('button')).find((btn) =>
 				btn.textContent?.includes('Reset to Default')
 			);
@@ -322,17 +329,21 @@ describe('SettingsModal', () => {
 
 			await fireEvent.click(resetButton!);
 
-			expect(confirmSpy).toHaveBeenCalledWith(
-				'Reset layout to default? This will clear all customizations.'
-			);
-			expect(mockLayoutStore.resetLayout).toHaveBeenCalledWith('default');
+			// Wait for confirmation modal to render
+			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			confirmSpy.mockRestore();
+			// Find and click the "Reset" confirmation button in the modal
+			const confirmButton = Array.from(container.querySelectorAll('button')).find((btn) =>
+				btn.textContent?.trim() === 'Reset'
+			);
+
+			expect(confirmButton).toBeTruthy();
+			await fireEvent.click(confirmButton!);
+
+			expect(mockLayoutStore.resetLayout).toHaveBeenCalledWith('default');
 		});
 
 		it('should NOT call resetLayout when reset is cancelled', async () => {
-			const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-
 			const { container } = render(SettingsModal, {
 				props: {
 					open: true,
@@ -342,16 +353,25 @@ describe('SettingsModal', () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
+			// Click "Reset to Default" button to open confirmation modal
 			const resetButton = Array.from(container.querySelectorAll('button')).find((btn) =>
 				btn.textContent?.includes('Reset to Default')
 			);
 
 			await fireEvent.click(resetButton!);
 
-			expect(confirmSpy).toHaveBeenCalled();
-			expect(mockLayoutStore.resetLayout).not.toHaveBeenCalled();
+			// Wait for confirmation modal to render
+			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			confirmSpy.mockRestore();
+			// Find and click the "Cancel" button in the confirmation modal
+			const cancelButton = Array.from(container.querySelectorAll('button')).find((btn) =>
+				btn.textContent?.trim() === 'Cancel'
+			);
+
+			expect(cancelButton).toBeTruthy();
+			await fireEvent.click(cancelButton!);
+
+			expect(mockLayoutStore.resetLayout).not.toHaveBeenCalled();
 		});
 	});
 

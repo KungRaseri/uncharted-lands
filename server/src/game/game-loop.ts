@@ -4,14 +4,19 @@
  * Manages the 60Hz tick system for automatic resource generation
  * and other time-based game mechanics
  *
- * DISASTER SYSTEM INTEGRATION (November 2025 - Phase 4):
- * - Hourly disaster checks at tick % (TICK_RATE * 3600)
- * - 10Hz disaster event processing at 10Hz (every 6 ticks)
+ * PHASE 1 IMPLEMENTATION (December 2025):
+ * - Real-world UTC time alignment (not server-start based)
+ * - Staggered processing: :00 (resources), :15 (disasters), :30 (population), :45 (repairs)
+ * - Disaster checks every 15 minutes (allows 2-4 disasters/hour)
+ * - 10Hz disaster event processing (every 6 ticks)
+ *
+ * See: docs/game-design/Game-Loop-Specification.md
  */
 
 import type { Server as SocketIOServer } from 'socket.io';
 import { eq, or, and, inArray } from 'drizzle-orm';
 import { logger } from '../utils/logger.js';
+import { GameLoopMonitor } from '../utils/game-loop-monitor.js';
 import {
 	updateSettlementStorage,
 	getSettlementWithDetails,
@@ -60,7 +65,16 @@ const TICK_INTERVAL_MS = 1000 / TICK_RATE; // ~16.67ms per tick (at 60 ticks/sec
 // Configurable game loop intervals (in seconds)
 const RESOURCE_INTERVAL_SEC = Number.parseInt(process.env.RESOURCE_INTERVAL_SEC || '3600', 10); // Default: 1 hour (production)
 const SOCKET_EMIT_INTERVAL_SEC = Number.parseInt(process.env.SOCKET_EMIT_INTERVAL_SEC || '1', 10); // Default: 1 second (real-time projection)
-const POPULATION_INTERVAL_SEC = Number.parseInt(process.env.POPULATION_INTERVAL_SEC || '1800', 10); // Default: 30 minutes (half-hour offset)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const POPULATION_INTERVAL_SEC = Number.parseInt(process.env.POPULATION_INTERVAL_SEC || '3600', 10); // Default: 1 hour (population updates) - kept for reference, actual timing uses offset
+const DISASTER_INTERVAL_SEC = Number.parseInt(process.env.DISASTER_INTERVAL_SEC || '900', 10); // Default: 15 minutes (disaster checks)
+
+// Hardcoded offsets for staggered processing (in seconds from top of hour)
+// These are NOT configurable to ensure consistency across all instances
+const RESOURCE_OFFSET_SEC = 0; // Top of hour (:00)
+const POPULATION_OFFSET_SEC = 1800; // Half hour (:30)
+const REPAIR_OFFSET_SEC = 2700; // 45 minutes (:45)
+// Note: DISASTER_INTERVAL_SEC = 900 means checks at :00, :15, :30, :45
 
 // Track active game loop
 /* eslint-disable-next-line no-undef */
@@ -68,11 +82,18 @@ let gameLoopInterval: NodeJS.Timeout | null = null;
 let currentTick = 0;
 let isRunning = false;
 let lastStatusLog = 0;
-const STATUS_LOG_INTERVAL = TICK_RATE * 300; // Log status every 5 minutes (300 seconds)
+const STATUS_LOG_INTERVAL_SEC = TICK_RATE * Number.parseInt(process.env.STATUS_LOG_INTERVAL_SEC || '300', 10); // Log status every 5 minutes (300 seconds)
 
-// Track last production/population ticks to prevent multiple triggers per interval
-let lastResourceProductionTick = 0;
-let lastPopulationUpdateTick = 0;
+// Initialize performance monitor
+const monitor = GameLoopMonitor.getInstance();
+let lastMonitorReport = Date.now();
+
+// Track last trigger times (in seconds) to prevent multiple triggers within same second
+// This is needed because all 60 ticks within a second share the same secondsSinceEpoch value
+let lastResourceTriggerSec = 0;
+let lastPopulationTriggerSec = 0;
+let lastDisasterCheckSec = 0;
+let lastRepairTriggerSec = 0;
 
 // NOTE: activeSettlements Map REMOVED in December 2025 refactor
 // Game loop now processes ALL settlements in READY worlds (world-based processing)
@@ -112,6 +133,14 @@ export function startGameLoop(io: SocketIOServer): void {
 	logger.info('[GAME LOOP] 🎮 Starting game loop...', {
 		tickRate: `${TICK_RATE} ticks/second`,
 		tickInterval: `${TICK_INTERVAL_MS.toFixed(2)}ms`,
+		schedule: {
+			resources: 'Every hour at :00',
+			population: 'Every hour at :30',
+			repairs: 'Every hour at :45',
+			disasters: `Every ${DISASTER_INTERVAL_SEC / 60} minutes`,
+			emissions: `Every ${SOCKET_EMIT_INTERVAL_SEC} second(s)`,
+		},
+		timeAlignment: 'Real-world UTC',
 	});
 
 	isRunning = true;
@@ -156,16 +185,86 @@ export function stopGameLoop(): void {
  * Process a single tick
  */
 async function processTick(io: SocketIOServer): Promise<void> {
+	const tickStartTime = Date.now();
+	const systemsTriggered: string[] = [];
+	
 	currentTick++;
 
 	// Log status periodically
-	if (currentTick - lastStatusLog >= STATUS_LOG_INTERVAL) {
-		logger.info('[GAME LOOP] 📊 Status update', {
+	if (currentTick - lastStatusLog >= STATUS_LOG_INTERVAL_SEC) {
+		logger.debug('[GAME LOOP] 📊 Status update', {
 			tick: currentTick,
 			uptime: `${Math.floor(currentTick / TICK_RATE / 60)}m ${Math.floor((currentTick / TICK_RATE) % 60)}s`,
 			connections: io.engine.clientsCount,
 		});
 		lastStatusLog = currentTick;
+		
+		// Log performance report every 5 minutes
+		monitor.logPeriodicReport();
+	}
+	
+	// Generate full performance report every 15 minutes
+	const timeSinceLastReport = Date.now() - lastMonitorReport;
+	if (timeSinceLastReport > 900000) { // 15 minutes
+		monitor.logPeriodicReport();
+		lastMonitorReport = Date.now();
+	}
+
+	// ===== REAL-WORLD TIME ALIGNMENT (Phase 1 - December 2025) =====
+
+	// Calculate current time for alignment checks
+	const currentTime = Date.now();
+	const secondsSinceEpoch = Math.floor(currentTime / 1000);
+
+	// Calculate time within current hour (0-3599 seconds)
+	const secondsIntoHour = secondsSinceEpoch % 3600;
+
+	// Check if we're at the specific time marks (with multiple-trigger prevention)
+	// Resources: Every hour at :00 (secondsIntoHour === 0)
+	const isResourceProductionTime = 
+		secondsIntoHour === RESOURCE_OFFSET_SEC && 
+		secondsSinceEpoch !== lastResourceTriggerSec &&
+		currentTick % TICK_RATE === 0; // Only trigger on first tick of that second
+
+	// Population: Every hour at :30 (secondsIntoHour === 1800)
+	const isPopulationUpdateTime = 
+		secondsIntoHour === POPULATION_OFFSET_SEC && 
+		secondsSinceEpoch !== lastPopulationTriggerSec &&
+		currentTick % TICK_RATE === 0;
+
+	// Passive Repairs: Every hour at :45 (secondsIntoHour === 2700)
+	const isRepairTime = 
+		secondsIntoHour === REPAIR_OFFSET_SEC && 
+		secondsSinceEpoch !== lastRepairTriggerSec &&
+		currentTick % TICK_RATE === 0;
+
+	// Disaster Checks: Every 15 minutes (:00, :15, :30, :45)
+	const isDisasterCheckTime = 
+		secondsSinceEpoch % DISASTER_INTERVAL_SEC === 0 && 
+		secondsSinceEpoch !== lastDisasterCheckSec &&
+		currentTick % TICK_RATE === 0;
+
+	// Emit real-time projections every SOCKET_EMIT_INTERVAL_SEC (default: 1 second)
+	const shouldEmitProjection = currentTick % (TICK_RATE * SOCKET_EMIT_INTERVAL_SEC) === 0;
+
+	// ===== DEBUG LOGGING FOR TIME ALIGNMENT =====
+	// Log timing checks every 60 ticks (every second) to verify alignment
+	if (currentTick % 60 === 0 && process.env.DEBUG_GAME_LOOP === 'true') {
+		const currentDateTime = new Date(currentTime);
+		logger.debug('[GAME LOOP] ⏰ Time Alignment Check', {
+			tick: currentTick,
+			realTime: currentDateTime.toISOString(),
+			utcHour: currentDateTime.getUTCHours(),
+			utcMinute: currentDateTime.getUTCMinutes(),
+			utcSecond: currentDateTime.getUTCSeconds(),
+			secondsIntoHour,
+			checks: {
+				resource: `${isResourceProductionTime} (at :00, next in ${3600 - secondsIntoHour}s)`,
+				population: `${isPopulationUpdateTime} (at :30, next in ${(1800 - secondsIntoHour + 3600) % 3600}s)`,
+				repair: `${isRepairTime} (at :45, next in ${(2700 - secondsIntoHour + 3600) % 3600}s)`,
+				disaster: `${isDisasterCheckTime} (every 15min, next in ${900 - (secondsSinceEpoch % 900)}s)`
+			}
+		});
 	}
 
 	// ===== DISASTER SYSTEM PROCESSING (Phase 4 - November 2025) =====
@@ -173,7 +272,6 @@ async function processTick(io: SocketIOServer): Promise<void> {
 	// Process disaster events at 10Hz (every 6 ticks)
 	// GDD Reference: Section 5.6.4 (Disaster Event Processing)
 	if (currentTick % 6 === 0) {
-		const currentTime = Date.now();
 		await processDisasters(io, currentTime);
 	}
 
@@ -185,19 +283,22 @@ async function processTick(io: SocketIOServer): Promise<void> {
 	// - Constructions complete at second-level precision (acceptable for UX)
 	// - Reduces database queries from 900/sec to 15/sec (60x improvement)
 	// - Prevents heap overflow with multiple active worlds
-	if (currentTick % 60 === 0) {
-		const currentTime = Date.now();
-
+	if (currentTick % TICK_RATE === 0) {
 		// Get all active worlds to process their construction queues
 		const { worlds: worldsTable } = await import('../db/schema.js');
 		const activeWorlds = await db.query.worlds.findMany({
-			where: eq(worldsTable.status, 'READY'),
+			where: eq(worldsTable.status, 'ready'),
 		});
+
+		// Import broadcast function
+		const { broadcastConstructionProgress } = await import('./construction-queue-processor.js');
 
 		// Process each world's construction queue
 		for (const world of activeWorlds) {
 			try {
 				await processConstructionQueues(world.id, currentTime, io);
+				// Broadcast real-time progress updates to all clients
+				await broadcastConstructionProgress(world.id, currentTime, io);
 			} catch (error) {
 				logger.error('[CONSTRUCTION QUEUE] Error processing construction queues', {
 					worldId: world.id,
@@ -208,20 +309,40 @@ async function processTick(io: SocketIOServer): Promise<void> {
 		}
 	}
 
-	// Check for new disasters hourly (every 3600 seconds)
+	// Check for new disasters every 15 minutes (:00, :15, :30, :45)
 	// GDD Reference: Section 3.5.4 (Disaster System)
-	const HOURLY_TICKS = TICK_RATE * 3600; // 60 ticks/sec × 3600 sec = 216,000 ticks
-	if (currentTick % HOURLY_TICKS === 0) {
-		const currentTime = Date.now();
+	if (isDisasterCheckTime) {
+		systemsTriggered.push('disasters');
+		monitor.recordSystemTrigger('disasters', currentTime, currentTick);
+		
+		logger.info('[GAME LOOP] 🌪️  DISASTER CHECK TRIGGERED', {
+			tick: currentTick,
+			timestamp: new Date(currentTime).toISOString(),
+			secondsIntoHour,
+			intervalSec: DISASTER_INTERVAL_SEC,
+		});
+		
 		await processHourlyDisasterChecks(currentTime);
+		lastDisasterCheckSec = secondsSinceEpoch;
+	}
 
-		// Process passive repairs (1% health per hour for structures 21-99% health with Workshop)
-		// GDD Reference: Section 3.4.6 (Passive Repair System)
+	// Process passive repairs every hour at :45 mark
+	// GDD Reference: Section 3.4.6 (Passive Repair System)
+	if (isRepairTime) {
+		systemsTriggered.push('repairs');
+		monitor.recordSystemTrigger('repairs', currentTime, currentTick);
+		
+		logger.info('[GAME LOOP] 🔧 PASSIVE REPAIR TRIGGERED', {
+			tick: currentTick,
+			timestamp: new Date(currentTime).toISOString(),
+			secondsIntoHour,
+		});
+
 		try {
 			// Get all active worlds (same pattern as disaster checks)
 			const { worlds: worldsTable } = await import('../db/schema.js');
 			const activeWorlds = await db.query.worlds.findMany({
-				where: eq(worldsTable.status, 'READY'),
+				where: eq(worldsTable.status, 'ready'),
 			});
 
 			logger.info(
@@ -247,70 +368,37 @@ async function processTick(io: SocketIOServer): Promise<void> {
 				stack: error instanceof Error ? error.stack : undefined,
 			});
 		}
-	}
-
-	// ===== RESOURCE PRODUCTION & POPULATION UPDATES (Refactored December 2025) =====
-
-	// Calculate current time for alignment checks
-	const currentTime = Date.now();
-	const secondsSinceEpoch = Math.floor(currentTime / 1000);
-
-	// FIX: Use tick-based intervals instead of time-based modulo to prevent multiple triggers
-	// Problem: All 60 ticks within a second share the same secondsSinceEpoch value
-	// If that second % interval === 0, all 60 ticks trigger (600x multiplier bug!)
-	// Solution: Track last tick we fired and ensure RESOURCE_INTERVAL_SEC has passed
-	const ticksSinceLastResource = currentTick - lastResourceProductionTick;
-	const ticksSinceLastPopulation = currentTick - lastPopulationUpdateTick;
-
-	const RESOURCE_TICKS_INTERVAL = TICK_RATE * RESOURCE_INTERVAL_SEC; // e.g., 60 * 10 = 600 ticks
-	const POPULATION_TICKS_INTERVAL = TICK_RATE * POPULATION_INTERVAL_SEC; // e.g., 60 * 10 = 600 ticks
-
-	const isResourceProductionTime = ticksSinceLastResource >= RESOURCE_TICKS_INTERVAL;
-	const isPopulationUpdateTime = ticksSinceLastPopulation >= POPULATION_TICKS_INTERVAL;
-
-	// Emit real-time projections every SOCKET_EMIT_INTERVAL_SEC (default: 1 second)
-	const shouldEmitProjection = currentTick % (TICK_RATE * SOCKET_EMIT_INTERVAL_SEC) === 0;
-
-	// ===== DEBUG LOGGING FOR PRODUCTION TICKS =====
-	// Log timing checks every 60 ticks (every second)
-	if (currentTick % 60 === 0) {
-		logger.debug('[GAME LOOP] ⏰ Timing Check', {
-			tick: currentTick,
-			secondsSinceEpoch,
-			isResourceProductionTime,
-			isPopulationUpdateTime,
-			shouldEmitProjection,
-			resourceIntervalSec: RESOURCE_INTERVAL_SEC,
-			populationIntervalSec: POPULATION_INTERVAL_SEC,
-			nextResourceTick: RESOURCE_INTERVAL_SEC - (secondsSinceEpoch % RESOURCE_INTERVAL_SEC),
-			nextPopulationTick:
-				POPULATION_INTERVAL_SEC - (secondsSinceEpoch % POPULATION_INTERVAL_SEC),
-		});
+		
+		lastRepairTriggerSec = secondsSinceEpoch;
 	}
 
 	// ===== LOG CRITICAL EVENTS =====
 	if (isResourceProductionTime) {
-		logger.info('[GAME LOOP] 🎯 RESOURCE PRODUCTION TICK TRIGGERED', {
+		systemsTriggered.push('resources');
+		monitor.recordSystemTrigger('resources', currentTime, currentTick);
+		
+		logger.info('[GAME LOOP] 🎯 RESOURCE PRODUCTION TRIGGERED', {
 			tick: currentTick,
 			timestamp: new Date(currentTime).toISOString(),
-			ticksSinceLastResource,
-			intervalSec: RESOURCE_INTERVAL_SEC,
-			intervalTicks: RESOURCE_TICKS_INTERVAL,
+			secondsIntoHour,
+			nextTrigger: 'in 1 hour (at :00)',
 		});
-		// Update tracking variable to prevent re-trigger until next interval
-		lastResourceProductionTick = currentTick;
+		// Update tracking variable to prevent re-trigger until next hour
+		lastResourceTriggerSec = secondsSinceEpoch;
 	}
 
 	if (isPopulationUpdateTime) {
-		logger.info('[GAME LOOP] 👥 POPULATION UPDATE TICK TRIGGERED', {
+		systemsTriggered.push('population');
+		monitor.recordSystemTrigger('population', currentTime, currentTick);
+		
+		logger.info('[GAME LOOP] 👥 POPULATION UPDATE TRIGGERED', {
 			tick: currentTick,
 			timestamp: new Date(currentTime).toISOString(),
-			ticksSinceLastPopulation,
-			intervalSec: POPULATION_INTERVAL_SEC,
-			intervalTicks: POPULATION_TICKS_INTERVAL,
+			secondsIntoHour,
+			nextTrigger: 'in 1 hour (at :30)',
 		});
-		// Update tracking variable to prevent re-trigger until next interval
-		lastPopulationUpdateTick = currentTick;
+		// Update tracking variable to prevent re-trigger until next hour
+		lastPopulationTriggerSec = secondsSinceEpoch;
 	}
 
 	if (shouldEmitProjection && currentTick % (TICK_RATE * 10) === 0) {
@@ -323,12 +411,12 @@ async function processTick(io: SocketIOServer): Promise<void> {
 
 	// Process world-based updates if it's time
 	if (isResourceProductionTime || isPopulationUpdateTime || shouldEmitProjection) {
-		logger.debug('[GAME LOOP] 🔄 Processing world-based updates', {
-			tick: currentTick,
-			isResourceProductionTime,
-			isPopulationUpdateTime,
-			shouldEmitProjection,
-		});
+		// logger.debug('[GAME LOOP] 🔄 Processing world-based updates', {
+		// 	tick: currentTick,
+		// 	isResourceProductionTime,
+		// 	isPopulationUpdateTime,
+		// 	shouldEmitProjection,
+		// });
 
 		await processWorldBasedUpdates(io, {
 			isResourceProductionTime,
@@ -338,6 +426,10 @@ async function processTick(io: SocketIOServer): Promise<void> {
 			secondsSinceEpoch,
 		});
 	}
+	
+	// Record tick performance metrics
+	const tickEndTime = Date.now();
+	monitor.recordTick(currentTick, tickStartTime, tickEndTime, systemsTriggered);
 }
 
 /**
@@ -367,14 +459,22 @@ async function processWorldBasedUpdates(
 			where: eq(worldsTable.status, 'ready'),
 		});
 
-		logger.debug('[GAME LOOP] 🌍 Active worlds check', {
-			worldCount: activeWorlds.length,
-			isResourceTime: timing.isResourceProductionTime,
-			isPopulationTime: timing.isPopulationUpdateTime,
-			shouldEmitProjection: timing.shouldEmitProjection,
-		});
+		// logger.debug('[GAME LOOP] 🌍 Active worlds check', {
+		// 	worldCount: activeWorlds.length,
+		// 	isResourceTime: timing.isResourceProductionTime,
+		// 	isPopulationTime: timing.isPopulationUpdateTime,
+		// 	shouldEmitProjection: timing.shouldEmitProjection,
+		// });
+
+		// TEMPORARY: Log world details to verify worlds are found
+		if (activeWorlds.length > 0) {
+			// logger.debug('[GAME LOOP] ✅ Found active worlds', {
+			// 	worlds: activeWorlds.map((w) => ({ id: w.id, name: w.name, status: w.status })),
+			// });
+		}
 
 		if (activeWorlds.length === 0) {
+			logger.warn('[GAME LOOP] ⚠️  No active worlds found!');
 			return; // No active worlds to process
 		}
 
@@ -432,16 +532,25 @@ async function processWorldBasedUpdates(
 					where: inArray(settlementsTable.tileId, tileIds),
 				});
 
-				logger.debug('[GAME LOOP] 🏘️  Processing world settlements', {
-					worldId: world.id,
-					worldName: world.name,
-					settlementCount: settlements.length,
-				});
-
+				// Skip worlds with no settlements (common for test/temporary worlds)
 				if (settlements.length === 0) {
-					continue; // No settlements in this world
-				}
+				// Commented out to reduce log spam during local development
+				// logger.debug('[GAME LOOP] Skipping world with no settlements', {
+				// 	worldId: world.id,
+				// 	worldName: world.name,
+				// });
+				continue;
+			}
 
+			// Commented out to reduce log spam during local development
+			// logger.debug('[GAME LOOP] 🏘️  Processing world settlements', {
+			// 	worldId: world.id,
+			// 	worldName: world.name,
+			// 	settlementCount: settlements.length,
+			// 	isResourceProductionTime: timing.isResourceProductionTime,
+			// 	isPopulationUpdateTime: timing.isPopulationUpdateTime,
+			// 	shouldEmitProjection: timing.shouldEmitProjection,
+			// });
 				// Process settlements in batches to avoid overwhelming database
 				const batchSize = 10;
 				for (let i = 0; i < settlements.length; i += batchSize) {
@@ -808,9 +917,18 @@ async function processSettlementWorldBased(
 
 			if (roomSize > 0) {
 				io.to(`world:${worldId}`).emit('resource-update', resourceUpdatePayload);
-				logger.debug('[GAME LOOP] 📡 Emitted resource-update event', {
+				logger.info('[GAME LOOP] 📡 Emitted resource-update event', {
 					settlementId,
 					roomSize,
+					production: roundedProduction,
+					consumption: roundedConsumption,
+					netProduction: roundedNetProduction,
+					finalResources: roundedResources,
+				});
+			} else {
+				logger.warn('[GAME LOOP] ⚠️ Room empty, skipping emission', {
+					settlementId,
+					worldId,
 				});
 			}
 
@@ -884,9 +1002,10 @@ async function processSettlementWorldBased(
 		}
 
 		// ==================================================================
-		// REAL-TIME PROJECTION (On projection ticks, NOT on production)
+		// REAL-TIME PROJECTION (On projection ticks)
+		// Note: Projections can happen on the same tick as production
 		// ==================================================================
-		else if (timing.shouldEmitProjection && roomSize > 0) {
+		if (timing.shouldEmitProjection && roomSize > 0) {
 			logger.debug('[GAME LOOP] 📊 PROJECTION TICK', {
 				settlementId,
 				secondsSinceLastProduction,

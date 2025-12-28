@@ -51,6 +51,7 @@
 						type="button"
 						onclick={() => (showDamageFeed = !showDamageFeed)}
 						class="btn variant-filled-surface text-sm px-4 py-2 hover:variant-filled-primary"
+						data-testid="toggle-damage-feed-btn"
 					>
 						{showDamageFeed ? 'Hide' : 'View'} Real-Time Updates
 					</button>

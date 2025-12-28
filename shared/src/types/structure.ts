@@ -80,6 +80,7 @@ export interface Structure {
  * From StructureModifier database table
  */
 export interface StructureModifier {
+	id: string;
 	type: string; // LINEAR, EXPONENTIAL, DIMINISHING
 	name: string;
 	description: string;
@@ -110,6 +111,11 @@ export interface StructureMetadata {
 		ore: number;
 	};
 
+	// Building Area System: Placement constraints
+	areaCost?: number; // Area consumed (0 for extractors)
+	unique?: boolean; // Can only build one per settlement
+	minTownHallLevel?: number; // Minimum Town Hall level required
+
 	// Additional metadata
 	baseCost?: {
 		food: number;
@@ -128,11 +134,8 @@ export interface StructureMetadata {
 		minimumLevel?: number;
 	}[];
 
-	// Requirements (area, solar, wind, etc.)
+	// Requirements
 	requirements?: {
-		area?: number;
-		solar?: number;
-		wind?: number;
 		food?: number;
 		water?: number;
 		wood?: number;

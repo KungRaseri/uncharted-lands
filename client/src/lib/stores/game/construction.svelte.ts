@@ -7,8 +7,9 @@
 
 import { browser } from '$app/environment';
 import { socketStore } from './socket';
+import { logger } from '$lib/utils/logger';
 
-type BuildingType = 'HOUSING' | 'DEFENSE' | 'INFRASTRUCTURE' | 'PRODUCTION' | 'OTHER';
+type BuildingType = 'HOUSE' | 'STORAGE' | 'WORKSHOP' | 'MARKETPLACE' | 'TOWN_HALL' | 'FOOD' | 'WATER' | 'WOOD' | 'STONE' | 'ORE' | 'OTHER';
 
 interface ResourceCost {
 	wood: number;
@@ -48,17 +49,37 @@ function initializeListeners(): void {
 	// Listen for construction started event (project begins building)
 	socket.on(
 		'construction-started',
-		(data: { settlementId: string; project: ConstructionProject }) => {
+		(data: { settlementId: string; constructionId: string; structureType: string; category?: string; buildingType?: string; extractorType?: string; completesAt: Date; isEmergency?: boolean; timestamp: number }) => {
 			const currentState = state.construction.get(data.settlementId) || {
 				active: [],
 				queued: []
 			};
 
+			// Convert server data to ConstructionProject format
+			// Use buildingType (HOUSE, STORAGE, etc) or extractorType (FOOD, WOOD, etc)
+			const typeValue = data.buildingType || data.extractorType || data.category || 'OTHER';
+			const project: ConstructionProject = {
+				id: data.constructionId,
+				name: data.structureType,
+				type: typeValue as BuildingType,
+				progress: 0,
+				startTime: data.timestamp,
+				completionTime: new Date(data.completesAt).getTime(),
+				resources: { wood: 0, stone: 0 }
+			};
+
+			// Don't add if already in active (prevent duplicates)
+			const alreadyActive = currentState.active.some((p) => p.id === data.constructionId);
+			if (alreadyActive) {
+				logger.debug('[ConstructionStore] Project already active, skipping', { constructionId: data.constructionId });
+				return;
+			}
+
 			// Add to active projects
-			const updatedActive = [...currentState.active, data.project];
+			const updatedActive = [...currentState.active, project];
 
 			// Remove from queued if it was there
-			const updatedQueued = currentState.queued.filter((p) => p.id !== data.project.id);
+			const updatedQueued = currentState.queued.filter((p) => p.id !== data.constructionId);
 
 			state.construction.set(data.settlementId, {
 				active: updatedActive,
@@ -70,51 +91,56 @@ function initializeListeners(): void {
 		}
 	);
 
-	// Listen for construction progress updates
+	// Listen for batched construction progress updates (optimized - one event per world per second)
 	socket.on(
-		'construction-progress',
+		'construction-progress-batch',
 		(data: {
-			settlementId: string;
-			projectId: string;
-			progress: number;
-			timeRemaining?: number;
+			worldId: string;
+			timestamp: number;
+			constructions: Array<{
+				settlementId: string;
+				projectId: string;
+				progress: number;
+				timeRemaining: number;
+			}>;
 		}) => {
-			const currentState = state.construction.get(data.settlementId);
-			if (!currentState) return;
+			// Process all constructions in the batch
+			for (const construction of data.constructions) {
+				const currentState = state.construction.get(construction.settlementId);
+				if (!currentState) continue;
 
-			// Update progress in active projects
-			const updatedActive = currentState.active.map((project) => {
-				if (project.id === data.projectId) {
-					return {
-						...project,
-						progress: data.progress,
-						...(data.timeRemaining !== undefined && {
-							completionTime: Date.now() + data.timeRemaining * 1000
-						})
-					};
-				}
-				return project;
-			});
+				// Update progress in active projects
+				const updatedActive = currentState.active.map((project) => {
+					if (project.id === construction.projectId) {
+						return {
+							...project,
+							progress: construction.progress,
+							completionTime: Date.now() + construction.timeRemaining * 1000
+						};
+					}
+					return project;
+				});
 
-			state.construction.set(data.settlementId, {
-				...currentState,
-				active: updatedActive
-			});
+				state.construction.set(construction.settlementId, {
+					...currentState,
+					active: updatedActive
+				});
+			}
 
-			// Trigger reactivity
+			// Trigger reactivity once for all updates
 			state.construction = new Map(state.construction);
 		}
 	);
 
 	// Listen for construction completed event
 	socket.on(
-		'construction-completed',
-		(data: { settlementId: string; projectId: string; structureId?: string }) => {
+		'construction-complete',
+		(data: { settlementId: string; structureId: string; structureType: string; constructionTime: number; timestamp: number }) => {
 			const currentState = state.construction.get(data.settlementId);
 			if (!currentState) return;
 
-			// Remove from active projects
-			const updatedActive = currentState.active.filter((p) => p.id !== data.projectId);
+			// Remove from active projects by structure type (since completion event only has structureType)
+			const updatedActive = currentState.active.filter((p) => p.name !== data.structureType);
 
 			// If there are queued projects, move the first one to active
 			let updatedQueued = [...currentState.queued];
@@ -139,17 +165,38 @@ function initializeListeners(): void {
 	// Listen for new project queued
 	socket.on(
 		'construction-queued',
-		(data: { settlementId: string; project: ConstructionProject }) => {
+		(data: { settlementId: string; constructionId: string; structureType: string; category?: string; buildingType?: string; extractorType?: string; position: number; status: string; completesAt?: Date; resourcesCost?: ResourceCost; timestamp: number }) => {
 			const currentState = state.construction.get(data.settlementId) || {
 				active: [],
 				queued: []
 			};
 
+			// Convert server data to ConstructionProject format
+			// Use buildingType (HOUSE, STORAGE, etc) or extractorType (FOOD, WOOD, etc)
+			const typeValue = data.buildingType || data.extractorType || data.category || 'OTHER';
+			const project: ConstructionProject = {
+				id: data.constructionId,
+				name: data.structureType,
+				type: typeValue as BuildingType,
+				progress: 0,
+				startTime: data.timestamp,
+				completionTime: data.completesAt ? new Date(data.completesAt).getTime() : 0,
+				resources: data.resourcesCost || { wood: 0, stone: 0 }
+			};
+
+			// Don't add if already in queued or active (prevent duplicates)
+			const alreadyQueued = currentState.queued.some((p) => p.id === data.constructionId);
+			const alreadyActive = currentState.active.some((p) => p.id === data.constructionId);
+			if (alreadyQueued || alreadyActive) {
+				logger.debug('[ConstructionStore] Project already exists, skipping', { constructionId: data.constructionId });
+				return;
+			}
+
 			// Add to queued projects
-			const updatedQueued = [...currentState.queued, data.project];
+			const updatedQueued = [...currentState.queued, project];
 
 			state.construction.set(data.settlementId, {
-				...currentState,
+				active: currentState.active,
 				queued: updatedQueued
 			});
 
@@ -161,13 +208,13 @@ function initializeListeners(): void {
 	// Listen for project cancelled
 	socket.on(
 		'construction-cancelled',
-		(data: { settlementId: string; projectId: string; refundResources?: ResourceCost }) => {
+		(data: { settlementId: string; constructionId: string; resourcesRefunded?: ResourceCost }) => {
 			const currentState = state.construction.get(data.settlementId);
 			if (!currentState) return;
 
 			// Remove from both active and queued
-			const updatedActive = currentState.active.filter((p) => p.id !== data.projectId);
-			const updatedQueued = currentState.queued.filter((p) => p.id !== data.projectId);
+			const updatedActive = currentState.active.filter((p) => p.id !== data.constructionId);
+			const updatedQueued = currentState.queued.filter((p) => p.id !== data.constructionId);
 
 			state.construction.set(data.settlementId, {
 				active: updatedActive,
@@ -198,16 +245,67 @@ function initializeListeners(): void {
 	);
 }
 
+// Progress ticker - update construction progress every second
+let progressInterval: ReturnType<typeof setInterval> | null = null;
+
+function startProgressTicker() {
+	if (progressInterval) return; // Already running
+	
+	progressInterval = setInterval(() => {
+		const now = Date.now();
+		let hasChanges = false;
+		
+		// Update progress for all active constructions
+		state.construction.forEach((constructionState, settlementId) => {
+			if (constructionState.active.length > 0) {
+				const updatedActive = constructionState.active.map((project) => {
+					const totalTime = project.completionTime - project.startTime;
+					const elapsed = now - project.startTime;
+					const progress = Math.min(100, Math.max(0, Math.floor((elapsed / totalTime) * 100)));
+					
+					if (progress !== project.progress) {
+						hasChanges = true;
+						return { ...project, progress };
+					}
+					return project;
+				});
+				
+				if (hasChanges) {
+					state.construction.set(settlementId, {
+						...constructionState,
+						active: updatedActive
+					});
+				}
+			}
+		});
+		
+		if (hasChanges) {
+			// Trigger reactivity
+			state.construction = new Map(state.construction);
+		}
+	}, 1000); // Update every second
+}
+
+function stopProgressTicker() {
+	if (progressInterval) {
+		clearInterval(progressInterval);
+		progressInterval = null;
+	}
+}
+
 // Subscribe to socket connection state (only in browser)
 if (browser) {
 	socketStore.subscribe(($socket) => {
 		if ($socket.connectionState === 'connected' && $socket.socket) {
 			initializeListeners();
+			startProgressTicker();
 
 			// Request initial construction state for all settlements we have in the map
 			if (state.construction.size === 0) {
 				// Will be populated when settlement page loads and requests state
 			}
+		} else {
+			stopProgressTicker();
 		}
 	});
 }
@@ -296,6 +394,84 @@ export const constructionStore = {
 	},
 
 	/**
+	 * Fetch construction queue from API (for initial page load)
+	 */
+	async fetchConstructionQueue(settlementId: string): Promise<void> {
+		if (!browser) return;
+
+		try {
+			const { PUBLIC_CLIENT_API_URL } = await import('$env/static/public');
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/construction-queue/${settlementId}`, {
+				credentials: 'include',
+			});
+
+			if (!response.ok) {
+				logger.error('[ConstructionStore] Failed to fetch construction queue', {
+					status: response.status,
+					settlementId,
+				});
+				return;
+			}
+
+			const data = await response.json();
+			
+			logger.debug('[ConstructionStore] Raw API response:', {
+				settlementId,
+				success: data.success,
+				activeRaw: data.active,
+				queuedRaw: data.queued,
+			});
+			
+			if (data.success) {
+				const now = Date.now();
+				
+				// Convert API data to ConstructionProject format
+				const active: ConstructionProject[] = data.active.map((item: any) => {
+					const startTime = item.startedAt ? new Date(item.startedAt).getTime() : now;
+					const completionTime = item.completesAt ? new Date(item.completesAt).getTime() : 0;
+					const totalTime = completionTime - startTime;
+					const elapsed = now - startTime;
+					const progress = totalTime > 0 ? Math.min(100, Math.max(0, Math.floor((elapsed / totalTime) * 100))) : 0;
+					
+					return {
+						id: item.id,
+						name: item.structureType,
+						type: 'OTHER' as BuildingType,
+						progress,
+						startTime,
+						completionTime,
+						resources: item.resourcesCost || { wood: 0, stone: 0 },
+					};
+				});
+
+				const queued: ConstructionProject[] = data.queued.map((item: any) => ({
+					id: item.id,
+					name: item.structureType,
+					type: 'OTHER' as BuildingType,
+					progress: 0,
+					startTime: item.createdAt ? new Date(item.createdAt).getTime() : Date.now(),
+					completionTime: 0,
+					resources: item.resourcesCost || { wood: 0, stone: 0 },
+				}));
+
+				state.construction.set(settlementId, { active, queued });
+				state.construction = new Map(state.construction);
+
+				logger.debug('[ConstructionStore] Construction queue loaded', {
+					settlementId,
+					activeCount: active.length,
+					queuedCount: queued.length,
+				});
+			}
+		} catch (error) {
+			logger.error('[ConstructionStore] Error fetching construction queue', {
+				error,
+				settlementId,
+			});
+		}
+	},
+
+	/**
 	 * Request construction state from server
 	 */
 	requestConstructionState(settlementId: string): void {
@@ -308,10 +484,36 @@ export const constructionStore = {
 	/**
 	 * Cancel a construction project
 	 */
-	cancelProject(settlementId: string, projectId: string): void {
-		const socket = socketStore.getSocket();
-		if (socket) {
-			socket.emit('cancel-construction', { settlementId, projectId });
+	async cancelConstruction(constructionId: string): Promise<boolean> {
+		try {
+			const { PUBLIC_CLIENT_API_URL } = await import('$env/static/public');
+			const response = await fetch(`${PUBLIC_CLIENT_API_URL}/structures/construction-queue/${constructionId}`, {
+				method: 'DELETE',
+				credentials: 'include',
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				logger.error('[ConstructionStore] Failed to cancel construction', {
+					constructionId,
+					status: response.status,
+					error,
+				});
+				return false;
+			}
+
+			const result = await response.json();
+			logger.info('[ConstructionStore] Construction cancelled', {
+				constructionId,
+				resourcesRefunded: result.resourcesRefunded,
+			});
+			return true;
+		} catch (error) {
+			logger.error('[ConstructionStore] Error cancelling construction', {
+				error,
+				constructionId,
+			});
+			return false;
 		}
 	},
 

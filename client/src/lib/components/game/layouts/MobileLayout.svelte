@@ -13,6 +13,7 @@
 	 */
 
 	import type { PanelConfig } from '$lib/stores/ui/dashboard-layout.svelte';
+	import { logger } from '$lib/utils/logger';
 	import type { Snippet } from 'svelte';
 
 	interface Props {
@@ -42,7 +43,7 @@
 			touchStartY = touch.clientY;
 		}
 		// TODO: Use panelId when implementing swipe-to-dismiss
-		console.log('Touch start on panel:', panelId);
+		logger.debug('Touch start on panel:', { panelId });
 	}
 
 	function handleTouchEnd(event: TouchEvent, panelId: string) {
@@ -54,7 +55,7 @@
 			// Swipe right to dismiss (for alerts panel only)
 			if (panelId === 'alerts' && deltaX > 100 && Math.abs(deltaY) < 50) {
 				// TODO: Dispatch dismiss event
-				console.log('Swipe to dismiss alert:', panelId);
+				logger.debug('Swipe to dismiss alert:', { panelId });
 			}
 		}
 	}

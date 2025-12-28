@@ -7,6 +7,7 @@
 
 import { PUBLIC_CLIENT_API_URL } from '$env/static/public';
 import type { GameConfig } from '@uncharted-lands/shared';
+import { logger } from '$lib/utils/logger';
 
 let cachedConfig: GameConfig | null = null;
 let configPromise: Promise<GameConfig> | null = null;
@@ -37,7 +38,7 @@ export async function getGameConfig(): Promise<GameConfig> {
 			cachedConfig = config;
 			return config;
 		} catch (error) {
-			console.error('Failed to load game configuration:', error);
+			logger.error('Failed to load game configuration:', error);
 			// Return fallback config if fetch fails
 			return getFallbackConfig();
 		} finally {
@@ -206,7 +207,7 @@ export async function getProductionRates(): Promise<ProductionBaseRates> {
 
 		return result.data.baseRates;
 	} catch (error) {
-		console.error('Error fetching production rates, using fallback:', error);
+		logger.error('Error fetching production rates, using fallback:', error);
 		// Fallback to current hardcoded values (matches current production-calculator.ts)
 		return {
 			food: 10,

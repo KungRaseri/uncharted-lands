@@ -41,7 +41,7 @@ describe('Structure Upgrade Socket.IO Events', () => {
 		testProfileId = testChain.profileId;
 		testWorldId = testChain.worldId;
 		testSettlementId = testChain.settlementId!;
-		testStorageId = testChain.settlementStorageId;
+		testStorageId = testChain.settlementStorageId!; // Non-null assertion: createTestSettlement always creates storage
 
 		// Set up abundant resources for upgrade testing (enough for 8 tests)
 		const [updatedStorage] = await db
@@ -52,8 +52,6 @@ describe('Structure Upgrade Socket.IO Events', () => {
 				wood: 50000,
 				stone: 50000,
 				ore: 50000,
-				capacity: 100000,
-				lastModified: new Date(),
 			})
 			.where(eq(settlementStorage.id, testStorageId))
 			.returning();
@@ -224,37 +222,9 @@ describe('Structure Upgrade Socket.IO Events', () => {
 		expect(response.remainingResources.stone).toBe(storageBefore[0].stone - level2Cost.stone);
 	});
 
-	test('should reject upgrade when structure at max level', async () => {
-		// Arrange: Set structure to max level (10)
-		await db
-			.update(settlementStructures)
-			.set({ level: 10 })
-			.where(eq(settlementStructures.id, testStructureId));
-
-		// Act: Attempt to upgrade beyond max
-		const response = await new Promise<any>((resolve) => {
-			clientSocket.emit(
-				'upgrade-structure',
-				{
-					structureId: testStructureId,
-					settlementId: testSettlementId,
-					structureType: 'FARM',
-				},
-				resolve
-			);
-		});
-
-		// Assert: Upgrade rejected
-		expect(response.success).toBe(false);
-		expect(response.error).toContain('maximum level');
-
-		// Assert: Level unchanged
-		const structure = await db
-			.select()
-			.from(settlementStructures)
-			.where(eq(settlementStructures.id, testStructureId));
-		expect(structure[0].level).toBe(10);
-	});
+	// TEST REMOVED: Max level enforcement removed in Phase 6 (infinite progression)
+	// Structures can now be upgraded infinitely, gated only by exponential cost curve (1.5^level)
+	// Old test: "should reject upgrade when structure at max level"
 
 	test('should reject upgrade when insufficient resources', async () => {
 		// Arrange: Deplete settlement resources

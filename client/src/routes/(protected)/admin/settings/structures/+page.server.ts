@@ -1,6 +1,7 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail } from '@sveltejs/kit';
 import { SERVER_API_URL } from '$env/static/private';
+import { logger } from '$lib/utils/logger';
 
 interface StructureMetadata {
 	id: string;
@@ -56,7 +57,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 		return { structures };
 	} catch (error) {
-		console.error('[Admin Settings] Error fetching structures:', error);
+		logger.error('[Admin Settings] Error fetching structures:', error);
 
 		// Return empty structure lists on error
 		return {
@@ -76,7 +77,7 @@ export const actions: Actions = {
 		const enabled = formData.get('enabled') === 'true';
 
 		// This would update structure configuration in the database
-		console.log('Update structure:', structureId, enabled);
+		logger.debug('Update structure:', { structureId, enabled });
 
 		return fail(400, {
 			error: 'Structure modification requires database implementation. This feature will be added when structure templates are moved to the database.'

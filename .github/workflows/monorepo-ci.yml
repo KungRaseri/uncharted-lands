@@ -25,7 +25,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -129,25 +129,56 @@ jobs:
       - name: Build client
         run: npm run build:client
 
+      - name: Verify build artifacts exist
+        working-directory: ./client
+        run: |
+          echo "Checking for .svelte-kit directory..."
+          ls -la | grep svelte-kit || echo ".svelte-kit not visible in ls -la"
+          if [ -d ".svelte-kit" ]; then
+            echo "✅ .svelte-kit directory exists"
+            echo "Contents:"
+            ls -la .svelte-kit/
+            echo "Size:"
+            du -sh .svelte-kit/
+          else
+            echo "❌ .svelte-kit directory not found!"
+            exit 1
+          fi
+
+      - name: Prepare client build for upload
+        working-directory: ./client
+        run: |
+          # Workaround: upload-artifact@v4 has issues with hidden directories
+          # Copy .svelte-kit to svelte-kit-build (without leading dot)
+          cp -r .svelte-kit svelte-kit-build
+          echo "Copied .svelte-kit to svelte-kit-build"
+          ls -la svelte-kit-build/
+
+      - name: Upload client build
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build
+          path: client/svelte-kit-build
+          retention-days: 1
+
   client-test:
     name: Client - Test
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    needs: [shared]
+    needs: [client-build]  # Only run if build succeeds
 
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       PUBLIC_SENTRY_DSN: disabled
-      PUBLIC_API_URL: http://localhost:3001
-      PUBLIC_WS_URL: ws://localhost:3001
       PUBLIC_CLIENT_API_URL: http://localhost:3001/api
+      PUBLIC_WS_URL: ws://localhost:3001
       SERVER_API_URL: http://localhost:3001/api
       NODE_ENV: test
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -213,7 +244,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -272,12 +303,19 @@ jobs:
             exit 1
           fi
 
+      - name: Upload server build
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build
+          path: server/dist/
+          retention-days: 1
+
   server-test:
     name: Server - Test
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    needs: [shared]
+    needs: [server-build]  # Only run if build succeeds
 
     services:
       postgres:
@@ -301,7 +339,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -342,7 +380,7 @@ jobs:
 
       - name: Setup database schema
         working-directory: ./server
-        run: npx drizzle-kit push --force
+        run: ./node_modules/.bin/drizzle-kit push --force
 
       - name: Seed database
         working-directory: ./server
@@ -359,6 +397,193 @@ jobs:
           name: test-results-server
           path: server/test-results/
           retention-days: 30
+
+  # ============================================
+  # E2E Tests (Playwright)
+  # ============================================
+  e2e-tests:
+    name: E2E Tests
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: [client-test, server-test]
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: uncharted_lands_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uncharted_lands_test
+      PUBLIC_WS_URL: http://localhost:3001
+      PUBLIC_CLIENT_API_URL: http://localhost:3001/api
+      SERVER_API_URL: http://localhost:3001/api
+      NODE_ENV: development
+      PORT: 3001
+      REDIS_URL: redis://localhost:6379
+      CORS_ORIGINS: http://localhost:3000
+
+    strategy:
+      matrix:
+        node-version: [24.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+            server/package-lock.json
+            shared/package-lock.json
+
+      - name: Download shared package build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: shared/dist/
+
+      - name: Download client build
+        uses: actions/download-artifact@v4
+        with:
+          name: client-build
+          path: client/.svelte-kit/
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install shared package dependencies
+        working-directory: ./shared
+        run: npm ci
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug
+          rm -rf node_modules/rollup node_modules/@rollup
+          npm install --no-save rollup
+
+      - name: Build server (fresh build with all tooling)
+        working-directory: ./server
+        run: npm run build
+
+      - name: Setup database schema
+        working-directory: ./server
+        run: npx drizzle-kit push --force
+
+      - name: Seed database
+        working-directory: ./server
+        run: npm run db:seed
+
+      - name: Start server (from build)
+        working-directory: ./server
+        run: |
+          echo "Starting server with NODE_ENV=$NODE_ENV"
+          npm start > ../server-e2e.log 2>&1 &
+          echo $! > server.pid
+          # Wait for server to be ready
+          timeout 30 bash -c 'until curl -f http://localhost:3001/health; do sleep 1; done'
+          # Verify test cleanup endpoint is available
+          echo "Verifying test cleanup endpoint..."
+          curl -i -X DELETE http://localhost:3001/api/test/cleanup/user/verify@test.local || echo "Test endpoint returned: $?"
+          echo "Server startup logs:"
+          head -n 50 ../server-e2e.log
+
+      - name: Install client dependencies (after server is running)
+        working-directory: ./client
+        run: |
+          npm ci
+          # Workaround for npm optional dependencies bug
+          rm -rf node_modules/rollup node_modules/@rollup
+          rm -rf node_modules/lightningcss node_modules/lightningcss-*
+          rm -rf node_modules/@tailwindcss/oxide node_modules/@tailwindcss/oxide-*
+          rm -rf node_modules/sass-embedded node_modules/sass-embedded-*
+          npm install --no-save rollup lightningcss @tailwindcss/oxide sass-embedded
+
+      - name: Fix server dependencies corrupted by client npm ci
+        working-directory: ./server
+        run: |
+          # Client npm ci corrupts iconv-lite which breaks Express body-parser
+          rm -rf node_modules/iconv-lite node_modules/raw-body/node_modules/iconv-lite
+          npm install --no-save iconv-lite
+
+      - name: Install Playwright Browsers
+        working-directory: ./client
+        run: npx playwright install --with-deps
+
+      - name: Start client (preview mode)
+        working-directory: ./client
+        run: |
+          npx vite preview --port 3000 &
+          echo $! > client.pid
+          # Wait for client to be ready (check HTML loads)
+          timeout 30 bash -c 'until curl -f http://localhost:3000; do sleep 1; done'
+          # Give JS time to initialize
+          sleep 3
+
+      - name: Run Playwright tests
+        working-directory: ./client
+        run: npm run test:e2e
+
+      - name: Stop server and client
+        if: always()
+        run: |
+          echo "=== Server logs (last 100 lines) ==="
+          tail -n 100 server-e2e.log || echo "No server logs found"
+          if [ -f server/server.pid ]; then kill $(cat server/server.pid) || true; fi
+          if [ -f client/client.pid ]; then kill $(cat client/client.pid) || true; fi
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: client/playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-test-results
+          path: client/test-results/
+          retention-days: 30
+
+      - name: Upload server logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: server-e2e-logs
+          path: server-e2e.log
+          retention-days: 7
 
   # ============================================
   # SonarCloud Analysis (Client)

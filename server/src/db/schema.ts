@@ -10,6 +10,7 @@ import {
 	uniqueIndex,
 	unique,
 	index,
+	boolean,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
@@ -74,11 +75,9 @@ export const extractorTypeEnum = pgEnum('ExtractorType', [
 export const buildingTypeEnum = pgEnum('BuildingType', [
 	'HOUSE',
 	'STORAGE',
-	'BARRACKS',
 	'WORKSHOP',
 	'MARKETPLACE',
 	'TOWN_HALL',
-	'WALL',
 ]);
 
 // Disaster system enums (Phase 4 - November 2025)
@@ -127,6 +126,13 @@ export const biomeTypeEnum = pgEnum('BiomeType', [
 	'SWAMP',
 	'COASTAL',
 	'OCEAN',
+]);
+
+export const settlementTypeEnum = pgEnum('SettlementType', [
+	'OUTPOST', // Tier 1: Small frontier camp (max pop 50)
+	'VILLAGE', // Tier 2: Growing community (max pop 200)
+	'TOWN', // Tier 3: Established settlement (max pop 500)
+	'CITY', // Tier 4: Major population center (max pop 1000+)
 ]);
 
 // ==================== DISASTER CONFIGURATION ====================
@@ -220,6 +226,10 @@ export const structures = pgTable('Structure', {
 	constructionTimeSeconds: integer('constructionTimeSeconds').notNull().default(0), // Build time in seconds
 	populationRequired: integer('populationRequired').notNull().default(0), // Population needed to operate
 	displayName: text('displayName').notNull(), // User-friendly name
+	// ✅ Building Area System: Area management and placement constraints
+	areaCost: integer('areaCost').notNull().default(0), // Area consumed (0 for extractors)
+	unique: boolean('unique').notNull().default(false), // Can only build one per settlement
+	minTownHallLevel: integer('minTownHallLevel').notNull().default(0), // Minimum Town Hall level required
 	createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
@@ -242,6 +252,9 @@ export const accounts = pgTable('Account', {
 	passwordHash: text('passwordHash').notNull(),
 	userAuthToken: text('userAuthToken').notNull().unique(),
 	role: accountRoleEnum('role').default('MEMBER').notNull(),
+	// Player presence tracking (ARTIFACT-05 Phase 2)
+	lastSeen: timestamp('lastSeen', { mode: 'date' }).defaultNow().notNull(),
+	isOnline: boolean('isOnline').default(false).notNull(),
 	createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
 	updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
@@ -353,7 +366,7 @@ export const tiles = pgTable(
 		id: text('id').primaryKey(),
 		biomeId: text('biomeId')
 			.notNull()
-			.references(() => biomes.id),
+			.references(() => biomes.id, { onDelete: 'restrict' }),
 		regionId: text('regionId')
 			.notNull()
 			.references(() => regions.id, { onDelete: 'cascade' }),
@@ -393,15 +406,16 @@ export const tiles = pgTable(
 // Plots are no longer needed - settlements claim tiles directly
 // See: client/docs/game-design/SCHEMA-REFACTOR-ARTIFACT.md
 
-// @ts-expect-error - Circular reference between settlementStorage and settlements
 export const settlementStorage = pgTable(
 	'SettlementStorage',
 	{
 		id: text('id').primaryKey(),
-		// @ts-expect-error - Circular reference to settlements table
-		settlementId: text('settlementId').references(() => settlements.id, {
-			onDelete: 'cascade',
-		}),
+		settlementId: text('settlementId')
+			.notNull()
+			.unique()
+			.references(() => settlements.id, {
+				onDelete: 'cascade',
+			}),
 		food: integer('food').notNull(),
 		water: integer('water').notNull(),
 		wood: integer('wood').notNull(),
@@ -439,13 +453,16 @@ export const settlements = pgTable(
 		playerProfileId: text('playerProfileId')
 			.notNull()
 			.references(() => profiles.id, { onDelete: 'cascade' }),
-		settlementStorageId: text('settlementStorageId')
-			.notNull()
-			.unique()
-			// @ts-expect-error - Circular reference to settlementStorage table
-			.references(() => settlementStorage.id, { onDelete: 'cascade' }),
+		// NOTE: settlementStorageId removed - storage references settlement via settlementId
+		// This eliminates circular FK dependency (Settlement <-> SettlementStorage)
 		name: text('name').notNull().default('Home Settlement'),
+		// Settlement tier system (GDD Section 2.1)
+		settlementType: settlementTypeEnum('settlementType').notNull().default('OUTPOST'),
+		tier: integer('tier').notNull().default(1), // 1-4 corresponding to OUTPOST/VILLAGE/TOWN/CITY
 		resilience: integer('resilience').notNull().default(0), // Disaster survival resilience score (0-100)
+		// Building Area System (December 2025)
+		areaUsed: integer('areaUsed').notNull().default(0), // Total area consumed by buildings
+		areaCapacity: integer('areaCapacity').notNull().default(500), // Base capacity = 500 + (TH level × 100)
 		createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 	},
@@ -665,15 +682,15 @@ export const tilesRelations = relations(tiles, ({ one }) => ({
 
 export const settlementStorageRelations = relations(settlementStorage, ({ one }) => ({
 	settlement: one(settlements, {
-		fields: [settlementStorage.id],
-		references: [settlements.settlementStorageId],
+		fields: [settlementStorage.settlementId],
+		references: [settlements.id],
 	}),
 }));
 
 export const settlementsRelations = relations(settlements, ({ one, many }) => ({
 	storage: one(settlementStorage, {
-		fields: [settlements.settlementStorageId],
-		references: [settlementStorage.id],
+		fields: [settlements.id],
+		references: [settlementStorage.settlementId],
 	}),
 	population: one(settlementPopulation, {
 		fields: [settlements.id],
@@ -689,6 +706,9 @@ export const settlementsRelations = relations(settlements, ({ one, many }) => ({
 	}),
 	structures: many(settlementStructures),
 	// ❌ REMOVED: plots: many(plots) - Plot table deleted
+	// Phase 3: Resource transfer relations
+	transfersFrom: many(settlementTransfers, { relationName: 'transfersFrom' }),
+	transfersTo: many(settlementTransfers, { relationName: 'transfersTo' }),
 }));
 
 export const structureRequirementsRelations = relations(structureRequirements, ({ one }) => ({
@@ -759,9 +779,11 @@ export const disasterEvents = pgTable(
 		severity: integer('severity').notNull(), // 0-100 numeric value
 		severityLevel: disasterSeverityEnum('severityLevel').notNull(), // MILD/MODERATE/MAJOR/CATASTROPHIC
 
-		// Affected area (nullable for world-scale disasters)
-		affectedRegionId: text('affectedRegionId').references(() => regions.id),
-		affectedBiomes: json('affectedBiomes').$type<string[]>(), // Array of biome names
+		// Affected area - region-based disaster system
+		// Multiple regions can be affected (e.g., earthquake spanning adjacent regions)
+		// Within those regions, only tiles with vulnerable biomes take damage
+		affectedRegionIds: json('affectedRegionIds').$type<string[]>().notNull(), // Array of region IDs
+		affectedBiomes: json('affectedBiomes').$type<string[]>().notNull(), // Array of biome types vulnerable to this disaster (e.g., ['FOREST', 'GRASSLAND'] for wildfire)
 
 		// Timing
 		scheduledAt: timestamp('scheduledAt', { mode: 'date' }).notNull(), // When disaster will start
@@ -833,10 +855,8 @@ export const disasterEventsRelations = relations(disasterEvents, ({ one, many })
 		fields: [disasterEvents.worldId],
 		references: [worlds.id],
 	}),
-	affectedRegion: one(regions, {
-		fields: [disasterEvents.affectedRegionId],
-		references: [regions.id],
-	}),
+	// Note: affectedRegionIds is now an array, so no direct relation
+	// Use manual queries to fetch affected regions when needed
 	history: many(disasterHistory),
 }));
 
@@ -858,7 +878,7 @@ export const disasterHistoryRelations = relations(disasterHistory, ({ one }) => 
 /**
  * Construction Queue System
  * Manages time-based building queue for settlements
- * - Max 3 simultaneous constructions (IN_PROGRESS)
+ * - Max 1 active construction at a time (IN_PROGRESS) - true queue behavior
  * - Max 10 total queue size
  * - Emergency construction: 2x speed, 2.5x cost during disasters
  */
@@ -874,6 +894,14 @@ export const constructionQueue = pgTable(
 
 		// Structure Details
 		structureType: text('structureType').notNull(), // 'FARM', 'HOUSE', etc.
+		
+		// Upgrade-specific field
+		existingStructureId: text('existingStructureId').references(() => settlementStructures.id, { onDelete: 'cascade' }), // NULL for new construction, set for upgrades
+		targetLevel: integer('targetLevel'), // NULL for new construction, set for upgrades (level structure will become)
+		
+		// Extractor-specific fields (for placement)
+		tileId: text('tileId').references(() => tiles.id, { onDelete: 'cascade' }), // NULL for buildings
+		slotPosition: integer('slotPosition'), // NULL for buildings, 0-N for extractors
 
 		// Timing
 		startedAt: timestamp('startedAt', { mode: 'date' }), // NULL if queued but not started
@@ -911,6 +939,63 @@ export const constructionQueueRelations = relations(constructionQueue, ({ one })
 	settlement: one(settlements, {
 		fields: [constructionQueue.settlementId],
 		references: [settlements.id],
+	}),
+}));
+
+// ===========================
+// SETTLEMENT TRANSFERS (Phase 3 - Resource Transfer System)
+// ===========================
+
+/**
+ * Settlement Transfer System
+ * 
+ * Tracks resource transfers between settlements with:
+ * - Distance-based transport time (10 minutes per 100 tiles)
+ * - Dynamic loss calculation (distance penalty + disaster zones)
+ * - Real-time progress tracking via Socket.IO
+ * - Automatic completion via transport queue processor
+ */
+export const settlementTransfers = pgTable(
+	'SettlementTransfer',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => createId()),
+		fromSettlementId: text('fromSettlementId')
+			.notNull()
+			.references(() => settlements.id, { onDelete: 'cascade' }),
+		toSettlementId: text('toSettlementId')
+			.notNull()
+			.references(() => settlements.id, { onDelete: 'cascade' }),
+		resourceType: text('resourceType').notNull(), // 'food', 'wood', 'stone', 'ore', 'water'
+		amountSent: integer('amountSent').notNull(),
+		amountReceived: integer('amountReceived').notNull(),
+		lossPercentage: integer('lossPercentage').notNull().default(0),
+		distance: integer('distance').notNull(),
+		transportTime: integer('transportTime').notNull(), // milliseconds
+		status: text('status').notNull().default('in_transit'), // 'in_transit', 'completed', 'failed'
+		startedAt: timestamp('startedAt', { mode: 'date' }).defaultNow().notNull(),
+		completedAt: timestamp('completedAt', { mode: 'date' }),
+		createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+	},
+	(table) => [
+		index('settlement_transfers_from_idx').on(table.fromSettlementId),
+		index('settlement_transfers_to_idx').on(table.toSettlementId),
+		index('settlement_transfers_status_idx').on(table.status),
+	]
+);
+
+// Relations for settlement transfers
+export const settlementTransfersRelations = relations(settlementTransfers, ({ one }) => ({
+	fromSettlement: one(settlements, {
+		fields: [settlementTransfers.fromSettlementId],
+		references: [settlements.id],
+		relationName: 'transfersFrom',
+	}),
+	toSettlement: one(settlements, {
+		fields: [settlementTransfers.toSettlementId],
+		references: [settlements.id],
+		relationName: 'transfersTo',
 	}),
 }));
 
@@ -979,3 +1064,6 @@ export type NewDisasterHistory = typeof disasterHistory.$inferInsert;
 
 export type ConstructionQueue = typeof constructionQueue.$inferSelect;
 export type NewConstructionQueue = typeof constructionQueue.$inferInsert;
+
+export type SettlementTransfer = typeof settlementTransfers.$inferSelect;
+export type NewSettlementTransfer = typeof settlementTransfers.$inferInsert;

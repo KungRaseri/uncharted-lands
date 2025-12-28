@@ -32,11 +32,32 @@ export const load: PageServerLoad = async ({ locals, depends, cookies }) => {
 		});
 		return {
 			settlements: [],
+			aggregateData: null,
 			lastUpdate: new Date().toISOString()
 		};
 	}
 
 	const settlements = await response.json();
+
+	// ✅ Fetch aggregate resources across all settlements
+	const aggregateResponse = await globalThis.fetch(`${SERVER_API_URL}/settlements/aggregate`, {
+		headers: {
+			Cookie: `session=${sessionToken}`
+		}
+	});
+
+	let aggregateData = null;
+	if (aggregateResponse.ok) {
+		aggregateData = await aggregateResponse.json();
+		logger.debug('[GAME HOME] Aggregate data loaded', {
+			totalSettlements: aggregateData.settlementCount,
+			totalPopulation: aggregateData.totalPopulation
+		});
+	} else {
+		logger.error('[GAME HOME] Failed to fetch aggregate data', {
+			status: aggregateResponse.status
+		});
+	}
 
 	logger.debug('[GAME HOME] Settlements loaded', {
 		count: settlements.length
@@ -44,6 +65,7 @@ export const load: PageServerLoad = async ({ locals, depends, cookies }) => {
 
 	return {
 		settlements,
+		aggregateData,
 		lastUpdate: new Date().toISOString()
 	};
 };

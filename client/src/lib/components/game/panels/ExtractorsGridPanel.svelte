@@ -214,7 +214,6 @@
 						<!-- Top Row: Tile ID + Slot Usage -->
 						<div class="flex items-center justify-between">
 							<div>
-								<h4 class="font-semibold">Tile {tileId.slice(0, 8)}...</h4>
 								{#if getTile(tileId)}
 									{@const tile = getTile(tileId)!}
 									<p class="text-xs text-surface-500-400-token mt-0.5">

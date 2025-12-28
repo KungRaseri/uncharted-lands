@@ -1,18 +1,33 @@
 <script lang="ts">
 	import '../app.css';
+	import { logger } from '$lib/utils/logger';
 
 	import Header from '$lib/components/app/Header.svelte';
 	import Footer from '$lib/components/app/Footer.svelte';
 	import { onMount } from 'svelte';
 	import { getProductionRates } from '$lib/api/game-config';
+	import { Toast } from '@skeletonlabs/skeleton-svelte';
+	import { initializeToaster } from '$lib/stores/toaster.svelte';
+
+	let { children } = $props();
+
+	// Initialize toaster and mount state in onMount to ensure proper component lifecycle
+	let toaster = $state<any>(null);
+	let mounted = $state(false);
 
 	// Pre-load production rates on app initialization
 	onMount(async () => {
+		// Mark as mounted first
+		mounted = true;
+
+		// Then initialize toaster inside onMount where lifecycle hooks work
+		toaster = initializeToaster();
+
 		try {
 			await getProductionRates();
-			console.log('[App] Production rates pre-loaded successfully');
+			logger.debug('[App] Production rates pre-loaded successfully');
 		} catch (error) {
-			console.error('[App] Failed to pre-load production rates:', error);
+			logger.error('[App] Failed to pre-load production rates:', error);
 			// Non-critical: Calculator will load on demand with fallback
 		}
 	});
@@ -24,10 +39,26 @@
 	</header>
 
 	<main class="flex-1 overflow-y-auto">
-		<slot />
+		{@render children()}
 	</main>
 
 	<footer class="flex-none">
 		<Footer />
 	</footer>
 </div>
+
+<!-- Toast notifications (client-side only, after mount) -->
+<!-- Render OUTSIDE main layout to avoid z-index issues -->
+{#if mounted && toaster}
+	<Toast.Group {toaster}>
+		{#snippet children(toast)}
+			<Toast toast={toast} class="skb:preset-filled-{toast.type}-500">
+				<Toast.Message>
+					<Toast.Title>{toast.title}</Toast.Title>
+					<Toast.Description>{toast.description}</Toast.Description>
+				</Toast.Message>
+				<Toast.CloseTrigger />
+			</Toast>
+		{/snippet}
+	</Toast.Group>
+{/if}

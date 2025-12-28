@@ -7,6 +7,7 @@ CREATE TYPE "public"."DisasterType" AS ENUM('DROUGHT', 'FLOOD', 'BLIZZARD', 'HUR
 CREATE TYPE "public"."ExtractorType" AS ENUM('FARM', 'WELL', 'LUMBER_MILL', 'QUARRY', 'MINE', 'FISHING_DOCK', 'HUNTING_LODGE', 'HERB_GARDEN');--> statement-breakpoint
 CREATE TYPE "public"."ResourceType" AS ENUM('FOOD', 'WOOD', 'STONE', 'ORE', 'CLAY', 'HERBS', 'PELTS', 'GEMS', 'EXOTIC_WOOD');--> statement-breakpoint
 CREATE TYPE "public"."ServerStatus" AS ENUM('OFFLINE', 'MAINTENANCE', 'ONLINE');--> statement-breakpoint
+CREATE TYPE "public"."SettlementType" AS ENUM('OUTPOST', 'VILLAGE', 'TOWN', 'CITY');--> statement-breakpoint
 CREATE TYPE "public"."SpecialResource" AS ENUM('GEMS', 'EXOTIC_WOOD', 'MAGICAL_HERBS', 'ANCIENT_STONE');--> statement-breakpoint
 CREATE TYPE "public"."StructureCategory" AS ENUM('EXTRACTOR', 'BUILDING');--> statement-breakpoint
 CREATE TYPE "public"."TileType" AS ENUM('OCEAN', 'LAND');--> statement-breakpoint
@@ -63,8 +64,8 @@ CREATE TABLE "DisasterEvent" (
 	"type" "DisasterType" NOT NULL,
 	"severity" integer NOT NULL,
 	"severityLevel" "DisasterSeverity" NOT NULL,
-	"affectedRegionId" text,
-	"affectedBiomes" json,
+	"affectedRegionIds" json NOT NULL,
+	"affectedBiomes" json NOT NULL,
 	"scheduledAt" timestamp NOT NULL,
 	"warningTime" integer DEFAULT 7200 NOT NULL,
 	"impactDuration" integer DEFAULT 3600 NOT NULL,
@@ -134,6 +135,19 @@ CREATE TABLE "Server" (
 	CONSTRAINT "Server_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
+CREATE TABLE "SettlementModifier" (
+	"id" text PRIMARY KEY NOT NULL,
+	"settlementId" text NOT NULL,
+	"modifierType" text NOT NULL,
+	"totalValue" numeric(10, 2) NOT NULL,
+	"sourceCount" integer DEFAULT 0 NOT NULL,
+	"contributingStructures" json DEFAULT '[]'::json,
+	"lastCalculatedAt" timestamp DEFAULT now() NOT NULL,
+	"createdAt" timestamp DEFAULT now() NOT NULL,
+	"updatedAt" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "SettlementModifier_settlementId_modifierType_unique" UNIQUE("settlementId","modifierType")
+);
+--> statement-breakpoint
 CREATE TABLE "SettlementPopulation" (
 	"id" text PRIMARY KEY NOT NULL,
 	"settlementId" text NOT NULL,
@@ -147,12 +161,13 @@ CREATE TABLE "SettlementPopulation" (
 --> statement-breakpoint
 CREATE TABLE "SettlementStorage" (
 	"id" text PRIMARY KEY NOT NULL,
-	"settlementId" text,
+	"settlementId" text NOT NULL,
 	"food" integer NOT NULL,
 	"water" integer NOT NULL,
 	"wood" integer NOT NULL,
 	"stone" integer NOT NULL,
-	"ore" integer NOT NULL
+	"ore" integer NOT NULL,
+	CONSTRAINT "SettlementStorage_settlementId_unique" UNIQUE("settlementId")
 );
 --> statement-breakpoint
 CREATE TABLE "SettlementStructure" (
@@ -174,12 +189,14 @@ CREATE TABLE "Settlement" (
 	"id" text PRIMARY KEY NOT NULL,
 	"tileId" text NOT NULL,
 	"playerProfileId" text NOT NULL,
-	"settlementStorageId" text NOT NULL,
 	"name" text DEFAULT 'Home Settlement' NOT NULL,
+	"settlementType" "SettlementType" DEFAULT 'OUTPOST' NOT NULL,
+	"tier" integer DEFAULT 1 NOT NULL,
 	"resilience" integer DEFAULT 0 NOT NULL,
+	"areaUsed" integer DEFAULT 0 NOT NULL,
+	"areaCapacity" integer DEFAULT 500 NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "Settlement_settlementStorageId_unique" UNIQUE("settlementStorageId")
+	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "StructureModifier" (
@@ -214,6 +231,10 @@ CREATE TABLE "Structure" (
 	"extractorType" "ExtractorType",
 	"buildingType" "BuildingType",
 	"maxLevel" integer DEFAULT 10 NOT NULL,
+	"tier" integer DEFAULT 1 NOT NULL,
+	"constructionTimeSeconds" integer DEFAULT 0 NOT NULL,
+	"populationRequired" integer DEFAULT 0 NOT NULL,
+	"displayName" text NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
@@ -255,13 +276,13 @@ CREATE TABLE "World" (
 --> statement-breakpoint
 ALTER TABLE "ConstructionQueue" ADD CONSTRAINT "ConstructionQueue_settlementId_Settlement_id_fk" FOREIGN KEY ("settlementId") REFERENCES "public"."Settlement"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "DisasterEvent" ADD CONSTRAINT "DisasterEvent_worldId_World_id_fk" FOREIGN KEY ("worldId") REFERENCES "public"."World"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "DisasterEvent" ADD CONSTRAINT "DisasterEvent_affectedRegionId_Region_id_fk" FOREIGN KEY ("affectedRegionId") REFERENCES "public"."Region"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "DisasterHistory" ADD CONSTRAINT "DisasterHistory_settlementId_Settlement_id_fk" FOREIGN KEY ("settlementId") REFERENCES "public"."Settlement"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "DisasterHistory" ADD CONSTRAINT "DisasterHistory_disasterId_DisasterEvent_id_fk" FOREIGN KEY ("disasterId") REFERENCES "public"."DisasterEvent"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ProfileServerData" ADD CONSTRAINT "ProfileServerData_profileId_Profile_id_fk" FOREIGN KEY ("profileId") REFERENCES "public"."Profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ProfileServerData" ADD CONSTRAINT "ProfileServerData_serverId_Server_id_fk" FOREIGN KEY ("serverId") REFERENCES "public"."Server"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "Profile" ADD CONSTRAINT "Profile_accountId_Account_id_fk" FOREIGN KEY ("accountId") REFERENCES "public"."Account"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "Region" ADD CONSTRAINT "Region_worldId_World_id_fk" FOREIGN KEY ("worldId") REFERENCES "public"."World"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "SettlementModifier" ADD CONSTRAINT "SettlementModifier_settlementId_Settlement_id_fk" FOREIGN KEY ("settlementId") REFERENCES "public"."Settlement"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "SettlementPopulation" ADD CONSTRAINT "SettlementPopulation_settlementId_Settlement_id_fk" FOREIGN KEY ("settlementId") REFERENCES "public"."Settlement"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "SettlementStorage" ADD CONSTRAINT "SettlementStorage_settlementId_Settlement_id_fk" FOREIGN KEY ("settlementId") REFERENCES "public"."Settlement"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "SettlementStructure" ADD CONSTRAINT "SettlementStructure_structureId_Structure_id_fk" FOREIGN KEY ("structureId") REFERENCES "public"."Structure"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
@@ -269,7 +290,6 @@ ALTER TABLE "SettlementStructure" ADD CONSTRAINT "SettlementStructure_settlement
 ALTER TABLE "SettlementStructure" ADD CONSTRAINT "SettlementStructure_tileId_Tile_id_fk" FOREIGN KEY ("tileId") REFERENCES "public"."Tile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_tileId_Tile_id_fk" FOREIGN KEY ("tileId") REFERENCES "public"."Tile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_playerProfileId_Profile_id_fk" FOREIGN KEY ("playerProfileId") REFERENCES "public"."Profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_settlementStorageId_SettlementStorage_id_fk" FOREIGN KEY ("settlementStorageId") REFERENCES "public"."SettlementStorage"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "StructureModifier" ADD CONSTRAINT "StructureModifier_settlementStructureId_SettlementStructure_id_fk" FOREIGN KEY ("settlementStructureId") REFERENCES "public"."SettlementStructure"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "StructurePrerequisite" ADD CONSTRAINT "StructurePrerequisite_structureId_Structure_id_fk" FOREIGN KEY ("structureId") REFERENCES "public"."Structure"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "StructurePrerequisite" ADD CONSTRAINT "StructurePrerequisite_requiredStructureId_Structure_id_fk" FOREIGN KEY ("requiredStructureId") REFERENCES "public"."Structure"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -288,13 +308,14 @@ CREATE INDEX "disaster_scheduled_idx" ON "DisasterEvent" USING btree ("scheduled
 CREATE INDEX "disaster_active_idx" ON "DisasterEvent" USING btree ("worldId","status");--> statement-breakpoint
 CREATE INDEX "disaster_history_settlement_idx" ON "DisasterHistory" USING btree ("settlementId");--> statement-breakpoint
 CREATE INDEX "disaster_history_disaster_idx" ON "DisasterHistory" USING btree ("disasterId");--> statement-breakpoint
-CREATE UNIQUE INDEX "ProfileServerData_profileId_key" ON "ProfileServerData" USING btree ("profileId");--> statement-breakpoint
-CREATE UNIQUE INDEX "ProfileServerData_serverId_key" ON "ProfileServerData" USING btree ("serverId");--> statement-breakpoint
 CREATE UNIQUE INDEX "ProfileServerData_profileId_serverId_key" ON "ProfileServerData" USING btree ("profileId","serverId");--> statement-breakpoint
 CREATE UNIQUE INDEX "Region_name_worldId_key" ON "Region" USING btree ("name","worldId");--> statement-breakpoint
 CREATE INDEX "Region_worldId_xCoord_yCoord_idx" ON "Region" USING btree ("worldId","xCoord","yCoord");--> statement-breakpoint
 CREATE INDEX "Region_xCoord_yCoord_idx" ON "Region" USING btree ("xCoord","yCoord");--> statement-breakpoint
 CREATE UNIQUE INDEX "Server_hostname_port_key" ON "Server" USING btree ("hostname","port");--> statement-breakpoint
+CREATE INDEX "SettlementModifier_settlementId_idx" ON "SettlementModifier" USING btree ("settlementId");--> statement-breakpoint
+CREATE INDEX "SettlementModifier_modifierType_idx" ON "SettlementModifier" USING btree ("modifierType");--> statement-breakpoint
+CREATE INDEX "SettlementModifier_lastCalculatedAt_idx" ON "SettlementModifier" USING btree ("lastCalculatedAt");--> statement-breakpoint
 CREATE INDEX "SettlementStorage_settlementId_idx" ON "SettlementStorage" USING btree ("settlementId");--> statement-breakpoint
 CREATE INDEX "SettlementStructure_settlementId_idx" ON "SettlementStructure" USING btree ("settlementId");--> statement-breakpoint
 CREATE INDEX "SettlementStructure_structureId_idx" ON "SettlementStructure" USING btree ("structureId");--> statement-breakpoint

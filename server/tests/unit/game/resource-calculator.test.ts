@@ -143,23 +143,23 @@ describe('resource-calculator', () => {
 
 			// BLOCKER 2 FIX: New hybrid production system
 			// Base = quality × biomeEff × 0.2 = 1 × 1 × 0.2 = 0.2
-			// Tier 1 (Level 1-3) = 5x multiplier
-			// Formula: 0.2 × 5 × 1 (health) × 1 (ticks) = 1.0 per tick
+			// Tier 1 (Level 1-5) = 0.5x base multiplier (Level 1)
+			// Formula: 0.2 × 0.5 × 1 (health) × 1 (ticks) = 0.1 per tick
 			// Note: mockTile has foodQuality=100, woodQuality=100, etc.
 			// Quality is normalized to 0-1 scale (100/100 = 1.0)
-			expect(production.food).toBeCloseTo(1, 10); // Base 0.2 × Tier1 5x
+			expect(production.food).toBeCloseTo(0.1, 10); // Base 0.2 × Tier1 0.5x
 			// NOTE: No waterQuality field in Tile schema, so no water production
-			expect(production.wood).toBeCloseTo(1, 10);
-			expect(production.stone).toBeCloseTo(1, 10);
-			expect(production.ore).toBeCloseTo(1, 10);
+			expect(production.wood).toBeCloseTo(0.1, 10);
+			expect(production.stone).toBeCloseTo(0.1, 10);
+			expect(production.ore).toBeCloseTo(0.1, 10);
 		});
 
 		it('should scale production with tick count', () => {
 			const tickCount = 60; // 1 second
 			const production = calculateProduction(mockTile, mockExtractors, tickCount);
 
-			// BLOCKER 2 FIX: Base 0.2 × Tier1 5x × 60 ticks = 60 per second
-			expect(production.food).toBeCloseTo(60, 10);
+			// BLOCKER 2 FIX: Base 0.2 × Tier1 0.5x × 60 ticks = 6 per second
+			expect(production.food).toBeCloseTo(6, 10);
 			// NOTE: No waterQuality field in Tile schema
 		});
 
@@ -195,10 +195,10 @@ describe('resource-calculator', () => {
 				currentTime
 			);
 
-			// BLOCKER 2 FIX: Base 0.2 × Tier1 5x × ticks = production
+			// BLOCKER 2 FIX: Base 0.2 × Tier1 0.5x × ticks = production
 			// Math.floor(1000ms / (1000/60)) = Math.floor(59.999...) = 59 ticks
-			// 0.2 × 5 × 59 = 59 per second (timing precision, not exactly 60)
-			expect(production.food).toBeCloseTo(59, 0);
+			// 0.2 × 0.5 × 59 = 5.9 per second (timing precision, not exactly 6)
+			expect(production.food).toBeCloseTo(5.9, 0);
 			// NOTE: No waterQuality field in Tile schema
 		});
 
@@ -221,8 +221,8 @@ describe('resource-calculator', () => {
 				currentTime
 			);
 
-			// BLOCKER 2 FIX: Base 0.2 × Tier1 5x × ~300 ticks = ~300 in 5 seconds
-			expect(production.food).toBeCloseTo(300, 2);
+			// BLOCKER 2 FIX: Base 0.2 × Tier1 0.5x × ~300 ticks = ~30 in 5 seconds
+			expect(production.food).toBeCloseTo(30, 2);
 		});
 	});
 
@@ -376,8 +376,8 @@ describe('resource-calculator', () => {
 		it('should calculate positive net production', () => {
 			const net = calculateNetProduction(mockTile, mockExtractors, 0, 0, 60); // 1 second, no consumption
 
-			// BLOCKER 2 FIX: Base 0.2 × Tier1 5x × 60 ticks = 60
-			expect(net.food).toBeCloseTo(60, 10);
+			// BLOCKER 2 FIX: Base 0.2 × Tier1 0.5x × 60 ticks = 6
+			expect(net.food).toBeCloseTo(6, 10);
 			// NOTE: No waterQuality field in Tile schema
 		});
 
@@ -385,7 +385,7 @@ describe('resource-calculator', () => {
 			const net = calculateNetProduction(mockTile, mockExtractors, 10, 5, 60);
 
 			const expectedFoodConsumption = 10 * 0.005 * 60; // 3
-			const expectedFoodProduction = 60; // BLOCKER 2 FIX: Base 0.2 × Tier1 5x × 60 ticks
+			const expectedFoodProduction = 6; // BLOCKER 2 FIX: Base 0.2 × Tier1 0.5x × 60 ticks
 
 			expect(net.food).toBeCloseTo(expectedFoodProduction - expectedFoodConsumption, 5);
 		});
